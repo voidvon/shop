@@ -1,0 +1,5 @@
+export { getFeaturedProducts } from './application/get-featured-products'
+export { isHighDemandProduct, isProductAvailable, type Product } from './domain/product'
+export type { ProductRepository } from './domain/product-repository'
+export { mockProductRepository } from './infrastructure/mock-product-repository'
+export { default as ProductCard } from './ui/ProductCard.vue'

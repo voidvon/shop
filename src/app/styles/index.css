@@ -1,0 +1,87 @@
+:root {
+  color-scheme: light;
+  --color-bg: #f5efe5;
+  --color-bg-strong: #f0e4d4;
+  --color-surface: rgba(255, 251, 245, 0.88);
+  --color-surface-strong: #fffaf2;
+  --color-surface-dark: #1f2937;
+  --color-line: rgba(76, 54, 36, 0.12);
+  --color-line-strong: rgba(76, 54, 36, 0.2);
+  --color-text: #2e241d;
+  --color-text-soft: #6b5a4d;
+  --color-primary: #b85c38;
+  --color-primary-deep: #8f3d24;
+  --color-accent: #2f6b5f;
+  --color-success: #2e8b57;
+  --color-warning: #b7791f;
+  --shadow-lg: 0 20px 60px rgba(59, 38, 24, 0.12);
+  --shadow-md: 0 12px 32px rgba(59, 38, 24, 0.08);
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --content-width: 1180px;
+  --van-primary-color: var(--color-primary);
+  --van-success-color: var(--color-success);
+  --van-warning-color: var(--color-warning);
+  --van-text-color: var(--color-text);
+  --van-text-color-2: var(--color-text-soft);
+  --van-background-2: rgba(255, 255, 255, 0.84);
+  --van-border-color: var(--color-line);
+  --van-radius-lg: var(--radius-lg);
+  --van-radius-md: var(--radius-md);
+  --van-radius-sm: var(--radius-sm);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  color: var(--color-text);
+  font-family:
+    'Avenir Next',
+    'PingFang SC',
+    'Hiragino Sans GB',
+    'Microsoft YaHei',
+    sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(184, 92, 56, 0.18), transparent 28%),
+    radial-gradient(circle at top right, rgba(47, 107, 95, 0.14), transparent 24%),
+    linear-gradient(180deg, #fcf8f1 0%, var(--color-bg) 46%, #efe4d5 100%);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+#app {
+  min-height: 100vh;
+}
