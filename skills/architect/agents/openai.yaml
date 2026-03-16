@@ -1,0 +1,4 @@
+interface:
+  display_name: "架构师"
+  short_description: "Vue3 + Vant 项目的 FSD + DDD 架构设计与评审"
+  default_prompt: "使用 $architect 为当前 Vue3 + Vant 项目产出基于 FSD + DDD 的架构方案与目录拆分建议。"
