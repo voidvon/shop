@@ -24,6 +24,8 @@ description: "为采用 FSD + DDD 架构的 Vue3 + Vant 项目提供架构设计
 - 将 `presentation` 映射到 FSD 的 `pages/widgets/features/entities/shared/ui`，不要把 UI 细节带入 `domain`。
 - 保持依赖方向单向：`app -> processes -> pages -> widgets -> features -> entities -> shared`。
 - 在切片内部保持依赖方向单向：`presentation -> application -> domain`，`infrastructure` 通过接口或仓储适配 `application/domain`。
+- 面向多后端场景时，在 `domain` 中定义前端自己的仓储契约与领域模型，不直接暴露某个后端的 DTO、错误码或分页结构。
+- 面向多后端场景时，在 `app/providers` 中统一装配 `BackendRuntime` 或等价运行时容器，不让 `pages/widgets/features` 直接依赖具体后端实现。
 - 将 `Vant` 限制在 `presentation` 或 `shared/ui` 适配层；不要在 `domain`、`application` 中出现组件库实例、组件 props 语义或展示文案。
 - 将接口请求、浏览器存储、路由跳转、副作用、设备能力封装在 `infrastructure` 或 `application` 协调层；不要散落在页面和通用组件中。
 - 将 Pinia store 视为界面状态和用例编排层，不把 store 直接当作领域模型。
@@ -43,8 +45,18 @@ description: "为采用 FSD + DDD 架构的 Vue3 + Vant 项目提供架构设计
 - 在 `domain` 放实体、值对象、领域服务、领域规则、不变量。
 - 在 `application` 放 use case、命令/查询、DTO 映射、流程编排、权限判断。
 - 在 `infrastructure` 放 repository 实现、HTTP adapter、本地缓存、序列化、第三方 SDK 封装。
+- 面向多后端场景时，在 `infrastructure/adapters` 按后端拆分 repository 实现，在 `infrastructure/mappers` 统一处理 DTO 与领域模型转换。
 - 在 `ui` 或 `presentation` 放页面组件、表单、列表、弹窗、Vant 组件装配。
 - 只在复杂度需要时引入完整四层；简单切片可保留 `ui + model` 或 `ui + application`，但必须说明省略原因。
+
+## Multi-backend Rules
+
+- 将“中间层”理解为前端侧 anti-corruption layer：职责是协议转换、字段映射、错误归一、能力裁剪，不承载订单编排、价格计算、库存锁定等后端业务。
+- 每个实体切片优先暴露仓储接口，例如 `ProductRepository`、`CartRepository`、`OrderRepository`；不同后端通过各自 adapter 满足同一组契约。
+- 用 `BackendRuntime` 或等价运行时对象聚合当前后端下的仓储与能力开关，例如 `capabilities.coupon`、`capabilities.memberPrice`。
+- `features` 只能依赖 runtime 暴露的接口或实体 public API，不能直接 import `mock`、`backend-a`、`backend-b` 等基础设施实现。
+- 当不同后端的能力存在显著差异时，用能力开关与显式缺失能力处理，不要堆积 `if backend === xxx` 到页面与组件中。
+- 当后端差异已经上升为结算流程、交易规则或聚合编排差异时，优先考虑独立 BFF，而不是继续扩张前端适配层。
 
 ## Recommended Directory Shape
 
@@ -71,6 +83,8 @@ src/
       domain/
       application/
       infrastructure/
+        adapters/
+        mappers/
       ui/
   shared/
     api/
@@ -87,6 +101,8 @@ src/
 - 如果逻辑表达的是业务规则、约束、状态转换，优先进入 `domain`。
 - 如果逻辑表达的是“完成一个用户目标的编排流程”，优先进入 `application`。
 - 如果逻辑依赖 HTTP、LocalStorage、路由、浏览器 API、第三方 SDK，优先进入 `infrastructure` 或应用协调层。
+- 如果逻辑表达的是“某个后端的字段结构、分页协议、错误格式”，优先进入 `infrastructure/adapters` 或 `infrastructure/mappers`。
+- 如果逻辑表达的是“当前租户/环境该用哪组后端实现”，优先进入 `app/providers` 或 `shared/config`，不要放进 feature store。
 - 如果逻辑只是展示和交互反馈，留在 `ui/presentation`。
 - 如果目录命名开始出现 `common`、`utils2`、`misc` 一类信号，回头检查是否把业务语义错误塞进了 `shared`。
 
@@ -106,8 +122,9 @@ src/
 3. 目标目录结构
 4. 每层职责与依赖方向
 5. 关键数据流或调用链
-6. 渐进迁移步骤
-7. 风险、回归点、验收标准
+6. 多后端装配与适配策略（如适用）
+7. 渐进迁移步骤
+8. 风险、回归点、验收标准
 
 ## Review Checklist
 
@@ -116,9 +133,11 @@ src/
 - 检查 DTO 是否被直接当作领域对象使用。
 - 检查 store 是否同时承担远程请求、领域规则、UI 状态三类职责。
 - 检查 feature 是否跨越多个不相关实体而缺少明确用例边界。
+- 检查 `features/pages/widgets` 是否直接依赖了某个具体后端 adapter。
+- 检查多后端场景下的字段映射、错误归一、能力开关是否被散落在组件和 store 中。
 - 检查 Vant 是否泄漏到非展示层。
 - 检查是否存在反向依赖或循环依赖。
 
 ## Delivery Rule
 
-在回答中直接给出推荐目录、模块职责、边界规则、迁移步骤和风险。需要评审时，先指出具体问题，再给调整方案；需要设计时，先定义边界，再展开实现。
+在回答中直接给出推荐目录、模块职责、边界规则、迁移步骤和风险。涉及多后端场景时，必须同时给出 runtime 装配点、adapter/mapping 放置位置、能力差异处理策略。需要评审时，先指出具体问题，再给调整方案；需要设计时，先定义边界，再展开实现。

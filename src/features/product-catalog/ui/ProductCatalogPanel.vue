@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
 
 import { ProductCard } from '@/entities/product'
+import { currentBackendLabel } from '@/shared/config/backend'
 import SectionCard from '@/shared/ui/SectionCard.vue'
 
 import { useProductCatalogStore } from '../model/useProductCatalogStore'
@@ -29,7 +30,7 @@ onMounted(() => {
 <template>
   <SectionCard
     title="商品目录 Feature"
-    description="搜索输入留在 feature 层，商品规则与数据来源由 entity 内部负责。"
+    :description="`搜索输入留在 feature 层，商品规则与数据来源由 entity 内部负责。当前接入：${currentBackendLabel}`"
   >
     <div class="toolbar">
       <div class="search-field">
