@@ -1,5 +1,6 @@
-import type { Product } from './product'
+import type { ProductDetail, ProductSummary } from './product'
 
 export interface ProductRepository {
-  getFeaturedProducts(): Promise<Product[]>
+  getFeaturedProductSummaries(): Promise<ProductSummary[]>
+  getProductDetail(productId: string): Promise<ProductDetail | null>
 }

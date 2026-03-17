@@ -1,6 +1,12 @@
-export interface BackendAProductDto {
+export interface BackendAProductSpecDto {
+  label: string
+  value: string
+}
+
+export interface BackendAProductSummaryDto {
   badges: string[]
   blurb: string
+  coverImage: string | null
   groupName: string
   isListed: boolean
   salePrice: number
@@ -8,4 +14,12 @@ export interface BackendAProductDto {
   sku: string
   stockQty: number
   title: string
+}
+
+export interface BackendAProductDetailDto extends BackendAProductSummaryDto {
+  detailCopy: string
+  galleryImages: string[]
+  highlights: string[]
+  serviceTags: string[]
+  specs: BackendAProductSpecDto[]
 }

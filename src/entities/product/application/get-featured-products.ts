@@ -1,8 +1,10 @@
-import { isProductAvailable, type Product } from '../domain/product'
+import { isProductAvailable, type ProductSummary } from '../domain/product'
 import type { ProductRepository } from '../domain/product-repository'
 
-export async function getFeaturedProducts(repository: ProductRepository): Promise<Product[]> {
-  const products = await repository.getFeaturedProducts()
+export async function getFeaturedProductSummaries(
+  repository: ProductRepository,
+): Promise<ProductSummary[]> {
+  const products = await repository.getFeaturedProductSummaries()
 
   return products
     .filter(isProductAvailable)

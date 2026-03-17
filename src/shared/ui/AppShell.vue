@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 
-import { navigationItems } from '@/shared/config/navigation'
+import { useEnabledModuleManifests } from '@/shared/lib/modules'
+import { useNavigationItems } from '@/shared/lib/navigation'
+
+const enabledModuleManifests = useEnabledModuleManifests()
+const navigationItems = useNavigationItems()
 </script>
 
 <template>
@@ -27,6 +31,16 @@ import { navigationItems } from '@/shared/config/navigation'
         </RouterLink>
       </nav>
     </header>
+
+    <div class="module-bar">
+      <span class="module-bar-label">当前模块</span>
+      <ul class="module-list">
+        <li v-for="moduleItem in enabledModuleManifests" :key="moduleItem.id" class="module-pill">
+          <strong>{{ moduleItem.label }}</strong>
+          <span>{{ moduleItem.entry }}</span>
+        </li>
+      </ul>
+    </div>
 
     <main class="content">
       <slot />
@@ -120,6 +134,55 @@ import { navigationItems } from '@/shared/config/navigation'
   gap: 24px;
 }
 
+.module-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 4px;
+  margin-bottom: 20px;
+}
+
+.module-bar-label {
+  color: var(--color-text-soft);
+  font-size: 0.84rem;
+  white-space: nowrap;
+}
+
+.module-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.module-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  background: rgba(255, 251, 245, 0.65);
+}
+
+.module-pill strong,
+.module-pill span {
+  display: block;
+}
+
+.module-pill strong {
+  font-size: 0.9rem;
+}
+
+.module-pill span {
+  color: var(--color-text-soft);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 @media (max-width: 720px) {
   .shell {
     width: min(var(--content-width), calc(100vw - 20px));
@@ -138,6 +201,11 @@ import { navigationItems } from '@/shared/config/navigation'
   .nav-link {
     flex: 1;
     text-align: center;
+  }
+
+  .module-bar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>

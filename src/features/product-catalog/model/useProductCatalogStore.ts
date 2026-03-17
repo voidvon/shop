@@ -1,12 +1,16 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import { getFeaturedProducts, type Product, useProductRepository } from '@/entities/product'
+import {
+  getFeaturedProductSummaries,
+  type ProductSummary,
+  useProductRepository,
+} from '@/entities/product'
 
 export const useProductCatalogStore = defineStore('product-catalog', () => {
   const productRepository = useProductRepository()
   const keyword = ref('')
-  const products = ref<Product[]>([])
+  const products = ref<ProductSummary[]>([])
   const isLoading = ref(false)
   const errorMessage = ref<string | null>(null)
 
@@ -21,7 +25,7 @@ export const useProductCatalogStore = defineStore('product-catalog', () => {
       const searchText = [
         product.name,
         product.category,
-        product.description,
+        product.summary,
         ...product.tags,
       ]
         .join(' ')
@@ -41,7 +45,7 @@ export const useProductCatalogStore = defineStore('product-catalog', () => {
     errorMessage.value = null
 
     try {
-      products.value = await getFeaturedProducts(productRepository)
+      products.value = await getFeaturedProductSummaries(productRepository)
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '商品目录加载失败'
     } finally {

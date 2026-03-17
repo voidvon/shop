@@ -3,10 +3,10 @@ import { computed } from 'vue'
 
 import { formatCurrency } from '@/shared/lib/currency'
 
-import { isHighDemandProduct, type Product } from '../domain/product'
+import { isHighDemandProduct, type ProductSummary } from '../domain/product'
 
 const props = defineProps<{
-  product: Product
+  product: ProductSummary
 }>()
 
 const demandLabel = computed(() => (isHighDemandProduct(props.product) ? '高需求' : '稳定供应'))
@@ -22,7 +22,7 @@ const demandLabel = computed(() => (isHighDemandProduct(props.product) ? '高需
       <van-tag round type="primary">{{ demandLabel }}</van-tag>
     </div>
 
-    <p class="description">{{ product.description }}</p>
+    <p class="description">{{ product.summary }}</p>
 
     <div class="meta">
       <div>
@@ -44,6 +44,10 @@ const demandLabel = computed(() => (isHighDemandProduct(props.product) ? '高需
         <van-tag plain type="success">{{ tag }}</van-tag>
       </li>
     </ul>
+
+    <div v-if="$slots.action" class="card-actions">
+      <slot name="action" />
+    </div>
   </article>
 </template>
 
@@ -124,9 +128,22 @@ h3 {
   display: inline-flex;
 }
 
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 @media (max-width: 640px) {
   .meta {
     grid-template-columns: 1fr;
+  }
+
+  .card-actions {
+    justify-content: stretch;
+  }
+
+  .card-actions :deep(.van-button) {
+    width: 100%;
   }
 }
 </style>

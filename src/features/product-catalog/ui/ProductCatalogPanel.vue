@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 
 import { ProductCard } from '@/entities/product'
+import { AddToCartButton } from '@/features/add-to-cart'
 import { currentBackendLabel } from '@/shared/config/backend'
 import SectionCard from '@/shared/ui/SectionCard.vue'
 
@@ -58,7 +60,19 @@ onMounted(() => {
     <p v-else-if="errorMessage" class="state error">{{ errorMessage }}</p>
 
     <div v-else class="catalog-grid">
-      <ProductCard v-for="product in visibleProducts" :key="product.id" :product="product" />
+      <ProductCard v-for="product in visibleProducts" :key="product.id" :product="product">
+        <template #action>
+          <div class="card-actions">
+            <RouterLink
+              class="detail-link"
+              :to="{ name: 'product-detail', params: { productId: product.id } }"
+            >
+              查看详情
+            </RouterLink>
+            <AddToCartButton :product="product" />
+          </div>
+        </template>
+      </ProductCard>
     </div>
   </SectionCard>
 </template>
@@ -118,8 +132,21 @@ onMounted(() => {
 
 .catalog-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.detail-link {
+  color: var(--color-primary-deep);
+  font-weight: 600;
 }
 
 .state {
@@ -158,6 +185,15 @@ onMounted(() => {
 
   .catalog-grid {
     grid-template-columns: 1fr;
+  }
+
+  .card-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .detail-link {
+    text-align: center;
   }
 }
 </style>

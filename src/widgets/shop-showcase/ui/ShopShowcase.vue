@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ProductCatalogPanel } from '@/features/product-catalog'
+import { useEnabledModuleManifests } from '@/shared/lib/modules'
 import SectionCard from '@/shared/ui/SectionCard.vue'
 
 const boundaryRules = [
@@ -8,6 +8,7 @@ const boundaryRules = [
   'entities 封装商品实体、仓储契约、用例和基础展示。',
   'shared 仅保留导航、格式化、基础布局等无业务语义能力。',
 ]
+const enabledModuleManifests = useEnabledModuleManifests()
 </script>
 
 <template>
@@ -30,7 +31,25 @@ const boundaryRules = [
       </SectionCard>
     </div>
 
-    <ProductCatalogPanel />
+    <SectionCard
+      title="运行时模块"
+      description="模块启用由前端配置与后端能力共同决定，首页和导航都消费同一份 manifest。"
+    >
+      <ul class="module-grid">
+        <li v-for="moduleItem in enabledModuleManifests" :key="moduleItem.id" class="module-item">
+          <div class="module-item-head">
+            <strong>{{ moduleItem.label }}</strong>
+            <span>{{ moduleItem.entry }}</span>
+          </div>
+          <p>{{ moduleItem.summary }}</p>
+          <small>
+            依赖：
+            {{ moduleItem.dependsOn.length > 0 ? moduleItem.dependsOn.join(' / ') : 'none' }}
+          </small>
+        </li>
+      </ul>
+    </SectionCard>
+
   </section>
 </template>
 
@@ -81,6 +100,55 @@ h1 {
   padding-left: 20px;
   margin: 0;
   color: var(--color-text-soft);
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.module-item {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.module-item-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.module-item strong,
+.module-item span,
+.module-item p,
+.module-item small {
+  display: block;
+}
+
+.module-item span,
+.module-item small {
+  color: var(--color-text-soft);
+}
+
+.module-item span {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.76rem;
+}
+
+.module-item p,
+.module-item small {
+  margin: 0;
+  line-height: 1.6;
 }
 
 @media (max-width: 900px) {

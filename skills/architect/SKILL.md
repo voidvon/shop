@@ -24,6 +24,7 @@ description: "为采用 FSD + DDD 架构的 Vue3 + Vant 项目提供架构设计
 - 将 `presentation` 映射到 FSD 的 `pages/widgets/features/entities/shared/ui`，不要把 UI 细节带入 `domain`。
 - 保持依赖方向单向：`app -> processes -> pages -> widgets -> features -> entities -> shared`。
 - 在切片内部保持依赖方向单向：`presentation -> application -> domain`，`infrastructure` 通过接口或仓储适配 `application/domain`。
+- 当列表、卡片、详情页对同一实体的字段密度差异明显时，优先拆成 `Summary` / `Detail` 两套前端标准模型，不要让一个大而全的 `Product`、`Order`、`User` 贯穿所有调用链。
 - 面向多后端场景时，在 `domain` 中定义前端自己的仓储契约与领域模型，不直接暴露某个后端的 DTO、错误码或分页结构。
 - 面向多后端场景时，在 `app/providers` 中统一装配 `BackendRuntime` 或等价运行时容器，不让 `pages/widgets/features` 直接依赖具体后端实现。
 - 将 `Vant` 限制在 `presentation` 或 `shared/ui` 适配层；不要在 `domain`、`application` 中出现组件库实例、组件 props 语义或展示文案。
@@ -38,6 +39,7 @@ description: "为采用 FSD + DDD 架构的 Vue3 + Vant 项目提供架构设计
 - 将业务实体及其展示语义放在 `entities`，例如用户、商品、订单、优惠券。
 - 将真正通用且无业务语义的内容放在 `shared`，例如 `ui`、`lib`、`api`、`config`、`types`。
 - 将多页面长链路流程放在 `processes`；如果没有跨页流程，就不要为了完整性硬建这一层。
+- 像 `checkout` 这种需要串联 `cart`、`order`、`promotion`、`user` 等多个实体的能力，优先建成 `processes/*`，不要把它降级成单一 feature。
 - 当某个能力只服务于单一业务切片时，优先放在对应切片内部，不要过早提升到 `shared`。
 
 ## Layering Rules Inside A Slice
@@ -46,6 +48,7 @@ description: "为采用 FSD + DDD 架构的 Vue3 + Vant 项目提供架构设计
 - 在 `application` 放 use case、命令/查询、DTO 映射、流程编排、权限判断。
 - 在 `infrastructure` 放 repository 实现、HTTP adapter、本地缓存、序列化、第三方 SDK 封装。
 - 面向多后端场景时，在 `infrastructure/adapters` 按后端拆分 repository 实现，在 `infrastructure/mappers` 统一处理 DTO 与领域模型转换。
+- 面向多后端场景时，优先在 `infrastructure/mappers` 建立“字段表 + 通用 mapper helper”，让新增后端主要新增 DTO 与字段映射配置，而不是复制整段对象拼装代码。
 - 在 `ui` 或 `presentation` 放页面组件、表单、列表、弹窗、Vant 组件装配。
 - 只在复杂度需要时引入完整四层；简单切片可保留 `ui + model` 或 `ui + application`，但必须说明省略原因。
 
@@ -53,9 +56,15 @@ description: "为采用 FSD + DDD 架构的 Vue3 + Vant 项目提供架构设计
 
 - 将“中间层”理解为前端侧 anti-corruption layer：职责是协议转换、字段映射、错误归一、能力裁剪，不承载订单编排、价格计算、库存锁定等后端业务。
 - 每个实体切片优先暴露仓储接口，例如 `ProductRepository`、`CartRepository`、`OrderRepository`；不同后端通过各自 adapter 满足同一组契约。
+- 对商品、订单等高频实体，仓储接口优先按 use case 拆分，例如 `getProductSummaries`、`getProductDetail`，不要让“列表页字段需求”和“详情页字段需求”共享一个宽泛返回值。
 - 用 `BackendRuntime` 或等价运行时对象聚合当前后端下的仓储与能力开关，例如 `capabilities.coupon`、`capabilities.memberPrice`。
+- 对前端可选业务能力建立独立的“模块注册表”，例如 `catalog`、`cart`、`checkout`、`member`；最终启用模块应由“前端启用矩阵”和“后端支持矩阵”共同决定。
+- `shared/config` 中的模块 manifest 只保存模块元数据与依赖，不直接引用具体业务组件；页面装配组件映射应放在 `processes` 或 `app` 壳层。
+- 模块级路由应集中在 `app/router` 的注册表中，由路由 `meta` 驱动导航，不要再单独维护一份静态菜单。
+- 当模块同时需要首页入口、侧栏面板和独立路由时，优先在 `app` 层建立统一 composition registry，而不是拆成多份彼此独立的注册表。
 - `features` 只能依赖 runtime 暴露的接口或实体 public API，不能直接 import `mock`、`backend-a`、`backend-b` 等基础设施实现。
 - 当不同后端的能力存在显著差异时，用能力开关与显式缺失能力处理，不要堆积 `if backend === xxx` 到页面与组件中。
+- 当某个模块被禁用时，优先让 `pages/widgets` 在装配层做显式裁剪或退化展示，而不是让实体和基础设施承担 UI 层开关逻辑。
 - 当后端差异已经上升为结算流程、交易规则或聚合编排差异时，优先考虑独立 BFF，而不是继续扩张前端适配层。
 
 ## Recommended Directory Shape
@@ -135,6 +144,7 @@ src/
 - 检查 feature 是否跨越多个不相关实体而缺少明确用例边界。
 - 检查 `features/pages/widgets` 是否直接依赖了某个具体后端 adapter。
 - 检查多后端场景下的字段映射、错误归一、能力开关是否被散落在组件和 store 中。
+- 检查模块启停是否由统一的模块注册表/runtime 控制，而不是出现多个局部布尔开关。
 - 检查 Vant 是否泄漏到非展示层。
 - 检查是否存在反向依赖或循环依赖。
 
