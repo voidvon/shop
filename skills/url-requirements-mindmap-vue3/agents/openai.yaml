@@ -1,0 +1,4 @@
+interface:
+  display_name: "URL to Vue3 Requirements Mindmap"
+  short_description: "Generate Vue3 requirements mindmap from URL"
+  default_prompt: "Use $url-requirements-mindmap-vue3 to generate a Vue3 requirements mindmap from https://example.com."
