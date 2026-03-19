@@ -1,3 +1,5 @@
+import type { PageQuery, PageResult } from '../base'
+
 export interface CatalogCategoryItem {
   categoryId: string
   categoryName: string
@@ -18,6 +20,7 @@ export interface CategoryEntryPageData {
 
 export interface CategoryGoodsItem {
   productId: string
+  storeId: string
   productImageUrl: string
   productName: string
   price: number
@@ -26,8 +29,16 @@ export interface CategoryGoodsItem {
   isOwnShop: boolean
 }
 
+export interface CategoryListQuery extends PageQuery {
+  primaryCategoryId: string | null
+  secondaryCategoryId: string | null
+}
+
 export interface CategoryListPageData {
+  query: CategoryListQuery
+  selectedPrimaryCategoryId: string | null
+  selectedSecondaryCategoryId: string | null
   primaryCategories: CatalogCategoryItem[]
   secondaryCategories: CatalogCategoryItem[]
-  products: CategoryGoodsItem[]
+  productPage: PageResult<CategoryGoodsItem>
 }

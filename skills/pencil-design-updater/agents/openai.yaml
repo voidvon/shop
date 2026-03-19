@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pencil 设计更新"
+  short_description: "根据口述需求定位并更新 Pencil 设计稿，包含结构校验与截图回归"
+  default_prompt: "使用 $pencil-design-updater 根据我的口述需求更新当前 Pencil 设计稿，并在修改后做结构校验和截图回归。"

@@ -1,7 +1,15 @@
+import type { ActionPermission, PageQuery, PageResult } from '../base'
+
+export type AfterSaleAction = 'view-detail' | 'delay' | 'ship-return'
+
 export interface RefundRecord {
   refundId: string
+  orderId: string
+  orderItemId: string
+  storeId: string
   storeName: string
   status: string
+  statusText: string
   productImageUrl: string
   productName: string
   skuDescription: string | null
@@ -9,15 +17,21 @@ export interface RefundRecord {
   quantity: number
   refundAmount: number
   appliedAt: string
+  actions: ActionPermission<AfterSaleAction>[]
 }
 
 export interface ReturnRecord extends RefundRecord {
   returnQuantity: number
 }
 
+export interface AfterSaleQuery extends PageQuery {
+  type: 'refund' | 'return'
+}
+
 export interface AfterSaleListPageData {
-  refunds: RefundRecord[]
-  returns: ReturnRecord[]
+  query: AfterSaleQuery
+  refundPage: PageResult<RefundRecord>
+  returnPage: PageResult<ReturnRecord>
 }
 
 export interface RefundEvidenceImage {
@@ -38,6 +52,10 @@ export interface RefundAmountDetail {
 
 export interface RefundDetailPageData {
   refundId: string
+  orderId: string
+  orderItemId: string
+  status: string
+  statusText: string
   reason: string
   refundAmount: number
   description: string | null
@@ -45,4 +63,5 @@ export interface RefundDetailPageData {
   merchantProcess: RefundProcessInfo
   platformProcess: RefundProcessInfo
   amountDetail: RefundAmountDetail
+  actions: ActionPermission<AfterSaleAction>[]
 }

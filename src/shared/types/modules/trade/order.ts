@@ -1,3 +1,5 @@
+import type { ActionPermission, AmountDetail, PageQuery, PageResult } from '../base'
+
 export type TradeOrderStatus =
   | 'all'
   | 'pending-payment'
@@ -6,6 +8,23 @@ export type TradeOrderStatus =
   | 'pending-review'
   | 'pending-use'
   | 'completed'
+  | 'cancelled'
+  | 'refunding'
+  | 'returning'
+
+export type TradeOrderType = 'physical' | 'virtual'
+
+export type TradeOrderAction =
+  | 'pay'
+  | 'cancel'
+  | 'view-logistics'
+  | 'confirm-receipt'
+  | 'review'
+  | 'remove'
+  | 'refund'
+  | 'return'
+  | 'contact-store'
+  | 'copy-order-no'
 
 export type PaymentChannel = 'recharge-card' | 'predeposit' | 'alipay' | 'wechat-pay'
 
@@ -13,44 +32,63 @@ export interface PaymentOption {
   channel: PaymentChannel
   enabled: boolean
   balanceAmount: number | null
+  passwordRequired: boolean
 }
 
 export interface PaymentSheetData {
+  orderIds: string[]
   payableAmount: number
   options: PaymentOption[]
 }
 
 export interface TradeOrderItem {
+  orderItemId: string
+  storeId: string
   productId: string
+  skuId: string | null
   productName: string
   productImageUrl: string
   skuDescription: string | null
   unitPrice: number
   quantity: number
+  subtotalAmount: number
+  afterSaleStatus: string | null
+  actions: ActionPermission<TradeOrderAction>[]
 }
 
 export interface OrderCard {
   orderId: string
+  orderNo: string
+  orderType: TradeOrderType
   storeId: string
   storeName: string
   status: TradeOrderStatus
+  statusText: string
   items: TradeOrderItem[]
   itemCount: number
   totalAmount: number
   shippingAmount: number
+  amountDetails: AmountDetail[]
+  actions: ActionPermission<TradeOrderAction>[]
+}
+
+export interface OrderCenterQuery extends PageQuery {
+  keyword: string
+  status: TradeOrderStatus
+  orderType: TradeOrderType
 }
 
 export interface OrderCenterPageData {
-  keyword: string
-  status: TradeOrderStatus
-  orders: OrderCard[]
+  query: OrderCenterQuery
+  orderPage: PageResult<OrderCard>
   paymentSheet: PaymentSheetData | null
 }
 
 export interface VirtualOrderListPageData {
-  keyword: string
-  status: Extract<TradeOrderStatus, 'all' | 'pending-payment' | 'pending-use'>
-  orders: OrderCard[]
+  query: Omit<OrderCenterQuery, 'orderType'> & {
+    status: Extract<TradeOrderStatus, 'all' | 'pending-payment' | 'pending-use'>
+  }
+  orderPage: PageResult<OrderCard>
   paymentSheet: PaymentSheetData | null
 }
 
@@ -85,7 +123,10 @@ export interface OrderTimeline {
 
 export interface OrderDetailPageData {
   orderId: string
-  status: Exclude<TradeOrderStatus, 'all' | 'pending-review' | 'pending-use'>
+  orderNo: string
+  orderType: TradeOrderType
+  status: Exclude<TradeOrderStatus, 'all'>
+  statusText: string
   statusHint: string
   logistics: LogisticsSummary | null
   address: OrderAddress
@@ -96,9 +137,11 @@ export interface OrderDetailPageData {
   promotions: OrderPromotionInfo[]
   payableAmount: number
   shippingAmount: number
+  amountDetails: AmountDetail[]
   deliveryRemark: string | null
   buyerMessage: string | null
   invoiceInfo: string | null
   paymentMethod: string | null
   timeline: OrderTimeline
+  actions: ActionPermission<TradeOrderAction>[]
 }

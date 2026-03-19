@@ -1,12 +1,18 @@
 import { createCartLine, createCartSnapshot, createEmptyCartSnapshot } from '../../../domain/cart'
 import type { CartRepository } from '../../../domain/cart-repository'
 
-let cartLines = [createCartLine({
-  productId: 'sku-ceramic-cup',
-  productName: '手冲陶瓷分享杯',
-  quantity: 1,
-  unitPrice: 89,
-})]
+import { mockProducts } from '@/shared/mocks/modules'
+
+const initialProducts = mockProducts.slice(0, 2)
+
+let cartLines = initialProducts.map((product, index) =>
+  createCartLine({
+    productId: product.productId,
+    productName: product.productName,
+    quantity: index === 0 ? 1 : 2,
+    unitPrice: product.price,
+  }),
+)
 
 export const mockCartRepository: CartRepository = {
   async addItem(command) {

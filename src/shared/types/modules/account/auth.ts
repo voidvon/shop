@@ -1,20 +1,47 @@
+import type { OperationState } from '../base'
+
 export interface AuthUserInfo {
   userId: string
   username: string
+  nickname: string | null
   email: string | null
   mobile: string | null
   avatarUrl: string | null
 }
 
+export type AccountCapability =
+  | 'wechat-login'
+  | 'wechat-scan-card'
+  | 'recharge-card-payment'
+  | 'payment-code'
+
+export interface AccountSecurityState {
+  hasBoundMobile: boolean
+  hasPaymentPassword: boolean
+  canResetPassword: boolean
+}
+
+export interface AuthSession {
+  accessToken: string
+  refreshToken: string | null
+  expiresAt: string | null
+}
+
 export interface AuthResult {
   userInfo: AuthUserInfo
-  token: string
+  session: AuthSession
+  security: AccountSecurityState
+  capabilities: AccountCapability[]
 }
 
 export interface PasswordResetPageData {
   currentMobile: string | null
   captchaImageUrl: string
+  captchaLength: number
+  smsCodeLength: number
   smsCountdownSeconds: number
+  security: AccountSecurityState
+  requestState: OperationState
 }
 
 export interface PasswordResetVerificationResult {

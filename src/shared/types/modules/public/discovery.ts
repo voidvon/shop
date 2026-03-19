@@ -1,3 +1,5 @@
+import type { CursorPageResult } from '../base'
+
 export interface PublicBannerItem {
   imageUrl: string
   linkUrl: string
@@ -20,7 +22,7 @@ export interface PublicProductCard {
 export interface HomePageData {
   banners: PublicBannerItem[]
   categoryEntries: HomeCategoryEntry[]
-  products: PublicProductCard[]
+  productFeed: CursorPageResult<PublicProductCard>
 }
 
 export interface SearchPageData {
@@ -43,5 +45,6 @@ export interface StoreSummary {
 
 export interface StoreAreaPageData {
   areas: StoreAreaItem[]
-  stores: StoreSummary[]
+  selectedAreaId: string | null
+  storeFeed: CursorPageResult<StoreSummary>
 }

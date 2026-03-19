@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pencil 组件创建"
+  short_description: "为 Pencil 创建真组件并替换为 ref 实例"
+  default_prompt: "使用 $pencil-component-creator 为当前 Pencil 设计创建可复用组件，并把重复节点替换成真实 ref 实例。"

@@ -1,5 +1,7 @@
 export type {
   AfterSaleListPageData,
+  AfterSaleAction,
+  AfterSaleQuery,
   RefundAmountDetail,
   RefundDetailPageData,
   RefundEvidenceImage,
@@ -16,10 +18,24 @@ export type {
   CartStoreGroup,
 } from './cart'
 export type {
+  CheckoutAction,
+  CheckoutAddress,
+  CheckoutCoupon,
+  CheckoutLineItem,
+  CheckoutPreview,
+  CheckoutSource,
+  CheckoutStoreGroup,
+  InstantPurchaseItem,
+  SubmitOrderCommand,
+  SubmitOrderResult,
+  SubmitOrderStoreSettlement,
+} from './checkout'
+export type {
   LogisticsSummary,
   OrderAddress,
   OrderCard,
   OrderCenterPageData,
+  OrderCenterQuery,
   OrderDetailPageData,
   OrderGiftItem,
   OrderPromotionInfo,
@@ -27,7 +43,9 @@ export type {
   PaymentChannel,
   PaymentOption,
   PaymentSheetData,
+  TradeOrderAction,
   TradeOrderItem,
   TradeOrderStatus,
+  TradeOrderType,
   VirtualOrderListPageData,
 } from './order'

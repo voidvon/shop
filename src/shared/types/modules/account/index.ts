@@ -1,5 +1,8 @@
 export type {
+  AccountCapability,
+  AccountSecurityState,
   AuthResult,
+  AuthSession,
   AuthUserInfo,
   PasswordResetPageData,
   PasswordResetVerificationResult,

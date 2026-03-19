@@ -1,4 +1,10 @@
+import type { ActionPermission, AmountDetail, PageQuery, PageResult } from '../base'
+
 export type ProductListSortKey = 'default' | 'sales' | 'price'
+
+export type ProductListDisplayMode = 'grid' | 'list'
+
+export type ProductPurchaseAction = 'add-to-cart' | 'buy-now' | 'favorite'
 
 export interface ProductListFilters {
   keyword: string | null
@@ -16,6 +22,8 @@ export interface ProductListFilters {
 
 export interface ProductListItem {
   productId: string
+  storeId: string
+  skuId: string | null
   productImageUrl: string
   productName: string
   price: number
@@ -30,10 +38,15 @@ export interface ProductListItem {
   isFlashSale: boolean
 }
 
-export interface ProductListPageData {
+export interface ProductListQuery extends PageQuery {
   filters: ProductListFilters
   sortKey: ProductListSortKey
-  products: ProductListItem[]
+  displayMode: ProductListDisplayMode
+}
+
+export interface ProductListPageData {
+  query: ProductListQuery
+  productPage: PageResult<ProductListItem>
 }
 
 export interface ProductSpecValue {
@@ -46,6 +59,15 @@ export interface ProductSpecGroup {
   groupId: string
   groupLabel: string
   values: ProductSpecValue[]
+}
+
+export interface ProductSkuSnapshot {
+  skuId: string
+  specText: string
+  price: number
+  marketPrice: number | null
+  stock: number
+  available: boolean
 }
 
 export interface ProductReviewSnippet {
@@ -90,8 +112,13 @@ export interface ProductDetailPageData {
   subtitle: string | null
   sellingPoints: string[]
   gallery: string[]
+  defaultSkuId: string | null
+  selectedSkuId: string | null
+  skuList: ProductSkuSnapshot[]
+  stock: number
   price: number
   marketPrice: number | null
+  amountDetails: AmountDetail[]
   specGroups: ProductSpecGroup[]
   quantity: number
   reviewRate: number | null
@@ -100,6 +127,7 @@ export interface ProductDetailPageData {
   store: ProductStoreSummary
   recommendations: ProductRecommendation[]
   coupons: ProductCouponSummary[]
+  actions: ActionPermission<ProductPurchaseAction>[]
 }
 
 export interface ProductInfoPageData {
@@ -126,5 +154,6 @@ export interface ProductEvaluationItem {
 
 export interface ProductEvaluationPageData {
   productId: string
-  evaluations: ProductEvaluationItem[]
+  filter: 'all' | 'positive' | 'neutral' | 'negative' | 'with-image'
+  evaluationPage: PageResult<ProductEvaluationItem>
 }
