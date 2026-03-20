@@ -1,7 +1,10 @@
 import type { RouteRecordRaw } from 'vue-router'
 
-import { StorefrontShell, resolveModuleRoutes } from '@/app/composition'
-import { AboutPage } from '@/pages/about'
+import { resolveModuleRoutes } from '@/app/composition'
+import { CartPage } from '@/pages/cart'
+import { CategoryPage } from '@/pages/category'
+import { HomePage } from '@/pages/home'
+import { MemberCenterPage } from '@/pages/member-center'
 import { backendTarget } from '@/shared/config/backend'
 import { listEnabledModules, resolveRuntimeEnabledModules } from '@/shared/config/modules'
 
@@ -12,23 +15,36 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'home',
-    component: StorefrontShell,
+    component: HomePage,
     meta: {
       navLabel: '首页',
       navOrder: 0,
-      title: '架构首页',
-      description: 'FSD + DDD 项目骨架与商品目录示例',
+      title: '商城首页',
+      description: '分类、推荐和商品导购入口',
     },
   },
   {
-    path: '/about',
-    name: 'about',
-    component: AboutPage,
+    path: '/category',
+    name: 'category',
+    component: CategoryPage,
     meta: {
-      navLabel: '架构说明',
-      navOrder: 10,
-      title: '架构说明',
-      description: '职责边界、依赖方向与迁移约束',
+      title: '分类',
+    },
+  },
+  {
+    path: '/cart',
+    name: 'cart',
+    component: CartPage,
+    meta: {
+      title: '购物车',
+    },
+  },
+  {
+    path: '/member',
+    name: 'member',
+    component: MemberCenterPage,
+    meta: {
+      title: '我的',
     },
   },
   ...dynamicModuleRoutes,

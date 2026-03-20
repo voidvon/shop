@@ -2,7 +2,6 @@ import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { VantResolver } from '@vant/auto-import-resolver'
@@ -19,8 +18,12 @@ export default defineConfig({
       dts: 'src/shared/types/components.d.ts',
       resolvers: [VantResolver()],
     }),
-    vueDevTools(),
   ],
+  server: {
+    host: '0.0.0.0',
+    port: 8888,
+    strictPort: true,
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

@@ -1,28 +1,14 @@
-import { markRaw, type Component } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 
-import { CartSummaryPanel } from '@/features/add-to-cart'
-import { ProductCatalogPanel } from '@/features/product-catalog'
-import { MemberCenterPage } from '@/pages/member-center'
 import { ProductDetailPage } from '@/pages/product-detail'
 import { PromotionHubPage } from '@/pages/promotion-hub'
-import { CheckoutFlowPanel } from '@/processes/checkout-flow'
 import type { FrontendModule } from '@/shared/config/modules'
-
-export type HomeModuleArea = 'main' | 'rail'
-
-export interface HomeModulePanelDefinition {
-  area: HomeModuleArea
-  component: Component
-  priority: number
-}
 
 export interface ModuleRouteDefinition {
   route: RouteRecordRaw
 }
 
 export interface ModuleCompositionDefinition {
-  homePanel?: HomeModulePanelDefinition
   moduleId: FrontendModule
   routes?: ModuleRouteDefinition[]
 }
@@ -30,11 +16,6 @@ export interface ModuleCompositionDefinition {
 const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
   {
     moduleId: 'catalog',
-    homePanel: {
-      area: 'main',
-      component: markRaw(ProductCatalogPanel),
-      priority: 0,
-    },
     routes: [
       {
         route: {
@@ -50,40 +31,9 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
       },
     ],
   },
-  {
-    moduleId: 'cart',
-    homePanel: {
-      area: 'rail',
-      component: markRaw(CartSummaryPanel),
-      priority: 10,
-    },
-  },
-  {
-    moduleId: 'checkout',
-    homePanel: {
-      area: 'rail',
-      component: markRaw(CheckoutFlowPanel),
-      priority: 20,
-    },
-  },
-  {
-    moduleId: 'member',
-    routes: [
-      {
-        route: {
-          path: '/member',
-          name: 'member',
-          component: MemberCenterPage,
-          meta: {
-            description: '会员信息、权益和账户能力入口',
-            navLabel: '会员中心',
-            navOrder: 30,
-            title: '会员中心',
-          },
-        },
-      },
-    ],
-  },
+  { moduleId: 'cart' },
+  { moduleId: 'checkout' },
+  { moduleId: 'member' },
   {
     moduleId: 'promotion',
     routes: [
@@ -111,27 +61,10 @@ function includesModule(
   return enabledModuleIds.includes(moduleId)
 }
 
-function hasHomePanel(
-  definition: ModuleCompositionDefinition,
-): definition is ModuleCompositionDefinition & { homePanel: HomeModulePanelDefinition } {
-  return definition.homePanel !== undefined
-}
-
 function hasRoutes(
   definition: ModuleCompositionDefinition,
 ): definition is ModuleCompositionDefinition & { routes: ModuleRouteDefinition[] } {
   return definition.routes !== undefined
-}
-
-export function resolveHomeModulePanels(enabledModuleIds: readonly FrontendModule[]) {
-  return moduleCompositionRegistry
-    .filter((definition) => includesModule(enabledModuleIds, definition.moduleId))
-    .filter(hasHomePanel)
-    .map((definition) => ({
-      ...definition.homePanel,
-      moduleId: definition.moduleId,
-    }))
-    .sort((left, right) => left.priority - right.priority)
 }
 
 export function resolveModuleRoutes(enabledModuleIds: readonly FrontendModule[]) {

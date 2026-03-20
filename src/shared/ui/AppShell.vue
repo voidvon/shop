@@ -1,211 +1,100 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { computed } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 
-import { useEnabledModuleManifests } from '@/shared/lib/modules'
-import { useNavigationItems } from '@/shared/lib/navigation'
+const route = useRoute()
+const tabs = [
+  { label: '首页', to: '/', icon: 'home-o' },
+  { label: '分类', to: '/category', icon: 'apps-o' },
+  { label: '购物车', to: '/cart', icon: 'shopping-cart-o' },
+  { label: '我的', to: '/member', icon: 'contact-o' },
+] as const
 
-const enabledModuleManifests = useEnabledModuleManifests()
-const navigationItems = useNavigationItems()
+const activePath = computed(() => route.path)
 </script>
 
 <template>
   <div class="shell">
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark">S</span>
-        <div>
-          <p>Shop Frontend</p>
-          <small>FSD + DDD baseline</small>
-        </div>
-      </div>
+    <div class="app-frame">
+      <main class="content">
+        <slot />
+      </main>
 
-      <nav class="nav">
+      <nav class="bottom-nav">
         <RouterLink
-          v-for="item in navigationItems"
-          :key="item.to"
-          :to="item.to"
-          class="nav-link"
-          active-class="nav-link-active"
+          v-for="tab in tabs"
+          :key="tab.to"
+          :to="tab.to"
+          class="tab-link"
+          :class="{ 'tab-link-active': activePath === tab.to }"
         >
-          {{ item.label }}
+          <van-icon :name="tab.icon" size="20" />
+          <span>{{ tab.label }}</span>
         </RouterLink>
       </nav>
-    </header>
-
-    <div class="module-bar">
-      <span class="module-bar-label">当前模块</span>
-      <ul class="module-list">
-        <li v-for="moduleItem in enabledModuleManifests" :key="moduleItem.id" class="module-pill">
-          <strong>{{ moduleItem.label }}</strong>
-          <span>{{ moduleItem.entry }}</span>
-        </li>
-      </ul>
     </div>
-
-    <main class="content">
-      <slot />
-    </main>
   </div>
 </template>
 
 <style scoped>
 .shell {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.app-frame {
   position: relative;
-  z-index: 1;
-  width: min(var(--content-width), calc(100vw - 32px));
-  margin: 0 auto;
-  padding: 24px 0 48px;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  align-items: center;
-  padding: 18px 22px;
-  margin-bottom: 30px;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-xl);
-  background: rgba(255, 251, 245, 0.78);
-  backdrop-filter: blur(14px);
-  box-shadow: var(--shadow-lg);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
-  color: #fff;
-  font-weight: 800;
-}
-
-.brand p,
-.brand small {
-  margin: 0;
-  display: block;
-}
-
-.brand p {
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.brand small {
-  color: var(--color-text-soft);
-}
-
-.nav {
-  display: flex;
-  gap: 10px;
-}
-
-.nav-link {
-  padding: 10px 16px;
-  border-radius: 999px;
-  color: var(--color-text-soft);
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.nav-link:hover {
-  background: rgba(184, 92, 56, 0.08);
-  color: var(--color-text);
-  transform: translateY(-1px);
-}
-
-.nav-link-active {
-  background: rgba(184, 92, 56, 0.14);
-  color: var(--color-primary-deep);
+  --app-bottom-nav-gap: 24px;
+  --app-bottom-nav-height: 64px;
+  --app-bottom-nav-offset: calc(
+    var(--app-bottom-nav-gap) + var(--app-bottom-nav-height) + env(safe-area-inset-bottom, 0px)
+  );
+  width: min(402px, 100vw);
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .content {
-  display: grid;
-  gap: 24px;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
-.module-bar {
+.bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--app-bottom-nav-gap) + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: min(360px, calc(100vw - 40px));
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 14px;
-  padding: 0 4px;
-  margin-bottom: 20px;
-}
-
-.module-bar-label {
-  color: var(--color-text-soft);
-  font-size: 0.84rem;
-  white-space: nowrap;
-}
-
-.module-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.module-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 999px;
-  border: 1px solid var(--color-line);
-  background: rgba(255, 251, 245, 0.65);
+  background: rgba(250, 250, 248, 0.82);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 8px 24px rgba(26, 25, 24, 0.08);
 }
 
-.module-pill strong,
-.module-pill span {
-  display: block;
+.tab-link {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 10px 8px;
+  border-radius: 999px;
+  color: #a8a7a5;
+  font-size: 0.56rem;
 }
 
-.module-pill strong {
-  font-size: 0.9rem;
+.tab-link span {
+  line-height: 1;
 }
 
-.module-pill span {
-  color: var(--color-text-soft);
-  font-size: 0.76rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-@media (max-width: 720px) {
-  .shell {
-    width: min(var(--content-width), calc(100vw - 20px));
-    padding-top: 12px;
-  }
-
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .nav {
-    width: 100%;
-  }
-
-  .nav-link {
-    flex: 1;
-    text-align: center;
-  }
-
-  .module-bar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.tab-link-active {
+  background: #c8f0d8;
+  color: #3d8a5a;
 }
 </style>
