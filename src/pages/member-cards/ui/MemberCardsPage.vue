@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { showSuccessToast } from 'vant'
 
 import { MemberCardBindPanel } from '@/features/member-card-binding'
-import { mockAccountData } from '@/shared/mocks'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
+import { useMemberCardsPageModel } from '../model/useMemberCardsPageModel'
+
 const router = useRouter()
 const bindDrawerVisible = ref(false)
-const cardNumber = ref(mockAccountData.cardBindingPageData.cardNumber ?? '')
+const { loadMemberCardsPage, memberCardsPageData } = useMemberCardsPageModel()
+const cardNumber = ref('')
 
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
@@ -34,6 +36,20 @@ function submitBindCard() {
   showSuccessToast('卡券绑定成功')
   closeBindDrawer()
 }
+
+watch(
+  () => memberCardsPageData.value.cardNumber,
+  (value) => {
+    if (value && !cardNumber.value) {
+      cardNumber.value = value
+    }
+  },
+  { immediate: true },
+)
+
+onMounted(() => {
+  void loadMemberCardsPage()
+})
 </script>
 
 <template>
@@ -43,7 +59,7 @@ function submitBindCard() {
     <section class="balance-bar">
       <div class="balance-left">
         <span class="balance-label">账户余额</span>
-        <span class="balance-pill">¥ 0.00</span>
+        <span class="balance-pill">¥ {{ memberCardsPageData.balanceAmount.toFixed(2) }}</span>
       </div>
 
       <button class="pay-link" type="button">使用付款码支付</button>

@@ -1,58 +1,32 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import { formatCurrency } from '@/shared/lib/currency'
-import { mockProducts } from '@/shared/mocks'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
-const chips = [
-  { id: 'seasonal', label: '当季上新', active: true },
-  { id: 'sensitive', label: '敏感肌友好', active: false },
-  { id: 'cleanser', label: '洁面清单', active: false },
-  { id: 'repair', label: '熬夜修护', active: false },
-  { id: 'stability', label: '换季维稳', active: false },
-  { id: 'primer', label: '妆前打底', active: false },
-] as const
+import { useCategoryPageModel } from '../model/useCategoryPageModel'
 
-const categoryDefinitions = [
-  { id: 'skincare', label: '护肤' },
-  { id: 'makeup', label: '彩妆' },
-  { id: 'fragrance', label: '香氛' },
-  { id: 'care', label: '个护' },
-  { id: 'tools', label: '工具' },
-  { id: 'serum', label: '精华' },
-  { id: 'mask', label: '面膜' },
-  { id: 'sun', label: '防晒' },
-  { id: 'lotion', label: '水乳' },
-  { id: 'remover', label: '卸妆' },
-] as const
+const {
+  activePrimaryCategory,
+  activeSecondaryCategory,
+  errorMessage,
+  isLoading,
+  keyword,
+  loadCategoryPage,
+  primaryCategories,
+  secondaryCategories,
+  selectPrimaryCategory,
+  selectSecondaryCategory,
+  selectedPrimaryCategoryId,
+  selectedSecondaryCategoryId,
+  visibleProducts,
+} = useCategoryPageModel()
 
-const visibleCardCount = 8
-
-function getCycledProduct(index: number) {
-  const product = mockProducts[index % mockProducts.length]
-
-  if (!product) {
-    throw new Error('Missing mock product for category page.')
-  }
-
-  return product
-}
-
-const categoryGroups = categoryDefinitions.map((category, index) => ({
-  ...category,
-  products: Array.from({ length: visibleCardCount }, (_, offset) => getCycledProduct(index + offset)),
-}))
-
-const selectedCategoryId = ref(categoryGroups[0]?.id ?? '')
-
-const activeCategory = computed(
-  () => categoryGroups.find((category) => category.id === selectedCategoryId.value) ?? categoryGroups[0],
-)
-
-const visibleProducts = computed(() => activeCategory.value?.products ?? [])
+onMounted(() => {
+  void loadCategoryPage()
+})
 </script>
 
 <template>
@@ -60,46 +34,73 @@ const visibleProducts = computed(() => activeCategory.value?.products ?? [])
     <PageTopBar :show-back="false" title="分类" />
 
     <header class="header">
-      <SearchField aria-label="搜索商品分类" placeholder="搜索品牌、功效、场景" readonly variant="outlined" />
+      <SearchField
+        v-model="keyword"
+        aria-label="搜索商品分类"
+        placeholder="搜索商品或子分类"
+        variant="outlined"
+      />
 
       <div class="chip-row">
         <button
-          v-for="chip in chips"
-          :key="chip.id"
+          v-for="category in primaryCategories"
+          :key="category.id"
           class="chip"
-          :class="{ 'chip-active': chip.active }"
+          :class="{ 'chip-active': category.id === selectedPrimaryCategoryId }"
           type="button"
+          @click="selectPrimaryCategory(category.id)"
         >
-          {{ chip.label }}
+          {{ category.label }}
         </button>
       </div>
     </header>
 
     <section class="main-panel">
-      <aside class="category-rail" aria-label="一级分类">
+      <aside class="category-rail" aria-label="子分类">
         <button
-          v-for="category in categoryGroups"
+          v-for="category in secondaryCategories"
           :key="category.id"
           class="category-pill"
-          :class="{ 'category-pill-active': category.id === selectedCategoryId }"
+          :class="{ 'category-pill-active': category.id === selectedSecondaryCategoryId }"
           type="button"
-          @click="selectedCategoryId = category.id"
+          @click="selectSecondaryCategory(category.id)"
         >
           {{ category.label }}
         </button>
       </aside>
 
       <div class="content-pane">
-        <div class="product-grid">
+        <header class="content-header">
+          <strong>{{ activeSecondaryCategory?.label || activePrimaryCategory?.label || '分类商品' }}</strong>
+          <span>{{ activePrimaryCategory?.label || '全部分类' }}</span>
+        </header>
+
+        <p v-if="errorMessage" class="status-text">
+          {{ errorMessage }}
+        </p>
+
+        <p v-else-if="isLoading" class="status-text">
+          分类数据加载中...
+        </p>
+
+        <p v-else-if="secondaryCategories.length === 0" class="status-text">
+          当前父分类下暂无子分类
+        </p>
+
+        <p v-else-if="visibleProducts.length === 0" class="status-text">
+          当前子分类下暂无商品
+        </p>
+
+        <div v-else class="product-grid">
           <RouterLink
             v-for="product in visibleProducts"
-            :key="`${activeCategory?.id}-${product.productId}`"
+            :key="`${activeSecondaryCategory?.id || activePrimaryCategory?.id}-${product.id}`"
             class="product-card"
-            :to="{ name: 'product-detail', params: { productId: product.productId } }"
+            :to="{ name: 'product-detail', params: { productId: product.id } }"
           >
-            <img :src="product.imageUrl" :alt="product.productName">
+            <img :src="product.imageUrl || '/favicon.ico'" :alt="product.name">
             <div class="name-wrapper">
-              <strong>{{ product.productName }}</strong>
+              <strong>{{ product.name }}</strong>
             </div>
             <div class="price-row">
               <span>{{ formatCurrency(product.price) }}</span>
@@ -204,6 +205,9 @@ const visibleProducts = computed(() => activeCategory.value?.products ?? [])
 }
 
 .content-pane {
+  display: grid;
+  align-content: start;
+  gap: 12px;
   padding-top: 8px;
   min-height: 0;
   overflow-y: auto;
@@ -213,6 +217,32 @@ const visibleProducts = computed(() => activeCategory.value?.products ?? [])
 
 .content-pane::-webkit-scrollbar {
   display: none;
+}
+
+.content-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.content-header strong {
+  color: #1f1d1b;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.content-header span {
+  color: #9c9b99;
+  font-size: 12px;
+}
+
+.status-text {
+  margin: 0;
+  padding: 20px 0;
+  color: #9c9b99;
+  font-size: 13px;
+  text-align: center;
 }
 
 .product-grid {

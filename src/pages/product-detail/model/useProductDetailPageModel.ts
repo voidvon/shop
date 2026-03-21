@@ -1,14 +1,14 @@
 import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 
 import {
-  getProductDetail,
   type ProductDetail,
-  useProductRepository,
 } from '@/entities/product'
+import { usePageContentGateway, type ProductDetailPageData } from '@/shared/page-content'
 
 export function useProductDetailPageModel(productId: MaybeRefOrGetter<string>) {
-  const productRepository = useProductRepository()
+  const gateway = usePageContentGateway()
 
+  const detailPage = ref<ProductDetailPageData | null>(null)
   const product = ref<ProductDetail | null>(null)
   const errorMessage = ref<string | null>(null)
   const hasLoaded = ref(false)
@@ -32,9 +32,11 @@ export function useProductDetailPageModel(productId: MaybeRefOrGetter<string>) {
     errorMessage.value = null
 
     try {
-      product.value = await getProductDetail(productRepository, currentProductId)
+      detailPage.value = await gateway.getProductDetailPageData(currentProductId)
+      product.value = detailPage.value?.product ?? null
       hasLoaded.value = true
     } catch (error) {
+      detailPage.value = null
       product.value = null
       errorMessage.value = error instanceof Error ? error.message : '商品详情加载失败'
       hasLoaded.value = true
@@ -52,6 +54,7 @@ export function useProductDetailPageModel(productId: MaybeRefOrGetter<string>) {
   )
 
   return {
+    detailPage,
     errorMessage,
     hasLoaded,
     isLoading,

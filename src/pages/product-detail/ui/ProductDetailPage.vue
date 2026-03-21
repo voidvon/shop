@@ -3,10 +3,9 @@ import { computed, ref, toRef, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { showSuccessToast } from 'vant'
 
-import { formatCurrency } from '@/shared/lib/currency'
-import { mockCatalogData, mockImageUrl, mockProducts } from '@/shared/mocks'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
+import TopBarMoreMenuButton from '@/shared/ui/TopBarMoreMenuButton.vue'
 
 import { useProductDetailPageModel } from '../model/useProductDetailPageModel'
 import detailHeroImage from '../../../../design-ui/images/generated-1773915971397.png'
@@ -16,7 +15,7 @@ const props = defineProps<{
 }>()
 
 const router = useRouter()
-const { errorMessage, isLoading, isNotFound, loadProductDetail, product } = useProductDetailPageModel(
+const { detailPage, errorMessage, isLoading, isNotFound, loadProductDetail, product } = useProductDetailPageModel(
   toRef(props, 'productId'),
 )
 
@@ -47,7 +46,7 @@ const reviewFilters = [
 
 const activeReviewFilter = ref<(typeof reviewFilters)[number]['key']>('all')
 
-const detailPageData = computed(() => mockCatalogData.productDetailPageDataById[props.productId] ?? null)
+const detailPageData = computed(() => detailPage.value)
 
 watch(
   detailPageData,
@@ -69,10 +68,10 @@ const currentSku = computed(() => {
 })
 
 const selectedText = computed(() => currentSku.value?.specText ?? '默认')
-const popupStockText = computed(() => `库存：${currentSku.value?.stock ?? detailPageData.value?.stock ?? 0}件`)
+const popupStockText = computed(() => `库存：${currentSku.value?.stock ?? product.value?.inventory ?? 0}件`)
 
 const reviewRateText = computed(() => {
-  const rate = detailPageData.value?.reviewRate
+  const rate = detailPageData.value?.review.rate
 
   if (rate === null || rate === undefined) {
     return '好评率 100%'
@@ -81,24 +80,9 @@ const reviewRateText = computed(() => {
   return `好评率 ${Math.round(rate * 100)}%`
 })
 
-const reviewCountText = computed(() => '(0人评价)')
+const reviewCountText = computed(() => `(${detailPageData.value?.review.count ?? 0}人评价)`)
 
-const recommendationPool = computed(() => {
-  const pool = mockProducts.filter((item) => item.productId !== props.productId)
-  return pool.length > 0 ? pool : mockProducts
-})
-
-const recommendProducts = computed(() => {
-  const pool = recommendationPool.value
-
-  if (pool.length === 0) {
-    return []
-  }
-
-  return Array.from({ length: 8 }, (_, index) => pool[index % pool.length]).filter(
-    (item): item is (typeof pool)[number] => item !== undefined,
-  )
-})
+const recommendProducts = computed(() => detailPageData.value?.recommendations ?? [])
 
 const storeInfo = computed(() => detailPageData.value?.store ?? null)
 const galleryItems = computed(() =>
@@ -109,16 +93,16 @@ const galleryItems = computed(() =>
     })),
 )
 
-function formatAmount(value: number) {
-  return value.toFixed(2)
-}
-
 function resolveProductImage(imageUrl: string | null | undefined) {
-  if (!imageUrl || imageUrl === mockImageUrl) {
+  if (!imageUrl) {
     return detailHeroImage
   }
 
   return imageUrl
+}
+
+function formatAmount(value: number) {
+  return value.toFixed(2)
 }
 
 function goBack() {
@@ -227,9 +211,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
         </button>
       </div>
 
-      <button class="icon-button" type="button" aria-label="更多操作">
-        <van-icon name="ellipsis" size="20" />
-      </button>
+      <TopBarMoreMenuButton aria-label="更多操作" />
     </header>
 
     <p v-if="isLoading" class="state-card">正在加载商品详情...</p>
@@ -321,12 +303,12 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
             <div class="recommend-grid">
               <RouterLink
                 v-for="(item, index) in recommendProducts"
-                :key="`${item.productId}-${index}`"
+                :key="`${item.id}-${index}`"
                 class="recommend-card"
-                :to="{ name: 'product-detail', params: { productId: item.productId } }"
+                :to="{ name: 'product-detail', params: { productId: item.id } }"
               >
-                <img :src="resolveProductImage(item.imageUrl)" :alt="item.productName">
-                <strong>{{ item.productName }}</strong>
+                <img :src="resolveProductImage(item.imageUrl)" :alt="item.name">
+                <strong>{{ item.name }}</strong>
                 <span>¥{{ formatAmount(item.price) }}</span>
               </RouterLink>
             </div>
@@ -394,9 +376,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
               </button>
             </div>
 
-            <button class="icon-button" type="button" aria-label="更多操作">
-              <van-icon name="ellipsis" size="20" />
-            </button>
+            <TopBarMoreMenuButton aria-label="更多操作" />
           </header>
 
           <div class="review-drawer-content">

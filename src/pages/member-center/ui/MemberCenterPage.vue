@@ -1,23 +1,31 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { computed, onMounted } from 'vue'
+import type { RouteLocationRaw } from 'vue-router'
 
-import { mockAccountData } from '@/shared/mocks'
+import { useMemberCenterPageModel } from '../model/useMemberCenterPageModel'
 
-const memberCenterPageData = mockAccountData.memberCenterPageData
-const router = useRouter()
+const { loadMemberCenterPage, memberCenterPageData } = useMemberCenterPageModel()
 
-const countCards = [
-  { label: '收藏夹', value: memberCenterPageData.counts.favoritesCount },
-  { label: '购物车', value: memberCenterPageData.counts.cartCount },
-  { label: '足迹', value: memberCenterPageData.counts.browsingCount },
-] as const
+type OrderListFilterStatus =
+  | 'all'
+  | 'pending-payment'
+  | 'pending-shipment'
+  | 'pending-receipt'
+  | 'pending-review'
+  | 'after-sale'
+
+const countCards = computed(() => [
+  { label: '收藏夹', value: memberCenterPageData.value.counts.favoritesCount },
+  { label: '购物车', value: memberCenterPageData.value.counts.cartCount },
+  { label: '足迹', value: memberCenterPageData.value.counts.browsingCount },
+])
 
 const orderEntries = [
   { key: 'pendingPaymentCount', label: '待付款', icon: 'balance-o', status: 'pending-payment' },
   { key: 'pendingShipmentCount', label: '待发货', icon: 'logistics', status: 'pending-shipment' },
   { key: 'pendingReceiptCount', label: '待收货', icon: 'send-gift-o', status: 'pending-receipt' },
   { key: 'pendingReviewCount', label: '待评价', icon: 'chat-o', status: 'pending-review' },
-  { key: 'refundAndReturnCount', label: '退款/退货', icon: 'replay', status: 'all' },
+  { key: 'refundAndReturnCount', label: '退款/退货', icon: 'replay', status: 'after-sale' },
 ] as const
 
 const shortcutIcons = {
@@ -27,18 +35,28 @@ const shortcutIcons = {
   settings: 'setting-o',
 } as const
 
-function goToOrders(status = 'all') {
-  void router.push({
+function resolveShortcutIcon(shortcutKey: string) {
+  return shortcutIcons[shortcutKey as keyof typeof shortcutIcons] ?? 'apps-o'
+}
+
+function buildOrderRoute(status: OrderListFilterStatus = 'all'): RouteLocationRaw {
+  return {
     name: 'member-orders',
     query: status === 'all' ? undefined : { status },
-  })
+  }
 }
 
 function goToShortcut(shortcutKey: string) {
   if (shortcutKey === 'cards') {
-    void router.push({ name: 'member-cards' })
+    return { name: 'member-cards' }
   }
+
+  return undefined
 }
+
+onMounted(() => {
+  void loadMemberCenterPage()
+})
 </script>
 
 <template>
@@ -75,50 +93,48 @@ function goToShortcut(shortcutKey: string) {
         <section class="order-card">
           <header class="section-head">
             <strong>我的订单</strong>
-            <button class="head-action" type="button" @click="goToOrders()">
+            <RouterLink class="head-action" :to="buildOrderRoute()">
               <span>查看全部</span>
               <van-icon name="arrow" size="14" />
-            </button>
+            </RouterLink>
           </header>
 
           <div class="order-grid">
-            <button
+            <RouterLink
               v-for="entry in orderEntries"
               :key="entry.key"
               class="order-entry"
-              type="button"
-              @click="goToOrders(entry.status)"
+              :to="buildOrderRoute(entry.status)"
             >
               <van-icon :name="entry.icon" size="22" />
               <span>{{ entry.label }}</span>
-            </button>
+            </RouterLink>
           </div>
         </section>
 
         <section class="shortcut-card">
           <div class="shortcut-row">
-            <button
+            <RouterLink
               v-for="shortcut in memberCenterPageData.shortcuts.slice(0, 2)"
               :key="shortcut.key"
               class="shortcut-entry"
-              type="button"
-              @click="goToShortcut(shortcut.key)"
+              :to="goToShortcut(shortcut.key) ?? shortcut.route"
             >
-              <van-icon :name="shortcutIcons[shortcut.key]" size="22" />
+              <van-icon :name="resolveShortcutIcon(shortcut.key)" size="22" />
               <span>{{ shortcut.label }}</span>
-            </button>
+            </RouterLink>
           </div>
 
           <div class="shortcut-row shortcut-row-bordered">
-            <button
+            <RouterLink
               v-for="shortcut in memberCenterPageData.shortcuts.slice(2, 4)"
               :key="shortcut.key"
               class="shortcut-entry"
-              type="button"
+              :to="goToShortcut(shortcut.key) ?? shortcut.route"
             >
-              <van-icon :name="shortcutIcons[shortcut.key]" size="22" />
+              <van-icon :name="resolveShortcutIcon(shortcut.key)" size="22" />
               <span>{{ shortcut.label }}</span>
-            </button>
+            </RouterLink>
           </div>
         </section>
 

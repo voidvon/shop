@@ -1,11 +1,20 @@
 <script setup lang="ts">
-type IconTone = 'default' | 'dark'
+import { computed } from 'vue'
 
-withDefaults(defineProps<{
+import type { TopBarMenuItem } from '@/shared/config/main-navigation'
+
+import TopBarMoreMenuButton from './TopBarMoreMenuButton.vue'
+
+type IconTone = 'default' | 'dark'
+type RightMenuPreset = 'none' | 'main-nav'
+
+const props = withDefaults(defineProps<{
   backAriaLabel?: string
   backTone?: IconTone
   rightAriaLabel?: string
   rightIcon?: string
+  rightMenuItems?: TopBarMenuItem[]
+  rightMenuPreset?: RightMenuPreset
   rightTone?: IconTone
   showBack?: boolean
   title: string
@@ -14,6 +23,7 @@ withDefaults(defineProps<{
   backTone: 'dark',
   rightAriaLabel: '更多操作',
   rightIcon: undefined,
+  rightMenuPreset: 'none',
   rightTone: 'default',
   showBack: true,
 })
@@ -21,7 +31,18 @@ withDefaults(defineProps<{
 const emit = defineEmits<{
   (e: 'back'): void
   (e: 'right'): void
+  (e: 'right-menu-select', item: TopBarMenuItem): void
 }>()
+
+const usesRightMenu = computed(() => {
+  if (!props.rightIcon) {
+    return false
+  }
+
+  return props.rightIcon === 'ellipsis'
+    || props.rightMenuPreset === 'main-nav'
+    || Boolean(props.rightMenuItems?.length)
+})
 </script>
 
 <template>
@@ -40,8 +61,16 @@ const emit = defineEmits<{
 
     <strong>{{ title }}</strong>
 
+    <TopBarMoreMenuButton
+      v-if="rightIcon && usesRightMenu"
+      :aria-label="rightAriaLabel"
+      :icon="rightIcon"
+      :menu-items="rightMenuItems"
+      :tone="rightTone"
+      @select="emit('right-menu-select', $event)"
+    />
     <button
-      v-if="rightIcon"
+      v-else-if="rightIcon"
       class="icon-button"
       :class="`icon-button-${rightTone}`"
       type="button"

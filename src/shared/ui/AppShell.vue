@@ -7,19 +7,19 @@ import MainBottomNav from './MainBottomNav.vue'
 const route = useRoute()
 
 const activeNavKey = computed(() => {
-  if (route.path === '/') {
+  if (route.name === 'home') {
     return 'home'
   }
 
-  if (route.path === '/category') {
+  if (route.name === 'category') {
     return 'category'
   }
 
-  if (route.path === '/cart') {
+  if (route.name === 'cart') {
     return 'cart'
   }
 
-  if (route.path === '/member') {
+  if (route.name === 'member') {
     return 'member'
   }
 

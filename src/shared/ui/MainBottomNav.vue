@@ -2,38 +2,25 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 
-type BottomNavKey = 'home' | 'category' | 'cart' | 'member'
+import { mainNavigationItems, type MainNavigationKey } from '@/shared/config/main-navigation'
+
 type BottomNavVariant = 'floating' | 'bar'
 
-interface BottomNavItem {
-  icon: string
-  key: BottomNavKey
-  label: string
-  to: string
-}
-
 const props = withDefaults(defineProps<{
-  activeKey?: BottomNavKey
-  itemKeys?: BottomNavKey[]
+  activeKey?: MainNavigationKey
+  itemKeys?: MainNavigationKey[]
   variant?: BottomNavVariant
 }>(), {
   variant: 'floating',
 })
 
-const items: BottomNavItem[] = [
-  { key: 'home', label: '首页', to: '/', icon: 'home-o' },
-  { key: 'category', label: '分类', to: '/category', icon: 'apps-o' },
-  { key: 'cart', label: '购物车', to: '/cart', icon: 'shopping-cart-o' },
-  { key: 'member', label: '我的', to: '/member', icon: 'contact-o' },
-]
-
 const visibleItems = computed(() => {
   if (!props.itemKeys || props.itemKeys.length === 0) {
-    return items
+    return mainNavigationItems
   }
 
   const enabledKeys = new Set(props.itemKeys)
-  return items.filter((item) => enabledKeys.has(item.key))
+  return mainNavigationItems.filter((item) => enabledKeys.has(item.key))
 })
 </script>
 

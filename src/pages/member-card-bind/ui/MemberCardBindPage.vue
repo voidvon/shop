@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { MemberCardBindPanel } from '@/features/member-card-binding'
-import { mockAccountData } from '@/shared/mocks'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
+import { useMemberCardBindPageModel } from '../model/useMemberCardBindPageModel'
+
 const router = useRouter()
-const cardNumber = ref(mockAccountData.cardBindingPageData.cardNumber ?? '')
+const { loadMemberCardBindPage, memberCardBindPageData } = useMemberCardBindPageModel()
+const cardNumber = ref('')
 
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
@@ -21,6 +23,20 @@ function goBack() {
 function submitBind() {
   cardNumber.value = cardNumber.value.trim()
 }
+
+watch(
+  () => memberCardBindPageData.value.cardNumber,
+  (value) => {
+    if (value && !cardNumber.value) {
+      cardNumber.value = value
+    }
+  },
+  { immediate: true },
+)
+
+onMounted(() => {
+  void loadMemberCardBindPage()
+})
 </script>
 
 <template>

@@ -27,7 +27,7 @@ export const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/category',
+    path: '/category/:primaryCategoryId?/:secondaryCategoryId?',
     name: 'category',
     component: CategoryPage,
     meta: {

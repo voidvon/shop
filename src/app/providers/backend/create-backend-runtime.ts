@@ -13,6 +13,11 @@ import {
   mockProductRepository,
   type ProductRepository,
 } from '@/entities/product'
+import {
+  backendAPageContentGateway,
+  mockPageContentGateway,
+  type PageContentGateway,
+} from '@/shared/page-content'
 import { backendTarget, getBackendLabel, type BackendType } from '@/shared/config/backend'
 import {
   resolveRuntimeEnabledModules,
@@ -31,6 +36,7 @@ export interface BackendRuntime {
   enabledModules: FrontendModuleMap
   label: string
   orderRepository: OrderRepository
+  pageContentGateway: PageContentGateway
   productRepository: ProductRepository
   supportedModules: FrontendModuleMap
   type: BackendType
@@ -77,6 +83,16 @@ function resolveOrderRepository(type: BackendType) {
   }
 }
 
+function resolvePageContentGateway(type: BackendType) {
+  switch (type) {
+    case 'backend-a':
+      return backendAPageContentGateway
+    case 'mock':
+    default:
+      return mockPageContentGateway
+  }
+}
+
 export function createBackendRuntime(type = backendTarget): BackendRuntime {
   const supportedModules = supportedModulesByBackend[type]
   const enabledModules = resolveRuntimeEnabledModules(type)
@@ -87,6 +103,7 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
     enabledModules,
     label: getBackendLabel(type),
     orderRepository: resolveOrderRepository(type),
+    pageContentGateway: resolvePageContentGateway(type),
     productRepository: resolveProductRepository(type),
     supportedModules,
     type,

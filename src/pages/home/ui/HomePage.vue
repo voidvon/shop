@@ -1,23 +1,26 @@
 <script setup lang="ts">
+import { computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import { formatCurrency } from '@/shared/lib/currency'
-import { mockPublicData } from '@/shared/mocks'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
-const { homePageData } = mockPublicData
-const hotProducts = homePageData.productFeed.list.slice(0, 4)
-const quickCategories = [
-  { key: 'fashion', label: '服装' },
-  { key: 'home', label: '家居' },
-  { key: 'digital', label: '数码' },
-  { key: 'books', label: '图书' },
-  { key: 'beauty', label: '美妆' },
-  { key: 'sport', label: '运动' },
-  { key: 'food', label: '食品' },
-  { key: 'baby', label: '母婴' },
-] as const
+import { useHomePageModel } from '../model/useHomePageModel'
+
+const { homePageData, loadHomePage } = useHomePageModel()
+const carouselItems = computed(() =>
+  homePageData.value.banners.map((banner) => ({
+    ...banner,
+    imageUrl: banner.imageUrl || '/favicon.ico',
+  })),
+)
+const hotProducts = computed(() => homePageData.value.featuredProducts)
+const quickCategories = computed(() => homePageData.value.quickCategories.slice(0, 8))
+
+onMounted(() => {
+  void loadHomePage()
+})
 </script>
 
 <template>
@@ -31,13 +34,18 @@ const quickCategories = [
     </van-sticky>
 
     <div class="content-wrapper">
-      <ImageCarousel :bleed-x="'48px'" :items="homePageData.banners" />
+      <ImageCarousel :bleed-x="'48px'" :items="carouselItems" />
 
       <section class="category-grid">
-        <article v-for="category in quickCategories" :key="category.key" class="category-card">
-          <img src="/favicon.ico" :alt="category.label">
+        <RouterLink
+          v-for="category in quickCategories"
+          :key="category.id"
+          class="category-card"
+          :to="{ name: 'category', params: { primaryCategoryId: category.id } }"
+        >
+          <img :src="category.imageUrl || '/favicon.ico'" :alt="category.label">
           <strong>{{ category.label }}</strong>
-        </article>
+        </RouterLink>
       </section>
 
       <section class="product-section">
@@ -48,12 +56,12 @@ const quickCategories = [
         <div class="product-grid">
           <RouterLink
             v-for="product in hotProducts"
-            :key="product.productId"
+            :key="product.id"
             class="product-card"
-            :to="{ name: 'product-detail', params: { productId: product.productId } }"
+            :to="{ name: 'product-detail', params: { productId: product.id } }"
           >
-            <img :src="product.productImageUrl" :alt="product.productName">
-            <strong>{{ product.productName }}</strong>
+            <img :src="product.imageUrl || '/favicon.ico'" :alt="product.name">
+            <strong>{{ product.name }}</strong>
             <div class="price-row">
               <span>{{ formatCurrency(product.price) }}</span>
               <small v-if="product.marketPrice">{{ formatCurrency(product.marketPrice) }}</small>
@@ -101,6 +109,8 @@ const quickCategories = [
   gap: 6px;
   justify-items: center;
   text-align: center;
+  color: inherit;
+  text-decoration: none;
 }
 
 .category-card img {

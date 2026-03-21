@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { mockTradeData } from '@/shared/mocks'
+import { computed, onMounted } from 'vue'
+
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
-const cartPageData = mockTradeData.cartPageData
-const cartGroups = cartPageData.groups
+import { useCartPageModel } from '../model/useCartPageModel'
+
+const { cartPageData, loadCartPage } = useCartPageModel()
+const cartGroups = computed(() => cartPageData.value.groups)
 
 function formatAmount(value: number) {
   return value.toFixed(2)
 }
+
+onMounted(() => {
+  void loadCartPage()
+})
 </script>
 
 <template>
@@ -33,7 +40,7 @@ function formatAmount(value: number) {
                 <van-icon name="success" size="14" />
               </span>
 
-              <img class="thumb" :src="item.productImageUrl" :alt="item.productName">
+              <img class="thumb" :src="item.productImageUrl || undefined" :alt="item.productName">
 
               <div class="right-col">
                 <div class="name-row">

@@ -5,6 +5,7 @@ import { provideBackendRuntime } from '@/app/providers/backend'
 import { createPiniaInstance } from '@/app/providers/pinia'
 import { router } from '@/app/router'
 import '@/app/styles/index.css'
+import 'nprogress/nprogress.css'
 
 const app = createApp(App)
 
