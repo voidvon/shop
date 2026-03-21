@@ -63,7 +63,7 @@ export const supportedModulesByBackend: Record<BackendType, FrontendModuleMap> =
     catalog: true,
     cart: true,
     checkout: false,
-    member: false,
+    member: true,
     promotion: false,
   },
   'backend-a': {

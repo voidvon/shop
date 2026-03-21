@@ -6,6 +6,7 @@ import { createPiniaInstance } from '@/app/providers/pinia'
 import { router } from '@/app/router'
 import '@/app/styles/index.css'
 import 'nprogress/nprogress.css'
+import 'vant/es/toast/style'
 
 const app = createApp(App)
 

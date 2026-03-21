@@ -8,6 +8,9 @@ import { MemberCardsPage } from '@/pages/member-cards'
 import { MemberCenterPage } from '@/pages/member-center'
 import { MemberFavoritesPage } from '@/pages/member-favorites'
 import { MemberHistoryPage } from '@/pages/member-history'
+import { MemberLoginPage } from '@/pages/member-login'
+import { MemberRegisterMobilePage } from '@/pages/member-register-mobile'
+import { MemberRegisterPage } from '@/pages/member-register'
 import { OrderListPage } from '@/pages/order-list'
 import { ProductDetailPage } from '@/pages/product-detail'
 import { PromotionHubPage } from '@/pages/promotion-hub'
@@ -122,6 +125,30 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
             to: '/member',
           },
           title: '我的',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/login',
+        name: 'member-login',
+        component: MemberLoginPage,
+        meta: {
+          title: '会员登录',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/register',
+        name: 'member-register',
+        component: MemberRegisterPage,
+        meta: {
+          title: '会员注册',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/register/mobile',
+        name: 'member-register-mobile',
+        component: MemberRegisterMobilePage,
+        meta: {
+          title: '手机注册',
         },
       }),
       createModuleRoute({

@@ -8,6 +8,10 @@ import { useMemberCenterPageModel } from '../model/useMemberCenterPageModel'
 
 const { loadMemberCenterPage, memberCenterPageData } = useMemberCenterPageModel()
 const isCartEnabled = useModuleAvailability('cart')
+const loginEntryRoute = computed<RouteLocationRaw>(() => ({
+  name: 'member-login',
+  query: { redirect: '/member' },
+}))
 
 type OrderListFilterStatus =
   | 'all'
@@ -84,7 +88,27 @@ onMounted(() => {
     <div class="member-scroll">
       <section class="top-section">
         <div class="top-background">
-          <div class="profile-area">
+          <RouterLink
+            v-if="!memberCenterPageData.profile.isLoggedIn"
+            class="profile-area profile-link"
+            :to="loginEntryRoute"
+          >
+            <div class="avatar">
+              <img
+                v-if="memberCenterPageData.profile.avatarUrl"
+                :src="memberCenterPageData.profile.avatarUrl"
+                :alt="memberCenterPageData.profile.username ?? '用户头像'"
+              >
+              <van-icon v-else name="contact" size="32" />
+            </div>
+
+            <div class="text-area">
+              <strong>{{ memberCenterPageData.profile.username ?? '点击登录/注册' }}</strong>
+              <span>{{ memberCenterPageData.profile.isLoggedIn ? '欢迎回来，查看完整账户信息' : '可查看更多信息' }}</span>
+            </div>
+          </RouterLink>
+
+          <div v-else class="profile-area">
             <div class="avatar">
               <img
                 v-if="memberCenterPageData.profile.avatarUrl"
@@ -210,6 +234,11 @@ onMounted(() => {
   align-items: center;
   width: min(100%, 362px);
   padding: 32px 20px;
+}
+
+.profile-link {
+  color: inherit;
+  text-decoration: none;
 }
 
 .avatar {
