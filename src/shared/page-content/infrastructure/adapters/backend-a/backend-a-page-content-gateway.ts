@@ -9,6 +9,7 @@ import type {
   CartPageData,
   CategoryPageCategory,
   CategoryPageData,
+  MemberProductListItem,
   ProductDetailPageData,
 } from '../../../domain/page-content'
 
@@ -103,6 +104,21 @@ function createBackendACartPageData(snapshot: Awaited<ReturnType<typeof backendA
   }
 }
 
+function createMemberProductListItem(input: {
+  coverImageUrl: string | null
+  id: string
+  name: string
+  price: number
+}): MemberProductListItem {
+  return {
+    productId: input.id,
+    productImageUrl: input.coverImageUrl,
+    productName: input.name,
+    productPrice: input.price,
+    storeName: 'Backend A 选品馆',
+  }
+}
+
 async function createProductDetailPageData(productId: string): Promise<ProductDetailPageData | null> {
   const product = await backendAProductRepository.getProductDetail(productId)
 
@@ -190,11 +206,15 @@ export const backendAPageContentGateway: PageContentGateway = {
   },
 
   async getMemberCenterPageData() {
+    const products = await backendAProductRepository.getFeaturedProductSummaries()
+    const favoriteItems = products.slice(0, 2)
+    const historyItems = products.slice(0, 3)
+
     return Promise.resolve({
       counts: {
-        browsingCount: 6,
+        browsingCount: historyItems.length,
         cartCount: 1,
-        favoritesCount: 4,
+        favoritesCount: favoriteItems.length,
       },
       orderSummary: {
         pendingPaymentCount: 1,
@@ -216,6 +236,22 @@ export const backendAPageContentGateway: PageContentGateway = {
         { key: 'settings', label: '用户设置', route: '/member/settings' },
       ],
       tipText: '当前页面数据经 Backend A 适配层统一转换。',
+    })
+  },
+
+  async getMemberFavoritesPageData() {
+    const products = await backendAProductRepository.getFeaturedProductSummaries()
+
+    return Promise.resolve({
+      items: products.slice(0, 2).map(createMemberProductListItem),
+    })
+  },
+
+  async getMemberHistoryPageData() {
+    const products = await backendAProductRepository.getFeaturedProductSummaries()
+
+    return Promise.resolve({
+      items: products.slice(0, 3).map(createMemberProductListItem),
     })
   },
 

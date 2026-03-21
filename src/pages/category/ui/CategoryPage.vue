@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import { formatCurrency } from '@/shared/lib/currency'
+import EmptyState from '@/shared/ui/EmptyState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
@@ -69,7 +70,13 @@ onMounted(() => {
         </button>
       </aside>
 
-      <div class="content-pane">
+      <div
+        class="content-pane"
+        :class="{
+          'content-pane-empty':
+            !errorMessage && !isLoading && (secondaryCategories.length === 0 || visibleProducts.length === 0),
+        }"
+      >
         <header class="content-header">
           <strong>{{ activeSecondaryCategory?.label || activePrimaryCategory?.label || '分类商品' }}</strong>
           <span>{{ activePrimaryCategory?.label || '全部分类' }}</span>
@@ -83,13 +90,25 @@ onMounted(() => {
           分类数据加载中...
         </p>
 
-        <p v-else-if="secondaryCategories.length === 0" class="status-text">
-          当前父分类下暂无子分类
-        </p>
+        <EmptyState
+          v-else-if="secondaryCategories.length === 0"
+          class="content-empty-state"
+          description="切换其他分类看看"
+          description-width="220px"
+          icon="description"
+          layout="fill"
+          title="当前分类暂无子分类"
+        />
 
-        <p v-else-if="visibleProducts.length === 0" class="status-text">
-          当前子分类下暂无商品
-        </p>
+        <EmptyState
+          v-else-if="visibleProducts.length === 0"
+          class="content-empty-state"
+          description="试试切换子分类或搜索其他商品"
+          description-width="220px"
+          icon="search"
+          layout="fill"
+          title="当前子分类暂无商品"
+        />
 
         <div v-else class="product-grid">
           <RouterLink
@@ -126,7 +145,7 @@ onMounted(() => {
 
 .header {
   display: grid;
-  gap: 16px;
+  gap: 14px;
   padding: 0 16px;
 }
 
@@ -134,7 +153,11 @@ onMounted(() => {
   display: flex;
   gap: 10px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding: 6px;
+  border: 1px solid #ece5db;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 6px 18px rgba(26, 25, 24, 0.04);
   scrollbar-width: none;
 }
 
@@ -145,37 +168,42 @@ onMounted(() => {
 .chip {
   flex: none;
   padding: 8px 12px;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 999px;
-  background: #f1f1f1;
-  color: #78716c;
+  background: #f7f3ee;
+  color: #6d6c6a;
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .chip-active {
-  background: #fee7da;
+  background: #fff;
+  border-color: #f3cfb5;
   color: #ea580c;
+  box-shadow: 0 4px 10px rgba(234, 88, 12, 0.08);
 }
 
 .main-panel {
   display: grid;
   grid-template-columns: 88px minmax(0, 1fr);
-  gap: 12px;
+  gap: 8px;
   min-height: 0;
-  padding: 0 16px;
+  padding: 0 8px 12px;
   overflow: hidden;
 }
 
 .category-rail {
   display: grid;
-  gap: 10px;
+  gap: 0;
   align-content: start;
-  padding: 8px 0 96px;
+  padding: 0 0 112px;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  border: 1px solid #ece4da;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #f4efe8 0%, #f9f6f2 100%);
   scrollbar-width: none;
 }
 
@@ -186,20 +214,21 @@ onMounted(() => {
 .category-pill {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
-  padding: 12px 10px;
+  padding: 12px 12px;
   border: 0;
-  border-radius: 18px;
-  background: #f1f1f1;
-  color: #78716c;
-  font-size: 14px;
+  border-radius: 0;
+  background: transparent;
+  color: #7b746d;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.2;
+  text-align: left;
 }
 
 .category-pill-active {
-  background: #fee7da;
+  background: #fff;
   color: #ea580c;
   font-weight: 700;
 }
@@ -208,11 +237,15 @@ onMounted(() => {
   display: grid;
   align-content: start;
   gap: 12px;
-  padding-top: 8px;
+  padding: 14px 14px 0;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
+}
+
+.content-pane-empty {
+  grid-template-rows: auto minmax(240px, 1fr);
 }
 
 .content-pane::-webkit-scrollbar {
@@ -224,6 +257,8 @@ onMounted(() => {
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1ece6;
 }
 
 .content-header strong {
@@ -239,10 +274,14 @@ onMounted(() => {
 
 .status-text {
   margin: 0;
-  padding: 20px 0;
+  padding: 20px 4px;
   color: #9c9b99;
   font-size: 13px;
   text-align: center;
+}
+
+.content-empty-state {
+  padding-bottom: var(--app-bottom-nav-offset, 96px);
 }
 
 .product-grid {

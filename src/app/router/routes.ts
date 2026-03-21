@@ -7,6 +7,8 @@ import { HomePage } from '@/pages/home'
 import { MemberCardBindPage } from '@/pages/member-card-bind'
 import { MemberCardsPage } from '@/pages/member-cards'
 import { MemberCenterPage } from '@/pages/member-center'
+import { MemberFavoritesPage } from '@/pages/member-favorites'
+import { MemberHistoryPage } from '@/pages/member-history'
 import { OrderListPage } from '@/pages/order-list'
 import { backendTarget } from '@/shared/config/backend'
 import { listEnabledModules, resolveRuntimeEnabledModules } from '@/shared/config/modules'
@@ -56,6 +58,22 @@ export const routes: RouteRecordRaw[] = [
     component: OrderListPage,
     meta: {
       title: '我的订单',
+    },
+  },
+  {
+    path: '/member/favorites',
+    name: 'member-favorites',
+    component: MemberFavoritesPage,
+    meta: {
+      title: '我的收藏',
+    },
+  },
+  {
+    path: '/member/history',
+    name: 'member-history',
+    component: MemberHistoryPage,
+    meta: {
+      title: '我的足迹',
     },
   },
   {

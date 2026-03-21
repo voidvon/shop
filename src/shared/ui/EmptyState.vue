@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+type EmptyStateLayout = 'default' | 'fill'
 type EmptyStateSize = 'default' | 'compact'
 
 const props = withDefaults(defineProps<{
@@ -10,6 +11,7 @@ const props = withDefaults(defineProps<{
   descriptionWidth?: string
   icon: string
   iconSize?: number
+  layout?: EmptyStateLayout
   size?: EmptyStateSize
   title: string
 }>(), {
@@ -17,6 +19,7 @@ const props = withDefaults(defineProps<{
   boxSize: 132,
   descriptionWidth: undefined,
   iconSize: 28,
+  layout: 'default',
   size: 'default',
 })
 
@@ -27,7 +30,11 @@ const rootStyle = computed(() => ({
 </script>
 
 <template>
-  <section class="empty-state" :class="`empty-state-${size}`" :style="rootStyle">
+  <section
+    class="empty-state"
+    :class="[`empty-state-${size}`, `empty-state-layout-${layout}`]"
+    :style="rootStyle"
+  >
     <div v-if="boxed" class="empty-illustration">
       <van-icon :name="icon" :size="iconSize" />
     </div>
@@ -42,6 +49,11 @@ const rootStyle = computed(() => ({
   display: grid;
   justify-items: center;
   text-align: center;
+}
+
+.empty-state-layout-fill {
+  min-height: 100%;
+  align-content: center;
 }
 
 .empty-state-default {

@@ -244,9 +244,9 @@ onBeforeUnmount(() => {
 
           <EmptyState
             v-show="getFilteredOrders(tab.key).length === 0"
-            class="empty-state"
             description="切换状态或搜索其他订单试试"
             icon="description"
+            layout="fill"
             title="当前没有订单内容"
           />
         </div>
@@ -409,7 +409,4 @@ onBeforeUnmount(() => {
   font-weight: 500;
 }
 
-.empty-state {
-  min-height: 100%;
-}
 </style>

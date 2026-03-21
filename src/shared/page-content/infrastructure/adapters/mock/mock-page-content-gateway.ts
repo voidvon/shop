@@ -1,5 +1,7 @@
 import { mockProductRepository } from '@/entities/product'
 import {
+  getMockProduct,
+  getMockStore,
   mockAccountData,
   mockCatalogData,
   mockProducts,
@@ -12,6 +14,7 @@ import type {
   CategoryPageCategory,
   CategoryPageData,
   HomePageData,
+  MemberProductListItem,
   OrderListEntry,
   PageProductCard,
   ProductDetailPageData,
@@ -63,6 +66,23 @@ function mapCategoryTree(
     imageUrl: category.imageUrl,
     label: category.categoryName,
   }))
+}
+
+function mapMemberProductListItem(input: {
+  productId: string
+  productImageUrl: string
+  productName: string
+  productPrice: number
+}): MemberProductListItem {
+  const product = getMockProduct(input.productId)
+
+  return {
+    productId: input.productId,
+    productImageUrl: input.productImageUrl ?? null,
+    productName: input.productName,
+    productPrice: input.productPrice,
+    storeName: getMockStore(product?.storeId ?? '')?.storeName ?? '默认店铺',
+  }
 }
 
 async function createProductDetailPageData(productId: string): Promise<ProductDetailPageData | null> {
@@ -165,12 +185,28 @@ export const mockPageContentGateway: PageContentGateway = {
 
   async getMemberCenterPageData() {
     return Promise.resolve({
-      counts: { ...mockAccountData.memberCenterPageData.counts },
+      counts: {
+        ...mockAccountData.memberCenterPageData.counts,
+        browsingCount: mockAccountData.memberCollectionsPageData.browsingHistory.length,
+        favoritesCount: mockAccountData.memberCollectionsPageData.favoriteProducts.length,
+      },
       orderSummary: { ...mockAccountData.memberCenterPageData.orderSummary },
       profile: { ...mockAccountData.memberCenterPageData.profile },
       servicePhone: mockAccountData.memberCenterPageData.servicePhone ?? '',
       shortcuts: mockAccountData.memberCenterPageData.shortcuts.map((shortcut) => ({ ...shortcut })),
       tipText: mockAccountData.memberCenterPageData.tipText ?? '',
+    })
+  },
+
+  async getMemberFavoritesPageData() {
+    return Promise.resolve({
+      items: mockAccountData.memberCollectionsPageData.favoriteProducts.map(mapMemberProductListItem),
+    })
+  },
+
+  async getMemberHistoryPageData() {
+    return Promise.resolve({
+      items: mockAccountData.memberCollectionsPageData.browsingHistory.map(mapMemberProductListItem),
     })
   },
 

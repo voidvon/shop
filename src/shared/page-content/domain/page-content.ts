@@ -171,3 +171,19 @@ export interface MemberCardsPageData {
 export interface MemberCardBindPageData {
   cardNumber: string | null
 }
+
+export interface MemberProductListItem {
+  productId: string
+  productImageUrl: string | null
+  productName: string
+  productPrice: number
+  storeName: string
+}
+
+export interface MemberFavoritesPageData {
+  items: MemberProductListItem[]
+}
+
+export interface MemberHistoryPageData {
+  items: MemberProductListItem[]
+}

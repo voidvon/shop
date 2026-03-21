@@ -15,9 +15,9 @@ type OrderListFilterStatus =
   | 'after-sale'
 
 const countCards = computed(() => [
-  { label: '收藏夹', value: memberCenterPageData.value.counts.favoritesCount },
-  { label: '购物车', value: memberCenterPageData.value.counts.cartCount },
-  { label: '足迹', value: memberCenterPageData.value.counts.browsingCount },
+  { label: '收藏夹', route: { name: 'member-favorites' }, value: memberCenterPageData.value.counts.favoritesCount },
+  { label: '购物车', route: { name: 'cart' }, value: memberCenterPageData.value.counts.cartCount },
+  { label: '足迹', route: { name: 'member-history' }, value: memberCenterPageData.value.counts.browsingCount },
 ])
 
 const orderEntries = [
@@ -82,10 +82,10 @@ onMounted(() => {
         </div>
 
         <div class="count-row">
-          <article v-for="card in countCards" :key="card.label" class="count-card">
+          <RouterLink v-for="card in countCards" :key="card.label" class="count-card" :to="card.route">
             <strong>{{ card.value }}</strong>
             <span>{{ card.label }}</span>
-          </article>
+          </RouterLink>
         </div>
       </section>
 
@@ -246,6 +246,8 @@ onMounted(() => {
   border: 1px solid #ece8e3;
   border-radius: 16px;
   background: #fff;
+  color: inherit;
+  text-decoration: none;
 }
 
 .count-card strong {
