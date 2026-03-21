@@ -31,7 +31,7 @@ const resolvedMenuItems = computed(() => {
     return props.menuItems
   }
 
-  return createMainNavigationMenuItems()
+  return createMainNavigationMenuItems(router.getRoutes())
 })
 
 const popoverActions = computed<TopBarPopoverAction[]>(() => {

@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import { usePageContentGateway, type CartPageData } from '@/shared/page-content'
+import { useTradeQuery, type CartPageData } from '@/processes/trade'
 
 const emptyCartPageData: CartPageData = {
   groups: [],
@@ -8,7 +8,7 @@ const emptyCartPageData: CartPageData = {
 }
 
 export function useCartPageModel() {
-  const gateway = usePageContentGateway()
+  const tradeQuery = useTradeQuery()
 
   const cartPageData = ref<CartPageData>(emptyCartPageData)
   const errorMessage = ref<string | null>(null)
@@ -19,7 +19,7 @@ export function useCartPageModel() {
     errorMessage.value = null
 
     try {
-      cartPageData.value = await gateway.getCartPageData()
+      cartPageData.value = await tradeQuery.getCartPageData()
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '购物车页面加载失败'
     } finally {

@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import { usePageContentGateway, type MemberCardsPageData } from '@/shared/page-content'
+import { useMemberCenterQuery, type MemberCardsPageData } from '@/processes/member-center'
 
 const emptyMemberCardsPageData: MemberCardsPageData = {
   balanceAmount: 0,
@@ -8,7 +8,7 @@ const emptyMemberCardsPageData: MemberCardsPageData = {
 }
 
 export function useMemberCardsPageModel() {
-  const gateway = usePageContentGateway()
+  const memberCenterQuery = useMemberCenterQuery()
 
   const memberCardsPageData = ref<MemberCardsPageData>(emptyMemberCardsPageData)
   const errorMessage = ref<string | null>(null)
@@ -19,7 +19,7 @@ export function useMemberCardsPageModel() {
     errorMessage.value = null
 
     try {
-      memberCardsPageData.value = await gateway.getMemberCardsPageData()
+      memberCardsPageData.value = await memberCenterQuery.getMemberCardsPageData()
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '卡券页面加载失败'
     } finally {

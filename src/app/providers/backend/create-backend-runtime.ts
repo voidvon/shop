@@ -14,10 +14,24 @@ import {
   type ProductRepository,
 } from '@/entities/product'
 import {
-  backendAPageContentGateway,
-  mockPageContentGateway,
-  type PageContentGateway,
-} from '@/shared/page-content'
+  createCheckoutFlowPort,
+  type CheckoutFlowPort,
+} from '@/processes/checkout-flow'
+import {
+  backendAMemberCenterQuery,
+  mockMemberCenterQuery,
+  type MemberCenterQuery,
+} from '@/processes/member-center'
+import {
+  backendAStorefrontQuery,
+  mockStorefrontQuery,
+  type StorefrontQuery,
+} from '@/processes/storefront'
+import {
+  backendATradeQuery,
+  mockTradeQuery,
+  type TradeQuery,
+} from '@/processes/trade'
 import { backendTarget, getBackendLabel, type BackendType } from '@/shared/config/backend'
 import {
   resolveRuntimeEnabledModules,
@@ -31,13 +45,20 @@ export interface BackendCapabilities {
 }
 
 export interface BackendRuntime {
-  cartRepository: CartRepository
   capabilities: BackendCapabilities
   enabledModules: FrontendModuleMap
   label: string
-  orderRepository: OrderRepository
-  pageContentGateway: PageContentGateway
-  productRepository: ProductRepository
+  queries: {
+    checkoutFlow: CheckoutFlowPort
+    memberCenter: MemberCenterQuery
+    storefront: StorefrontQuery
+    trade: TradeQuery
+  }
+  repositories: {
+    cart: CartRepository
+    order: OrderRepository
+    product: ProductRepository
+  }
   supportedModules: FrontendModuleMap
   type: BackendType
 }
@@ -83,28 +104,65 @@ function resolveOrderRepository(type: BackendType) {
   }
 }
 
-function resolvePageContentGateway(type: BackendType) {
+function resolveStorefrontQuery(type: BackendType) {
   switch (type) {
     case 'backend-a':
-      return backendAPageContentGateway
+      return backendAStorefrontQuery
     case 'mock':
     default:
-      return mockPageContentGateway
+      return mockStorefrontQuery
   }
+}
+
+function resolveTradeQuery(type: BackendType) {
+  switch (type) {
+    case 'backend-a':
+      return backendATradeQuery
+    case 'mock':
+    default:
+      return mockTradeQuery
+  }
+}
+
+function resolveMemberCenterQuery(type: BackendType) {
+  switch (type) {
+    case 'backend-a':
+      return backendAMemberCenterQuery
+    case 'mock':
+    default:
+      return mockMemberCenterQuery
+  }
+}
+
+function resolveCheckoutFlowPort(type: BackendType, isCartEnabled: boolean) {
+  return createCheckoutFlowPort({
+    cartRepository: resolveCartRepository(type),
+    isCartEnabled,
+    orderRepository: resolveOrderRepository(type),
+    productRepository: resolveProductRepository(type),
+  })
 }
 
 export function createBackendRuntime(type = backendTarget): BackendRuntime {
   const supportedModules = supportedModulesByBackend[type]
   const enabledModules = resolveRuntimeEnabledModules(type)
+  const repositories = {
+    cart: resolveCartRepository(type),
+    order: resolveOrderRepository(type),
+    product: resolveProductRepository(type),
+  }
 
   return {
-    cartRepository: resolveCartRepository(type),
     capabilities: capabilitiesByBackend[type],
     enabledModules,
     label: getBackendLabel(type),
-    orderRepository: resolveOrderRepository(type),
-    pageContentGateway: resolvePageContentGateway(type),
-    productRepository: resolveProductRepository(type),
+    queries: {
+      checkoutFlow: resolveCheckoutFlowPort(type, enabledModules.cart),
+      memberCenter: resolveMemberCenterQuery(type),
+      storefront: resolveStorefrontQuery(type),
+      trade: resolveTradeQuery(type),
+    },
+    repositories,
     supportedModules,
     type,
   }

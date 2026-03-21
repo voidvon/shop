@@ -1,1 +1,1 @@
-export { resolveModuleRoutes } from './module-composition-registry'
+export { resolveAppRoutes } from './module-composition-registry'

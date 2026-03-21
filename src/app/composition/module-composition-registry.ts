@@ -1,7 +1,17 @@
 import type { RouteRecordRaw } from 'vue-router'
 
+import { CartPage } from '@/pages/cart'
+import { CategoryPage } from '@/pages/category'
+import { HomePage } from '@/pages/home'
+import { MemberCardBindPage } from '@/pages/member-card-bind'
+import { MemberCardsPage } from '@/pages/member-cards'
+import { MemberCenterPage } from '@/pages/member-center'
+import { MemberFavoritesPage } from '@/pages/member-favorites'
+import { MemberHistoryPage } from '@/pages/member-history'
+import { OrderListPage } from '@/pages/order-list'
 import { ProductDetailPage } from '@/pages/product-detail'
 import { PromotionHubPage } from '@/pages/promotion-hub'
+import type { MainNavigationKey, MainNavigationMeta } from '@/shared/config/main-navigation'
 import type { FrontendModule } from '@/shared/config/modules'
 
 export interface ModuleRouteDefinition {
@@ -13,43 +23,166 @@ export interface ModuleCompositionDefinition {
   routes?: ModuleRouteDefinition[]
 }
 
+type ModuleRouteMeta = NonNullable<RouteRecordRaw['meta']> & {
+  activeMainNavigationKey?: MainNavigationKey
+  mainNavigation?: MainNavigationMeta
+}
+
+function createModuleRoute(
+  route: RouteRecordRaw & { meta?: ModuleRouteMeta },
+): ModuleRouteDefinition {
+  return { route }
+}
+
 const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
   {
     moduleId: 'catalog',
     routes: [
-      {
-        route: {
-          path: '/products/:productId',
-          name: 'product-detail',
-          component: ProductDetailPage,
-          props: true,
-          meta: {
-            title: '商品详情',
-            description: '商品详情、规格、卖点与服务信息',
+      createModuleRoute({
+        path: '/',
+        name: 'home',
+        component: HomePage,
+        meta: {
+          activeMainNavigationKey: 'home',
+          description: '分类、推荐和商品导购入口',
+          mainNavigation: {
+            icon: 'home-o',
+            key: 'home',
+            label: '首页',
+            order: 0,
+            to: '/',
           },
+          title: '商城首页',
         },
-      },
+      }),
+      createModuleRoute({
+        path: '/category/:primaryCategoryId?/:secondaryCategoryId?',
+        name: 'category',
+        component: CategoryPage,
+        meta: {
+          activeMainNavigationKey: 'category',
+          mainNavigation: {
+            icon: 'apps-o',
+            key: 'category',
+            label: '分类',
+            order: 10,
+            to: '/category',
+          },
+          title: '分类',
+        },
+      }),
+      createModuleRoute({
+        path: '/products/:productId',
+        name: 'product-detail',
+        component: ProductDetailPage,
+        props: true,
+        meta: {
+          description: '商品详情、规格、卖点与服务信息',
+          title: '商品详情',
+        },
+      }),
     ],
   },
-  { moduleId: 'cart' },
+  {
+    moduleId: 'cart',
+    routes: [
+      createModuleRoute({
+        path: '/cart',
+        name: 'cart',
+        component: CartPage,
+        meta: {
+          activeMainNavigationKey: 'cart',
+          mainNavigation: {
+            icon: 'shopping-cart-o',
+            key: 'cart',
+            label: '购物车',
+            order: 20,
+            to: '/cart',
+          },
+          title: '购物车',
+        },
+      }),
+    ],
+  },
   { moduleId: 'checkout' },
-  { moduleId: 'member' },
+  {
+    moduleId: 'member',
+    routes: [
+      createModuleRoute({
+        path: '/member',
+        name: 'member',
+        component: MemberCenterPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          mainNavigation: {
+            icon: 'contact-o',
+            key: 'member',
+            label: '我的',
+            order: 30,
+            to: '/member',
+          },
+          title: '我的',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/orders',
+        name: 'member-orders',
+        component: OrderListPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          title: '我的订单',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/favorites',
+        name: 'member-favorites',
+        component: MemberFavoritesPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          title: '我的收藏',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/history',
+        name: 'member-history',
+        component: MemberHistoryPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          title: '我的足迹',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/assets/cards',
+        name: 'member-cards',
+        component: MemberCardsPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          title: '我的卡券',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/assets/cards/bind',
+        name: 'member-card-bind',
+        component: MemberCardBindPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          title: '绑定卡券',
+        },
+      }),
+    ],
+  },
   {
     moduleId: 'promotion',
     routes: [
-      {
-        route: {
-          path: '/promotion',
-          name: 'promotion',
-          component: PromotionHubPage,
-          meta: {
-            description: '营销活动与优惠能力入口',
-            navLabel: '营销活动',
-            navOrder: 40,
-            title: '营销活动',
-          },
+      createModuleRoute({
+        path: '/promotion',
+        name: 'promotion',
+        component: PromotionHubPage,
+        meta: {
+          description: '营销活动与优惠能力入口',
+          title: '营销活动',
         },
-      },
+      }),
     ],
   },
 ]
@@ -67,7 +200,7 @@ function hasRoutes(
   return definition.routes !== undefined
 }
 
-export function resolveModuleRoutes(enabledModuleIds: readonly FrontendModule[]) {
+export function resolveAppRoutes(enabledModuleIds: readonly FrontendModule[]) {
   return moduleCompositionRegistry
     .filter((definition) => includesModule(enabledModuleIds, definition.moduleId))
     .filter(hasRoutes)

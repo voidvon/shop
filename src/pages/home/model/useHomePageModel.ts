@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import { usePageContentGateway, type HomePageData } from '@/shared/page-content'
+import { useStorefrontQuery, type HomePageData } from '@/processes/storefront'
 
 const emptyHomePageData: HomePageData = {
   banners: [],
@@ -9,7 +9,7 @@ const emptyHomePageData: HomePageData = {
 }
 
 export function useHomePageModel() {
-  const gateway = usePageContentGateway()
+  const storefrontQuery = useStorefrontQuery()
 
   const homePageData = ref<HomePageData>(emptyHomePageData)
   const errorMessage = ref<string | null>(null)
@@ -20,7 +20,7 @@ export function useHomePageModel() {
     errorMessage.value = null
 
     try {
-      homePageData.value = await gateway.getHomePageData()
+      homePageData.value = await storefrontQuery.getHomePageData()
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '首页数据加载失败'
     } finally {

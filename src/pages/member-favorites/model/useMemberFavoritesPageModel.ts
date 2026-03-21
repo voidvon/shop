@@ -1,17 +1,17 @@
 import { ref } from 'vue'
 
 import {
-  usePageContentGateway,
+  useMemberCenterQuery,
   type MemberFavoritesPageData,
   type MemberProductListItem,
-} from '@/shared/page-content'
+} from '@/processes/member-center'
 
 const emptyMemberFavoritesPageData: MemberFavoritesPageData = {
   items: [],
 }
 
 export function useMemberFavoritesPageModel() {
-  const gateway = usePageContentGateway()
+  const memberCenterQuery = useMemberCenterQuery()
 
   const memberFavoritesPageData = ref<MemberFavoritesPageData>(emptyMemberFavoritesPageData)
   const errorMessage = ref<string | null>(null)
@@ -22,7 +22,7 @@ export function useMemberFavoritesPageModel() {
     errorMessage.value = null
 
     try {
-      memberFavoritesPageData.value = await gateway.getMemberFavoritesPageData()
+      memberFavoritesPageData.value = await memberCenterQuery.getMemberFavoritesPageData()
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '收藏页加载失败'
     } finally {

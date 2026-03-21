@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 
-import { mainNavigationItems, type MainNavigationKey } from '@/shared/config/main-navigation'
+import {
+  resolveMainNavigationItems,
+  type MainNavigationKey,
+} from '@/shared/config/main-navigation'
 
 type BottomNavVariant = 'floating' | 'bar'
 
@@ -14,13 +17,17 @@ const props = withDefaults(defineProps<{
   variant: 'floating',
 })
 
+const router = useRouter()
+
 const visibleItems = computed(() => {
+  const availableItems = resolveMainNavigationItems(router.getRoutes())
+
   if (!props.itemKeys || props.itemKeys.length === 0) {
-    return mainNavigationItems
+    return availableItems
   }
 
   const enabledKeys = new Set(props.itemKeys)
-  return mainNavigationItems.filter((item) => enabledKeys.has(item.key))
+  return availableItems.filter((item) => enabledKeys.has(item.key))
 })
 </script>
 

@@ -1,17 +1,17 @@
 import { ref } from 'vue'
 
 import {
-  usePageContentGateway,
+  useMemberCenterQuery,
   type MemberHistoryPageData,
   type MemberProductListItem,
-} from '@/shared/page-content'
+} from '@/processes/member-center'
 
 const emptyMemberHistoryPageData: MemberHistoryPageData = {
   items: [],
 }
 
 export function useMemberHistoryPageModel() {
-  const gateway = usePageContentGateway()
+  const memberCenterQuery = useMemberCenterQuery()
 
   const memberHistoryPageData = ref<MemberHistoryPageData>(emptyMemberHistoryPageData)
   const errorMessage = ref<string | null>(null)
@@ -22,7 +22,7 @@ export function useMemberHistoryPageModel() {
     errorMessage.value = null
 
     try {
-      memberHistoryPageData.value = await gateway.getMemberHistoryPageData()
+      memberHistoryPageData.value = await memberCenterQuery.getMemberHistoryPageData()
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '足迹页加载失败'
     } finally {

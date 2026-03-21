@@ -1,13 +1,13 @@
 import { ref } from 'vue'
 
-import { usePageContentGateway, type MemberCardBindPageData } from '@/shared/page-content'
+import { useMemberCenterQuery, type MemberCardBindPageData } from '@/processes/member-center'
 
 const emptyMemberCardBindPageData: MemberCardBindPageData = {
   cardNumber: null,
 }
 
 export function useMemberCardBindPageModel() {
-  const gateway = usePageContentGateway()
+  const memberCenterQuery = useMemberCenterQuery()
 
   const memberCardBindPageData = ref<MemberCardBindPageData>(emptyMemberCardBindPageData)
   const errorMessage = ref<string | null>(null)
@@ -18,7 +18,7 @@ export function useMemberCardBindPageModel() {
     errorMessage.value = null
 
     try {
-      memberCardBindPageData.value = await gateway.getMemberCardBindPageData()
+      memberCardBindPageData.value = await memberCenterQuery.getMemberCardBindPageData()
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '绑卡页面加载失败'
     } finally {

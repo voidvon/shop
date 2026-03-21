@@ -1,25 +1,15 @@
 import type {
-  CartPageData,
-  CategoryPageData,
-  HomePageData,
   MemberCardBindPageData,
   MemberCardsPageData,
   MemberCenterPageData,
   MemberFavoritesPageData,
   MemberHistoryPageData,
-  OrderListPageData,
-  ProductDetailPageData,
-} from './page-content'
+} from './member-center-page-data'
 
-export interface PageContentGateway {
-  getCartPageData(): Promise<CartPageData>
-  getCategoryPageData(): Promise<CategoryPageData>
-  getHomePageData(): Promise<HomePageData>
+export interface MemberCenterQuery {
   getMemberCardBindPageData(): Promise<MemberCardBindPageData>
   getMemberCardsPageData(): Promise<MemberCardsPageData>
   getMemberCenterPageData(): Promise<MemberCenterPageData>
   getMemberFavoritesPageData(): Promise<MemberFavoritesPageData>
   getMemberHistoryPageData(): Promise<MemberHistoryPageData>
-  getOrderListPageData(): Promise<OrderListPageData>
-  getProductDetailPageData(productId: string): Promise<ProductDetailPageData | null>
 }

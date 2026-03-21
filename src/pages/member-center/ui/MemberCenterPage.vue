@@ -2,9 +2,12 @@
 import { computed, onMounted } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 
+import { useModuleAvailability } from '@/shared/lib/modules'
+
 import { useMemberCenterPageModel } from '../model/useMemberCenterPageModel'
 
 const { loadMemberCenterPage, memberCenterPageData } = useMemberCenterPageModel()
+const isCartEnabled = useModuleAvailability('cart')
 
 type OrderListFilterStatus =
   | 'all'
@@ -14,11 +17,28 @@ type OrderListFilterStatus =
   | 'pending-review'
   | 'after-sale'
 
-const countCards = computed(() => [
-  { label: '收藏夹', route: { name: 'member-favorites' }, value: memberCenterPageData.value.counts.favoritesCount },
-  { label: '购物车', route: { name: 'cart' }, value: memberCenterPageData.value.counts.cartCount },
-  { label: '足迹', route: { name: 'member-history' }, value: memberCenterPageData.value.counts.browsingCount },
-])
+interface CountCard {
+  label: string
+  route: RouteLocationRaw
+  value: number
+}
+
+const countCards = computed<CountCard[]>(() => {
+  const cards: CountCard[] = [
+    { label: '收藏夹', route: { name: 'member-favorites' }, value: memberCenterPageData.value.counts.favoritesCount },
+    { label: '足迹', route: { name: 'member-history' }, value: memberCenterPageData.value.counts.browsingCount },
+  ]
+
+  if (isCartEnabled) {
+    cards.splice(1, 0, {
+      label: '购物车',
+      route: { name: 'cart' },
+      value: memberCenterPageData.value.counts.cartCount,
+    })
+  }
+
+  return cards
+})
 
 const orderEntries = [
   { key: 'pendingPaymentCount', label: '待付款', icon: 'balance-o', status: 'pending-payment' },

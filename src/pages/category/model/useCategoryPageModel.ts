@@ -2,10 +2,10 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import {
-  usePageContentGateway,
+  useStorefrontQuery,
   type CategoryPageCategory,
   type CategoryPageData,
-} from '@/shared/page-content'
+} from '@/processes/storefront'
 
 function findPrimaryCategory(categories: CategoryPageCategory[], categoryId: string) {
   return categories.find((category) => category.id === categoryId) ?? categories[0] ?? null
@@ -39,7 +39,7 @@ function resolveRouteCategoryIds(route: ReturnType<typeof useRoute>) {
 }
 
 export function useCategoryPageModel() {
-  const gateway = usePageContentGateway()
+  const storefrontQuery = useStorefrontQuery()
   const route = useRoute()
   const router = useRouter()
 
@@ -144,7 +144,7 @@ export function useCategoryPageModel() {
     errorMessage.value = null
 
     try {
-      const data = await gateway.getCategoryPageData()
+      const data = await storefrontQuery.getCategoryPageData()
       categoryPageData.value = data
       applyRouteSelection(data)
     } catch (error) {

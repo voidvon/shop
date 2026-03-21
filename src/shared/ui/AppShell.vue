@@ -2,29 +2,13 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
+import { resolveActiveMainNavigationKey } from '@/shared/config/main-navigation'
+
 import MainBottomNav from './MainBottomNav.vue'
 
 const route = useRoute()
 
-const activeNavKey = computed(() => {
-  if (route.name === 'home') {
-    return 'home'
-  }
-
-  if (route.name === 'category') {
-    return 'category'
-  }
-
-  if (route.name === 'cart') {
-    return 'cart'
-  }
-
-  if (route.name === 'member') {
-    return 'member'
-  }
-
-  return undefined
-})
+const activeNavKey = computed(() => resolveActiveMainNavigationKey(route))
 
 const showBottomNav = computed(() => activeNavKey.value !== undefined)
 </script>

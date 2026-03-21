@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import { usePageContentGateway, type MemberCenterPageData } from '@/shared/page-content'
+import { useMemberCenterQuery, type MemberCenterPageData } from '@/processes/member-center'
 
 const emptyMemberCenterPageData: MemberCenterPageData = {
   counts: {
@@ -26,7 +26,7 @@ const emptyMemberCenterPageData: MemberCenterPageData = {
 }
 
 export function useMemberCenterPageModel() {
-  const gateway = usePageContentGateway()
+  const memberCenterQuery = useMemberCenterQuery()
 
   const memberCenterPageData = ref<MemberCenterPageData>(emptyMemberCenterPageData)
   const errorMessage = ref<string | null>(null)
@@ -37,7 +37,7 @@ export function useMemberCenterPageModel() {
     errorMessage.value = null
 
     try {
-      memberCenterPageData.value = await gateway.getMemberCenterPageData()
+      memberCenterPageData.value = await memberCenterQuery.getMemberCenterPageData()
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '会员中心加载失败'
     } finally {

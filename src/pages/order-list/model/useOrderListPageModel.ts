@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import { usePageContentGateway, type OrderListPageData } from '@/shared/page-content'
+import { useTradeQuery, type OrderListPageData } from '@/processes/trade'
 
 const emptyOrderListPageData: OrderListPageData = {
   keyword: '',
@@ -8,7 +8,7 @@ const emptyOrderListPageData: OrderListPageData = {
 }
 
 export function useOrderListPageModel() {
-  const gateway = usePageContentGateway()
+  const tradeQuery = useTradeQuery()
 
   const orderListPageData = ref<OrderListPageData>(emptyOrderListPageData)
   const errorMessage = ref<string | null>(null)
@@ -19,7 +19,7 @@ export function useOrderListPageModel() {
     errorMessage.value = null
 
     try {
-      orderListPageData.value = await gateway.getOrderListPageData()
+      orderListPageData.value = await tradeQuery.getOrderListPageData()
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '订单列表加载失败'
     } finally {
