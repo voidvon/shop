@@ -4,7 +4,10 @@ import { resolveModuleRoutes } from '@/app/composition'
 import { CartPage } from '@/pages/cart'
 import { CategoryPage } from '@/pages/category'
 import { HomePage } from '@/pages/home'
+import { MemberCardBindPage } from '@/pages/member-card-bind'
+import { MemberCardsPage } from '@/pages/member-cards'
 import { MemberCenterPage } from '@/pages/member-center'
+import { OrderListPage } from '@/pages/order-list'
 import { backendTarget } from '@/shared/config/backend'
 import { listEnabledModules, resolveRuntimeEnabledModules } from '@/shared/config/modules'
 
@@ -45,6 +48,30 @@ export const routes: RouteRecordRaw[] = [
     component: MemberCenterPage,
     meta: {
       title: '我的',
+    },
+  },
+  {
+    path: '/member/orders',
+    name: 'member-orders',
+    component: OrderListPage,
+    meta: {
+      title: '我的订单',
+    },
+  },
+  {
+    path: '/member/assets/cards',
+    name: 'member-cards',
+    component: MemberCardsPage,
+    meta: {
+      title: '我的卡券',
+    },
+  },
+  {
+    path: '/member/assets/cards/bind',
+    name: 'member-card-bind',
+    component: MemberCardBindPage,
+    meta: {
+      title: '绑定卡券',
     },
   },
   ...dynamicModuleRoutes,

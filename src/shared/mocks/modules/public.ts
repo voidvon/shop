@@ -11,8 +11,20 @@ import {
 
 export const mockHomePageData: HomePageData = {
   banners: [
-    { imageUrl: mockImageUrl, linkUrl: '/special/spring-art' },
-    { imageUrl: mockImageUrl, linkUrl: '/special/city-gift' },
+    {
+      description: '精选热卖商品与会场活动，一页直达。',
+      eyebrow: '春日主会场',
+      imageUrl: mockImageUrl,
+      linkUrl: '/special/spring-art',
+      title: '城市文创与生活好物',
+    },
+    {
+      description: '礼盒、家居、办公灵感一次看全。',
+      eyebrow: '城市灵感专题',
+      imageUrl: mockImageUrl,
+      linkUrl: '/special/city-gift',
+      title: '把春日心意送到日常里',
+    },
   ],
   categoryEntries: mockCategoryTree.map((category) => ({
     categoryId: category.categoryId,

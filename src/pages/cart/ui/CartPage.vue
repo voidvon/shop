@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { mockTradeData } from '@/shared/mocks'
+import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 const cartPageData = mockTradeData.cartPageData
 const cartGroups = cartPageData.groups
@@ -12,9 +13,7 @@ function formatAmount(value: number) {
 <template>
   <section class="cart-page">
     <div class="cart-app">
-      <header class="top-bar">
-        <h1>购物车</h1>
-      </header>
+      <PageTopBar title="购物车" :show-back="false" />
 
       <div class="cart-scroll">
         <section v-for="group in cartGroups" :key="group.storeId" class="merchant-section">
@@ -77,7 +76,7 @@ function formatAmount(value: number) {
           </div>
         </div>
 
-        <button class="submit-button" type="button">提交订单</button>
+        <button class="submit-button" type="button">结算</button>
       </footer>
     </div>
   </section>
@@ -97,24 +96,6 @@ function formatAmount(value: number) {
   height: 100%;
   background: #fff;
   border-bottom: 1px solid #ede9e3;
-}
-
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  padding: 0 16px;
-  border-bottom: 1px solid #f1eeea;
-  background: #fff;
-}
-
-.top-bar h1 {
-  margin: 0;
-  color: #1a1918;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1;
 }
 
 .cart-scroll {

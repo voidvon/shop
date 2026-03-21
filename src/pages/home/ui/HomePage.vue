@@ -3,6 +3,8 @@ import { RouterLink } from 'vue-router'
 
 import { formatCurrency } from '@/shared/lib/currency'
 import { mockPublicData } from '@/shared/mocks'
+import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
+import SearchField from '@/shared/ui/SearchField.vue'
 
 const { homePageData } = mockPublicData
 const hotProducts = homePageData.productFeed.list.slice(0, 4)
@@ -25,18 +27,9 @@ function scrollToTop() {
 <template>
   <section class="home-page">
     <div class="content-wrapper">
-      <header class="search-bar">
-        <van-icon name="search" />
-        <span>搜索商品</span>
-      </header>
+      <SearchField placeholder="搜索商品" readonly />
 
-      <section class="banner-card">
-        <div class="banner-copy">
-          <p>春日主会场</p>
-          <strong>城市文创与生活好物</strong>
-          <span>精选热卖商品与会场活动，一页直达。</span>
-        </div>
-      </section>
+      <ImageCarousel :bleed-x="'48px'" :items="homePageData.banners" />
 
       <section class="category-grid">
         <article v-for="category in quickCategories" :key="category.key" class="category-card">
@@ -87,47 +80,6 @@ function scrollToTop() {
   display: grid;
   gap: 24px;
   padding: 16px 24px 24px;
-}
-
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  height: 48px;
-  padding: 0 16px;
-  border-radius: 12px;
-  background: #fff;
-  color: #9c9b99;
-}
-
-.banner-card {
-  min-height: 180px;
-  padding: 24px 20px;
-  border-radius: 16px;
-  background: #3d8a5a;
-  color: #fff;
-}
-
-.banner-copy {
-  display: grid;
-  gap: 10px;
-}
-
-.banner-card p {
-  margin: 0;
-  font-size: 0.82rem;
-}
-
-.banner-card strong {
-  max-width: 8ch;
-  font-size: 1.9rem;
-  line-height: 1.08;
-}
-
-.banner-card span {
-  max-width: 18ch;
-  line-height: 1.7;
-  opacity: 0.84;
 }
 
 .category-grid {

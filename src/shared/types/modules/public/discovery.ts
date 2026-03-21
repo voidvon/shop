@@ -3,6 +3,9 @@ import type { CursorPageResult } from '../base'
 export interface PublicBannerItem {
   imageUrl: string
   linkUrl: string
+  eyebrow?: string | null
+  title?: string | null
+  description?: string | null
 }
 
 export interface HomeCategoryEntry {

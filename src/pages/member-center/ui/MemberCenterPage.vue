@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+
 import { mockAccountData } from '@/shared/mocks'
 
 const memberCenterPageData = mockAccountData.memberCenterPageData
+const router = useRouter()
 
 const countCards = [
   { label: '收藏夹', value: memberCenterPageData.counts.favoritesCount },
@@ -10,11 +13,11 @@ const countCards = [
 ] as const
 
 const orderEntries = [
-  { key: 'pendingPaymentCount', label: '待付款', icon: 'balance-o' },
-  { key: 'pendingShipmentCount', label: '待发货', icon: 'logistics' },
-  { key: 'pendingReceiptCount', label: '待收货', icon: 'send-gift-o' },
-  { key: 'pendingReviewCount', label: '待评价', icon: 'chat-o' },
-  { key: 'refundAndReturnCount', label: '退款/退货', icon: 'replay' },
+  { key: 'pendingPaymentCount', label: '待付款', icon: 'balance-o', status: 'pending-payment' },
+  { key: 'pendingShipmentCount', label: '待发货', icon: 'logistics', status: 'pending-shipment' },
+  { key: 'pendingReceiptCount', label: '待收货', icon: 'send-gift-o', status: 'pending-receipt' },
+  { key: 'pendingReviewCount', label: '待评价', icon: 'chat-o', status: 'pending-review' },
+  { key: 'refundAndReturnCount', label: '退款/退货', icon: 'replay', status: 'all' },
 ] as const
 
 const shortcutIcons = {
@@ -23,6 +26,19 @@ const shortcutIcons = {
   'payment-code': 'qr-invalid',
   settings: 'setting-o',
 } as const
+
+function goToOrders(status = 'all') {
+  void router.push({
+    name: 'member-orders',
+    query: status === 'all' ? undefined : { status },
+  })
+}
+
+function goToShortcut(shortcutKey: string) {
+  if (shortcutKey === 'cards') {
+    void router.push({ name: 'member-cards' })
+  }
+}
 </script>
 
 <template>
@@ -59,14 +75,20 @@ const shortcutIcons = {
         <section class="order-card">
           <header class="section-head">
             <strong>我的订单</strong>
-            <button class="head-action" type="button">
+            <button class="head-action" type="button" @click="goToOrders()">
               <span>查看全部</span>
               <van-icon name="arrow" size="14" />
             </button>
           </header>
 
           <div class="order-grid">
-            <button v-for="entry in orderEntries" :key="entry.key" class="order-entry" type="button">
+            <button
+              v-for="entry in orderEntries"
+              :key="entry.key"
+              class="order-entry"
+              type="button"
+              @click="goToOrders(entry.status)"
+            >
               <van-icon :name="entry.icon" size="22" />
               <span>{{ entry.label }}</span>
             </button>
@@ -80,6 +102,7 @@ const shortcutIcons = {
               :key="shortcut.key"
               class="shortcut-entry"
               type="button"
+              @click="goToShortcut(shortcut.key)"
             >
               <van-icon :name="shortcutIcons[shortcut.key]" size="22" />
               <span>{{ shortcut.label }}</span>

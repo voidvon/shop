@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 
 import { formatCurrency } from '@/shared/lib/currency'
 import { mockProducts } from '@/shared/mocks'
+import SearchField from '@/shared/ui/SearchField.vue'
 
 const chips = [
   { id: 'seasonal', label: '当季上新', active: true },
@@ -66,10 +67,7 @@ const visibleProducts = computed(() => activeCategory.value?.products ?? [])
         </button>
       </div>
 
-      <label class="search-bar" aria-label="搜索商品分类">
-        <van-icon name="search" size="20" />
-        <span>搜索品牌、功效、场景</span>
-      </label>
+      <SearchField aria-label="搜索商品分类" placeholder="搜索品牌、功效、场景" readonly variant="outlined" />
 
       <div class="chip-row">
         <button
@@ -167,23 +165,6 @@ const visibleProducts = computed(() => activeCategory.value?.products ?? [])
   border-radius: 14px;
   background: #fff;
   color: #292524;
-}
-
-.search-bar {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  min-height: 48px;
-  padding: 14px 16px;
-  border: 1px solid #e7e5e4;
-  border-radius: 14px;
-  background: #fff;
-  color: #a8a29e;
-}
-
-.search-bar span {
-  font-size: 14px;
-  font-weight: 500;
 }
 
 .chip-row {

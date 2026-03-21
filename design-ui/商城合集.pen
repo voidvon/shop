@@ -2970,7 +2970,7 @@
               "id": "WUi8A",
               "type": "ref",
               "ref": "LssKI",
-              "name": "tabsBarRef",
+              "name": "topBarTabsRef",
               "width": "fill_container",
               "x": 0,
               "y": 0
@@ -3580,7 +3580,7 @@
           "id": "eTxmE",
           "type": "ref",
           "ref": "LssKI",
-          "name": "tabsBarRef",
+          "name": "topBarTabsRef",
           "width": "fill_container",
           "x": 0,
           "y": 0,
@@ -3808,7 +3808,7 @@
               "id": "7FGsY",
               "type": "ref",
               "ref": "LssKI",
-              "name": "tabsBarRef",
+              "name": "topBarTabsRef",
               "width": "fill_container",
               "x": 0,
               "y": 0
@@ -4922,7 +4922,7 @@
               "id": "gJlRe",
               "type": "ref",
               "ref": "LssKI",
-              "name": "topBarRef",
+              "name": "topBarTitleRef",
               "width": "fill_container",
               "x": 0,
               "y": 0,
@@ -5951,7 +5951,7 @@
                       "type": "text",
                       "id": "8ZXHh",
                       "fill": "#FFFFFF",
-                      "content": "提交订单",
+                      "content": "结算",
                       "fontFamily": "Inter",
                       "fontSize": 16,
                       "fontWeight": "600"
@@ -6143,7 +6143,7 @@
           "id": "u8JrI",
           "type": "ref",
           "ref": "LssKI",
-          "name": "topBar",
+          "name": "topBarTitleRef",
           "x": 0,
           "y": 0,
           "descendants": {
@@ -6384,7 +6384,7 @@
           "id": "itOej",
           "type": "ref",
           "ref": "LssKI",
-          "name": "bindTopBar",
+          "name": "topBarTitleRef",
           "x": 0,
           "y": 0,
           "descendants": {
@@ -6838,7 +6838,7 @@
           "id": "fs5yn",
           "type": "ref",
           "ref": "LssKI",
-          "name": "topBar",
+          "name": "topBarTitleRef",
           "x": 0,
           "y": 0,
           "descendants": {
@@ -6857,7 +6857,7 @@
                   "type": "text",
                   "id": "QdN7g",
                   "fill": "#1A1918",
-                  "content": "确认订单wx",
+                  "content": "确认订单",
                   "fontFamily": "Outfit",
                   "fontSize": 16,
                   "fontWeight": "600"
@@ -6994,138 +6994,64 @@
               "layout": "vertical",
               "children": [
                 {
-                  "type": "frame",
                   "id": "TnC3C",
-                  "name": "merchantHeader",
+                  "type": "ref",
+                  "ref": "g5C9R",
                   "width": "fill_container",
-                  "height": 44,
-                  "gap": 8,
-                  "padding": [
-                    0,
-                    16
-                  ],
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon_font",
-                      "id": "DRlaB",
-                      "width": 18,
-                      "height": 18,
-                      "iconFontName": "storefront",
-                      "iconFontFamily": "Material Symbols Rounded",
-                      "weight": 400,
+                  "name": "merchantHeader",
+                  "x": 0,
+                  "y": 0,
+                  "descendants": {
+                    "lyaJP": {
                       "fill": "#6D6C6A"
                     },
-                    {
-                      "type": "text",
-                      "id": "DkLIF",
-                      "fill": "#3C3B39",
-                      "content": "优味供应链",
-                      "fontFamily": "Outfit",
-                      "fontSize": 15,
-                      "fontWeight": "600"
+                    "R3ywE": {
+                      "content": "优味供应链"
+                    },
+                    "gTZK2": {
+                      "enabled": false
                     }
-                  ]
+                  }
                 },
                 {
-                  "type": "frame",
                   "id": "zWMjQ",
-                  "name": "productRow",
+                  "type": "ref",
+                  "ref": "QeumT",
                   "width": "fill_container",
-                  "padding": [
-                    12,
-                    16
-                  ],
-                  "justifyContent": "space_between",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "O0Sbk",
-                      "name": "productLeft",
-                      "width": "fill_container",
-                      "gap": 12,
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "MED6v",
-                          "name": "productImage",
-                          "width": 64,
-                          "height": 64,
-                          "fill": "#F1ECE6",
-                          "cornerRadius": 8,
-                          "justifyContent": "center",
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon_font",
-                              "id": "Vowkv",
-                              "width": 18,
-                              "height": 18,
-                              "iconFontName": "image",
-                              "iconFontFamily": "lucide",
-                              "fill": "#C4B8AA"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "1cQRK",
-                          "name": "productInfo",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "gap": 8,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "jMLpo",
-                              "fill": "#3C3B39",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "黄金果农桂圆干260g1袋",
-                              "fontFamily": "Outfit",
-                              "fontSize": 14,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "1T9S2",
-                              "gap": 6,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "ellipse",
-                                  "id": "bU6K7",
-                                  "fill": "#F4B63D",
-                                  "width": 12,
-                                  "height": 12
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "krQ6h",
-                                  "fill": "#EA580C",
-                                  "content": "36.00",
-                                  "fontFamily": "Inter",
-                                  "fontSize": 18,
-                                  "fontWeight": "700"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
+                  "name": "productRow",
+                  "x": 0,
+                  "y": 44,
+                  "descendants": {
+                    "clGXP": {
+                      "width": 64,
+                      "height": 64,
+                      "cornerRadius": 8,
+                      "fill": "#F1ECE6"
                     },
-                    {
-                      "type": "text",
-                      "id": "Dm33t",
-                      "fill": "#3C3B39",
+                    "P4baM": {
+                      "fill": "#C4B8AA"
+                    },
+                    "wz9Ih": {
+                      "content": "黄金果农桂圆干260g1袋",
+                      "fontWeight": "500"
+                    },
+                    "hxkcH": {
+                      "width": 12,
+                      "height": 12
+                    },
+                    "hQYB0": {
+                      "content": "36.00"
+                    },
+                    "uvFAl": {
+                      "height": "fit_content"
+                    },
+                    "csZaa": {
                       "content": "1件",
-                      "fontFamily": "Outfit",
+                      "fill": "#3C3B39",
                       "fontSize": 14,
                       "fontWeight": "500"
                     }
-                  ]
+                  }
                 },
                 {
                   "type": "frame",
@@ -7443,7 +7369,7 @@
           "id": "Ww4C9",
           "type": "ref",
           "ref": "LssKI",
-          "name": "topBar",
+          "name": "topBarTitleRef",
           "x": 0,
           "y": 0,
           "descendants": {
