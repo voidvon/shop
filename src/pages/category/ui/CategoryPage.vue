@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 
 import { formatCurrency } from '@/shared/lib/currency'
 import { mockProducts } from '@/shared/mocks'
+import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
 const chips = [
@@ -56,17 +57,9 @@ const visibleProducts = computed(() => activeCategory.value?.products ?? [])
 
 <template>
   <section class="category-page">
+    <PageTopBar :show-back="false" title="分类" />
+
     <header class="header">
-      <div class="top-row">
-        <div class="title-col">
-          <h1>分类</h1>
-        </div>
-
-        <button class="notify-button" type="button" aria-label="消息提醒">
-          <van-icon name="bell" size="20" />
-        </button>
-      </div>
-
       <SearchField aria-label="搜索商品分类" placeholder="搜索品牌、功效、场景" readonly variant="outlined" />
 
       <div class="chip-row">
@@ -122,11 +115,10 @@ const visibleProducts = computed(() => activeCategory.value?.products ?? [])
 <style scoped>
 .category-page {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: 49px auto minmax(0, 1fr);
   gap: 16px;
   height: 100vh;
   height: 100dvh;
-  padding: 0 16px;
   overflow: hidden;
   background: #fafaf9;
 }
@@ -134,37 +126,7 @@ const visibleProducts = computed(() => activeCategory.value?.products ?? [])
 .header {
   display: grid;
   gap: 16px;
-}
-
-.top-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.title-col {
-  display: grid;
-  gap: 4px;
-}
-
-.title-col h1 {
-  margin: 0;
-  color: #292524;
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1.15;
-}
-
-.notify-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid #e7e5e4;
-  border-radius: 14px;
-  background: #fff;
-  color: #292524;
+  padding: 0 16px;
 }
 
 .chip-row {
@@ -201,6 +163,7 @@ const visibleProducts = computed(() => activeCategory.value?.products ?? [])
   grid-template-columns: 88px minmax(0, 1fr);
   gap: 12px;
   min-height: 0;
+  padding: 0 16px;
   overflow: hidden;
 }
 

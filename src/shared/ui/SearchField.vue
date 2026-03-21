@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 type SearchFieldVariant = 'filled' | 'outlined' | 'soft'
 
@@ -25,9 +25,21 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
 }>()
 
+const internalValue = ref(props.modelValue)
+
+watch(
+  () => props.modelValue,
+  (nextValue) => {
+    internalValue.value = nextValue
+  },
+)
+
 const value = computed({
-  get: () => props.modelValue,
-  set: (nextValue: string) => emit('update:modelValue', nextValue),
+  get: () => internalValue.value,
+  set: (nextValue: string) => {
+    internalValue.value = nextValue
+    emit('update:modelValue', nextValue)
+  },
 })
 
 function handleChange() {
@@ -67,7 +79,7 @@ function handleChange() {
 }
 
 .search-field-input::placeholder {
-  color: currentColor;
+  color: var(--van-field-placeholder-text-color);
 }
 
 .search-field-filled {

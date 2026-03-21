@@ -18,17 +18,19 @@ const quickCategories = [
   { key: 'food', label: '食品' },
   { key: 'baby', label: '母婴' },
 ] as const
-
-function scrollToTop() {
-  globalThis.window?.scrollTo({ top: 0, behavior: 'smooth' })
-}
 </script>
 
 <template>
   <section class="home-page">
-    <div class="content-wrapper">
-      <SearchField placeholder="搜索商品" readonly />
+    <van-sticky>
+      <div class="sticky-search">
+        <div class="sticky-search-inner">
+          <SearchField placeholder="搜索商品" />
+        </div>
+      </div>
+    </van-sticky>
 
+    <div class="content-wrapper">
       <ImageCarousel :bleed-x="'48px'" :items="homePageData.banners" />
 
       <section class="category-grid">
@@ -60,9 +62,7 @@ function scrollToTop() {
         </div>
       </section>
 
-      <button class="back-top" type="button" @click="scrollToTop">
-        <van-icon name="back-top" />
-      </button>
+      <van-back-top class="home-back-top" :bottom="104" :right="24" />
     </div>
   </section>
 </template>
@@ -79,7 +79,15 @@ function scrollToTop() {
 .content-wrapper {
   display: grid;
   gap: 24px;
-  padding: 16px 24px 24px;
+  padding: 12px 24px calc(24px + var(--app-bottom-nav-offset, 0px));
+}
+
+.sticky-search {
+  background: #f5f4f1;
+}
+
+.sticky-search-inner {
+  padding: 16px 24px 12px;
 }
 
 .category-grid {
@@ -170,23 +178,17 @@ function scrollToTop() {
   text-decoration: line-through;
 }
 
-.back-top {
-  position: sticky;
-  bottom: 88px;
-  justify-self: end;
-  width: 56px;
-  height: 56px;
-  border: 0;
-  border-radius: 50%;
-  background: #3d8a5a;
-  color: #fff;
-  box-shadow: 0 12px 24px rgba(61, 138, 90, 0.25);
-}
-
 @media (min-width: 760px) {
   .home-page {
     border-radius: 24px;
     overflow: hidden;
   }
+}
+</style>
+
+<style>
+.home-back-top {
+  --van-back-top-background: var(--color-accent);
+  --van-back-top-text-color: #fff;
 }
 </style>

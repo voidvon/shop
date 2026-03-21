@@ -1,14 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import MainBottomNav from '@/shared/ui/MainBottomNav.vue'
-
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   cardNumber: string
-  showBottomNav?: boolean
-}>(), {
-  showBottomNav: true,
-})
+}>()
 
 const emit = defineEmits<{
   (e: 'submit'): void
@@ -42,13 +37,6 @@ const cardNumberModel = computed({
 
       <div class="action-area">
         <button class="primary-button" type="button" @click="emit('submit')">确认绑卡</button>
-
-        <MainBottomNav
-          v-if="showBottomNav"
-          active-key="member"
-          :item-keys="['home', 'cart', 'member']"
-          variant="bar"
-        />
       </div>
     </div>
   </div>
@@ -72,6 +60,8 @@ const cardNumberModel = computed({
 }
 
 .card-no-row span {
+  flex: none;
+  white-space: nowrap;
   color: #1a1918;
   font-size: 14px;
   font-weight: 500;
@@ -96,7 +86,7 @@ const cardNumberModel = computed({
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   min-height: 0;
-  padding: 28px 20px 0;
+  padding: 28px 20px 24px;
 }
 
 .scan-section {
@@ -117,6 +107,7 @@ const cardNumberModel = computed({
 .action-area {
   display: grid;
   gap: 24px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
 }
 
 .primary-button {
