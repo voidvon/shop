@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, toRef, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { showSuccessToast } from 'vant'
+import { showFailToast, showSuccessToast } from 'vant'
 
+import { useCartStore } from '@/features/add-to-cart'
 import { MemberFavoriteButton } from '@/features/toggle-member-favorite'
+import { useModuleAvailability } from '@/shared/lib/modules'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import TopBarMoreMenuButton from '@/shared/ui/TopBarMoreMenuButton.vue'
@@ -16,6 +18,8 @@ const props = defineProps<{
 }>()
 
 const router = useRouter()
+const cartStore = useCartStore()
+const isCartEnabled = useModuleAvailability('cart')
 const { detailPage, errorMessage, isLoading, isNotFound, loadProductDetail, product } = useProductDetailPageModel(
   toRef(props, 'productId'),
 )
@@ -70,6 +74,10 @@ const currentSku = computed(() => {
 
 const selectedText = computed(() => currentSku.value?.specText ?? '默认')
 const popupStockText = computed(() => `库存：${currentSku.value?.stock ?? product.value?.inventory ?? 0}件`)
+const currentUnitPrice = computed(() => currentSku.value?.price ?? product.value?.price ?? 0)
+const currentStock = computed(() => currentSku.value?.stock ?? product.value?.inventory ?? 0)
+const isCartPending = computed(() => (product.value ? cartStore.isProductPending(product.value.id) : false))
+const isCurrentSelectionSoldOut = computed(() => currentStock.value <= 0)
 
 const reviewRateText = computed(() => {
   const rate = detailPageData.value?.review.rate
@@ -147,16 +155,53 @@ function selectSku(skuId: string) {
 
 function changePurchaseQuantity(delta: number) {
   const nextValue = purchaseQuantity.value + delta
+  const maxQuantity = currentStock.value
 
   if (nextValue < 1) {
+    return
+  }
+
+  if (maxQuantity > 0 && nextValue > maxQuantity) {
+    purchaseQuantity.value = maxQuantity
     return
   }
 
   purchaseQuantity.value = nextValue
 }
 
-function submitSpecAction(action: 'buy' | 'cart') {
+async function submitSpecAction(action: 'buy' | 'cart') {
   const actionText = action === 'buy' ? '立即购买' : '加入购物车'
+
+  if (action === 'cart') {
+    if (!isCartEnabled.value) {
+      showFailToast('购物车功能暂未启用')
+      return
+    }
+
+    if (!product.value) {
+      showFailToast('商品信息加载中')
+      return
+    }
+
+    if (isCurrentSelectionSoldOut.value) {
+      showFailToast('当前规格暂时无货')
+      return
+    }
+
+    try {
+      const snapshot = await cartStore.addProduct(product.value, {
+        quantity: purchaseQuantity.value,
+        unitPrice: currentUnitPrice.value,
+      })
+      showSuccessToast(`已加入购物车，共 ${snapshot.itemCount} 件`)
+      closeSpecPopup()
+      return
+    } catch {
+      showFailToast(cartStore.errorMessage ?? '加入购物车失败')
+      return
+    }
+  }
+
   showSuccessToast(`${actionText}：${selectedText.value} x${purchaseQuantity.value}`)
   closeSpecPopup()
 }
@@ -351,7 +396,14 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
         </RouterLink>
 
         <button class="action-button action-button-light" type="button" @click="openSpecPopup('buy')">立即购买</button>
-        <button class="action-button action-button-primary" type="button" @click="openSpecPopup('cart')">加入购物车</button>
+        <button
+          class="action-button action-button-primary"
+          type="button"
+          :disabled="!isCartEnabled"
+          @click="openSpecPopup('cart')"
+        >
+          加入购物车
+        </button>
       </footer>
 
       <van-popup
@@ -486,7 +538,14 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
             </RouterLink>
 
             <button class="action-button action-button-light" type="button" @click="submitSpecAction('buy')">立即购买</button>
-            <button class="action-button action-button-primary" type="button" @click="submitSpecAction('cart')">加入购物车</button>
+            <button
+              class="action-button action-button-primary"
+              type="button"
+              :disabled="!isCartEnabled || isCartPending || isCurrentSelectionSoldOut"
+              @click="submitSpecAction('cart')"
+            >
+              加入购物车
+            </button>
           </footer>
         </div>
       </van-popup>

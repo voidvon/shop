@@ -3,6 +3,13 @@ import type { CartSnapshot } from '@/entities/cart'
 import type { CartPageData, OrderListPageData } from '../../domain/trade-page-data'
 
 export function mapBackendACartPageData(snapshot: CartSnapshot): CartPageData {
+  if (snapshot.lines.length === 0) {
+    return {
+      groups: [],
+      totalAmount: 0,
+    }
+  }
+
   return {
     groups: [
       {

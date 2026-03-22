@@ -62,7 +62,13 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  async function addProduct(product: ProductSummary) {
+  async function addProduct(
+    product: ProductSummary,
+    options?: {
+      quantity?: number
+      unitPrice?: number
+    },
+  ) {
     pendingProductId.value = product.id
     errorMessage.value = null
 
@@ -70,8 +76,8 @@ export const useCartStore = defineStore('cart', () => {
       snapshot.value = await addCartItem(cartRepository, {
         productId: product.id,
         productName: product.name,
-        quantity: 1,
-        unitPrice: product.price,
+        quantity: options?.quantity ?? 1,
+        unitPrice: options?.unitPrice ?? product.price,
       })
       await syncSelectedSnapshot()
       hasLoaded.value = true

@@ -45,7 +45,7 @@ entities/product/
 - `features/product-catalog` 与 `features/add-to-cart` 使用 Pinia 管理界面状态与用例编排。
 - `pages/product-detail` 作为路由级页面，消费 `ProductDetail` 并通过 composition registry 挂到 `catalog` 模块路由下。
 - `processes/checkout-flow` 作为 checkout 示例，编排 `product/cart/order` 三个实体。
-- `entities/product`、`entities/cart`、`entities/order` 定义实体规则、仓储契约、用例以及 `mock/backend-a` 双适配示例。
+- `entities/product`、`entities/cart`、`entities/order` 定义实体规则、仓储契约、用例以及 `mock/backend-a` 适配示例；其中购物车当前默认装配为浏览器本地仓储。
 - `entities/product` 额外演示了“字段表 + 通用 mapper helper”的做法：后端只需要提供 DTO 和字段映射配置，就能得到统一的前端商品模型。
 - `shared/ui` 提供基础布局壳和通用卡片，不承载业务语义。
 - `app/providers/backend` 根据环境变量选择当前后端实现，并注入实体仓储。

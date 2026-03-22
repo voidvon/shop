@@ -49,5 +49,4 @@ const showBottomNav = computed(() => activeNavKey.value !== undefined)
   min-height: 100vh;
   min-height: 100dvh;
 }
-
 </style>

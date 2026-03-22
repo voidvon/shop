@@ -6,6 +6,7 @@ export type {
 export type { TradeQuery } from './domain/trade-query'
 export { backendATradeQuery } from './infrastructure/adapters/backend-a/backend-a-trade-query'
 export { mockTradeQuery } from './infrastructure/adapters/mock/mock-trade-query'
+export { createTradeQuery } from './infrastructure/create-trade-query'
 export {
   provideTradeQuery,
   useTradeQuery,

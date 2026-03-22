@@ -16,4 +16,5 @@ export {
 export type { CartRepository } from './domain/cart-repository'
 export { backendACartRepository } from './infrastructure/adapters/backend-a/backend-a-cart-repository'
 export { mockCartRepository } from './infrastructure/adapters/mock/mock-cart-repository'
+export { createBrowserCartRepository } from './infrastructure/create-browser-cart-repository'
 export { provideCartRepository, useCartRepository } from './infrastructure/cart-repository-provider'

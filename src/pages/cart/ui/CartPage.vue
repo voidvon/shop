@@ -32,7 +32,7 @@ const {
 const cartGroups = computed(() => cartPageData.value.groups)
 const isCartEmpty = computed(() => cartGroups.value.length === 0)
 const isCheckoutDisabled = computed(
-  () => !isCheckoutEnabled || isCartEmpty.value || selectedItemCount.value === 0,
+  () => !isCheckoutEnabled.value || isCartEmpty.value || selectedItemCount.value === 0,
 )
 const submitBarPrice = computed(() => Math.round(selectedTotalAmount.value * 100))
 const submitButtonText = computed(() => `结算(${selectedItemCount.value})`)

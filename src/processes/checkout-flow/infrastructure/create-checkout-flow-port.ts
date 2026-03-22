@@ -26,6 +26,19 @@ interface CreateCheckoutFlowPortOptions {
   productRepository: ProductRepository
 }
 
+async function clearSubmittedCartLines(
+  repository: CartRepository,
+  command: CreateCheckoutPreviewCommand,
+) {
+  if (command.source !== 'cart') {
+    return
+  }
+
+  for (const line of command.lines) {
+    await repository.removeItem(line.productId)
+  }
+}
+
 function mapCartToCheckoutLines(snapshot: Awaited<ReturnType<typeof getCartSnapshot>>): CheckoutLine[] {
   return snapshot.lines.map((line) =>
     createCheckoutLine({
@@ -90,6 +103,7 @@ export function createCheckoutFlowPort(options: CreateCheckoutFlowPortOptions): 
       const command = await resolveCheckoutCommand(options)
       const confirmation = await submitOrder(options.orderRepository, command)
       const preview = await createCheckoutPreviewUseCase(options.orderRepository, command)
+      await clearSubmittedCartLines(options.cartRepository, command)
 
       return {
         confirmation,

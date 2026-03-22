@@ -24,7 +24,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   )
 
   async function loadPreview() {
-    if (!isCheckoutEnabled) {
+    if (!isCheckoutEnabled.value) {
       preview.value = null
       hasLoaded.value = true
       return
@@ -46,7 +46,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   }
 
   async function submitCurrentOrder() {
-    if (!isCheckoutEnabled) {
+    if (!isCheckoutEnabled.value) {
       return
     }
 

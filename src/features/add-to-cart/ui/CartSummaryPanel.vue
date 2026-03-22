@@ -16,7 +16,7 @@ const { errorMessage, hasLoaded, isLoading, itemCount, lines, subtotal } = store
 const visibleLines = computed(() => lines.value.slice(0, 4))
 
 onMounted(() => {
-  if (isCartEnabled && !hasLoaded.value) {
+  if (isCartEnabled.value && !hasLoaded.value) {
     void cartStore.loadSnapshot()
   }
 })
@@ -25,7 +25,7 @@ onMounted(() => {
 <template>
   <SectionCard
     title="购物车概览"
-    :description="`同一套 cart 用例，当前由 ${currentBackendLabel} 提供仓储实现。`"
+    :description="`商品能力仍由 ${currentBackendLabel} 装配，购物车状态当前仅保存在浏览器本地。`"
   >
     <p v-if="!isCartEnabled" class="state">当前租户未启用 cart 模块，这块能力可以整体抽离。</p>
 

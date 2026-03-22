@@ -34,7 +34,7 @@ const countCards = computed<CountCard[]>(() => {
     { label: '足迹', route: { name: 'member-history' }, value: memberCenterPageData.value.counts.browsingCount },
   ]
 
-  if (isCartEnabled) {
+  if (isCartEnabled.value) {
     cards.splice(1, 0, {
       label: '购物车',
       route: { name: 'cart' },

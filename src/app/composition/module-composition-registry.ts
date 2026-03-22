@@ -29,6 +29,7 @@ export interface ModuleCompositionDefinition {
 
 type ModuleRouteMeta = NonNullable<RouteRecordRaw['meta']> & {
   activeMainNavigationKey?: MainNavigationKey
+  keepAlive?: boolean
   mainNavigation?: MainNavigationMeta
   requiresAuth?: boolean
 }
@@ -49,6 +50,7 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: HomePage,
         meta: {
           activeMainNavigationKey: 'home',
+          keepAlive: true,
           description: '分类、推荐和商品导购入口',
           mainNavigation: {
             icon: 'home-o',
@@ -66,6 +68,7 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: CategoryPage,
         meta: {
           activeMainNavigationKey: 'category',
+          keepAlive: true,
           mainNavigation: {
             icon: 'apps-o',
             key: 'category',
@@ -97,6 +100,7 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: CartPage,
         meta: {
           activeMainNavigationKey: 'cart',
+          keepAlive: true,
           mainNavigation: {
             icon: 'shopping-cart-o',
             key: 'cart',
@@ -131,6 +135,7 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: MemberCenterPage,
         meta: {
           activeMainNavigationKey: 'member',
+          keepAlive: true,
           mainNavigation: {
             icon: 'contact-o',
             key: 'member',

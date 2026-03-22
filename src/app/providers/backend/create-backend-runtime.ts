@@ -10,8 +10,7 @@ import {
   type MemberFavoriteRepository,
 } from '@/entities/member-favorite'
 import {
-  backendACartRepository,
-  mockCartRepository,
+  createBrowserCartRepository,
   type CartRepository,
 } from '@/entities/cart'
 import {
@@ -39,10 +38,17 @@ import {
   type StorefrontQuery,
 } from '@/processes/storefront'
 import {
-  backendATradeQuery,
-  mockTradeQuery,
+  createTradeQuery,
   type TradeQuery,
 } from '@/processes/trade'
+import {
+  mapBackendACartPageData,
+  mapBackendAOrderListPageData,
+} from '@/processes/trade/infrastructure/mappers/backend-a-trade-mapper'
+import {
+  mapMockCartPageData,
+  mapMockOrderListPageData,
+} from '@/processes/trade/infrastructure/mappers/mock-trade-mapper'
 import { backendTarget, getBackendLabel, type BackendType } from '@/shared/config/backend'
 import {
   resolveRuntimeEnabledModules,
@@ -110,14 +116,8 @@ function resolveMemberAuthRepository(type: BackendType) {
   }
 }
 
-function resolveCartRepository(type: BackendType) {
-  switch (type) {
-    case 'backend-a':
-      return backendACartRepository
-    case 'mock':
-    default:
-      return mockCartRepository
-  }
+function resolveCartRepository() {
+  return createBrowserCartRepository()
 }
 
 function resolveOrderRepository(type: BackendType) {
@@ -140,13 +140,21 @@ function resolveStorefrontQuery(type: BackendType) {
   }
 }
 
-function resolveTradeQuery(type: BackendType) {
+function resolveTradeQuery(type: BackendType, cartRepository: CartRepository) {
   switch (type) {
     case 'backend-a':
-      return backendATradeQuery
+      return createTradeQuery({
+        cartRepository,
+        getOrderListPageData: mapBackendAOrderListPageData,
+        mapCartPageData: mapBackendACartPageData,
+      })
     case 'mock':
     default:
-      return mockTradeQuery
+      return createTradeQuery({
+        cartRepository,
+        getOrderListPageData: mapMockOrderListPageData,
+        mapCartPageData: mapMockCartPageData,
+      })
   }
 }
 
@@ -160,22 +168,14 @@ function resolveMemberCenterQuery(type: BackendType) {
   }
 }
 
-function resolveCheckoutFlowPort(type: BackendType, isCartEnabled: boolean) {
-  return createCheckoutFlowPort({
-    cartRepository: resolveCartRepository(type),
-    isCartEnabled,
-    orderRepository: resolveOrderRepository(type),
-    productRepository: resolveProductRepository(type),
-  })
-}
-
 export function createBackendRuntime(type = backendTarget): BackendRuntime {
   const supportedModules = supportedModulesByBackend[type]
   const enabledModules = resolveRuntimeEnabledModules(type)
   const memberAuthSession = createBrowserMemberAuthSession()
+  const cartRepository = resolveCartRepository()
   const memberFavoriteRepository = createBrowserMemberFavoriteRepository()
   const repositories = {
-    cart: resolveCartRepository(type),
+    cart: cartRepository,
     memberFavorite: memberFavoriteRepository,
     order: resolveOrderRepository(type),
     product: resolveProductRepository(type),
@@ -190,10 +190,15 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
     enabledModules,
     label: getBackendLabel(type),
     queries: {
-      checkoutFlow: resolveCheckoutFlowPort(type, enabledModules.cart),
+      checkoutFlow: createCheckoutFlowPort({
+        cartRepository,
+        isCartEnabled: enabledModules.cart,
+        orderRepository: repositories.order,
+        productRepository: repositories.product,
+      }),
       memberCenter: resolveMemberCenterQuery(type),
       storefront: resolveStorefrontQuery(type),
-      trade: resolveTradeQuery(type),
+      trade: resolveTradeQuery(type, cartRepository),
     },
     repositories,
     supportedModules,
