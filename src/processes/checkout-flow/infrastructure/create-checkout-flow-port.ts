@@ -1,4 +1,8 @@
-import { getCartSnapshot, type CartRepository } from '@/entities/cart'
+import {
+  getCartSnapshot,
+  getSelectedCartSnapshot,
+  type CartRepository,
+} from '@/entities/cart'
 import {
   createCheckoutPreviewUseCase,
   createCheckoutLine,
@@ -49,8 +53,14 @@ async function resolveCheckoutCommand(
     const cartSnapshot = await getCartSnapshot(options.cartRepository)
 
     if (cartSnapshot.itemCount > 0) {
+      const selectedCartSnapshot = await getSelectedCartSnapshot(options.cartRepository)
+
+      if (selectedCartSnapshot.itemCount === 0) {
+        throw new Error('请先选择要结算的商品')
+      }
+
       return {
-        lines: mapCartToCheckoutLines(cartSnapshot),
+        lines: mapCartToCheckoutLines(selectedCartSnapshot),
         source: 'cart',
       }
     }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { showSuccessToast } from 'vant'
+import { showSuccessToast, showToast } from 'vant'
 
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
@@ -31,15 +31,19 @@ function formatAmount(value: number) {
   return value.toFixed(2)
 }
 
-function handleRemoveHistoryItem(productId: string) {
+async function handleRemoveHistoryItem(productId: string) {
   const item = memberHistoryPageData.value.items.find((candidate) => candidate.productId === productId)
 
   if (!item) {
     return
   }
 
-  removeHistoryItem(item)
-  showSuccessToast('已清除当前足迹')
+  try {
+    await removeHistoryItem(productId)
+    showSuccessToast('已清除当前足迹')
+  } catch (error) {
+    showToast(error instanceof Error ? error.message : '足迹删除失败')
+  }
 }
 
 onMounted(() => {

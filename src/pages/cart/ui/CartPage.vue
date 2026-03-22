@@ -1,15 +1,104 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { showFailToast, showSuccessToast } from 'vant'
 
+import { useModuleAvailability } from '@/shared/lib/modules'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useCartPageModel } from '../model/useCartPageModel'
 
-const { cartPageData, loadCartPage } = useCartPageModel()
+const router = useRouter()
+const isCheckoutEnabled = useModuleAvailability('checkout')
+const {
+  cartPageData,
+  errorMessage,
+  isAllSelected,
+  isItemPending,
+  isLoading,
+  isProductSelected,
+  isSelectionPending,
+  isGroupSelected,
+  loadCartPage,
+  removeItem,
+  selectedItemCount,
+  selectedTotalAmount,
+  setAllSelected,
+  setGroupSelected,
+  setItemQuantity,
+  setProductSelected,
+} = useCartPageModel()
+
 const cartGroups = computed(() => cartPageData.value.groups)
+const isCartEmpty = computed(() => cartGroups.value.length === 0)
+const isCheckoutDisabled = computed(
+  () => !isCheckoutEnabled || isCartEmpty.value || selectedItemCount.value === 0,
+)
+const submitBarPrice = computed(() => Math.round(selectedTotalAmount.value * 100))
+const submitButtonText = computed(() => `结算(${selectedItemCount.value})`)
 
 function formatAmount(value: number) {
   return value.toFixed(2)
+}
+
+function normalizeStepperValue(value: string | number) {
+  const parsedValue = typeof value === 'number' ? value : Number.parseInt(value, 10)
+  return Number.isFinite(parsedValue) && parsedValue > 0 ? Math.floor(parsedValue) : 1
+}
+
+async function handleAllCheckedChange(checked: boolean) {
+  try {
+    await setAllSelected(checked)
+  } catch {
+    showFailToast(errorMessage.value ?? '更新待结算商品失败')
+  }
+}
+
+async function handleGroupCheckedChange(storeId: string, checked: boolean) {
+  const group = cartGroups.value.find((entry) => entry.storeId === storeId)
+
+  if (!group) {
+    return
+  }
+
+  try {
+    await setGroupSelected(group, checked)
+  } catch {
+    showFailToast(errorMessage.value ?? '更新待结算商品失败')
+  }
+}
+
+async function handleProductCheckedChange(productId: string, checked: boolean) {
+  try {
+    await setProductSelected(productId, checked)
+  } catch {
+    showFailToast(errorMessage.value ?? '更新待结算商品失败')
+  }
+}
+
+async function handleRemoveItem(productId: string) {
+  try {
+    await removeItem(productId)
+    showSuccessToast('已从购物车移除')
+  } catch {
+    showFailToast(errorMessage.value ?? '删除购物车商品失败')
+  }
+}
+
+async function handleQuantityChange(productId: string, value: string | number) {
+  try {
+    await setItemQuantity(productId, normalizeStepperValue(value))
+  } catch {
+    showFailToast(errorMessage.value ?? '更新购物车数量失败')
+  }
+}
+
+function handleCheckout() {
+  if (isCheckoutDisabled.value) {
+    return
+  }
+
+  void router.push('/checkout')
 }
 
 onMounted(() => {
@@ -23,68 +112,95 @@ onMounted(() => {
       <PageTopBar title="购物车" :show-back="false" />
 
       <div class="cart-scroll">
-        <section v-for="group in cartGroups" :key="group.storeId" class="merchant-section">
-          <header class="store-row">
-            <div class="store-left">
-              <span class="select-icon">
-                <van-icon name="success" size="14" />
-              </span>
-              <van-icon name="shop-o" size="16" class="store-icon" />
-              <span class="store-name">{{ group.storeName }}</span>
-            </div>
-          </header>
+        <div v-if="isLoading" class="page-state">正在加载购物车...</div>
+        <div v-else-if="errorMessage" class="page-state page-state-error">{{ errorMessage }}</div>
+        <div v-else-if="isCartEmpty" class="page-state">购物车还是空的，先去挑点商品吧。</div>
 
-          <div class="rows-wrap">
-            <article v-for="item in group.items" :key="item.lineId" class="cart-item-row">
-              <span class="select-icon item-check">
-                <van-icon name="success" size="14" />
-              </span>
-
-              <img class="thumb" :src="item.productImageUrl || undefined" :alt="item.productName">
-
-              <div class="right-col">
-                <div class="name-row">
-                  <strong>{{ item.productName }}</strong>
-                  <button class="trash-button" type="button" aria-label="删除商品">
-                    <van-icon name="delete-o" size="16" />
-                  </button>
-                </div>
-
-                <div class="bottom-row">
-                  <div class="price-wrap">
-                    <span class="price-symbol">¥</span>
-                    <span class="price-value">{{ formatAmount(item.unitPrice) }}</span>
-                  </div>
-
-                  <div class="stepper" aria-label="商品数量">
-                    <button class="stepper-cell stepper-cell-muted" type="button" aria-label="减少数量">
-                      <van-icon name="minus" size="12" />
-                    </button>
-                    <span class="stepper-cell count-cell">{{ item.quantity }}</span>
-                    <button class="stepper-cell" type="button" aria-label="增加数量">
-                      <van-icon name="plus" size="12" />
-                    </button>
-                  </div>
-                </div>
+        <template v-else>
+          <section v-for="group in cartGroups" :key="group.storeId" class="merchant-section">
+            <header class="store-row">
+              <div class="store-left">
+                <van-checkbox
+                  :model-value="isGroupSelected(group)"
+                  checked-color="#ff8a1f"
+                  :disabled="isSelectionPending"
+                  @update:model-value="handleGroupCheckedChange(group.storeId, $event)"
+                />
+                <van-icon name="shop-o" size="16" class="store-icon" />
+                <span class="store-name">{{ group.storeName }}</span>
               </div>
-            </article>
-          </div>
-        </section>
+            </header>
+
+            <div class="rows-wrap">
+              <van-swipe-cell v-for="item in group.items" :key="item.lineId" :disabled="isItemPending(item.productId)">
+                <article class="cart-item-row">
+                  <van-checkbox
+                    class="item-check"
+                    :model-value="isProductSelected(item.productId)"
+                    checked-color="#ff8a1f"
+                    :disabled="isSelectionPending"
+                    @update:model-value="handleProductCheckedChange(item.productId, $event)"
+                  />
+
+                  <img class="thumb" :src="item.productImageUrl || undefined" :alt="item.productName">
+
+                  <div class="right-col">
+                    <div class="name-row">
+                      <strong>{{ item.productName }}</strong>
+                    </div>
+
+                    <div class="bottom-row">
+                      <div class="price-wrap">
+                        <span class="price-symbol">¥</span>
+                        <span class="price-value">{{ formatAmount(item.unitPrice) }}</span>
+                      </div>
+
+                      <van-stepper
+                        :model-value="item.quantity"
+                        theme="round"
+                        integer
+                        min="1"
+                        disable-input
+                        button-size="26"
+                        :disabled="isItemPending(item.productId)"
+                        @update:model-value="handleQuantityChange(item.productId, $event)"
+                      />
+                    </div>
+                  </div>
+                </article>
+
+                <template #right>
+                  <button
+                    class="swipe-delete-button"
+                    type="button"
+                    :disabled="isItemPending(item.productId)"
+                    @click="handleRemoveItem(item.productId)"
+                  >
+                    删除
+                  </button>
+                </template>
+              </van-swipe-cell>
+            </div>
+          </section>
+        </template>
       </div>
 
-      <footer class="summary-bar">
-        <div class="summary-left">
-          <span class="select-icon">
-            <van-icon name="success" size="14" />
-          </span>
-          <div class="total-wrap">
-            <span class="total-symbol">¥</span>
-            <span class="total-value">{{ cartPageData.totalAmount.toFixed(1) }}</span>
-          </div>
-        </div>
-
-        <button class="submit-button" type="button">结算</button>
-      </footer>
+      <van-submit-bar
+        class="cart-submit-bar"
+        :price="submitBarPrice"
+        :button-text="submitButtonText"
+        :disabled="isCheckoutDisabled"
+        @submit="handleCheckout"
+      >
+        <van-checkbox
+          :model-value="isAllSelected"
+          checked-color="#ff8a1f"
+          :disabled="isSelectionPending || isCartEmpty"
+          @update:model-value="handleAllCheckedChange"
+        >
+          全选
+        </van-checkbox>
+      </van-submit-bar>
     </div>
   </section>
 </template>
@@ -116,6 +232,16 @@ onMounted(() => {
   display: none;
 }
 
+.page-state {
+  padding: 48px 24px;
+  color: #8a8884;
+  text-align: center;
+}
+
+.page-state-error {
+  color: #c95a21;
+}
+
 .merchant-section {
   background: #fff;
 }
@@ -132,17 +258,6 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   align-items: center;
-}
-
-.select-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #ff8a1f;
-  color: #fff;
 }
 
 .store-icon {
@@ -166,6 +281,7 @@ onMounted(() => {
   align-items: start;
   padding: 12px 16px;
   border-bottom: 1px solid #f1eeea;
+  background: #fff;
 }
 
 .item-check {
@@ -200,16 +316,6 @@ onMounted(() => {
   line-height: 1.35;
 }
 
-.trash-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #d4d0ca;
-}
-
 .bottom-row {
   display: flex;
   align-items: center;
@@ -217,17 +323,14 @@ onMounted(() => {
   gap: 12px;
 }
 
-.price-wrap,
-.total-wrap {
+.price-wrap {
   display: flex;
   gap: 4px;
   align-items: center;
 }
 
 .price-symbol,
-.price-value,
-.total-symbol,
-.total-value {
+.price-value {
   color: #ff8a1f;
   font-weight: 700;
 }
@@ -240,73 +343,25 @@ onMounted(() => {
   font-size: 16px;
 }
 
-.stepper {
-  display: grid;
-  grid-template-columns: repeat(3, 32px);
-  height: 32px;
-  border: 1px solid #e6e1da;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.stepper-cell {
+.swipe-delete-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 72px;
+  height: 100%;
   border: 0;
-  border-left: 1px solid #eee9e3;
-  background: #fff;
-  color: #8a8884;
-}
-
-.stepper-cell:first-child {
-  border-left: 0;
-}
-
-.stepper-cell-muted {
-  background: #fbfaf8;
-  color: #9c9b99;
-}
-
-.count-cell {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.summary-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 60px;
-  border-top: 1px solid #ede9e3;
-  background: #fff;
-}
-
-.summary-left {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 0 16px;
-}
-
-.total-symbol {
-  font-size: 16px;
-}
-
-.total-value {
-  font-size: 18px;
-}
-
-.submit-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 108px;
-  align-self: stretch;
-  border: 0;
-  background: #ff7a1a;
+  background: #ee4d2d;
   color: #fff;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+}
+
+.swipe-delete-button:disabled {
+  opacity: 0.6;
+}
+
+.cart-submit-bar {
+  position: static;
+  inset: auto;
+  padding-bottom: 0;
 }
 </style>

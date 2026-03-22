@@ -31,14 +31,14 @@ function formatAmount(value: number) {
   return value.toFixed(2)
 }
 
-function handleRemoveFavorite(productId: string) {
+async function handleRemoveFavorite(productId: string) {
   const item = memberFavoritesPageData.value.items.find((candidate) => candidate.productId === productId)
 
   if (!item) {
     return
   }
 
-  removeFavorite(item)
+  await removeFavorite(item)
   showSuccessToast('已取消收藏')
 }
 

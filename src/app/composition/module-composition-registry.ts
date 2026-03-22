@@ -2,6 +2,7 @@ import type { RouteRecordRaw } from 'vue-router'
 
 import { CartPage } from '@/pages/cart'
 import { CategoryPage } from '@/pages/category'
+import { CheckoutPage } from '@/pages/checkout'
 import { HomePage } from '@/pages/home'
 import { MemberCardBindPage } from '@/pages/member-card-bind'
 import { MemberCardsPage } from '@/pages/member-cards'
@@ -29,6 +30,7 @@ export interface ModuleCompositionDefinition {
 type ModuleRouteMeta = NonNullable<RouteRecordRaw['meta']> & {
   activeMainNavigationKey?: MainNavigationKey
   mainNavigation?: MainNavigationMeta
+  requiresAuth?: boolean
 }
 
 function createModuleRoute(
@@ -107,7 +109,19 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
       }),
     ],
   },
-  { moduleId: 'checkout' },
+  {
+    moduleId: 'checkout',
+    routes: [
+      createModuleRoute({
+        path: '/checkout',
+        name: 'checkout',
+        component: CheckoutPage,
+        meta: {
+          title: '确认订单',
+        },
+      }),
+    ],
+  },
   {
     moduleId: 'member',
     routes: [
@@ -144,19 +158,12 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         },
       }),
       createModuleRoute({
-        path: '/member/register/mobile',
-        name: 'member-register-mobile',
-        component: MemberRegisterMobilePage,
-        meta: {
-          title: '手机注册',
-        },
-      }),
-      createModuleRoute({
         path: '/member/orders',
         name: 'member-orders',
         component: OrderListPage,
         meta: {
           activeMainNavigationKey: 'member',
+          requiresAuth: true,
           title: '我的订单',
         },
       }),
@@ -166,6 +173,7 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: MemberFavoritesPage,
         meta: {
           activeMainNavigationKey: 'member',
+          requiresAuth: true,
           title: '我的收藏',
         },
       }),
@@ -175,6 +183,7 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: MemberHistoryPage,
         meta: {
           activeMainNavigationKey: 'member',
+          requiresAuth: true,
           title: '我的足迹',
         },
       }),
@@ -184,6 +193,7 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: MemberCardsPage,
         meta: {
           activeMainNavigationKey: 'member',
+          requiresAuth: true,
           title: '我的卡券',
         },
       }),
@@ -193,7 +203,21 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: MemberCardBindPage,
         meta: {
           activeMainNavigationKey: 'member',
+          requiresAuth: true,
           title: '绑定卡券',
+        },
+      }),
+    ],
+  },
+  {
+    moduleId: 'member-mobile-register',
+    routes: [
+      createModuleRoute({
+        path: '/member/register/mobile',
+        name: 'member-register-mobile',
+        component: MemberRegisterMobilePage,
+        meta: {
+          title: '手机注册',
         },
       }),
     ],

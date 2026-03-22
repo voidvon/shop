@@ -3,6 +3,7 @@ import { computed, ref, toRef, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { showSuccessToast } from 'vant'
 
+import { MemberFavoriteButton } from '@/features/toggle-member-favorite'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import TopBarMoreMenuButton from '@/shared/ui/TopBarMoreMenuButton.vue'
@@ -237,9 +238,14 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
               variant="gallery"
             />
 
-            <button class="favorite-button" type="button" aria-label="收藏商品">
-              <van-icon name="like-o" size="20" />
-            </button>
+            <MemberFavoriteButton
+              class="favorite-button"
+              :product-id="product.id"
+              :product-image-url="product.coverImageUrl"
+              :product-name="product.name"
+              :product-price="product.price"
+              :store-name="storeInfo?.storeName ?? '默认店铺'"
+            />
           </div>
         </section>
 
@@ -571,16 +577,6 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   position: absolute;
   right: 16px;
   bottom: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
-  color: #d9b8bb;
 }
 
 .detail-content {

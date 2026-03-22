@@ -5,8 +5,17 @@ const frontendModules = [
   'cart',
   'checkout',
   'member',
+  'member-mobile-register',
   'promotion',
 ] as const
+
+const defaultEnabledFrontendModules = [
+  'catalog',
+  'cart',
+  'checkout',
+  'member',
+  'promotion',
+] as const satisfies readonly FrontendModule[]
 
 export type FrontendModule = (typeof frontendModules)[number]
 
@@ -49,6 +58,13 @@ export const frontendModuleManifests: Record<FrontendModule, FrontendModuleManif
     label: '会员中心',
     summary: '负责会员信息、权益和个性化价格能力。',
   },
+  'member-mobile-register': {
+    dependsOn: ['member'],
+    entry: 'feature',
+    id: 'member-mobile-register',
+    label: '手机注册',
+    summary: '负责手机号注册入口、短信验证码获取与快速注册流程。',
+  },
   promotion: {
     dependsOn: ['catalog'],
     entry: 'feature',
@@ -62,8 +78,9 @@ export const supportedModulesByBackend: Record<BackendType, FrontendModuleMap> =
   mock: {
     catalog: true,
     cart: true,
-    checkout: false,
+    checkout: true,
     member: true,
+    'member-mobile-register': true,
     promotion: false,
   },
   'backend-a': {
@@ -71,6 +88,7 @@ export const supportedModulesByBackend: Record<BackendType, FrontendModuleMap> =
     cart: true,
     checkout: true,
     member: true,
+    'member-mobile-register': true,
     promotion: true,
   },
 }
@@ -90,7 +108,7 @@ export function resolveEnabledFrontendModules(
   rawValue = import.meta.env.VITE_ENABLED_MODULES,
 ): FrontendModuleMap {
   if (!rawValue || rawValue.trim() === '' || rawValue.trim() === '*') {
-    return createModuleMap([...frontendModules])
+    return createModuleMap([...defaultEnabledFrontendModules])
   }
 
   const enabledModules = rawValue

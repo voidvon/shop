@@ -1,4 +1,6 @@
+import type { CartSnapshot } from '@/entities/cart'
 import { mockTradeData } from '@/shared/mocks'
+import { getMockProduct, getMockStore } from '@/shared/mocks/modules'
 
 import type { CartPageData, OrderListEntry, OrderListPageData } from '../../domain/trade-page-data'
 
@@ -24,21 +26,46 @@ function mapMockOrderEntry(order: MockOrderEntry): OrderListEntry {
   }
 }
 
-export function mapMockCartPageData(): CartPageData {
+export function mapMockCartPageData(snapshot: CartSnapshot): CartPageData {
+  const groupsByStoreId = new Map<
+    string,
+    {
+      items: CartPageData['groups'][number]['items']
+      storeId: string
+      storeName: string
+    }
+  >()
+
+  snapshot.lines.forEach((line) => {
+    const product = getMockProduct(line.productId)
+    const store = product ? getMockStore(product.storeId) : null
+    const storeId = store?.storeId ?? 'mock-default-store'
+    const storeName = store?.storeName ?? '默认店铺'
+    const existingGroup = groupsByStoreId.get(storeId)
+    const item = {
+      lineId: line.productId,
+      productId: line.productId,
+      productImageUrl: product?.imageUrl ?? null,
+      productName: line.productName,
+      quantity: line.quantity,
+      unitPrice: line.unitPrice,
+    }
+
+    if (existingGroup) {
+      existingGroup.items.push(item)
+      return
+    }
+
+    groupsByStoreId.set(storeId, {
+      items: [item],
+      storeId,
+      storeName,
+    })
+  })
+
   return {
-    groups: mockTradeData.cartPageData.groups.map((group) => ({
-      items: group.items.map((item) => ({
-        lineId: item.lineId,
-        productId: item.productId,
-        productImageUrl: item.productImageUrl,
-        productName: item.productName,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-      })),
-      storeId: group.storeId,
-      storeName: group.storeName,
-    })),
-    totalAmount: mockTradeData.cartPageData.totalAmount,
+    groups: Array.from(groupsByStoreId.values()),
+    totalAmount: snapshot.subtotal,
   }
 }
 

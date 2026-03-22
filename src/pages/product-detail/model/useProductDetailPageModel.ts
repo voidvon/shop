@@ -1,9 +1,15 @@
 import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 
 import {
+  createBrowserMemberHistoryRepository,
+  saveMemberHistory,
+} from '@/entities/member-history'
+import {
   type ProductDetail,
 } from '@/entities/product'
 import { useStorefrontQuery, type ProductDetailPageData } from '@/processes/storefront'
+
+const memberHistoryRepository = createBrowserMemberHistoryRepository()
 
 export function useProductDetailPageModel(productId: MaybeRefOrGetter<string>) {
   const storefrontQuery = useStorefrontQuery()
@@ -17,6 +23,20 @@ export function useProductDetailPageModel(productId: MaybeRefOrGetter<string>) {
   const isNotFound = computed(
     () => hasLoaded.value && !isLoading.value && !errorMessage.value && !product.value,
   )
+
+  async function syncMemberHistory(pageData: ProductDetailPageData) {
+    try {
+      await saveMemberHistory(memberHistoryRepository, {
+        productId: pageData.product.id,
+        productImageUrl: pageData.product.coverImageUrl,
+        productName: pageData.product.name,
+        productPrice: pageData.product.price,
+        storeName: pageData.store?.storeName ?? '默认店铺',
+      })
+    } catch {
+      // Browsing history persistence should not block the product detail page.
+    }
+  }
 
   async function loadProductDetail() {
     const currentProductId = toValue(productId).trim()
@@ -34,6 +54,9 @@ export function useProductDetailPageModel(productId: MaybeRefOrGetter<string>) {
     try {
       detailPage.value = await storefrontQuery.getProductDetailPageData(currentProductId)
       product.value = detailPage.value?.product ?? null
+      if (detailPage.value) {
+        await syncMemberHistory(detailPage.value)
+      }
       hasLoaded.value = true
     } catch (error) {
       detailPage.value = null

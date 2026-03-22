@@ -1,5 +1,10 @@
 import type { App } from 'vue'
 
+import {
+  provideMemberAuthRepository,
+  provideMemberAuthSession,
+} from '@/entities/member-auth'
+import { provideMemberFavoriteRepository } from '@/entities/member-favorite'
 import { provideCartRepository } from '@/entities/cart'
 import { provideOrderRepository } from '@/entities/order'
 import { provideProductRepository } from '@/entities/product'
@@ -15,7 +20,10 @@ export function provideBackendRuntime(app: App) {
   const runtime = createBackendRuntime()
 
   provideBackendRuntimeContext(app, runtime)
+  provideMemberAuthRepository(app, runtime.auth.repository)
+  provideMemberAuthSession(app, runtime.auth.session)
   provideCartRepository(app, runtime.repositories.cart)
+  provideMemberFavoriteRepository(app, runtime.repositories.memberFavorite)
   provideOrderRepository(app, runtime.repositories.order)
   provideProductRepository(app, runtime.repositories.product)
   provideCheckoutFlowPort(app, runtime.queries.checkoutFlow)

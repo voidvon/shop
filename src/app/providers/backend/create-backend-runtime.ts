@@ -1,4 +1,15 @@
 import {
+  backendAMemberAuthRepository,
+  createBrowserMemberAuthSession,
+  mockMemberAuthRepository,
+  type MemberAuthRepository,
+  type MemberAuthSession,
+} from '@/entities/member-auth'
+import {
+  createBrowserMemberFavoriteRepository,
+  type MemberFavoriteRepository,
+} from '@/entities/member-favorite'
+import {
   backendACartRepository,
   mockCartRepository,
   type CartRepository,
@@ -45,6 +56,10 @@ export interface BackendCapabilities {
 }
 
 export interface BackendRuntime {
+  auth: {
+    repository: MemberAuthRepository
+    session: MemberAuthSession
+  }
   capabilities: BackendCapabilities
   enabledModules: FrontendModuleMap
   label: string
@@ -56,6 +71,7 @@ export interface BackendRuntime {
   }
   repositories: {
     cart: CartRepository
+    memberFavorite: MemberFavoriteRepository
     order: OrderRepository
     product: ProductRepository
   }
@@ -81,6 +97,16 @@ function resolveProductRepository(type: BackendType) {
     case 'mock':
     default:
       return mockProductRepository
+  }
+}
+
+function resolveMemberAuthRepository(type: BackendType) {
+  switch (type) {
+    case 'backend-a':
+      return backendAMemberAuthRepository
+    case 'mock':
+    default:
+      return mockMemberAuthRepository
   }
 }
 
@@ -146,13 +172,20 @@ function resolveCheckoutFlowPort(type: BackendType, isCartEnabled: boolean) {
 export function createBackendRuntime(type = backendTarget): BackendRuntime {
   const supportedModules = supportedModulesByBackend[type]
   const enabledModules = resolveRuntimeEnabledModules(type)
+  const memberAuthSession = createBrowserMemberAuthSession()
+  const memberFavoriteRepository = createBrowserMemberFavoriteRepository()
   const repositories = {
     cart: resolveCartRepository(type),
+    memberFavorite: memberFavoriteRepository,
     order: resolveOrderRepository(type),
     product: resolveProductRepository(type),
   }
 
   return {
+    auth: {
+      repository: resolveMemberAuthRepository(type),
+      session: memberAuthSession,
+    },
     capabilities: capabilitiesByBackend[type],
     enabledModules,
     label: getBackendLabel(type),

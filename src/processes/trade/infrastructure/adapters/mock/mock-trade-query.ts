@@ -1,3 +1,5 @@
+import { mockCartRepository } from '@/entities/cart'
+
 import type { TradeQuery } from '../../../domain/trade-query'
 import {
   mapMockCartPageData,
@@ -6,7 +8,8 @@ import {
 
 export const mockTradeQuery: TradeQuery = {
   async getCartPageData() {
-    return Promise.resolve(mapMockCartPageData())
+    const snapshot = await mockCartRepository.getSnapshot()
+    return Promise.resolve(mapMockCartPageData(snapshot))
   },
 
   async getOrderListPageData() {

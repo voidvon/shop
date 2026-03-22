@@ -13,7 +13,6 @@ const checkoutStore = useCheckoutFlowStore()
 const {
   confirmation,
   errorMessage,
-  hasLoaded,
   isCheckoutEnabled,
   isLoading,
   isSubmitting,
@@ -37,7 +36,7 @@ async function handleSubmit() {
 }
 
 onMounted(() => {
-  if (isCheckoutEnabled.value && !hasLoaded.value) {
+  if (isCheckoutEnabled.value) {
     void checkoutStore.loadPreview()
   }
 })

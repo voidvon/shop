@@ -45,7 +45,7 @@ export function mapMockHomePageData(): HomePageData {
       linkUrl: banner.linkUrl,
       title: banner.title ?? '',
     })),
-    featuredProducts: mockPublicData.homePageData.productFeed.list.slice(0, 4).map(mapMockProductCard),
+    featuredProducts: mockPublicData.homePageData.productFeed.list.map(mapMockProductCard),
     quickCategories: mockPublicData.homePageData.categoryEntries.map((category) => ({
       id: category.categoryId,
       imageUrl: category.imageUrl,

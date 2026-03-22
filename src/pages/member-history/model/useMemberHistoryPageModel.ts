@@ -1,17 +1,22 @@
 import { ref } from 'vue'
 
 import {
-  useMemberCenterQuery,
-  type MemberHistoryPageData,
-  type MemberProductListItem,
-} from '@/processes/member-center'
+  createBrowserMemberHistoryRepository,
+  getMemberHistory,
+  removeMemberHistory,
+  type MemberHistoryItem,
+} from '@/entities/member-history'
+
+interface MemberHistoryPageData {
+  items: MemberHistoryItem[]
+}
 
 const emptyMemberHistoryPageData: MemberHistoryPageData = {
   items: [],
 }
 
 export function useMemberHistoryPageModel() {
-  const memberCenterQuery = useMemberCenterQuery()
+  const memberHistoryRepository = createBrowserMemberHistoryRepository()
 
   const memberHistoryPageData = ref<MemberHistoryPageData>(emptyMemberHistoryPageData)
   const errorMessage = ref<string | null>(null)
@@ -22,7 +27,9 @@ export function useMemberHistoryPageModel() {
     errorMessage.value = null
 
     try {
-      memberHistoryPageData.value = await memberCenterQuery.getMemberHistoryPageData()
+      memberHistoryPageData.value = {
+        items: await getMemberHistory(memberHistoryRepository),
+      }
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '足迹页加载失败'
     } finally {
@@ -30,10 +37,10 @@ export function useMemberHistoryPageModel() {
     }
   }
 
-  function removeHistoryItem(item: MemberProductListItem) {
+  async function removeHistoryItem(productId: string) {
     memberHistoryPageData.value = {
       ...memberHistoryPageData.value,
-      items: memberHistoryPageData.value.items.filter((candidate) => candidate.productId !== item.productId),
+      items: await removeMemberHistory(memberHistoryRepository, productId),
     }
   }
 

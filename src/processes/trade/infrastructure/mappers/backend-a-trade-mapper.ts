@@ -6,8 +6,8 @@ export function mapBackendACartPageData(snapshot: CartSnapshot): CartPageData {
   return {
     groups: [
       {
-        items: snapshot.lines.map((line, index) => ({
-          lineId: `backend-a-line-${index + 1}`,
+        items: snapshot.lines.map((line) => ({
+          lineId: line.productId,
           productId: line.productId,
           productImageUrl: null,
           productName: line.productName,

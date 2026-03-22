@@ -1,5 +1,14 @@
 import { ref } from 'vue'
 
+import { useMemberAuthSession } from '@/entities/member-auth'
+import {
+  countMemberHistory,
+  createBrowserMemberHistoryRepository,
+} from '@/entities/member-history'
+import {
+  countMemberFavorites,
+  useMemberFavoriteRepository,
+} from '@/entities/member-favorite'
 import { useMemberCenterQuery, type MemberCenterPageData } from '@/processes/member-center'
 
 const emptyMemberCenterPageData: MemberCenterPageData = {
@@ -26,6 +35,9 @@ const emptyMemberCenterPageData: MemberCenterPageData = {
 }
 
 export function useMemberCenterPageModel() {
+  const memberAuthSession = useMemberAuthSession()
+  const memberHistoryRepository = createBrowserMemberHistoryRepository()
+  const memberFavoriteRepository = useMemberFavoriteRepository()
   const memberCenterQuery = useMemberCenterQuery()
 
   const memberCenterPageData = ref<MemberCenterPageData>(emptyMemberCenterPageData)
@@ -37,7 +49,38 @@ export function useMemberCenterPageModel() {
     errorMessage.value = null
 
     try {
-      memberCenterPageData.value = await memberCenterQuery.getMemberCenterPageData()
+      const pageData = await memberCenterQuery.getMemberCenterPageData()
+      const browsingCount = await countMemberHistory(memberHistoryRepository)
+      const authSnapshot = memberAuthSession.getSnapshot()
+      const authResult = authSnapshot.authResult
+
+      memberCenterPageData.value = authResult
+        ? {
+          ...pageData,
+          counts: {
+            ...pageData.counts,
+            browsingCount,
+            favoritesCount: await countMemberFavorites(memberFavoriteRepository, authResult.userInfo.userId),
+          },
+          profile: {
+            avatarUrl: authResult.userInfo.avatarUrl,
+            isLoggedIn: true,
+            username: authResult.userInfo.nickname ?? authResult.userInfo.username,
+          },
+        }
+        : {
+          ...pageData,
+          counts: {
+            browsingCount,
+            cartCount: 0,
+            favoritesCount: 0,
+          },
+          profile: {
+            avatarUrl: null,
+            isLoggedIn: false,
+            username: null,
+          },
+        }
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '会员中心加载失败'
     } finally {

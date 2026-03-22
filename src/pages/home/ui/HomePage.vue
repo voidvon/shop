@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import { formatCurrency } from '@/shared/lib/currency'
@@ -8,19 +8,63 @@ import SearchField from '@/shared/ui/SearchField.vue'
 
 import { useHomePageModel } from '../model/useHomePageModel'
 
-const { homePageData, loadHomePage } = useHomePageModel()
+const {
+  displayedHotProducts,
+  errorMessage,
+  homePageData,
+  isHotProductsFinished,
+  isLoading,
+  isLoadingMoreHotProducts,
+  loadHomePage,
+  loadMoreHotProducts,
+} = useHomePageModel()
 const carouselItems = computed(() =>
   homePageData.value.banners.map((banner) => ({
     ...banner,
     imageUrl: banner.imageUrl || '/favicon.ico',
   })),
 )
-const hotProducts = computed(() => homePageData.value.featuredProducts)
 const quickCategories = computed(() => homePageData.value.quickCategories.slice(0, 8))
+const loadMoreTriggerRef = ref<HTMLElement | null>(null)
+
+function tryLoadMoreOnScroll() {
+  if (
+    typeof window === 'undefined'
+    || !loadMoreTriggerRef.value
+    || isLoading.value
+    || isLoadingMoreHotProducts.value
+    || isHotProductsFinished.value
+  ) {
+    return
+  }
+
+  const triggerTop = loadMoreTriggerRef.value.getBoundingClientRect().top
+  const viewportBottom = window.innerHeight + 160
+
+  if (triggerTop <= viewportBottom) {
+    void loadMoreHotProducts()
+  }
+}
 
 onMounted(() => {
   void loadHomePage()
+
+  window.addEventListener('scroll', tryLoadMoreOnScroll, { passive: true })
+  window.addEventListener('resize', tryLoadMoreOnScroll)
 })
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', tryLoadMoreOnScroll)
+  window.removeEventListener('resize', tryLoadMoreOnScroll)
+})
+
+watch(
+  () => displayedHotProducts.value.length,
+  async () => {
+    await nextTick()
+    tryLoadMoreOnScroll()
+  },
+)
 </script>
 
 <template>
@@ -53,21 +97,48 @@ onMounted(() => {
           <h2>热门推荐</h2>
         </div>
 
-        <div class="product-grid">
-          <RouterLink
-            v-for="product in hotProducts"
-            :key="product.id"
-            class="product-card"
-            :to="{ name: 'product-detail', params: { productId: product.id } }"
+        <p v-if="errorMessage" class="status-text">
+          {{ errorMessage }}
+        </p>
+
+        <p v-else-if="isLoading" class="status-text">
+          首页推荐加载中...
+        </p>
+
+        <div
+          v-else-if="displayedHotProducts.length > 0"
+          class="hot-product-list"
+        >
+          <div class="product-grid">
+            <RouterLink
+              v-for="product in displayedHotProducts"
+              :key="product.id"
+              class="product-card"
+              :to="{ name: 'product-detail', params: { productId: product.id } }"
+            >
+              <img :src="product.imageUrl || '/favicon.ico'" :alt="product.name">
+              <strong>{{ product.name }}</strong>
+              <div class="price-row">
+                <span>{{ formatCurrency(product.price) }}</span>
+                <small v-if="product.marketPrice">{{ formatCurrency(product.marketPrice) }}</small>
+              </div>
+            </RouterLink>
+          </div>
+
+          <div
+            ref="loadMoreTriggerRef"
+            class="load-more-trigger"
+            :class="{ 'load-more-trigger-finished': isHotProductsFinished }"
           >
-            <img :src="product.imageUrl || '/favicon.ico'" :alt="product.name">
-            <strong>{{ product.name }}</strong>
-            <div class="price-row">
-              <span>{{ formatCurrency(product.price) }}</span>
-              <small v-if="product.marketPrice">{{ formatCurrency(product.marketPrice) }}</small>
-            </div>
-          </RouterLink>
+            <span v-if="isLoadingMoreHotProducts">加载更多推荐中...</span>
+            <span v-else-if="isHotProductsFinished">已经到底了</span>
+            <span v-else>继续下滑加载更多</span>
+          </div>
         </div>
+
+        <p v-else class="status-text">
+          暂无热门推荐
+        </p>
       </section>
 
       <van-back-top class="home-back-top" :bottom="104" :right="24" />
@@ -131,6 +202,19 @@ onMounted(() => {
   gap: 16px;
 }
 
+.hot-product-list {
+  display: grid;
+  gap: 14px;
+}
+
+.status-text {
+  margin: 0;
+  padding: 20px 12px;
+  color: #9c9b99;
+  font-size: 13px;
+  text-align: center;
+}
+
 .section-head h2 {
   margin: 0;
   color: #1a1918;
@@ -186,6 +270,18 @@ onMounted(() => {
   color: #9c9b99;
   font-size: 13px;
   text-decoration: line-through;
+}
+
+.load-more-trigger {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+  color: #9c9b99;
+  font-size: 12px;
+}
+
+.load-more-trigger-finished {
+  padding-bottom: 12px;
 }
 
 @media (min-width: 760px) {

@@ -19,6 +19,16 @@ export interface AddCartItemCommand {
   unitPrice: number
 }
 
+export interface SetCartItemQuantityCommand {
+  productId: string
+  quantity: number
+}
+
+export interface SetCartItemsSelectedCommand {
+  productIds: string[]
+  selected: boolean
+}
+
 function normalizeQuantity(quantity: number) {
   return Number.isFinite(quantity) && quantity > 0 ? Math.floor(quantity) : 1
 }

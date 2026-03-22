@@ -2,6 +2,7 @@
 import { computed, onMounted } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 
+import { MemberLogoutButton } from '@/features/member-logout'
 import { useModuleAvailability } from '@/shared/lib/modules'
 
 import { useMemberCenterPageModel } from '../model/useMemberCenterPageModel'
@@ -78,6 +79,10 @@ function goToShortcut(shortcutKey: string) {
   return undefined
 }
 
+function handleLoggedOut() {
+  void loadMemberCenterPage()
+}
+
 onMounted(() => {
   void loadMemberCenterPage()
 })
@@ -122,7 +127,16 @@ onMounted(() => {
               <strong>{{ memberCenterPageData.profile.username ?? '点击登录/注册' }}</strong>
               <span>{{ memberCenterPageData.profile.isLoggedIn ? '欢迎回来，查看完整账户信息' : '可查看更多信息' }}</span>
             </div>
+
+            <MemberLogoutButton class="logout-action" @logged-out="handleLoggedOut" />
           </div>
+        </div>
+        
+        <div
+          v-if="memberCenterPageData.profile.isLoggedIn"
+          class="security-tip"
+        >
+          当前登录态已写入本地会话，可继续使用订单、卡券与收藏能力。
         </div>
 
         <div class="count-row">
@@ -222,6 +236,7 @@ onMounted(() => {
 
 .top-background {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   width: 100%;
   min-height: 180px;
@@ -229,16 +244,33 @@ onMounted(() => {
 }
 
 .profile-area {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 16px;
   align-items: center;
   width: min(100%, 362px);
-  padding: 32px 20px;
+  padding: 32px 20px 18px;
+  margin: 0 auto;
 }
 
 .profile-link {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   color: inherit;
   text-decoration: none;
+}
+
+.logout-action {
+  justify-self: end;
+}
+
+.security-tip {
+  width: min(calc(100% - 32px), 362px);
+  margin: 0 auto;
+  padding: 0 20px 12px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 .avatar {
