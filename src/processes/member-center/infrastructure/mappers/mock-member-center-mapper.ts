@@ -10,6 +10,7 @@ import type {
   MemberCenterPageData,
   MemberFavoritesPageData,
   MemberHistoryPageData,
+  MemberOrderSummary,
   MemberProductListItem,
 } from '../../domain/member-center-page-data'
 
@@ -41,14 +42,16 @@ export function mapMockMemberCardsPageData(): MemberCardsPageData {
   }
 }
 
-export function mapMockMemberCenterPageData(): MemberCenterPageData {
+export function mapMockMemberCenterPageData(orderSummary?: MemberOrderSummary): MemberCenterPageData {
   return {
     counts: {
       ...mockAccountData.memberCenterPageData.counts,
       browsingCount: mockAccountData.memberCollectionsPageData.browsingHistory.length,
       favoritesCount: mockAccountData.memberCollectionsPageData.favoriteProducts.length,
     },
-    orderSummary: { ...mockAccountData.memberCenterPageData.orderSummary },
+    orderSummary: orderSummary
+      ? { ...orderSummary }
+      : { ...mockAccountData.memberCenterPageData.orderSummary },
     profile: { ...mockAccountData.memberCenterPageData.profile },
     servicePhone: mockAccountData.memberCenterPageData.servicePhone ?? '',
     shortcuts: mockAccountData.memberCenterPageData.shortcuts.map((shortcut) => ({ ...shortcut })),

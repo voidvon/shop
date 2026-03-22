@@ -5,7 +5,10 @@ import {
   createMemberAuthSessionSnapshot,
   type MemberAuthSessionPersistence,
 } from '../domain/member-auth'
-import type { MemberAuthSession } from '../domain/member-auth-session'
+import type {
+  MemberAuthSession,
+  MemberAuthSessionListener,
+} from '../domain/member-auth-session'
 
 const memberAuthStorageKey = 'shop.member-auth.session'
 
@@ -65,11 +68,19 @@ function persistAuthResult(
 
 export function createBrowserMemberAuthSession(): MemberAuthSession {
   let snapshot = createMemberAuthSessionSnapshot(readStoredMemberAuthResult())
+  const listeners = new Set<MemberAuthSessionListener>()
+
+  function notifyListeners() {
+    listeners.forEach((listener) => {
+      listener(snapshot)
+    })
+  }
 
   return {
     clear() {
       snapshot = createGuestMemberAuthSessionSnapshot()
       clearStoredAuthResult()
+      notifyListeners()
     },
 
     getSnapshot() {
@@ -79,6 +90,15 @@ export function createBrowserMemberAuthSession(): MemberAuthSession {
     setAuthResult(authResult, options) {
       snapshot = createMemberAuthSessionSnapshot(authResult)
       persistAuthResult(authResult, options?.persistence ?? 'local')
+      notifyListeners()
+    },
+
+    subscribe(listener) {
+      listeners.add(listener)
+
+      return () => {
+        listeners.delete(listener)
+      }
     },
   }
 }

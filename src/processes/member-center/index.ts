@@ -4,11 +4,12 @@ export type {
   MemberCenterPageData,
   MemberFavoritesPageData,
   MemberHistoryPageData,
+  MemberOrderSummary,
   MemberProductListItem,
 } from './domain/member-center-page-data'
 export type { MemberCenterQuery } from './domain/member-center-query'
-export { backendAMemberCenterQuery } from './infrastructure/adapters/backend-a/backend-a-member-center-query'
-export { mockMemberCenterQuery } from './infrastructure/adapters/mock/mock-member-center-query'
+export { createBackendAMemberCenterQuery } from './infrastructure/adapters/backend-a/backend-a-member-center-query'
+export { createMockMemberCenterQuery } from './infrastructure/adapters/mock/mock-member-center-query'
 export {
   provideMemberCenterQuery,
   useMemberCenterQuery,

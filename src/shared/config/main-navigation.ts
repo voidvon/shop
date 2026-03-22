@@ -47,6 +47,10 @@ export function resolveActiveMainNavigationKey(route: { meta?: RouteMeta }) {
   return isMainNavigationKey(key) ? key : undefined
 }
 
+export function hasMainNavigation(route: { meta?: RouteMeta }) {
+  return resolveRouteMeta(route).mainNavigation !== undefined
+}
+
 export function resolveMainNavigationItems(routes: readonly NavigationRoute[]) {
   const itemByKey = new Map<MainNavigationKey, MainNavigationItem>()
 

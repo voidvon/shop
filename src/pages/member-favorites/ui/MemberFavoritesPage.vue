@@ -32,13 +32,7 @@ function formatAmount(value: number) {
 }
 
 async function handleRemoveFavorite(productId: string) {
-  const item = memberFavoritesPageData.value.items.find((candidate) => candidate.productId === productId)
-
-  if (!item) {
-    return
-  }
-
-  await removeFavorite(item)
+  await removeFavorite(productId)
   showSuccessToast('已取消收藏')
 }
 

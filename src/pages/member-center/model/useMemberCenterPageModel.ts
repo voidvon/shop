@@ -1,14 +1,12 @@
-import { ref } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 
 import { useMemberAuthSession } from '@/entities/member-auth'
 import {
   countMemberHistory,
   createBrowserMemberHistoryRepository,
 } from '@/entities/member-history'
-import {
-  countMemberFavorites,
-  useMemberFavoriteRepository,
-} from '@/entities/member-favorite'
+import { useMemberFavoriteStore } from '@/entities/member-favorite'
+import { useCartStore } from '@/features/add-to-cart'
 import { useMemberCenterQuery, type MemberCenterPageData } from '@/processes/member-center'
 
 const emptyMemberCenterPageData: MemberCenterPageData = {
@@ -37,50 +35,78 @@ const emptyMemberCenterPageData: MemberCenterPageData = {
 export function useMemberCenterPageModel() {
   const memberAuthSession = useMemberAuthSession()
   const memberHistoryRepository = createBrowserMemberHistoryRepository()
-  const memberFavoriteRepository = useMemberFavoriteRepository()
+  const memberFavoriteStore = useMemberFavoriteStore()
+  const cartStore = useCartStore()
   const memberCenterQuery = useMemberCenterQuery()
 
-  const memberCenterPageData = ref<MemberCenterPageData>(emptyMemberCenterPageData)
+  const authSnapshot = ref(memberAuthSession.getSnapshot())
+  const basePageData = ref<MemberCenterPageData>(emptyMemberCenterPageData)
+  const browsingCount = ref(0)
   const errorMessage = ref<string | null>(null)
   const isLoading = ref(false)
+
+  const stopAuthSubscription = memberAuthSession.subscribe((snapshot) => {
+    authSnapshot.value = snapshot
+  })
+
+  onUnmounted(() => {
+    stopAuthSubscription()
+  })
+
+  const memberCenterPageData = computed<MemberCenterPageData>(() => {
+    const authResult = authSnapshot.value.authResult
+
+    if (!authResult) {
+      return {
+        ...basePageData.value,
+        counts: {
+          browsingCount: browsingCount.value,
+          cartCount: 0,
+          favoritesCount: 0,
+        },
+        profile: {
+          avatarUrl: null,
+          isLoggedIn: false,
+          username: null,
+        },
+      }
+    }
+
+    return {
+      ...basePageData.value,
+      counts: {
+        ...basePageData.value.counts,
+        browsingCount: browsingCount.value,
+        cartCount: cartStore.itemCount,
+        favoritesCount: memberFavoriteStore.favoriteCount,
+      },
+      profile: {
+        avatarUrl: authResult.userInfo.avatarUrl,
+        isLoggedIn: true,
+        username: authResult.userInfo.nickname ?? authResult.userInfo.username,
+      },
+    }
+  })
 
   async function loadMemberCenterPage() {
     isLoading.value = true
     errorMessage.value = null
 
     try {
-      const pageData = await memberCenterQuery.getMemberCenterPageData()
-      const browsingCount = await countMemberHistory(memberHistoryRepository)
-      const authSnapshot = memberAuthSession.getSnapshot()
-      const authResult = authSnapshot.authResult
+      const [pageData, nextBrowsingCount] = await Promise.all([
+        memberCenterQuery.getMemberCenterPageData(),
+        countMemberHistory(memberHistoryRepository),
+      ])
 
-      memberCenterPageData.value = authResult
-        ? {
-          ...pageData,
-          counts: {
-            ...pageData.counts,
-            browsingCount,
-            favoritesCount: await countMemberFavorites(memberFavoriteRepository, authResult.userInfo.userId),
-          },
-          profile: {
-            avatarUrl: authResult.userInfo.avatarUrl,
-            isLoggedIn: true,
-            username: authResult.userInfo.nickname ?? authResult.userInfo.username,
-          },
-        }
-        : {
-          ...pageData,
-          counts: {
-            browsingCount,
-            cartCount: 0,
-            favoritesCount: 0,
-          },
-          profile: {
-            avatarUrl: null,
-            isLoggedIn: false,
-            username: null,
-          },
-        }
+      basePageData.value = pageData
+      browsingCount.value = nextBrowsingCount
+
+      if (authSnapshot.value.authResult) {
+        await Promise.all([
+          cartStore.loadSnapshot(),
+          memberFavoriteStore.syncCurrentUserFavorites({ force: true }),
+        ])
+      }
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '会员中心加载失败'
     } finally {

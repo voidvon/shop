@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { showFailToast, showSuccessToast } from 'vant'
 
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
 import EmptyState from '@/shared/ui/EmptyState.vue'
@@ -21,7 +22,13 @@ const TAB_HIDE_DELAY_MS = 260
 
 const route = useRoute()
 const router = useRouter()
-const { loadOrderListPage, orderListPageData } = useOrderListPageModel()
+const {
+  cancelOrder,
+  confirmReceipt,
+  loadOrderListPage,
+  orderListPageData,
+  payOrder,
+} = useOrderListPageModel()
 
 const keyword = ref(typeof route.query.keyword === 'string' ? route.query.keyword : '')
 
@@ -103,6 +110,33 @@ function resolveImage(imageUrl: string | null) {
   return imageUrl || undefined
 }
 
+async function handleCancelOrder(orderId: string) {
+  try {
+    await cancelOrder(orderId)
+    showSuccessToast('订单已取消')
+  } catch {
+    showFailToast('取消订单失败')
+  }
+}
+
+async function handlePayOrder(orderId: string) {
+  try {
+    await payOrder(orderId)
+    showSuccessToast('支付状态已更新')
+  } catch {
+    showFailToast('订单支付失败')
+  }
+}
+
+async function handleConfirmReceipt(orderId: string) {
+  try {
+    await confirmReceipt(orderId)
+    showSuccessToast('已确认收货')
+  } catch {
+    showFailToast('确认收货失败')
+  }
+}
+
 function retainPanel(status: OrderListFilterStatus) {
   const existingTimer = hideTimers.get(status)
   if (existingTimer) {
@@ -176,6 +210,10 @@ onMounted(() => {
   void loadOrderListPage()
 })
 
+onActivated(() => {
+  void loadOrderListPage()
+})
+
 onBeforeUnmount(() => {
   hideTimers.forEach((timer) => {
     clearTimeout(timer)
@@ -227,7 +265,10 @@ onBeforeUnmount(() => {
                 :quantity-text="`x${item.quantity}`"
               />
 
-              <footer class="store-footer" :class="{ 'store-footer-actions': order.status === 'pending-payment' }">
+              <footer
+                class="store-footer"
+                :class="{ 'store-footer-actions': order.status === 'pending-payment' || order.status === 'pending-receipt' }"
+              >
                 <div class="total-row">
                   <span>共{{ getItemCount(order.itemCount, order.items.map((item) => item.quantity)) }}件商品，合计：</span>
                   <i class="coin-dot coin-dot-small" />
@@ -236,7 +277,12 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div v-if="order.status === 'pending-payment'" class="action-row">
-                  <button class="ghost-button" type="button">取消订单</button>
+                  <button class="ghost-button" type="button" @click="handleCancelOrder(order.orderId)">取消订单</button>
+                  <button class="primary-button" type="button" @click="handlePayOrder(order.orderId)">去付款</button>
+                </div>
+
+                <div v-else-if="order.status === 'pending-receipt'" class="action-row">
+                  <button class="primary-button" type="button" @click="handleConfirmReceipt(order.orderId)">确认收货</button>
                 </div>
               </footer>
             </section>
@@ -394,6 +440,7 @@ onBeforeUnmount(() => {
 
 .action-row {
   display: flex;
+  gap: 10px;
   justify-content: flex-end;
 }
 
@@ -407,6 +454,18 @@ onBeforeUnmount(() => {
   color: #9c9b99;
   font-size: 13px;
   font-weight: 500;
+}
+
+.primary-button {
+  min-width: 92px;
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #ea580c;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 </style>

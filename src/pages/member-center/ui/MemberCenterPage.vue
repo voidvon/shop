@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onActivated, onMounted } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 
 import { MemberLogoutButton } from '@/features/member-logout'
@@ -45,13 +45,43 @@ const countCards = computed<CountCard[]>(() => {
   return cards
 })
 
-const orderEntries = [
-  { key: 'pendingPaymentCount', label: '待付款', icon: 'balance-o', status: 'pending-payment' },
-  { key: 'pendingShipmentCount', label: '待发货', icon: 'logistics', status: 'pending-shipment' },
-  { key: 'pendingReceiptCount', label: '待收货', icon: 'send-gift-o', status: 'pending-receipt' },
-  { key: 'pendingReviewCount', label: '待评价', icon: 'chat-o', status: 'pending-review' },
-  { key: 'refundAndReturnCount', label: '退款/退货', icon: 'replay', status: 'after-sale' },
-] as const
+const orderEntries = computed(() => [
+  {
+    count: memberCenterPageData.value.orderSummary.pendingPaymentCount,
+    key: 'pendingPaymentCount',
+    label: '待付款',
+    icon: 'balance-o',
+    status: 'pending-payment',
+  },
+  {
+    count: memberCenterPageData.value.orderSummary.pendingShipmentCount,
+    key: 'pendingShipmentCount',
+    label: '待发货',
+    icon: 'logistics',
+    status: 'pending-shipment',
+  },
+  {
+    count: memberCenterPageData.value.orderSummary.pendingReceiptCount,
+    key: 'pendingReceiptCount',
+    label: '待收货',
+    icon: 'send-gift-o',
+    status: 'pending-receipt',
+  },
+  {
+    count: memberCenterPageData.value.orderSummary.pendingReviewCount,
+    key: 'pendingReviewCount',
+    label: '待评价',
+    icon: 'chat-o',
+    status: 'pending-review',
+  },
+  {
+    count: memberCenterPageData.value.orderSummary.refundAndReturnCount,
+    key: 'refundAndReturnCount',
+    label: '退款/退货',
+    icon: 'replay',
+    status: 'after-sale',
+  },
+] as const)
 
 const shortcutIcons = {
   balance: 'cash-back-record',
@@ -84,6 +114,10 @@ function handleLoggedOut() {
 }
 
 onMounted(() => {
+  void loadMemberCenterPage()
+})
+
+onActivated(() => {
   void loadMemberCenterPage()
 })
 </script>
@@ -132,13 +166,6 @@ onMounted(() => {
           </div>
         </div>
         
-        <div
-          v-if="memberCenterPageData.profile.isLoggedIn"
-          class="security-tip"
-        >
-          当前登录态已写入本地会话，可继续使用订单、卡券与收藏能力。
-        </div>
-
         <div class="count-row">
           <RouterLink v-for="card in countCards" :key="card.label" class="count-card" :to="card.route">
             <strong>{{ card.value }}</strong>
@@ -164,6 +191,7 @@ onMounted(() => {
               class="order-entry"
               :to="buildOrderRoute(entry.status)"
             >
+              <span v-if="entry.count > 0" class="order-badge">{{ entry.count }}</span>
               <van-icon :name="entry.icon" size="22" />
               <span>{{ entry.label }}</span>
             </RouterLink>
@@ -262,15 +290,6 @@ onMounted(() => {
 
 .logout-action {
   justify-self: end;
-}
-
-.security-tip {
-  width: min(calc(100% - 32px), 362px);
-  margin: 0 auto;
-  padding: 0 20px 12px;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 11px;
-  line-height: 1.5;
 }
 
 .avatar {
@@ -395,6 +414,7 @@ onMounted(() => {
 }
 
 .order-entry {
+  position: relative;
   display: grid;
   gap: 6px;
   justify-items: center;
@@ -409,6 +429,22 @@ onMounted(() => {
   font-size: 10px;
   font-weight: 500;
   line-height: 1.2;
+}
+
+.order-badge {
+  position: absolute;
+  top: -2px;
+  right: 10px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ea580c;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
 }
 
 .shortcut-card {

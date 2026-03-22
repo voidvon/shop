@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onActivated, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 
+import { useMemberFavoriteStore } from '@/entities/member-favorite'
 import { formatCurrency } from '@/shared/lib/currency'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
@@ -18,6 +19,7 @@ const {
   loadHomePage,
   loadMoreHotProducts,
 } = useHomePageModel()
+const memberFavoriteStore = useMemberFavoriteStore()
 const carouselItems = computed(() =>
   homePageData.value.banners.map((banner) => ({
     ...banner,
@@ -26,6 +28,14 @@ const carouselItems = computed(() =>
 )
 const quickCategories = computed(() => homePageData.value.quickCategories.slice(0, 8))
 const loadMoreTriggerRef = ref<HTMLElement | null>(null)
+
+function isProductFavorited(productId: string) {
+  return memberFavoriteStore.isProductFavorited(productId)
+}
+
+function syncFavoriteState(force = false) {
+  void memberFavoriteStore.syncCurrentUserFavorites({ force })
+}
 
 function tryLoadMoreOnScroll() {
   if (
@@ -48,9 +58,14 @@ function tryLoadMoreOnScroll() {
 
 onMounted(() => {
   void loadHomePage()
+  syncFavoriteState()
 
   window.addEventListener('scroll', tryLoadMoreOnScroll, { passive: true })
   window.addEventListener('resize', tryLoadMoreOnScroll)
+})
+
+onActivated(() => {
+  syncFavoriteState(true)
 })
 
 onUnmounted(() => {
@@ -116,6 +131,10 @@ watch(
               class="product-card"
               :to="{ name: 'product-detail', params: { productId: product.id } }"
             >
+              <span v-if="isProductFavorited(product.id)" class="favorite-badge">
+                <van-icon name="like" size="12" />
+                已收藏
+              </span>
               <img :src="product.imageUrl || '/favicon.ico'" :alt="product.name">
               <strong>{{ product.name }}</strong>
               <div class="price-row">
@@ -229,12 +248,29 @@ watch(
 }
 
 .product-card {
+  position: relative;
   display: grid;
   gap: 8px;
   padding: 0 0 8px;
   border-radius: 12px;
   overflow: hidden;
   background: #fff;
+}
+
+.favorite-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(255, 247, 237, 0.96);
+  color: #c2410c;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .product-card img {

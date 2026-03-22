@@ -14,10 +14,18 @@ import {
   type CartRepository,
 } from '@/entities/cart'
 import {
-  backendAOrderRepository,
-  mockOrderRepository,
+  createBrowserOrderRepository,
   type OrderRepository,
 } from '@/entities/order'
+import {
+  getBackendAOrderSeedRecords,
+} from '@/entities/order/infrastructure/adapters/backend-a/backend-a-order-repository'
+import {
+  getMockOrderSeedRecords,
+} from '@/entities/order/infrastructure/adapters/mock/mock-order-repository'
+import {
+  readBrowserOrderRecords,
+} from '@/entities/order/infrastructure/browser-order-storage'
 import {
   backendAProductRepository,
   mockProductRepository,
@@ -28,8 +36,8 @@ import {
   type CheckoutFlowPort,
 } from '@/processes/checkout-flow'
 import {
-  backendAMemberCenterQuery,
-  mockMemberCenterQuery,
+  createBackendAMemberCenterQuery,
+  createMockMemberCenterQuery,
   type MemberCenterQuery,
 } from '@/processes/member-center'
 import {
@@ -42,12 +50,13 @@ import {
   type TradeQuery,
 } from '@/processes/trade'
 import {
+  createBrowserOrderListPageDataReader,
+} from '@/processes/trade/infrastructure/create-browser-order-list-page-data-reader'
+import {
   mapBackendACartPageData,
-  mapBackendAOrderListPageData,
 } from '@/processes/trade/infrastructure/mappers/backend-a-trade-mapper'
 import {
   mapMockCartPageData,
-  mapMockOrderListPageData,
 } from '@/processes/trade/infrastructure/mappers/mock-trade-mapper'
 import { backendTarget, getBackendLabel, type BackendType } from '@/shared/config/backend'
 import {
@@ -116,17 +125,33 @@ function resolveMemberAuthRepository(type: BackendType) {
   }
 }
 
-function resolveCartRepository() {
-  return createBrowserCartRepository()
+function resolveCartRepository(memberAuthSession: MemberAuthSession) {
+  return createBrowserCartRepository({
+    getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+  })
 }
 
-function resolveOrderRepository(type: BackendType) {
+function resolveOrderRepository(type: BackendType, memberAuthSession: MemberAuthSession) {
   switch (type) {
     case 'backend-a':
-      return backendAOrderRepository
+      return createBrowserOrderRepository({
+        defaultStoreName: 'Backend A 选品馆',
+        getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+        getSeedRecords: getBackendAOrderSeedRecords,
+        namespace: 'backend-a',
+        resolveDiscount: (command) => {
+          const subtotal = command.lines.reduce((sum, line) => sum + line.lineTotal, 0)
+          return command.source === 'cart' ? Math.round(subtotal * 0.08) : Math.round(subtotal * 0.05)
+        },
+      })
     case 'mock':
     default:
-      return mockOrderRepository
+      return createBrowserOrderRepository({
+        defaultStoreName: '模拟订单',
+        getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+        getSeedRecords: getMockOrderSeedRecords,
+        namespace: 'mock',
+      })
   }
 }
 
@@ -140,31 +165,47 @@ function resolveStorefrontQuery(type: BackendType) {
   }
 }
 
-function resolveTradeQuery(type: BackendType, cartRepository: CartRepository) {
+function resolveTradeQuery(
+  type: BackendType,
+  cartRepository: CartRepository,
+  memberAuthSession: MemberAuthSession,
+) {
   switch (type) {
     case 'backend-a':
       return createTradeQuery({
         cartRepository,
-        getOrderListPageData: mapBackendAOrderListPageData,
+        getOrderListPageData: createBrowserOrderListPageDataReader({
+          readOrders: () => readBrowserOrderRecords(
+            'backend-a',
+            memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+            getBackendAOrderSeedRecords,
+          ),
+        }),
         mapCartPageData: mapBackendACartPageData,
       })
     case 'mock':
     default:
       return createTradeQuery({
         cartRepository,
-        getOrderListPageData: mapMockOrderListPageData,
+        getOrderListPageData: createBrowserOrderListPageDataReader({
+          readOrders: () => readBrowserOrderRecords(
+            'mock',
+            memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+            getMockOrderSeedRecords,
+          ),
+        }),
         mapCartPageData: mapMockCartPageData,
       })
   }
 }
 
-function resolveMemberCenterQuery(type: BackendType) {
+function resolveMemberCenterQuery(type: BackendType, memberAuthSession: MemberAuthSession) {
   switch (type) {
     case 'backend-a':
-      return backendAMemberCenterQuery
+      return createBackendAMemberCenterQuery(memberAuthSession)
     case 'mock':
     default:
-      return mockMemberCenterQuery
+      return createMockMemberCenterQuery(memberAuthSession)
   }
 }
 
@@ -172,12 +213,12 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
   const supportedModules = supportedModulesByBackend[type]
   const enabledModules = resolveRuntimeEnabledModules(type)
   const memberAuthSession = createBrowserMemberAuthSession()
-  const cartRepository = resolveCartRepository()
+  const cartRepository = resolveCartRepository(memberAuthSession)
   const memberFavoriteRepository = createBrowserMemberFavoriteRepository()
   const repositories = {
     cart: cartRepository,
     memberFavorite: memberFavoriteRepository,
-    order: resolveOrderRepository(type),
+    order: resolveOrderRepository(type, memberAuthSession),
     product: resolveProductRepository(type),
   }
 
@@ -196,9 +237,9 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
         orderRepository: repositories.order,
         productRepository: repositories.product,
       }),
-      memberCenter: resolveMemberCenterQuery(type),
+      memberCenter: resolveMemberCenterQuery(type, memberAuthSession),
       storefront: resolveStorefrontQuery(type),
-      trade: resolveTradeQuery(type, cartRepository),
+      trade: resolveTradeQuery(type, cartRepository, memberAuthSession),
     },
     repositories,
     supportedModules,

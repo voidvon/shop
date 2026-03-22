@@ -1,65 +1,24 @@
-import { ref } from 'vue'
+import { computed } from 'vue'
 
 import {
-  useMemberAuthSession,
-} from '@/entities/member-auth'
-import {
-  getMemberFavorites,
-  removeMemberFavorite,
-  useMemberFavoriteRepository,
-  type MemberFavoriteItem,
+  useMemberFavoriteStore,
 } from '@/entities/member-favorite'
 
-interface MemberFavoritesPageData {
-  items: MemberFavoriteItem[]
-}
-
-const emptyMemberFavoritesPageData: MemberFavoritesPageData = {
-  items: [],
-}
-
 export function useMemberFavoritesPageModel() {
-  const memberAuthSession = useMemberAuthSession()
-  const memberFavoriteRepository = useMemberFavoriteRepository()
+  const memberFavoriteStore = useMemberFavoriteStore()
 
-  const memberFavoritesPageData = ref<MemberFavoritesPageData>(emptyMemberFavoritesPageData)
-  const errorMessage = ref<string | null>(null)
-  const isLoading = ref(false)
+  const memberFavoritesPageData = computed(() => ({
+    items: memberFavoriteStore.items,
+  }))
+  const errorMessage = computed(() => memberFavoriteStore.errorMessage)
+  const isLoading = computed(() => memberFavoriteStore.isLoading)
 
   async function loadMemberFavoritesPage() {
-    const userId = memberAuthSession.getSnapshot().authResult?.userInfo.userId
-
-    if (!userId) {
-      memberFavoritesPageData.value = emptyMemberFavoritesPageData
-      return
-    }
-
-    isLoading.value = true
-    errorMessage.value = null
-
-    try {
-      memberFavoritesPageData.value = {
-        items: await getMemberFavorites(memberFavoriteRepository, userId),
-      }
-    } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : '收藏页加载失败'
-    } finally {
-      isLoading.value = false
-    }
+    await memberFavoriteStore.syncCurrentUserFavorites({ force: true })
   }
 
-  async function removeFavorite(item: MemberFavoriteItem) {
-    const userId = memberAuthSession.getSnapshot().authResult?.userInfo.userId
-
-    if (!userId) {
-      return
-    }
-
-    const items = await removeMemberFavorite(memberFavoriteRepository, userId, item.productId)
-
-    memberFavoritesPageData.value = {
-      items,
-    }
+  async function removeFavorite(productId: string) {
+    await memberFavoriteStore.removeFavoriteByProductId(productId)
   }
 
   return {

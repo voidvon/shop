@@ -6,6 +6,7 @@ export { saveMemberFavorite } from './application/save-member-favorite'
 export type { MemberFavoriteItem } from './domain/member-favorite'
 export type { MemberFavoriteRepository } from './domain/member-favorite-repository'
 export { createBrowserMemberFavoriteRepository } from './infrastructure/create-browser-member-favorite-repository'
+export { useMemberFavoriteStore } from './model/useMemberFavoriteStore'
 export {
   provideMemberFavoriteRepository,
   useMemberFavoriteRepository,

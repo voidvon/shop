@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { useCheckoutFlowPort } from '@/processes/checkout-flow'
+import { useTradeStore } from '@/processes/trade'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import {
   type CheckoutPreview,
@@ -10,6 +11,7 @@ import {
 
 export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const checkoutFlowPort = useCheckoutFlowPort()
+  const tradeStore = useTradeStore()
   const isCheckoutEnabled = useModuleAvailability('checkout')
 
   const confirmation = ref<OrderConfirmation | null>(null)
@@ -58,6 +60,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
       confirmation.value = result.confirmation
       submissionMessage.value = `订单 ${result.confirmation.orderId} 已提交，应付 ${result.confirmation.payableAmount}`
       preview.value = result.preview
+      await tradeStore.recordSubmittedOrder(result.confirmation, result.preview)
       return result.confirmation
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '提交订单失败'

@@ -1,27 +1,34 @@
+import { mockTradeData } from '@/shared/mocks'
+
 import {
-  createCheckoutPreview,
-  type CreateCheckoutPreviewCommand,
-  type OrderConfirmation,
-} from '../../../domain/order'
+  createBrowserOrderRepository,
+} from '../../create-browser-order-repository'
+import type { OrderRecord } from '../../../domain/order'
 import type { OrderRepository } from '../../../domain/order-repository'
 
-function createConfirmation(command: CreateCheckoutPreviewCommand): OrderConfirmation {
-  const preview = createCheckoutPreview(command)
-
-  return {
-    orderId: `mock-${Date.now()}`,
-    payableAmount: preview.payableAmount,
-    source: command.source,
-    submittedAt: new Date().toISOString(),
-  }
+export function getMockOrderSeedRecords(): OrderRecord[] {
+  return mockTradeData.orderCenterPageData.orderPage.list.map((order) => ({
+    itemCount: order.itemCount,
+    items: order.items.map((item) => ({
+      orderItemId: item.orderItemId,
+      productImageUrl: item.productImageUrl,
+      productName: item.productName,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    })),
+    orderId: order.orderId,
+    orderNo: order.orderNo,
+    shippingAmount: order.shippingAmount,
+    status: order.status,
+    statusText: order.statusText,
+    storeName: order.storeName,
+    totalAmount: order.totalAmount,
+  }))
 }
 
-export const mockOrderRepository: OrderRepository = {
-  async createPreview(command) {
-    return Promise.resolve(createCheckoutPreview(command))
-  },
-
-  async submit(command) {
-    return Promise.resolve(createConfirmation(command))
-  },
-}
+export const mockOrderRepository: OrderRepository = createBrowserOrderRepository({
+  defaultStoreName: '模拟订单',
+  getScopeKey: () => 'guest',
+  getSeedRecords: getMockOrderSeedRecords,
+  namespace: 'mock',
+})

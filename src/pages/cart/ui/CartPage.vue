@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onActivated, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
@@ -102,6 +102,10 @@ function handleCheckout() {
 }
 
 onMounted(() => {
+  void loadCartPage()
+})
+
+onActivated(() => {
   void loadCartPage()
 })
 </script>

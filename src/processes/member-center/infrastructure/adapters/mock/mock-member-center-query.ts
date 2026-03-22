@@ -1,4 +1,9 @@
+import type { MemberAuthSession } from '@/entities/member-auth'
+import { getMockOrderSeedRecords } from '@/entities/order/infrastructure/adapters/mock/mock-order-repository'
+import { readBrowserOrderRecords } from '@/entities/order/infrastructure/browser-order-storage'
+
 import type { MemberCenterQuery } from '../../../domain/member-center-query'
+import { createBrowserMemberOrderSummaryReader } from '../../create-browser-member-order-summary-reader'
 import {
   mapMockMemberCardBindPageData,
   mapMockMemberCardsPageData,
@@ -7,24 +12,34 @@ import {
   mapMockMemberHistoryPageData,
 } from '../../mappers/mock-member-center-mapper'
 
-export const mockMemberCenterQuery: MemberCenterQuery = {
-  async getMemberCardBindPageData() {
-    return Promise.resolve(mapMockMemberCardBindPageData())
-  },
+export function createMockMemberCenterQuery(memberAuthSession: MemberAuthSession): MemberCenterQuery {
+  const getMemberOrderSummary = createBrowserMemberOrderSummaryReader({
+    readOrders: () => readBrowserOrderRecords(
+      'mock',
+      memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+      getMockOrderSeedRecords,
+    ),
+  })
 
-  async getMemberCardsPageData() {
-    return Promise.resolve(mapMockMemberCardsPageData())
-  },
+  return {
+    async getMemberCardBindPageData() {
+      return Promise.resolve(mapMockMemberCardBindPageData())
+    },
 
-  async getMemberCenterPageData() {
-    return Promise.resolve(mapMockMemberCenterPageData())
-  },
+    async getMemberCardsPageData() {
+      return Promise.resolve(mapMockMemberCardsPageData())
+    },
 
-  async getMemberFavoritesPageData() {
-    return Promise.resolve(mapMockMemberFavoritesPageData())
-  },
+    async getMemberCenterPageData() {
+      return Promise.resolve(mapMockMemberCenterPageData(getMemberOrderSummary()))
+    },
 
-  async getMemberHistoryPageData() {
-    return Promise.resolve(mapMockMemberHistoryPageData())
-  },
+    async getMemberFavoritesPageData() {
+      return Promise.resolve(mapMockMemberFavoritesPageData())
+    },
+
+    async getMemberHistoryPageData() {
+      return Promise.resolve(mapMockMemberHistoryPageData())
+    },
+  }
 }

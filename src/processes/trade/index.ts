@@ -4,9 +4,8 @@ export type {
   OrderListPageData,
 } from './domain/trade-page-data'
 export type { TradeQuery } from './domain/trade-query'
-export { backendATradeQuery } from './infrastructure/adapters/backend-a/backend-a-trade-query'
-export { mockTradeQuery } from './infrastructure/adapters/mock/mock-trade-query'
 export { createTradeQuery } from './infrastructure/create-trade-query'
+export { useTradeStore } from './model/useTradeStore'
 export {
   provideTradeQuery,
   useTradeQuery,

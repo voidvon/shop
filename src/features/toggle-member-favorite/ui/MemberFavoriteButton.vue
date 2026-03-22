@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showSuccessToast, showToast } from 'vant'
 
 import { useMemberAuthSession } from '@/entities/member-auth'
-import {
-  hasMemberFavorite,
-  useMemberFavoriteRepository,
-} from '@/entities/member-favorite'
-
-import { ensureMemberFavorite } from '../application/ensure-member-favorite'
-import { toggleMemberFavorite } from '../application/toggle-member-favorite'
+import { useMemberFavoriteStore } from '@/entities/member-favorite'
 import {
   clearPendingMemberFavoriteIntent,
   readPendingMemberFavoriteIntent,
@@ -28,30 +22,24 @@ const props = defineProps<{
 const route = useRoute()
 const router = useRouter()
 const memberAuthSession = useMemberAuthSession()
-const memberFavoriteRepository = useMemberFavoriteRepository()
+const memberFavoriteStore = useMemberFavoriteStore()
 
-const isFavorited = ref(false)
-const isLoading = ref(false)
-const isSubmitting = ref(false)
+const isFavorited = computed(() => memberFavoriteStore.isProductFavorited(props.productId))
+const isSubmitting = computed(() => memberFavoriteStore.pendingProductId === props.productId)
 
 async function syncFavoriteState() {
   const authSnapshot = memberAuthSession.getSnapshot()
   const userId = authSnapshot.authResult?.userInfo.userId
 
   if (!userId) {
-    isFavorited.value = false
     return
   }
 
-  isLoading.value = true
-
   try {
-    isFavorited.value = await hasMemberFavorite(memberFavoriteRepository, userId, props.productId)
-    await resumePendingFavorite(userId)
+    await memberFavoriteStore.syncCurrentUserFavorites()
+    await resumePendingFavorite()
   } catch {
-    isFavorited.value = false
-  } finally {
-    isLoading.value = false
+    // Keep the latest known store state when sync fails.
   }
 }
 
@@ -72,7 +60,7 @@ async function goToLogin() {
 }
 
 async function handleToggleFavorite() {
-  if (isSubmitting.value || isLoading.value) {
+  if (isSubmitting.value) {
     return
   }
 
@@ -84,28 +72,21 @@ async function handleToggleFavorite() {
     return
   }
 
-  isSubmitting.value = true
-
   try {
-    const result = await toggleMemberFavorite({
+    const result = await memberFavoriteStore.toggleFavorite({
       productId: props.productId,
       productImageUrl: props.productImageUrl,
       productName: props.productName,
       productPrice: props.productPrice,
       storeName: props.storeName,
-      userId,
-    }, memberFavoriteRepository)
-
-    isFavorited.value = result.isFavorited
+    })
     showSuccessToast(result.successMessage)
   } catch (error) {
     showToast(error instanceof Error ? error.message : '收藏操作失败')
-  } finally {
-    isSubmitting.value = false
   }
 }
 
-async function resumePendingFavorite(userId: string) {
+async function resumePendingFavorite() {
   const pendingIntent = readPendingMemberFavoriteIntent()
 
   if (!pendingIntent) {
@@ -116,17 +97,15 @@ async function resumePendingFavorite(userId: string) {
     return
   }
 
-  const result = await ensureMemberFavorite({
+  const result = await memberFavoriteStore.ensureFavorite({
     productId: props.productId,
     productImageUrl: props.productImageUrl,
     productName: props.productName,
     productPrice: props.productPrice,
     storeName: props.storeName,
-    userId,
-  }, memberFavoriteRepository)
+  })
 
   clearPendingMemberFavoriteIntent()
-  isFavorited.value = result.isFavorited
 
   if (result.successMessage) {
     showSuccessToast(result.successMessage)
@@ -134,7 +113,7 @@ async function resumePendingFavorite(userId: string) {
 }
 
 watch(
-  () => props.productId,
+  () => [props.productId, memberFavoriteStore.currentUserId] as const,
   () => {
     void syncFavoriteState()
   },

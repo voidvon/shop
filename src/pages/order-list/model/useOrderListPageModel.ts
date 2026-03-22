@@ -1,36 +1,37 @@
-import { ref } from 'vue'
+import { computed } from 'vue'
 
-import { useTradeQuery, type OrderListPageData } from '@/processes/trade'
-
-const emptyOrderListPageData: OrderListPageData = {
-  keyword: '',
-  orders: [],
-}
+import { useTradeStore } from '@/processes/trade'
 
 export function useOrderListPageModel() {
-  const tradeQuery = useTradeQuery()
+  const tradeStore = useTradeStore()
 
-  const orderListPageData = ref<OrderListPageData>(emptyOrderListPageData)
-  const errorMessage = ref<string | null>(null)
-  const isLoading = ref(false)
+  const orderListPageData = computed(() => tradeStore.orderListPageData)
+  const errorMessage = computed(() => tradeStore.errorMessage)
+  const isLoading = computed(() => tradeStore.isLoadingOrderList)
 
   async function loadOrderListPage() {
-    isLoading.value = true
-    errorMessage.value = null
+    await tradeStore.loadOrderList()
+  }
 
-    try {
-      orderListPageData.value = await tradeQuery.getOrderListPageData()
-    } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : '订单列表加载失败'
-    } finally {
-      isLoading.value = false
-    }
+  async function cancelOrder(orderId: string) {
+    return tradeStore.cancelOrder(orderId)
+  }
+
+  async function payOrder(orderId: string) {
+    return tradeStore.payOrderById(orderId)
+  }
+
+  async function confirmReceipt(orderId: string) {
+    return tradeStore.confirmReceipt(orderId)
   }
 
   return {
+    cancelOrder,
+    confirmReceipt,
     errorMessage,
     isLoading,
     loadOrderListPage,
     orderListPageData,
+    payOrder,
   }
 }

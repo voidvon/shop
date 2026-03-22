@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onActivated, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 
+import { useMemberFavoriteStore } from '@/entities/member-favorite'
 import { formatCurrency } from '@/shared/lib/currency'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
@@ -24,9 +25,23 @@ const {
   selectedSecondaryCategoryId,
   visibleProducts,
 } = useCategoryPageModel()
+const memberFavoriteStore = useMemberFavoriteStore()
+
+function isProductFavorited(productId: string) {
+  return memberFavoriteStore.isProductFavorited(productId)
+}
+
+function syncFavoriteState(force = false) {
+  void memberFavoriteStore.syncCurrentUserFavorites({ force })
+}
 
 onMounted(() => {
   void loadCategoryPage()
+  syncFavoriteState()
+})
+
+onActivated(() => {
+  syncFavoriteState(true)
 })
 </script>
 
@@ -117,6 +132,10 @@ onMounted(() => {
             class="product-card"
             :to="{ name: 'product-detail', params: { productId: product.id } }"
           >
+            <span v-if="isProductFavorited(product.id)" class="favorite-badge">
+              <van-icon name="like" size="12" />
+              已收藏
+            </span>
             <img :src="product.imageUrl || '/favicon.ico'" :alt="product.name">
             <div class="name-wrapper">
               <strong>{{ product.name }}</strong>
@@ -292,11 +311,28 @@ onMounted(() => {
 }
 
 .product-card {
+  position: relative;
   display: grid;
   gap: 8px;
   padding: 0 0 8px;
   border-radius: 12px;
   background: #fff;
+}
+
+.favorite-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(255, 247, 237, 0.96);
+  color: #c2410c;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .product-card img {

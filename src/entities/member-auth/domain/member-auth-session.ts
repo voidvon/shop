@@ -5,6 +5,8 @@ import type {
   MemberAuthSessionSnapshot,
 } from './member-auth'
 
+export type MemberAuthSessionListener = (snapshot: MemberAuthSessionSnapshot) => void
+
 export interface MemberAuthSession {
   clear(): void
   getSnapshot(): MemberAuthSessionSnapshot
@@ -12,4 +14,5 @@ export interface MemberAuthSession {
     authResult: AuthResult,
     options?: { persistence?: MemberAuthSessionPersistence },
   ): void
+  subscribe(listener: MemberAuthSessionListener): () => void
 }

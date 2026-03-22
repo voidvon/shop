@@ -11,7 +11,12 @@ interface StoredCartState {
   selectedProductIds: string[]
 }
 
-const cartStorageKey = 'shop.cart'
+interface CreateBrowserCartRepositoryOptions {
+  getScopeKey?: () => string
+}
+
+const cartStoragePrefix = 'shop.cart'
+const legacyCartStorageKey = 'shop.cart'
 
 function canUseStorage() {
   return typeof window !== 'undefined'
@@ -41,21 +46,20 @@ function normalizeStoredCartLine(value: unknown): CartLine | null {
   })
 }
 
-function readStoredCartState(): StoredCartState {
-  if (!canUseStorage()) {
-    return {
-      lines: [],
-      selectedProductIds: [],
-    }
+function createCartStorageKey(scopeKey: string) {
+  return `${cartStoragePrefix}.${scopeKey}`
+}
+
+function createEmptyStoredCartState(): StoredCartState {
+  return {
+    lines: [],
+    selectedProductIds: [],
   }
+}
 
-  const storedValue = window.localStorage.getItem(cartStorageKey)
-
+function parseStoredCartState(storedValue: string | null, storageKey: string): StoredCartState {
   if (!storedValue) {
-    return {
-      lines: [],
-      selectedProductIds: [],
-    }
+    return createEmptyStoredCartState()
   }
 
   try {
@@ -81,20 +85,45 @@ function readStoredCartState(): StoredCartState {
       selectedProductIds,
     }
   } catch {
-    window.localStorage.removeItem(cartStorageKey)
-    return {
-      lines: [],
-      selectedProductIds: [],
-    }
+    window.localStorage.removeItem(storageKey)
+    return createEmptyStoredCartState()
   }
 }
 
-function writeStoredCartState(state: StoredCartState) {
+function readStoredCartState(scopeKey: string): StoredCartState {
+  if (!canUseStorage()) {
+    return createEmptyStoredCartState()
+  }
+
+  const storageKey = createCartStorageKey(scopeKey)
+  const storedValue = window.localStorage.getItem(storageKey)
+
+  if (storedValue) {
+    return parseStoredCartState(storedValue, storageKey)
+  }
+
+  if (scopeKey === 'guest') {
+    const legacyStoredValue = window.localStorage.getItem(legacyCartStorageKey)
+
+    if (!legacyStoredValue) {
+      return createEmptyStoredCartState()
+    }
+
+    const legacyState = parseStoredCartState(legacyStoredValue, legacyCartStorageKey)
+    window.localStorage.setItem(storageKey, JSON.stringify(legacyState))
+    window.localStorage.removeItem(legacyCartStorageKey)
+    return legacyState
+  }
+
+  return createEmptyStoredCartState()
+}
+
+function writeStoredCartState(scopeKey: string, state: StoredCartState) {
   if (!canUseStorage()) {
     return
   }
 
-  window.localStorage.setItem(cartStorageKey, JSON.stringify(state))
+  window.localStorage.setItem(createCartStorageKey(scopeKey), JSON.stringify(state))
 }
 
 function createSnapshot(lines: CartLine[]) {
@@ -107,10 +136,15 @@ function createSelectedSnapshot(state: StoredCartState) {
   return createSnapshot(selectedLines)
 }
 
-export function createBrowserCartRepository(): CartRepository {
+export function createBrowserCartRepository(options: CreateBrowserCartRepositoryOptions = {}): CartRepository {
+  function resolveScopeKey() {
+    return options.getScopeKey?.() ?? 'guest'
+  }
+
   return {
     async addItem(command) {
-      const state = readStoredCartState()
+      const scopeKey = resolveScopeKey()
+      const state = readStoredCartState(scopeKey)
       const existingLine = state.lines.find((line) => line.productId === command.productId)
 
       if (existingLine) {
@@ -124,35 +158,37 @@ export function createBrowserCartRepository(): CartRepository {
         state.selectedProductIds = [...state.selectedProductIds, command.productId]
       }
 
-      writeStoredCartState(state)
+      writeStoredCartState(scopeKey, state)
 
       return createSnapshot(state.lines)
     },
 
     async getSnapshot() {
-      const state = readStoredCartState()
+      const state = readStoredCartState(resolveScopeKey())
       return createSnapshot(state.lines)
     },
 
     async getSelectedSnapshot() {
-      const state = readStoredCartState()
+      const state = readStoredCartState(resolveScopeKey())
       return createSelectedSnapshot(state)
     },
 
     async removeItem(productId) {
-      const state = readStoredCartState()
+      const scopeKey = resolveScopeKey()
+      const state = readStoredCartState(scopeKey)
       const nextState = {
         lines: state.lines.filter((line) => line.productId !== productId),
         selectedProductIds: state.selectedProductIds.filter((selectedId) => selectedId !== productId),
       }
 
-      writeStoredCartState(nextState)
+      writeStoredCartState(scopeKey, nextState)
 
       return createSnapshot(nextState.lines)
     },
 
     async setItemQuantity({ productId, quantity }) {
-      const state = readStoredCartState()
+      const scopeKey = resolveScopeKey()
+      const state = readStoredCartState(scopeKey)
       const nextState = {
         ...state,
         lines: state.lines.map((line) =>
@@ -167,13 +203,14 @@ export function createBrowserCartRepository(): CartRepository {
         ),
       }
 
-      writeStoredCartState(nextState)
+      writeStoredCartState(scopeKey, nextState)
 
       return createSnapshot(nextState.lines)
     },
 
     async setItemsSelected({ productIds, selected }) {
-      const state = readStoredCartState()
+      const scopeKey = resolveScopeKey()
+      const state = readStoredCartState(scopeKey)
       const existingProductIds = new Set(state.lines.map((line) => line.productId))
       const nextSelectedProductIds = new Set(state.selectedProductIds)
 
@@ -195,7 +232,7 @@ export function createBrowserCartRepository(): CartRepository {
         selectedProductIds: [...nextSelectedProductIds],
       }
 
-      writeStoredCartState(nextState)
+      writeStoredCartState(scopeKey, nextState)
 
       return createSelectedSnapshot(nextState)
     },

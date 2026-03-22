@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, onScopeDispose, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import {
@@ -12,11 +12,14 @@ import {
   type CartSnapshot,
   useCartRepository,
 } from '@/entities/cart'
+import { useMemberAuthSession } from '@/entities/member-auth'
 import type { ProductSummary } from '@/entities/product'
 
 export const useCartStore = defineStore('cart', () => {
   const cartRepository = useCartRepository()
+  const memberAuthSession = useMemberAuthSession()
   const snapshot = ref<CartSnapshot>(createEmptyCartSnapshot())
+  const currentScopeKey = ref(memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest')
   const errorMessage = ref<string | null>(null)
   const hasLoaded = ref(false)
   const isLoading = ref(false)
@@ -146,8 +149,24 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
+  const stopAuthSubscription = memberAuthSession.subscribe((nextSnapshot) => {
+    const nextScopeKey = nextSnapshot.authResult?.userInfo.userId ?? 'guest'
+
+    if (nextScopeKey === currentScopeKey.value) {
+      return
+    }
+
+    currentScopeKey.value = nextScopeKey
+    void loadSnapshot()
+  })
+
+  onScopeDispose(() => {
+    stopAuthSubscription()
+  })
+
   return {
     addProduct,
+    currentScopeKey,
     errorMessage,
     hasLoaded,
     isAllSelected,

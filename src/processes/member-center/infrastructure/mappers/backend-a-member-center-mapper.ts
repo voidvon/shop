@@ -6,6 +6,7 @@ import type {
   MemberCenterPageData,
   MemberFavoritesPageData,
   MemberHistoryPageData,
+  MemberOrderSummary,
   MemberProductListItem,
 } from '../../domain/member-center-page-data'
 
@@ -32,7 +33,10 @@ export function mapBackendAMemberCardsPageData(): MemberCardsPageData {
   }
 }
 
-export function mapBackendAMemberCenterPageData(products: ProductSummary[]): MemberCenterPageData {
+export function mapBackendAMemberCenterPageData(
+  products: ProductSummary[],
+  orderSummary?: MemberOrderSummary,
+): MemberCenterPageData {
   const favoriteItems = products.slice(0, 2)
   const historyItems = products.slice(0, 3)
 
@@ -42,13 +46,15 @@ export function mapBackendAMemberCenterPageData(products: ProductSummary[]): Mem
       cartCount: 1,
       favoritesCount: favoriteItems.length,
     },
-    orderSummary: {
-      pendingPaymentCount: 1,
-      pendingReceiptCount: 0,
-      pendingReviewCount: 1,
-      pendingShipmentCount: 1,
-      refundAndReturnCount: 0,
-    },
+    orderSummary: orderSummary
+      ? { ...orderSummary }
+      : {
+          pendingPaymentCount: 1,
+          pendingReceiptCount: 0,
+          pendingReviewCount: 1,
+          pendingShipmentCount: 1,
+          refundAndReturnCount: 0,
+        },
     profile: {
       avatarUrl: null,
       isLoggedIn: true,
