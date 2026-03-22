@@ -160,7 +160,7 @@ watch(
         </p>
       </section>
 
-      <van-back-top class="home-back-top" :bottom="104" :right="24" />
+      <van-back-top class="home-back-top" teleport="" />
     </div>
   </section>
 </template>
@@ -332,5 +332,7 @@ watch(
 .home-back-top {
   --van-back-top-background: var(--color-accent);
   --van-back-top-text-color: #fff;
+  --van-back-top-right: 24px;
+  --van-back-top-bottom: calc(24px + var(--app-bottom-nav-offset, 0px));
 }
 </style>

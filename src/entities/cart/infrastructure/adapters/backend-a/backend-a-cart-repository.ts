@@ -5,6 +5,7 @@ import { mapBackendACartSnapshotDto } from '../../mappers/cart-dto-mapper'
 
 let backendACartEntries: BackendACartLineDto[] = [
   {
+    imageUrl: 'https://images.example.com/backend-a/speaker-cover.jpg',
     qty: 2,
     sku: 'backend-a-speaker',
     title: '织面桌面蓝牙音箱',
@@ -23,6 +24,7 @@ function createSnapshotDto(entries: BackendACartLineDto[]): BackendACartSnapshot
 
 function createEntry(command: AddCartItemCommand): BackendACartLineDto {
   return {
+    imageUrl: command.productImageUrl ?? null,
     qty: command.quantity,
     sku: command.productId,
     title: command.productName,

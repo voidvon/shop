@@ -13,6 +13,7 @@ import {
 } from '@/entities/order'
 import {
   getFeaturedProductSummaries,
+  getProductDetail,
   type ProductRepository,
   type ProductSummary,
 } from '@/entities/product'
@@ -39,20 +40,29 @@ async function clearSubmittedCartLines(
   }
 }
 
-function mapCartToCheckoutLines(snapshot: Awaited<ReturnType<typeof getCartSnapshot>>): CheckoutLine[] {
-  return snapshot.lines.map((line) =>
-    createCheckoutLine({
+async function mapCartToCheckoutLines(
+  snapshot: Awaited<ReturnType<typeof getCartSnapshot>>,
+  productRepository: ProductRepository,
+): Promise<CheckoutLine[]> {
+  return Promise.all(snapshot.lines.map(async (line) => {
+    const productDetail = line.productImageUrl
+      ? null
+      : await getProductDetail(productRepository, line.productId)
+
+    return createCheckoutLine({
       productId: line.productId,
+      productImageUrl: line.productImageUrl ?? productDetail?.coverImageUrl ?? null,
       productName: line.productName,
       quantity: line.quantity,
       unitPrice: line.unitPrice,
-    }),
-  )
+    })
+  }))
 }
 
 function mapProductToInstantLine(product: ProductSummary): CheckoutLine {
   return createCheckoutLine({
     productId: product.id,
+    productImageUrl: product.coverImageUrl,
     productName: product.name,
     quantity: 1,
     unitPrice: product.price,
@@ -73,7 +83,7 @@ async function resolveCheckoutCommand(
       }
 
       return {
-        lines: mapCartToCheckoutLines(selectedCartSnapshot),
+        lines: await mapCartToCheckoutLines(selectedCartSnapshot, options.productRepository),
         source: 'cart',
       }
     }

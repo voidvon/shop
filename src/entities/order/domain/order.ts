@@ -3,6 +3,7 @@ import type { TradeOrderStatus } from '@/shared/types/modules'
 export interface CheckoutLine {
   lineTotal: number
   productId: string
+  productImageUrl?: string | null
   productName: string
   quantity: number
   unitPrice: number
@@ -73,6 +74,7 @@ export function createCheckoutLine(input: Omit<CheckoutLine, 'lineTotal'> & { li
   return {
     lineTotal,
     productId: input.productId,
+    productImageUrl: input.productImageUrl ?? null,
     productName: input.productName,
     quantity,
     unitPrice: input.unitPrice,

@@ -93,6 +93,13 @@ async function handleQuantityChange(productId: string, value: string | number) {
   }
 }
 
+function goToProductDetail(productId: string) {
+  void router.push({
+    name: 'product-detail',
+    params: { productId },
+  })
+}
+
 function handleCheckout() {
   if (isCheckoutDisabled.value) {
     return
@@ -146,31 +153,32 @@ onActivated(() => {
                     @update:model-value="handleProductCheckedChange(item.productId, $event)"
                   />
 
-                  <img class="thumb" :src="item.productImageUrl || undefined" :alt="item.productName">
+                  <button class="item-link" type="button" @click="goToProductDetail(item.productId)">
+                    <img class="thumb" :src="item.productImageUrl || undefined" :alt="item.productName">
 
-                  <div class="right-col">
-                    <div class="name-row">
-                      <strong>{{ item.productName }}</strong>
-                    </div>
+                    <div class="right-col">
+                      <div class="name-row">
+                        <strong>{{ item.productName }}</strong>
+                      </div>
 
-                    <div class="bottom-row">
                       <div class="price-wrap">
                         <span class="price-symbol">¥</span>
                         <span class="price-value">{{ formatAmount(item.unitPrice) }}</span>
                       </div>
-
-                      <van-stepper
-                        :model-value="item.quantity"
-                        theme="round"
-                        integer
-                        min="1"
-                        disable-input
-                        button-size="26"
-                        :disabled="isItemPending(item.productId)"
-                        @update:model-value="handleQuantityChange(item.productId, $event)"
-                      />
                     </div>
-                  </div>
+                  </button>
+
+                  <van-stepper
+                    class="item-stepper"
+                    :model-value="item.quantity"
+                    theme="round"
+                    integer
+                    min="1"
+                    disable-input
+                    button-size="26"
+                    :disabled="isItemPending(item.productId)"
+                    @update:model-value="handleQuantityChange(item.productId, $event)"
+                  />
                 </article>
 
                 <template #right>
@@ -280,7 +288,7 @@ onActivated(() => {
 
 .cart-item-row {
   display: grid;
-  grid-template-columns: 20px 74px minmax(0, 1fr);
+  grid-template-columns: 20px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
   padding: 12px 16px;
@@ -290,6 +298,18 @@ onActivated(() => {
 
 .item-check {
   margin-top: 27px;
+}
+
+.item-link {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
 }
 
 .thumb {
@@ -304,6 +324,7 @@ onActivated(() => {
 .right-col {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .name-row {
@@ -318,13 +339,6 @@ onActivated(() => {
   font-size: 14px;
   font-weight: 500;
   line-height: 1.35;
-}
-
-.bottom-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
 }
 
 .price-wrap {
@@ -345,6 +359,10 @@ onActivated(() => {
 
 .price-value {
   font-size: 16px;
+}
+
+.item-stepper {
+  align-self: end;
 }
 
 .swipe-delete-button {

@@ -6,6 +6,7 @@ import { CheckoutPage } from '@/pages/checkout'
 import { HomePage } from '@/pages/home'
 import { MemberCardBindPage } from '@/pages/member-card-bind'
 import { MemberCardsPage } from '@/pages/member-cards'
+import { MemberAddressesPage } from '@/pages/member-addresses'
 import { MemberCenterPage } from '@/pages/member-center'
 import { MemberFavoritesPage } from '@/pages/member-favorites'
 import { MemberHistoryPage } from '@/pages/member-history'
@@ -210,6 +211,17 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
           activeMainNavigationKey: 'member',
           requiresAuth: true,
           title: '绑定卡券',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/addresses',
+        name: 'member-addresses',
+        component: MemberAddressesPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          keepAlive: true,
+          requiresAuth: true,
+          title: '地址管理',
         },
       }),
     ],

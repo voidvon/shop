@@ -40,6 +40,7 @@ function normalizeStoredCartLine(value: unknown): CartLine | null {
 
   return createCartLine({
     productId: candidate.productId,
+    productImageUrl: candidate.productImageUrl ?? null,
     productName: candidate.productName,
     quantity: candidate.quantity,
     unitPrice: candidate.unitPrice,
@@ -195,6 +196,7 @@ export function createBrowserCartRepository(options: CreateBrowserCartRepository
           line.productId === productId
             ? createCartLine({
                 productId: line.productId,
+                productImageUrl: line.productImageUrl ?? null,
                 productName: line.productName,
                 quantity,
                 unitPrice: line.unitPrice,

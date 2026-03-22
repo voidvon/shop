@@ -5,6 +5,7 @@ export function mapBackendACartSnapshotDto(dto: BackendACartSnapshotDto): CartSn
   const lines = dto.entries.map((entry) =>
     createCartLine({
       productId: entry.sku,
+      productImageUrl: entry.imageUrl ?? null,
       productName: entry.title,
       quantity: entry.qty,
       unitPrice: entry.unitAmount,

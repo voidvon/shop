@@ -7,7 +7,7 @@ import PageTopBar from '@/shared/ui/PageTopBar.vue'
 const router = useRouter()
 
 function goBack() {
-  if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
+  if (globalThis.window?.history.state?.back) {
     router.back()
     return
   }
@@ -19,10 +19,7 @@ function goBack() {
 <template>
   <section class="checkout-page">
     <PageTopBar title="确认订单" @back="goBack" />
-
-    <div class="checkout-scroll">
-      <CheckoutFlowPanel />
-    </div>
+    <CheckoutFlowPanel class="checkout-panel" />
   </section>
 </template>
 
@@ -38,9 +35,7 @@ function goBack() {
   overflow: hidden;
 }
 
-.checkout-scroll {
+.checkout-panel {
   min-height: 0;
-  padding: 16px;
-  overflow-y: auto;
 }
 </style>

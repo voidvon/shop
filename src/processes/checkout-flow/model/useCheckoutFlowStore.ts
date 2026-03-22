@@ -1,6 +1,12 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
+import { useMemberAuthSession } from '@/entities/member-auth'
+import {
+  createBrowserMemberAddressRepository,
+  getMemberAddresses,
+  type MemberAddress,
+} from '@/entities/member-address'
 import { useCheckoutFlowPort } from '@/processes/checkout-flow'
 import { useTradeStore } from '@/processes/trade'
 import { useModuleAvailability } from '@/shared/lib/modules'
@@ -11,8 +17,12 @@ import {
 
 export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const checkoutFlowPort = useCheckoutFlowPort()
+  const memberAuthSession = useMemberAuthSession()
   const tradeStore = useTradeStore()
   const isCheckoutEnabled = useModuleAvailability('checkout')
+  const memberAddressRepository = createBrowserMemberAddressRepository({
+    getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+  })
 
   const confirmation = ref<OrderConfirmation | null>(null)
   const errorMessage = ref<string | null>(null)
@@ -20,10 +30,36 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const isLoading = ref(false)
   const isSubmitting = ref(false)
   const preview = ref<CheckoutPreview | null>(null)
+  const selectedAddress = ref<MemberAddress | null>(null)
   const submissionMessage = ref<string | null>(null)
   const sourceLabel = computed(() =>
     preview.value?.source === 'cart' ? '从购物车进入' : '从立即购买进入',
   )
+
+  async function syncSelectedAddress(options?: { preferredAddressId?: string }) {
+    const addresses = await getMemberAddresses(memberAddressRepository)
+    const preferredAddressId = options?.preferredAddressId ?? selectedAddress.value?.id
+    const nextSelectedAddress = preferredAddressId
+      ? addresses.find((item) => item.id === preferredAddressId) ?? null
+      : null
+
+    selectedAddress.value = nextSelectedAddress
+      ?? addresses.find((item) => item.isDefault)
+      ?? addresses[0]
+      ?? null
+
+    return selectedAddress.value
+  }
+
+  async function selectAddress(addressId: string) {
+    const nextSelectedAddress = await syncSelectedAddress({ preferredAddressId: addressId })
+
+    if (!nextSelectedAddress || nextSelectedAddress.id !== addressId) {
+      throw new Error('当前地址不存在')
+    }
+
+    return nextSelectedAddress
+  }
 
   async function loadPreview() {
     if (!isCheckoutEnabled.value) {
@@ -37,6 +73,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
 
     try {
       preview.value = await checkoutFlowPort.getPreview()
+      await syncSelectedAddress()
       confirmation.value = null
       submissionMessage.value = null
       hasLoaded.value = true
@@ -50,6 +87,13 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   async function submitCurrentOrder() {
     if (!isCheckoutEnabled.value) {
       return
+    }
+
+    await syncSelectedAddress()
+
+    if (!selectedAddress.value) {
+      errorMessage.value = '请先选择收货地址'
+      throw new Error('请先选择收货地址')
     }
 
     isSubmitting.value = true
@@ -70,6 +114,10 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     }
   }
 
+  memberAuthSession.subscribe(() => {
+    selectedAddress.value = null
+  })
+
   return {
     confirmation,
     errorMessage,
@@ -79,8 +127,11 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     isSubmitting,
     loadPreview,
     preview,
+    selectAddress,
+    selectedAddress,
     sourceLabel,
     submissionMessage,
     submitCurrentOrder,
+    syncSelectedAddress,
   }
 })

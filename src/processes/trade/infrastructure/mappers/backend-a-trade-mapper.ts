@@ -16,7 +16,7 @@ export function mapBackendACartPageData(snapshot: CartSnapshot): CartPageData {
         items: snapshot.lines.map((line) => ({
           lineId: line.productId,
           productId: line.productId,
-          productImageUrl: null,
+          productImageUrl: line.productImageUrl ?? null,
           productName: line.productName,
           quantity: line.quantity,
           unitPrice: line.unitPrice,

@@ -78,6 +78,7 @@ export const useCartStore = defineStore('cart', () => {
     try {
       snapshot.value = await addCartItem(cartRepository, {
         productId: product.id,
+        productImageUrl: product.coverImageUrl,
         productName: product.name,
         quantity: options?.quantity ?? 1,
         unitPrice: options?.unitPrice ?? product.price,

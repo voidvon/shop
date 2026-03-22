@@ -191,9 +191,14 @@ onActivated(() => {
               class="order-entry"
               :to="buildOrderRoute(entry.status)"
             >
-              <span v-if="entry.count > 0" class="order-badge">{{ entry.count }}</span>
-              <van-icon :name="entry.icon" size="22" />
-              <span>{{ entry.label }}</span>
+              <van-badge
+                :content="entry.count > 0 ? entry.count : undefined"
+                :max="99"
+                class="order-entry-badge"
+              >
+                <van-icon :name="entry.icon" size="22" />
+              </van-badge>
+              <span class="order-entry-label">{{ entry.label }}</span>
             </RouterLink>
           </div>
         </section>
@@ -222,6 +227,23 @@ onActivated(() => {
               <span>{{ shortcut.label }}</span>
             </RouterLink>
           </div>
+        </section>
+
+        <section class="service-card">
+          <RouterLink class="service-entry" :to="{ name: 'member-addresses' }">
+            <div class="service-copy">
+              <div class="service-icon">
+                <van-icon name="location-o" size="18" />
+              </div>
+
+              <div class="service-text">
+                <strong>地址管理</strong>
+                <span>新增、编辑、删除常用收货地址</span>
+              </div>
+            </div>
+
+            <van-icon class="service-arrow" name="arrow" size="16" />
+          </RouterLink>
         </section>
 
         <section class="tip-block">
@@ -371,7 +393,8 @@ onActivated(() => {
 }
 
 .order-card,
-.shortcut-card {
+.shortcut-card,
+.service-card {
   overflow: hidden;
   border: 1px solid #e5e4e1;
   border-radius: 16px;
@@ -414,7 +437,6 @@ onActivated(() => {
 }
 
 .order-entry {
-  position: relative;
   display: grid;
   gap: 6px;
   justify-items: center;
@@ -424,27 +446,32 @@ onActivated(() => {
   color: #3d8a5a;
 }
 
-.order-entry span {
-  color: #3c3b39;
-  font-size: 10px;
-  font-weight: 500;
-  line-height: 1.2;
+.order-entry-badge {
+  display: inline-flex;
 }
 
-.order-badge {
-  position: absolute;
-  top: -2px;
-  right: 10px;
+.order-entry-badge :deep(.van-badge__wrapper) {
+  display: inline-flex;
+}
+
+.order-entry-badge :deep(.van-badge__content) {
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  border-radius: 999px;
+  border: 1px solid #fff;
   background: #ea580c;
   color: #fff;
   font-size: 11px;
   font-weight: 700;
-  line-height: 18px;
+  line-height: 16px;
   text-align: center;
+}
+
+.order-entry-label {
+  color: #3c3b39;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .shortcut-card {
@@ -478,6 +505,56 @@ onActivated(() => {
 
 .shortcut-entry :deep(.van-icon) {
   color: #3d8a5a;
+}
+
+.service-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.service-copy {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+.service-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(61, 138, 90, 0.12);
+  color: #3d8a5a;
+}
+
+.service-text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.service-text strong {
+  color: #1a1918;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.service-text span {
+  color: #9c9b99;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.service-arrow {
+  color: #b4b2ad;
 }
 
 .tip-block {

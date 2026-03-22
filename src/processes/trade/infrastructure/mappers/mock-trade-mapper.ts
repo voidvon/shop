@@ -22,7 +22,7 @@ export function mapMockCartPageData(snapshot: CartSnapshot): CartPageData {
     const item = {
       lineId: line.productId,
       productId: line.productId,
-      productImageUrl: product?.imageUrl ?? null,
+      productImageUrl: line.productImageUrl ?? product?.imageUrl ?? null,
       productName: line.productName,
       quantity: line.quantity,
       unitPrice: line.unitPrice,

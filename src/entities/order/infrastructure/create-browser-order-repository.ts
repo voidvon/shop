@@ -46,7 +46,7 @@ function createOrderRecord(
     itemCount,
     items: command.lines.map((line, index) => ({
       orderItemId: `${confirmation.orderId}-${index + 1}`,
-      productImageUrl: null,
+      productImageUrl: line.productImageUrl ?? null,
       productName: line.productName,
       quantity: line.quantity,
       unitPrice: line.unitPrice,

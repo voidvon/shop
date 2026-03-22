@@ -115,7 +115,7 @@ function formatAmount(value: number) {
 }
 
 function goBack() {
-  if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
+  if (globalThis.window?.history.state?.back) {
     router.back()
     return
   }
