@@ -28,6 +28,14 @@ interface CountCard {
   value: number
 }
 
+interface OrderEntry {
+  count: number
+  icon: string
+  key: string
+  label: string
+  route: RouteLocationRaw
+}
+
 const countCards = computed<CountCard[]>(() => {
   const cards: CountCard[] = [
     { label: '收藏夹', route: { name: 'member-favorites' }, value: memberCenterPageData.value.counts.favoritesCount },
@@ -45,41 +53,41 @@ const countCards = computed<CountCard[]>(() => {
   return cards
 })
 
-const orderEntries = computed(() => [
+const orderEntries = computed<OrderEntry[]>(() => [
   {
     count: memberCenterPageData.value.orderSummary.pendingPaymentCount,
     key: 'pendingPaymentCount',
     label: '待付款',
     icon: 'balance-o',
-    status: 'pending-payment',
+    route: buildOrderRoute('pending-payment'),
   },
   {
     count: memberCenterPageData.value.orderSummary.pendingShipmentCount,
     key: 'pendingShipmentCount',
     label: '待发货',
     icon: 'logistics',
-    status: 'pending-shipment',
+    route: buildOrderRoute('pending-shipment'),
   },
   {
     count: memberCenterPageData.value.orderSummary.pendingReceiptCount,
     key: 'pendingReceiptCount',
     label: '待收货',
     icon: 'send-gift-o',
-    status: 'pending-receipt',
+    route: buildOrderRoute('pending-receipt'),
   },
   {
     count: memberCenterPageData.value.orderSummary.pendingReviewCount,
     key: 'pendingReviewCount',
     label: '待评价',
     icon: 'chat-o',
-    status: 'pending-review',
+    route: buildOrderRoute('pending-review'),
   },
   {
     count: memberCenterPageData.value.orderSummary.refundAndReturnCount,
     key: 'refundAndReturnCount',
     label: '退款/退货',
     icon: 'replay',
-    status: 'after-sale',
+    route: { name: 'member-after-sales' },
   },
 ] as const)
 
@@ -189,7 +197,7 @@ onActivated(() => {
               v-for="entry in orderEntries"
               :key="entry.key"
               class="order-entry"
-              :to="buildOrderRoute(entry.status)"
+              :to="entry.route"
             >
               <van-badge
                 :content="entry.count > 0 ? entry.count : undefined"

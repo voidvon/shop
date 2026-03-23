@@ -29,6 +29,7 @@ function findPrimaryCategoryBySecondaryId(categories: CategoryPageCategory[], se
 
 function resolveRouteCategoryIds(route: ReturnType<typeof useRoute>) {
   return {
+    keyword: normalizeRouteValue(route.query.keyword),
     primaryCategoryId:
       normalizeRouteValue(route.params.primaryCategoryId)
       || normalizeRouteValue(route.query.primaryCategoryId),
@@ -87,7 +88,7 @@ export function useCategoryPageModel() {
   })
 
   function applyRouteSelection(data: CategoryPageData) {
-    const { primaryCategoryId, secondaryCategoryId } = resolveRouteCategoryIds(route)
+    const { keyword: routeKeyword, primaryCategoryId, secondaryCategoryId } = resolveRouteCategoryIds(route)
     const primaryCategory = primaryCategoryId
       ? findPrimaryCategory(data.primaryCategories, primaryCategoryId)
       : findPrimaryCategoryBySecondaryId(data.primaryCategories, secondaryCategoryId) ?? data.primaryCategories[0] ?? null
@@ -98,6 +99,7 @@ export function useCategoryPageModel() {
 
     selectedPrimaryCategoryId.value = primaryCategory?.id ?? ''
     selectedSecondaryCategoryId.value = secondaryCategory?.id ?? resolveInitialSecondaryCategoryId(primaryCategory)
+    keyword.value = routeKeyword
   }
 
   async function syncRouteCategoryIds(primaryCategoryId: string, secondaryCategoryId: string) {
@@ -113,6 +115,12 @@ export function useCategoryPageModel() {
     const nextQuery = { ...route.query }
     delete nextQuery.primaryCategoryId
     delete nextQuery.secondaryCategoryId
+
+    if (keyword.value) {
+      nextQuery.keyword = keyword.value
+    } else {
+      delete nextQuery.keyword
+    }
 
     await router.replace({
       name: 'category',
@@ -156,6 +164,7 @@ export function useCategoryPageModel() {
 
   watch(
     () => [
+      normalizeRouteValue(route.query.keyword),
       normalizeRouteValue(route.params.primaryCategoryId),
       normalizeRouteValue(route.params.secondaryCategoryId),
       normalizeRouteValue(route.query.primaryCategoryId),

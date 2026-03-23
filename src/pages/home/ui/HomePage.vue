@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onActivated, onMounted, onUnmounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 
 import { useMemberFavoriteStore } from '@/entities/member-favorite'
 import { formatCurrency } from '@/shared/lib/currency'
@@ -19,6 +19,7 @@ const {
   loadHomePage,
   loadMoreHotProducts,
 } = useHomePageModel()
+const router = useRouter()
 const memberFavoriteStore = useMemberFavoriteStore()
 const carouselItems = computed(() =>
   homePageData.value.banners.map((banner) => ({
@@ -35,6 +36,10 @@ function isProductFavorited(productId: string) {
 
 function syncFavoriteState(force = false) {
   void memberFavoriteStore.syncCurrentUserFavorites({ force })
+}
+
+function goToSearchPage() {
+  void router.push({ name: 'search' })
 }
 
 function tryLoadMoreOnScroll() {
@@ -87,7 +92,7 @@ watch(
     <van-sticky>
       <div class="sticky-search">
         <div class="sticky-search-inner">
-          <SearchField placeholder="搜索商品" />
+          <SearchField placeholder="搜索商品" readonly @click="goToSearchPage" />
         </div>
       </div>
     </van-sticky>

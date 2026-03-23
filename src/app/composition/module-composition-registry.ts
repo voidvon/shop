@@ -1,3 +1,5 @@
+import { AfterSaleListPage } from '@/pages/after-sale-list'
+import { AfterSaleApplyPage } from '@/pages/after-sale-apply'
 import type { RouteRecordRaw } from 'vue-router'
 
 import { CartPage } from '@/pages/cart'
@@ -13,9 +15,16 @@ import { MemberHistoryPage } from '@/pages/member-history'
 import { MemberLoginPage } from '@/pages/member-login'
 import { MemberRegisterMobilePage } from '@/pages/member-register-mobile'
 import { MemberRegisterPage } from '@/pages/member-register'
+import { OrderDetailPage } from '@/pages/order-detail'
 import { OrderListPage } from '@/pages/order-list'
+import { OrderSearchResultsPage } from '@/pages/order-search-results'
 import { ProductDetailPage } from '@/pages/product-detail'
 import { PromotionHubPage } from '@/pages/promotion-hub'
+import { RefundDetailPage } from '@/pages/refund-detail'
+import { ReturnDetailPage } from '@/pages/return-detail'
+import { ReturnShipmentPage } from '@/pages/return-shipment'
+import { SearchPage } from '@/pages/search'
+import { SearchResultsPage } from '@/pages/search-results'
 import type { MainNavigationKey, MainNavigationMeta } from '@/shared/config/main-navigation'
 import type { FrontendModule } from '@/shared/config/modules'
 
@@ -88,6 +97,22 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         meta: {
           description: '商品详情、规格、卖点与服务信息',
           title: '商品详情',
+        },
+      }),
+      createModuleRoute({
+        path: '/search',
+        name: 'search',
+        component: SearchPage,
+        meta: {
+          title: '搜索',
+        },
+      }),
+      createModuleRoute({
+        path: '/search/results',
+        name: 'search-results',
+        component: SearchResultsPage,
+        meta: {
+          title: '搜索结果',
         },
       }),
     ],
@@ -172,6 +197,81 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
           keepAlive: true,
           requiresAuth: true,
           title: '我的订单',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/orders/search-results',
+        name: 'member-order-search-results',
+        component: OrderSearchResultsPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '订单搜索结果',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/orders/:orderId',
+        name: 'member-order-detail',
+        component: OrderDetailPage,
+        props: true,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '订单详情',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/orders/:orderId/items/:orderItemId/after-sale/apply',
+        name: 'member-after-sale-apply',
+        component: AfterSaleApplyPage,
+        props: true,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '申请售后',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/after-sales',
+        name: 'member-after-sales',
+        component: AfterSaleListPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '售后服务',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/after-sales/:refundId',
+        name: 'member-refund-detail',
+        component: RefundDetailPage,
+        props: true,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '退款详情',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/after-sales/returns/:refundId',
+        name: 'member-return-detail',
+        component: ReturnDetailPage,
+        props: true,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '退货详情',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/after-sales/returns/:refundId/shipment',
+        name: 'member-return-shipment',
+        component: ReturnShipmentPage,
+        props: true,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '填写回寄物流',
         },
       }),
       createModuleRoute({

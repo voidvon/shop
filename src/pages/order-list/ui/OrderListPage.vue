@@ -31,7 +31,7 @@ const {
   payOrder,
 } = useOrderListPageModel()
 
-const keyword = ref(typeof route.query.keyword === 'string' ? route.query.keyword : '')
+const keyword = ref('')
 
 const tabs = [
   { key: 'all', label: '全部' },
@@ -56,25 +56,13 @@ const hideTimers = new Map<OrderListFilterStatus, ReturnType<typeof setTimeout>>
 let routeSyncTimer: ReturnType<typeof setTimeout> | null = null
 
 function getFilteredOrders(status: OrderListFilterStatus) {
-  const normalizedKeyword = keyword.value.trim()
-
   return orderListPageData.value.orders.filter((order) => {
     const matchesStatus = status === 'all'
       || (status === 'after-sale'
         ? order.status === 'refunding' || order.status === 'returning'
         : order.status === status)
 
-    if (!matchesStatus) {
-      return false
-    }
-
-    if (!normalizedKeyword) {
-      return true
-    }
-
-    return [order.orderNo, order.storeName, ...order.items.map((item) => item.productName)].some((field) =>
-      field.toLowerCase().includes(normalizedKeyword.toLowerCase()),
-    )
+    return matchesStatus
   })
 }
 
@@ -95,7 +83,18 @@ function handleTabChange(status: string | number) {
 }
 
 function submitSearch() {
-  keyword.value = keyword.value.trim()
+  const normalizedKeyword = keyword.value.trim()
+
+  if (!normalizedKeyword) {
+    return
+  }
+
+  void router.push({
+    name: 'member-order-search-results',
+    query: {
+      keyword: normalizedKeyword,
+    },
+  })
 }
 
 function formatAmount(value: number) {
@@ -233,16 +232,6 @@ watch(
   { immediate: true },
 )
 
-watch(
-  () => orderListPageData.value.keyword,
-  (value) => {
-    if (typeof route.query.keyword !== 'string' && !keyword.value) {
-      keyword.value = value
-    }
-  },
-  { immediate: true },
-)
-
 onMounted(() => {
   void loadOrderListPage()
 })
@@ -270,9 +259,9 @@ onBeforeUnmount(() => {
         class="search-box"
         aria-label="搜索订单"
         :icon-size="16"
-        placeholder="输入商品标题或订单号进行搜索"
+        placeholder="输入商品标题、店铺名或订单号进行搜索"
         variant="soft"
-        @change="submitSearch"
+        @submit="submitSearch"
       />
 
       <button class="type-filter" type="button">
@@ -311,7 +300,7 @@ onBeforeUnmount(() => {
 
               <footer
                 class="store-footer"
-                :class="{ 'store-footer-actions': order.status === 'pending-payment' || order.status === 'pending-receipt' }"
+                :class="{ 'store-footer-actions': true }"
               >
                 <div class="total-row">
                   <span>共{{ getItemCount(order.itemCount, order.items.map((item) => item.quantity)) }}件商品，合计：</span>
@@ -320,13 +309,24 @@ onBeforeUnmount(() => {
                   <span v-if="order.shippingAmount >= 0" class="shipping-text">（含运费 {{ formatAmount(order.shippingAmount) }}）</span>
                 </div>
 
-                <div v-if="order.status === 'pending-payment'" class="action-row">
-                  <button class="ghost-button" type="button" @click="handleCancelOrder(order.orderId)">取消订单</button>
-                  <button class="primary-button" type="button" @click="handlePayOrder(order.orderId)">去付款</button>
-                </div>
+                <div class="action-row">
+                  <RouterLink class="ghost-button ghost-link-button" :to="{ name: 'member-order-detail', params: { orderId: order.orderId } }">
+                    订单详情
+                  </RouterLink>
 
-                <div v-else-if="order.status === 'pending-receipt'" class="action-row">
-                  <button class="primary-button" type="button" @click="handleConfirmReceipt(order.orderId)">确认收货</button>
+                  <template v-if="order.status === 'pending-payment'">
+                    <button class="ghost-button" type="button" @click="handleCancelOrder(order.orderId)">取消订单</button>
+                    <button class="primary-button" type="button" @click="handlePayOrder(order.orderId)">去付款</button>
+                  </template>
+
+                  <button
+                    v-else-if="order.status === 'pending-receipt'"
+                    class="primary-button"
+                    type="button"
+                    @click="handleConfirmReceipt(order.orderId)"
+                  >
+                    确认收货
+                  </button>
                 </div>
               </footer>
             </section>
@@ -498,6 +498,13 @@ onBeforeUnmount(() => {
   color: #9c9b99;
   font-size: 13px;
   font-weight: 500;
+}
+
+.ghost-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 .primary-button {

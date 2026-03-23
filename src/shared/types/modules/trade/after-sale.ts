@@ -1,6 +1,6 @@
 import type { ActionPermission, PageQuery, PageResult } from '../base'
 
-export type AfterSaleAction = 'view-detail' | 'delay' | 'ship-return'
+export type AfterSaleAction = 'view-detail' | 'delay' | 'ship-return' | 'cancel'
 
 export interface RefundRecord {
   refundId: string
@@ -50,16 +50,54 @@ export interface RefundAmountDetail {
   rechargeCardRefundAmount: number
 }
 
+export interface ReturnAddressInfo {
+  recipientName: string
+  recipientPhone: string
+  address: string
+}
+
+export interface ReturnShipmentInfo {
+  company: string
+  trackingNo: string
+  shippedAt: string | null
+}
+
 export interface RefundDetailPageData {
   refundId: string
   orderId: string
   orderItemId: string
+  merchantPhone: string | null
   status: string
   statusText: string
   reason: string
   refundAmount: number
   description: string | null
   evidenceImages: RefundEvidenceImage[]
+  merchantProcess: RefundProcessInfo
+  platformProcess: RefundProcessInfo
+  amountDetail: RefundAmountDetail
+  actions: ActionPermission<AfterSaleAction>[]
+}
+
+export interface ReturnDetailPageData {
+  refundId: string
+  orderId: string
+  orderItemId: string
+  merchantPhone: string | null
+  status: string
+  statusText: string
+  reason: string
+  refundAmount: number
+  returnQuantity: number
+  quantity: number
+  unitPrice: number
+  productName: string
+  productImageUrl: string
+  skuDescription: string | null
+  appliedAt: string
+  description: string | null
+  merchantAddress: ReturnAddressInfo
+  returnShipment: ReturnShipmentInfo | null
   merchantProcess: RefundProcessInfo
   platformProcess: RefundProcessInfo
   amountDetail: RefundAmountDetail

@@ -7,7 +7,10 @@ export type {
   RefundEvidenceImage,
   RefundProcessInfo,
   RefundRecord,
+  ReturnAddressInfo,
+  ReturnDetailPageData,
   ReturnRecord,
+  ReturnShipmentInfo,
 } from './after-sale'
 export type {
   CartCouponItem,

@@ -22,6 +22,8 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'change', value: string): void
+  (e: 'click'): void
+  (e: 'submit', value: string): void
   (e: 'update:modelValue', value: string): void
 }>()
 
@@ -45,10 +47,23 @@ const value = computed({
 function handleChange() {
   emit('change', value.value)
 }
+
+function handleClick() {
+  emit('click')
+}
+
+function handleSubmit() {
+  emit('submit', value.value)
+}
 </script>
 
 <template>
-  <label class="search-field" :class="`search-field-${variant}`" :aria-label="ariaLabel">
+  <label
+    class="search-field"
+    :class="`search-field-${variant}`"
+    :aria-label="ariaLabel"
+    @click="handleClick"
+  >
     <van-icon name="search" :size="iconSize" />
     <input
       v-model="value"
@@ -57,6 +72,7 @@ function handleChange() {
       :type="type"
       :placeholder="placeholder"
       @change="handleChange"
+      @keydown.enter="handleSubmit"
     >
   </label>
 </template>

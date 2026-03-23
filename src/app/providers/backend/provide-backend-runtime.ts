@@ -4,6 +4,7 @@ import {
   provideMemberAuthRepository,
   provideMemberAuthSession,
 } from '@/entities/member-auth'
+import { provideAfterSaleRepository } from '@/entities/after-sale'
 import { provideMemberAddressRepository } from '@/entities/member-address'
 import { provideMemberFavoriteRepository } from '@/entities/member-favorite'
 import { provideCartRepository } from '@/entities/cart'
@@ -23,6 +24,7 @@ export function provideBackendRuntime(app: App) {
   provideBackendRuntimeContext(app, runtime)
   provideMemberAuthRepository(app, runtime.auth.repository)
   provideMemberAuthSession(app, runtime.auth.session)
+  provideAfterSaleRepository(app, runtime.repositories.afterSale)
   provideCartRepository(app, runtime.repositories.cart)
   provideMemberAddressRepository(app, runtime.repositories.memberAddress)
   provideMemberFavoriteRepository(app, runtime.repositories.memberFavorite)

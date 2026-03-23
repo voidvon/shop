@@ -5,6 +5,7 @@ import type {
   OrderCenterPageData,
   OrderDetailPageData,
   RefundDetailPageData,
+  ReturnDetailPageData,
   SubmitOrderCommand,
   SubmitOrderResult,
   VirtualOrderListPageData,
@@ -271,12 +272,12 @@ const physicalOrderCards = [
     totalAmount: cartProductA.price - 20,
   },
   {
-    actions: allowActions(['view-logistics', 'confirm-receipt', 'refund']),
+    actions: allowActions(['view-logistics', 'confirm-receipt', 'refund', 'return']),
     amountDetails: createAmountDetails(cartProductB.price * 2, 12, 0),
     itemCount: 2,
     items: [
       {
-        actions: allowActions(['view-logistics', 'confirm-receipt', 'refund']),
+        actions: allowActions(['view-logistics', 'confirm-receipt', 'refund', 'return']),
         afterSaleStatus: null,
         orderItemId: 'order-item-2',
         productId: cartProductB.productId,
@@ -391,7 +392,7 @@ export const mockOrderDetailPageDataById: Record<string, OrderDetailPageData> = 
     },
   },
   'order-20260318-002': {
-    actions: allowActions(['view-logistics', 'confirm-receipt', 'refund', 'copy-order-no']),
+    actions: allowActions(['view-logistics', 'confirm-receipt', 'refund', 'return', 'copy-order-no']),
     address: {
       address: mockAddresses[1]?.address ?? '',
       recipientName: mockAddresses[1]?.recipientName ?? '陈琳',
@@ -487,6 +488,7 @@ export const mockRefundDetailPageDataById: Record<string, RefundDetailPageData> 
     },
     description: '希望调整订单数量，先退一件。',
     evidenceImages: [{ imageUrl: mockImageUrl }],
+    merchantPhone: cartStoreB.phone,
     merchantProcess: { remark: '已收到申请，正在核验库存。', status: 'processing' },
     orderId: 'order-20260318-002',
     orderItemId: 'order-item-2',
@@ -499,6 +501,42 @@ export const mockRefundDetailPageDataById: Record<string, RefundDetailPageData> 
   },
 }
 
+export const mockReturnDetailPageDataById: Record<string, ReturnDetailPageData> = {
+  'return-001': {
+    actions: allowActions(['view-detail', 'delay', 'ship-return']),
+    amountDetail: {
+      onlineRefundAmount: cartProductB.price * 2,
+      paymentMethod: '微信支付',
+      predepositRefundAmount: 0,
+      rechargeCardRefundAmount: 0,
+    },
+    appliedAt: '2026-03-15 12:00:00',
+    description: '商品尺寸不合适，申请退回 1 件。',
+    merchantPhone: cartStoreB.phone,
+    merchantAddress: {
+      address: '湖北省武汉市武昌区中北路 88 号艺境生活馆售后中心',
+      recipientName: '李店长',
+      recipientPhone: '027-88886666',
+    },
+    merchantProcess: { remark: '商家已同意退货，请尽快寄回。', status: 'approved' },
+    orderId: 'order-20260318-002',
+    orderItemId: 'order-item-2',
+    platformProcess: { remark: '平台同步商家审核结果。', status: 'processing' },
+    productImageUrl: cartProductB.imageUrl,
+    productName: cartProductB.productName,
+    quantity: 2,
+    reason: '尺码/规格不符',
+    refundAmount: cartProductB.price * 2,
+    refundId: 'return-001',
+    returnQuantity: 1,
+    returnShipment: null,
+    skuDescription: cartProductB.skuList[0]?.specText ?? null,
+    status: 'awaiting-shipment',
+    statusText: '待退货发货',
+    unitPrice: cartProductB.price,
+  },
+}
+
 export const mockTradeData = {
   afterSaleListPageData: mockAfterSaleListPageData,
   cartPageData: mockCartPageData,
@@ -506,6 +544,7 @@ export const mockTradeData = {
   orderCenterPageData: mockOrderCenterPageData,
   orderDetailPageDataById: mockOrderDetailPageDataById,
   refundDetailPageDataById: mockRefundDetailPageDataById,
+  returnDetailPageDataById: mockReturnDetailPageDataById,
   submitOrderCommand: mockSubmitOrderCommand,
   submitOrderResult: mockSubmitOrderResult,
   virtualOrderListPageData: mockVirtualOrderListPageData,
