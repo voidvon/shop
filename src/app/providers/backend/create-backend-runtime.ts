@@ -10,6 +10,10 @@ import {
   type MemberFavoriteRepository,
 } from '@/entities/member-favorite'
 import {
+  createBrowserMemberAddressRepository,
+  type MemberAddressRepository,
+} from '@/entities/member-address'
+import {
   createBrowserCartRepository,
   type CartRepository,
 } from '@/entities/cart'
@@ -86,6 +90,7 @@ export interface BackendRuntime {
   }
   repositories: {
     cart: CartRepository
+    memberAddress: MemberAddressRepository
     memberFavorite: MemberFavoriteRepository
     order: OrderRepository
     product: ProductRepository
@@ -127,6 +132,12 @@ function resolveMemberAuthRepository(type: BackendType) {
 
 function resolveCartRepository(memberAuthSession: MemberAuthSession) {
   return createBrowserCartRepository({
+    getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+  })
+}
+
+function resolveMemberAddressRepository(memberAuthSession: MemberAuthSession) {
+  return createBrowserMemberAddressRepository({
     getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
   })
 }
@@ -214,9 +225,11 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
   const enabledModules = resolveRuntimeEnabledModules(type)
   const memberAuthSession = createBrowserMemberAuthSession()
   const cartRepository = resolveCartRepository(memberAuthSession)
+  const memberAddressRepository = resolveMemberAddressRepository(memberAuthSession)
   const memberFavoriteRepository = createBrowserMemberFavoriteRepository()
   const repositories = {
     cart: cartRepository,
+    memberAddress: memberAddressRepository,
     memberFavorite: memberFavoriteRepository,
     order: resolveOrderRepository(type, memberAuthSession),
     product: resolveProductRepository(type),

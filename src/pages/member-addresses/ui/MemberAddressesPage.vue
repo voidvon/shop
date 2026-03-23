@@ -11,9 +11,11 @@ import {
 import 'vant/es/address-edit/style'
 import 'vant/es/address-list/style'
 
-import type { MemberAddress, SaveMemberAddressCommand } from '@/entities/member-address'
-import { useCheckoutFlowStore } from '@/processes/checkout-flow/model/useCheckoutFlowStore'
-import { addressAreaList } from '@/shared/config/address-area-list'
+import {
+  addressAreaList,
+  type MemberAddress,
+  type SaveMemberAddressCommand,
+} from '@/entities/member-address'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useMemberAddressesPageModel } from '../model/useMemberAddressesPageModel'
@@ -44,7 +46,6 @@ interface AddressEditorInfo {
 
 const route = useRoute()
 const router = useRouter()
-const checkoutFlowStore = useCheckoutFlowStore()
 const editorRenderKey = ref(0)
 const editingAddressId = ref<string | null>(null)
 const editorInfo = ref<AddressEditorInfo>({})
@@ -273,14 +274,14 @@ async function handleSelectAddress(addressListItem: AddressListItemView) {
   selectedAddressId.value = addressListItem.id
 
   try {
-    await checkoutFlowStore.selectAddress(addressListItem.id)
-
-    if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
-      router.back()
-      return
-    }
-
-    await router.push('/checkout')
+    await router.replace({
+      name: typeof route.query.returnTo === 'string' && route.query.returnTo
+        ? route.query.returnTo
+        : 'checkout',
+      query: {
+        selectedAddressId: addressListItem.id,
+      },
+    })
   } catch (error) {
     showToast(error instanceof Error ? error.message : '地址选择失败')
   }

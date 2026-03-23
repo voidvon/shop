@@ -19,6 +19,7 @@ type OrderListFilterStatus =
   | 'after-sale'
 
 const TAB_HIDE_DELAY_MS = 260
+const TAB_ROUTE_SYNC_DELAY_MS = 280
 
 const route = useRoute()
 const router = useRouter()
@@ -52,6 +53,7 @@ function resolveRouteStatus(status: unknown): OrderListFilterStatus {
 const activeTab = ref<OrderListFilterStatus>(resolveRouteStatus(route.query.status))
 const retainedPanels = ref<Set<OrderListFilterStatus>>(new Set([activeTab.value]))
 const hideTimers = new Map<OrderListFilterStatus, ReturnType<typeof setTimeout>>()
+let routeSyncTimer: ReturnType<typeof setTimeout> | null = null
 
 function getFilteredOrders(status: OrderListFilterStatus) {
   const normalizedKeyword = keyword.value.trim()
@@ -85,12 +87,11 @@ function goBack() {
   void router.push('/member')
 }
 
-function changeStatus(status: OrderListFilterStatus) {
-  transitionToStatus(status)
-  void router.replace({
-    name: 'member-orders',
-    query: status === 'all' ? undefined : { status },
-  })
+function handleTabChange(status: string | number) {
+  const nextStatus = resolveRouteStatus(status)
+
+  transitionToStatus(nextStatus)
+  scheduleRouteStatusSync(nextStatus)
 }
 
 function submitSearch() {
@@ -188,10 +189,46 @@ function shouldRenderPanel(status: OrderListFilterStatus) {
   return retainedPanels.value.has(status)
 }
 
+function clearRouteSyncTimer() {
+  if (!routeSyncTimer) {
+    return
+  }
+
+  clearTimeout(routeSyncTimer)
+  routeSyncTimer = null
+}
+
+function scheduleRouteStatusSync(status: OrderListFilterStatus) {
+  const currentRouteStatus = resolveRouteStatus(route.query.status)
+
+  if (currentRouteStatus === status) {
+    clearRouteSyncTimer()
+    return
+  }
+
+  clearRouteSyncTimer()
+
+  routeSyncTimer = setTimeout(() => {
+    routeSyncTimer = null
+    void router.replace({
+      name: 'member-orders',
+      query: status === 'all' ? undefined : { status },
+    })
+  }, TAB_ROUTE_SYNC_DELAY_MS)
+}
+
 watch(
   () => route.query.status,
   (status) => {
-    transitionToStatus(resolveRouteStatus(status))
+    const nextStatus = resolveRouteStatus(status)
+
+    if (nextStatus !== activeTab.value) {
+      transitionToStatus(nextStatus)
+    }
+
+    if (nextStatus === resolveRouteStatus(route.query.status)) {
+      clearRouteSyncTimer()
+    }
   },
   { immediate: true },
 )
@@ -219,6 +256,7 @@ onBeforeUnmount(() => {
     clearTimeout(timer)
   })
   hideTimers.clear()
+  clearRouteSyncTimer()
 })
 </script>
 
@@ -243,7 +281,13 @@ onBeforeUnmount(() => {
       </button>
     </div>
 
-    <van-tabs v-model:active="activeTab" class="tabs-row" animated swipeable @change="changeStatus">
+    <van-tabs
+      :active="activeTab"
+      class="tabs-row"
+      animated
+      swipeable
+      @update:active="handleTabChange"
+    >
       <van-tab
         v-for="tab in tabs"
         :key="tab.key"

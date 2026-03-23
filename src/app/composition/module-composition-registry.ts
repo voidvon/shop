@@ -169,6 +169,7 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: OrderListPage,
         meta: {
           activeMainNavigationKey: 'member',
+          keepAlive: true,
           requiresAuth: true,
           title: '我的订单',
         },

@@ -3,9 +3,7 @@ import { defineStore } from 'pinia'
 
 import { useMemberAuthSession } from '@/entities/member-auth'
 import {
-  createBrowserMemberAddressRepository,
-  getMemberAddresses,
-  type MemberAddress,
+  useMemberAddressStore,
 } from '@/entities/member-address'
 import { useCheckoutFlowPort } from '@/processes/checkout-flow'
 import { useTradeStore } from '@/processes/trade'
@@ -17,12 +15,10 @@ import {
 
 export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const checkoutFlowPort = useCheckoutFlowPort()
+  const memberAddressStore = useMemberAddressStore()
   const memberAuthSession = useMemberAuthSession()
   const tradeStore = useTradeStore()
   const isCheckoutEnabled = useModuleAvailability('checkout')
-  const memberAddressRepository = createBrowserMemberAddressRepository({
-    getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
-  })
 
   const confirmation = ref<OrderConfirmation | null>(null)
   const errorMessage = ref<string | null>(null)
@@ -30,25 +26,25 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const isLoading = ref(false)
   const isSubmitting = ref(false)
   const preview = ref<CheckoutPreview | null>(null)
-  const selectedAddress = ref<MemberAddress | null>(null)
+  const selectedAddressId = ref<string | null>(null)
+  const selectedAddress = computed(() =>
+    memberAddressStore.resolveSelectedAddress(selectedAddressId.value ?? undefined),
+  )
   const submissionMessage = ref<string | null>(null)
   const sourceLabel = computed(() =>
     preview.value?.source === 'cart' ? '从购物车进入' : '从立即购买进入',
   )
 
   async function syncSelectedAddress(options?: { preferredAddressId?: string }) {
-    const addresses = await getMemberAddresses(memberAddressRepository)
-    const preferredAddressId = options?.preferredAddressId ?? selectedAddress.value?.id
-    const nextSelectedAddress = preferredAddressId
-      ? addresses.find((item) => item.id === preferredAddressId) ?? null
-      : null
+    await memberAddressStore.syncCurrentUserAddresses()
 
-    selectedAddress.value = nextSelectedAddress
-      ?? addresses.find((item) => item.isDefault)
-      ?? addresses[0]
-      ?? null
+    const nextSelectedAddress = memberAddressStore.resolveSelectedAddress(
+      options?.preferredAddressId ?? selectedAddressId.value ?? undefined,
+    )
 
-    return selectedAddress.value
+    selectedAddressId.value = nextSelectedAddress?.id ?? null
+
+    return nextSelectedAddress
   }
 
   async function selectAddress(addressId: string) {
@@ -115,7 +111,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   }
 
   memberAuthSession.subscribe(() => {
-    selectedAddress.value = null
+    selectedAddressId.value = null
   })
 
   return {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { currentBackendLabel } from '@/shared/config/backend'
@@ -10,6 +10,7 @@ import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
 import { useCheckoutFlowStore } from '../model/useCheckoutFlowStore'
 
 const checkoutStore = useCheckoutFlowStore()
+const route = useRoute()
 const router = useRouter()
 const {
   confirmation,
@@ -29,6 +30,11 @@ const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAm
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
 const merchantTitle = computed(() => preview.value?.source === 'cart' ? '购物车商品' : '立即购买商品')
 const buyerMessage = ref('')
+const selectedAddressQueryId = computed(() =>
+  typeof route.query.selectedAddressId === 'string'
+    ? route.query.selectedAddressId
+    : '',
+)
 const addressTitle = computed(() =>
   selectedAddress.value
     ? `${selectedAddress.value.recipientName} ${selectedAddress.value.recipientMobile}`
@@ -51,9 +57,26 @@ function openAddressSelector() {
     name: 'member-addresses',
     query: {
       mode: 'select',
+      returnTo: 'checkout',
       selectedAddressId: selectedAddress.value?.id,
     },
   })
+}
+
+async function consumeSelectedAddressQuery(addressId: string) {
+  try {
+    await checkoutStore.selectAddress(addressId)
+  } catch {
+    showFailToast(errorMessage.value ?? '地址选择失败')
+  } finally {
+    const nextQuery = { ...route.query }
+
+    delete nextQuery.selectedAddressId
+
+    await router.replace({
+      query: Object.keys(nextQuery).length > 0 ? nextQuery : undefined,
+    })
+  }
 }
 
 async function handleSubmit() {
@@ -73,6 +96,18 @@ onMounted(() => {
     void checkoutStore.loadPreview()
   }
 })
+
+watch(
+  selectedAddressQueryId,
+  (addressId) => {
+    if (!addressId) {
+      return
+    }
+
+    void consumeSelectedAddressQuery(addressId)
+  },
+  { immediate: true },
+)
 
 function formatAmount(value: number) {
   return value.toFixed(2)
