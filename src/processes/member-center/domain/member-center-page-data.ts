@@ -1,3 +1,5 @@
+import type { AccountBalanceLog } from '@/shared/types/modules'
+
 export interface MemberCenterCountSummary {
   browsingCount: number
   cartCount: number
@@ -46,6 +48,15 @@ export interface MemberCardsPageData {
   balanceAmount: number
   balanceLogs: AccountBalanceLog[]
   redemptionRecords: MemberCardRedemptionRecord[]
+}
+
+export interface MemberPaymentCodeData {
+  codeUrl: string | null
+  codeValue: string | null
+}
+
+export interface MemberPaymentCodePageData {
+  paymentCode: MemberPaymentCodeData | null
 }
 
 export interface MemberSettingsItem {
@@ -103,4 +114,3 @@ export interface MemberFavoritesPageData {
 export interface MemberHistoryPageData {
   items: MemberProductListItem[]
 }
-import type { AccountBalanceLog } from '@/shared/types/modules'

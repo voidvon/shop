@@ -12,6 +12,7 @@ import {
   mapMockMemberCenterPageData,
   mapMockMemberFavoritesPageData,
   mapMockMemberHistoryPageData,
+  mapMockMemberPaymentCodePageData,
   mapMockMemberProfileNamePageData,
   mapMockMemberSettingsPageData,
 } from '../../mappers/mock-member-center-mapper'
@@ -61,6 +62,10 @@ export function createMockMemberCenterQuery(
 
     async getMemberHistoryPageData() {
       return Promise.resolve(mapMockMemberHistoryPageData())
+    },
+
+    async getMemberPaymentCodePageData() {
+      return Promise.resolve(mapMockMemberPaymentCodePageData())
     },
 
     async getMemberProfileNamePageData() {

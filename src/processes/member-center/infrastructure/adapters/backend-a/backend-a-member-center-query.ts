@@ -1,5 +1,10 @@
 import type { MemberAuthSession } from '@/entities/member-auth'
 import { backendAProductRepository } from '@/entities/product'
+import { resolveBackendAMediaUrl } from '@/shared/api/backend-a/backend-a-config'
+import {
+  backendAHttpClient,
+  createBackendAHttpClient,
+} from '@/shared/api/backend-a/backend-a-http-client'
 import { createBackendAOrderListPageDataReader } from '@/processes/trade/infrastructure/adapters/backend-a/backend-a-trade-readers'
 
 import type { MemberAssetsService } from '../../../domain/member-assets-service'
@@ -11,8 +16,10 @@ import {
   mapBackendAMemberCenterPageData,
   mapBackendAMemberFavoritesPageData,
   mapBackendAMemberHistoryPageData,
+  mapBackendAMemberPaymentCodePageData,
   mapBackendAMemberProfileNamePageData,
   mapBackendAMemberSettingsPageData,
+  type BackendAPlatformSettingsDto,
 } from '../../mappers/backend-a-member-center-mapper'
 import type { MemberOrderSummary } from '../../../domain/member-center-page-data'
 
@@ -24,11 +31,116 @@ const emptyMemberOrderSummary: MemberOrderSummary = {
   refundAndReturnCount: 0,
 }
 
+function normalizeCandidateString(value: unknown) {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const normalizedValue = value.trim()
+  return normalizedValue ? normalizedValue : null
+}
+
+function looksLikePaymentCodeUrl(value: string) {
+  return (
+    value.startsWith('data:image/')
+    || /^https?:\/\//i.test(value)
+    || value.startsWith('/')
+    || value.startsWith('./')
+    || value.startsWith('../')
+  )
+}
+
+function findNestedString(
+  input: unknown,
+  predicate: (key: string, value: string) => boolean,
+  depth = 0,
+): string | null {
+  if (depth > 4 || input === null || input === undefined) {
+    return null
+  }
+
+  if (Array.isArray(input)) {
+    for (const item of input) {
+      const matchedValue = findNestedString(item, predicate, depth + 1)
+
+      if (matchedValue) {
+        return matchedValue
+      }
+    }
+
+    return null
+  }
+
+  if (typeof input !== 'object') {
+    return null
+  }
+
+  for (const [rawKey, rawValue] of Object.entries(input)) {
+    const value = normalizeCandidateString(rawValue)
+
+    if (value && predicate(rawKey.toLowerCase(), value)) {
+      return value
+    }
+  }
+
+  for (const rawValue of Object.values(input)) {
+    const matchedValue = findNestedString(rawValue, predicate, depth + 1)
+
+    if (matchedValue) {
+      return matchedValue
+    }
+  }
+
+  return null
+}
+
+function normalizeBackendAPaymentCode(input: unknown) {
+  const codeUrl = findNestedString(input, (key, value) => {
+    if (!looksLikePaymentCodeUrl(value)) {
+      return false
+    }
+
+    return key.includes('url')
+      || key.includes('image')
+      || key.includes('qr')
+      || key.includes('qrcode')
+      || key.includes('code')
+  })
+  const codeValue = findNestedString(input, (key, value) => {
+    if (looksLikePaymentCodeUrl(value)) {
+      return false
+    }
+
+    return key.includes('token')
+      || key.includes('code')
+      || key.includes('value')
+      || key.includes('number')
+      || key.includes('no')
+      || key.includes('payment')
+  })
+
+  if (!codeUrl && !codeValue) {
+    return null
+  }
+
+  return {
+    codeUrl: codeUrl ? resolveBackendAMediaUrl(codeUrl) ?? codeUrl : null,
+    codeValue,
+  }
+}
+
 export function createBackendAMemberCenterQuery(
   memberAuthSession: MemberAuthSession,
   memberAssetsService: MemberAssetsService,
 ): MemberCenterQuery {
   const getOrderListPageData = createBackendAOrderListPageDataReader(memberAuthSession)
+  const authHttpClient = createBackendAHttpClient({
+    getAccessToken: () => memberAuthSession.getSnapshot().authResult?.session.accessToken ?? null,
+  })
+
+  async function getPlatformSettings() {
+    return backendAHttpClient.get<BackendAPlatformSettingsDto>('/api/v1/platform/settings')
+  }
 
   async function getMemberOrderSummary() {
     const orderListPageData = await getOrderListPageData()
@@ -61,7 +173,8 @@ export function createBackendAMemberCenterQuery(
 
   return {
     async getMemberAboutPageData() {
-      return Promise.resolve(mapBackendAMemberAboutPageData())
+      const platformSettings = await getPlatformSettings()
+      return Promise.resolve(mapBackendAMemberAboutPageData(platformSettings))
     },
 
     async getMemberCardBindPageData() {
@@ -75,15 +188,19 @@ export function createBackendAMemberCenterQuery(
     },
 
     async getMemberCenterPageData() {
-      const products = await backendAProductRepository.getFeaturedProductSummaries()
-      const snapshot = await memberAssetsService.getSnapshot()
-      const memberOrderSummary = await getMemberOrderSummary()
+      const [products, snapshot, memberOrderSummary, platformSettings] = await Promise.all([
+        backendAProductRepository.getFeaturedProductSummaries(),
+        memberAssetsService.getSnapshot(),
+        getMemberOrderSummary(),
+        getPlatformSettings(),
+      ])
       return Promise.resolve(
         mapBackendAMemberCenterPageData(
           products,
           memberAuthSession.getSnapshot().authResult,
           snapshot.balanceAmount,
           memberOrderSummary,
+          platformSettings,
         ),
       )
     },
@@ -96,6 +213,14 @@ export function createBackendAMemberCenterQuery(
     async getMemberHistoryPageData() {
       const products = await backendAProductRepository.getFeaturedProductSummaries()
       return Promise.resolve(mapBackendAMemberHistoryPageData(products))
+    },
+
+    async getMemberPaymentCodePageData() {
+      const paymentCode = normalizeBackendAPaymentCode(
+        await authHttpClient.get<unknown>('/api/v1/offline-payments/payment-code'),
+      )
+
+      return Promise.resolve(mapBackendAMemberPaymentCodePageData(paymentCode))
     },
 
     async getMemberProfileNamePageData() {

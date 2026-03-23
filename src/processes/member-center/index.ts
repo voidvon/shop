@@ -14,6 +14,8 @@ export type {
   MemberFavoritesPageData,
   MemberHistoryPageData,
   MemberOrderSummary,
+  MemberPaymentCodeData,
+  MemberPaymentCodePageData,
   MemberProfileNamePageData,
   MemberProductListItem,
   MemberSettingsItem,

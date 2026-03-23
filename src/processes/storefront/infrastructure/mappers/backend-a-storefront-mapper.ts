@@ -14,7 +14,7 @@ import type {
 } from '../../domain/storefront-page-data'
 
 export interface BackendAStorefrontCategoryDto {
-  children: BackendAStorefrontCategoryDto[]
+  children?: BackendAStorefrontCategoryDto[] | null
   id: number
   logo: string | null
   name: string
@@ -27,7 +27,7 @@ export interface BackendAStorefrontProductDto {
     name: string
   }
   id: number
-  main_images: string[]
+  main_images?: string[] | null
   skus: Array<{
     image: string | null
     price: string
@@ -39,14 +39,18 @@ export interface BackendAStorefrontProductDto {
 }
 
 export interface BackendAStorefrontHomeDto {
-  categories: BackendAStorefrontCategoryDto[]
-  latest_products: BackendAStorefrontProductDto[]
+  categories?: BackendAStorefrontCategoryDto[] | null
+  latest_products?: BackendAStorefrontProductDto[] | null
   platform: {
     address: string | null
-    banners: string[]
+    banners?: string[] | null
     company_name: string | null
   }
-  recommended_products: BackendAStorefrontProductDto[]
+  recommended_products?: BackendAStorefrontProductDto[] | null
+}
+
+function ensureArray<T>(input: T[] | null | undefined): T[] {
+  return Array.isArray(input) ? input : []
 }
 
 function resolveActiveSkus(product: Pick<BackendAProductDetailDto, 'skus'>) {
@@ -64,8 +68,10 @@ function resolveProductPrice(product: BackendAStorefrontProductDto) {
 }
 
 function resolveProductImage(product: BackendAStorefrontProductDto) {
+  const productImages = ensureArray(product.main_images)
+
   return resolveBackendAMediaUrl(
-    product.main_images[0]
+    productImages[0]
     ?? product.skus.find((sku) => sku.status === 1)?.image
     ?? product.skus[0]?.image
     ?? null,
@@ -93,11 +99,13 @@ function mapCategoryNode(category: BackendAStorefrontCategoryDto): CategoryPageC
 
 function collectLeafCategories(categories: BackendAStorefrontCategoryDto[]): CategoryPageCategory[] {
   return categories.flatMap((category) => {
-    if (category.children.length === 0) {
+    const children = ensureArray(category.children)
+
+    if (children.length === 0) {
       return [mapCategoryNode(category)]
     }
 
-    return collectLeafCategories(category.children)
+    return collectLeafCategories(children)
   })
 }
 
@@ -117,7 +125,7 @@ export function mapBackendACategoryPageData(
 ): CategoryPageData {
   return {
     primaryCategories: categories.map((category) => {
-      const secondaryCategories = collectLeafCategories(category.children)
+      const secondaryCategories = collectLeafCategories(ensureArray(category.children))
 
       return {
         children: secondaryCategories.length > 0 ? secondaryCategories : [mapCategoryNode(category)],
@@ -139,14 +147,18 @@ export function mapBackendACategoryPageData(
 }
 
 export function mapBackendAHomePageData(data: BackendAStorefrontHomeDto): HomePageData {
+  const recommendedProducts = ensureArray(data.recommended_products)
+  const latestProducts = ensureArray(data.latest_products)
+  const categories = ensureArray(data.categories)
+  const platformBanners = ensureArray(data.platform.banners)
   const featuredProducts = Array.from(
     new Map(
-      [...data.recommended_products, ...data.latest_products]
+      [...recommendedProducts, ...latestProducts]
         .map((product) => [String(product.id), mapBackendAStorefrontProductCard(product)]),
     ).values(),
   )
 
-  const quickCategories = data.categories.map((category) => ({
+  const quickCategories = categories.map((category) => ({
     id: String(category.id),
     imageUrl: resolveBackendAMediaUrl(category.logo),
     label: category.name,
@@ -156,12 +168,12 @@ export function mapBackendAHomePageData(data: BackendAStorefrontHomeDto): HomePa
   const bannerDescription = data.platform.address?.trim() || ''
 
   return {
-    banners: data.platform.banners.map((banner, index) => ({
+    banners: platformBanners.map((banner, index) => ({
       description: bannerDescription,
       eyebrow: companyName,
       imageUrl: resolveBackendAMediaUrl(banner),
       linkUrl: '/',
-      title: data.platform.banners.length > 1 ? `${companyName} ${index + 1}` : companyName,
+      title: platformBanners.length > 1 ? `${companyName} ${index + 1}` : companyName,
     })),
     featuredProducts,
     quickCategories,

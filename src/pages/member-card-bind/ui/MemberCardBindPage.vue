@@ -12,6 +12,7 @@ const router = useRouter()
 const { bindMemberCard } = useMemberCardBinding()
 const { loadMemberCardBindPage, memberCardBindPageData } = useMemberCardBindPageModel()
 const cardNumber = ref('')
+const cardSecret = ref('')
 const isSubmitting = ref(false)
 
 function buildMockCardNumber() {
@@ -35,7 +36,10 @@ async function submitBind() {
   isSubmitting.value = true
 
   try {
-    const result = await bindMemberCard({ cardNumber: cardNumber.value })
+    const result = await bindMemberCard({
+      cardNumber: cardNumber.value,
+      cardSecret: cardSecret.value,
+    })
     showSuccessToast(`充值成功，到账 ¥${result.redemption.amount.toFixed(2)}`)
     void router.push({ name: 'member-cards' })
   } catch (error) {
@@ -71,6 +75,7 @@ onMounted(() => {
 
     <MemberCardBindPanel
       v-model:card-number="cardNumber"
+      v-model:card-secret="cardSecret"
       :is-submitting="isSubmitting"
       @simulate-scan="simulateScan"
       @submit="submitBind"

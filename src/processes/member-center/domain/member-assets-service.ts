@@ -13,6 +13,7 @@ export interface MemberAssetsSnapshot {
 
 export interface BindMemberCardCommand {
   cardNumber: string
+  cardSecret: string
 }
 
 export interface BindMemberCardResult {

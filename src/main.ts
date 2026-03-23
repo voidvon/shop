@@ -8,6 +8,25 @@ import '@/app/styles/index.css'
 import 'nprogress/nprogress.css'
 import 'vant/es/toast/style'
 
+async function enableVConsole() {
+  if (!import.meta.env.DEV || typeof window === 'undefined') {
+    return
+  }
+
+  const nextWindow = window as typeof window & {
+    __shopVConsole__?: object
+  }
+
+  if (nextWindow.__shopVConsole__) {
+    return
+  }
+
+  const { default: VConsole } = await import('vconsole')
+  nextWindow.__shopVConsole__ = new VConsole()
+}
+
+void enableVConsole()
+
 const app = createApp(App)
 
 provideBackendRuntime(app)

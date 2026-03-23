@@ -13,6 +13,7 @@ const route = useRoute()
 const router = useRouter()
 const isSubmitting = ref(false)
 const cardNumber = ref('')
+const cardSecret = ref('')
 const { bindMemberCard } = useMemberCardBinding()
 const { errorMessage, isLoading, loadMemberCardsPage, memberCardsPageData } = useMemberCardsPageModel()
 const bindDrawerVisible = computed(() => route.query.drawer === 'bind')
@@ -96,7 +97,10 @@ async function submitBindCard() {
   isSubmitting.value = true
 
   try {
-    const result = await bindMemberCard({ cardNumber: cardNumber.value })
+    const result = await bindMemberCard({
+      cardNumber: cardNumber.value,
+      cardSecret: cardSecret.value,
+    })
     showSuccessToast(`充值成功，到账 ¥${formatAmount(result.redemption.amount)}`)
     await closeBindDrawer()
     await loadMemberCardsPage()
@@ -113,6 +117,7 @@ watch(bindDrawerVisible, (visible, previousVisible) => {
   }
 
   cardNumber.value = ''
+  cardSecret.value = ''
 })
 
 onMounted(async () => {
@@ -194,6 +199,7 @@ onMounted(async () => {
 
         <MemberCardBindPanel
           v-model:card-number="cardNumber"
+          v-model:card-secret="cardSecret"
           :is-submitting="isSubmitting"
           @simulate-scan="simulateScan"
           @submit="submitBindCard"

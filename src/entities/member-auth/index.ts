@@ -31,6 +31,7 @@ export {
 } from './infrastructure/create-browser-member-auth-session'
 export { backendAMemberAuthRepository } from './infrastructure/adapters/backend-a/backend-a-member-auth-repository'
 export { createBackendAMemberProfileService } from './infrastructure/adapters/backend-a/backend-a-member-profile-service'
+export { hydrateBackendAMemberAuthSession } from './infrastructure/adapters/backend-a/backend-a-member-auth-session'
 export { mockMemberAuthRepository } from './infrastructure/adapters/mock/mock-member-auth-repository'
 export { createMockMemberProfileService } from './infrastructure/adapters/mock/mock-member-profile-service'
 export { createBackendAMemberSecurityService } from './infrastructure/adapters/backend-a/backend-a-member-security-service'

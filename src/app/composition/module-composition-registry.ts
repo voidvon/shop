@@ -9,6 +9,7 @@ import { HomePage } from '@/pages/home'
 import { MemberCardBindPage } from '@/pages/member-card-bind'
 import { MemberCardsPage } from '@/pages/member-cards'
 import { MemberBalancePage } from '@/pages/member-balance'
+import { MemberPaymentCodePage } from '@/pages/member-payment-code'
 import { MemberAboutPage } from '@/pages/member-about'
 import { MemberAddressesPage } from '@/pages/member-addresses'
 import { MemberCenterPage } from '@/pages/member-center'
@@ -331,6 +332,16 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
           activeMainNavigationKey: 'member',
           requiresAuth: true,
           title: '账户余额',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/assets/payment-code',
+        name: 'member-payment-code',
+        component: MemberPaymentCodePage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '付款码',
         },
       }),
       createModuleRoute({

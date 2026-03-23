@@ -1,6 +1,7 @@
 import type { App } from 'vue'
 
 import {
+  hydrateBackendAMemberAuthSession,
   provideMemberAuthRepository,
   provideMemberProfileService,
   provideMemberSecurityService,
@@ -42,6 +43,10 @@ export function provideBackendRuntime(app: App) {
   provideMemberCenterQuery(app, runtime.queries.memberCenter)
   provideStorefrontQuery(app, runtime.queries.storefront)
   provideTradeQuery(app, runtime.queries.trade)
+
+  if (runtime.type === 'backend-a') {
+    void hydrateBackendAMemberAuthSession(runtime.auth.session)
+  }
 
   return runtime
 }

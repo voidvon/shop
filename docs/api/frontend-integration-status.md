@@ -14,13 +14,12 @@
 
 现状更准确地说是：
 
-- `backend-a` 已经开始接入真实 Swagger，目前已打通“公开商品域 + 登录资料地址域 + 交易主链路”
+- `backend-a` 已经开始接入真实 Swagger，目前已打通“公开商品域 + 登录资料地址域 + 交易主链路 + 会员资产主入口”
 - 首页、分类、商品列表、商品详情已经改为真实 HTTP 读取
-- 会员登录、昵称更新、地址 CRUD 已改为真实 HTTP
+- 会员登录、资料刷新、昵称更新、地址 CRUD 已改为真实 HTTP
 - 购物车、预结算、提交订单、订单列表、订单详情已改为真实 HTTP
+- 会员中心已接平台配置、余额、余额流水、储值卡充值与付款码查询
 - 售后目前仍主要落在浏览器本地仓储
-- 会员资产仍然是另一条独立真实 HTTP Gateway
-- 会员资产 Gateway 使用的路径是 `/member/assets/*`，这套路径并不在当前 Swagger 文档里
 
 ## 2. 当前真实 HTTP 接入点
 
@@ -32,14 +31,16 @@
   - [`src/processes/storefront/infrastructure/adapters/backend-a/backend-a-storefront-query.ts`](/root/shop/src/processes/storefront/infrastructure/adapters/backend-a/backend-a-storefront-query.ts)
 - 会员登录 / 资料 / 地址：
   - [`src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-auth-repository.ts`](/root/shop/src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-auth-repository.ts)
+  - [`src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-auth-session.ts`](/root/shop/src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-auth-session.ts)
   - [`src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-profile-service.ts`](/root/shop/src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-profile-service.ts)
   - [`src/entities/member-address/infrastructure/adapters/backend-a/backend-a-member-address-repository.ts`](/root/shop/src/entities/member-address/infrastructure/adapters/backend-a/backend-a-member-address-repository.ts)
 - 交易主链路：
   - [`src/entities/cart/infrastructure/adapters/backend-a/backend-a-cart-repository.ts`](/root/shop/src/entities/cart/infrastructure/adapters/backend-a/backend-a-cart-repository.ts)
   - [`src/entities/order/infrastructure/adapters/backend-a/backend-a-order-repository.ts`](/root/shop/src/entities/order/infrastructure/adapters/backend-a/backend-a-order-repository.ts)
   - [`src/processes/trade/infrastructure/adapters/backend-a/backend-a-trade-readers.ts`](/root/shop/src/processes/trade/infrastructure/adapters/backend-a/backend-a-trade-readers.ts)
-- 会员资产独立网关：
-  - [`src/processes/member-center/infrastructure/adapters/backend-a/backend-a-member-assets-http-gateway.ts`](/root/shop/src/processes/member-center/infrastructure/adapters/backend-a/backend-a-member-assets-http-gateway.ts)
+- 会员中心 / 会员资产：
+  - [`src/processes/member-center/infrastructure/adapters/backend-a/backend-a-member-assets-service.ts`](/root/shop/src/processes/member-center/infrastructure/adapters/backend-a/backend-a-member-assets-service.ts)
+  - [`src/processes/member-center/infrastructure/adapters/backend-a/backend-a-member-center-query.ts`](/root/shop/src/processes/member-center/infrastructure/adapters/backend-a/backend-a-member-center-query.ts)
 
 商品域依赖的环境变量：
 
@@ -57,6 +58,7 @@
 会员登录 / 资料 / 地址当前调用的 Swagger 路径：
 
 - `POST /api/v1/auth/wechat`
+- `GET /api/v1/auth/profile`
 - `PATCH /api/v1/auth/profile`
 - `GET /api/v1/user-addresses`
 - `POST /api/v1/user-addresses`
@@ -74,18 +76,15 @@
 - `GET /api/v1/orders`
 - `GET /api/v1/orders/{order}`
 
-会员资产依赖的环境变量：
+会员中心 / 会员资产当前调用的 Swagger 路径：
 
-- `VITE_BACKEND_A_MEMBER_ASSETS_BASE_URL`
-- `VITE_BACKEND_A_MEMBER_ASSETS_TIMEOUT_MS`
+- `GET /api/v1/platform/settings`
+- `GET /api/v1/balance-accounts`
+- `GET /api/v1/balance-accounts/logs`
+- `POST /api/v1/stored-value-cards/recharge`
+- `GET /api/v1/offline-payments/payment-code`
 
-会员资产调用的接口路径：
-
-- `POST /member/assets/cards/bind`
-- `GET /member/assets/snapshot`
-- `POST /member/assets/balance/spend`
-
-这说明当前仓库里已经存在“Swagger 商品域 + 自定义会员资产域”两条并行接法，但会员资产仍不是当前 Swagger 文档里的那组路径。
+这说明当前仓库里的会员中心主入口已经改为直接消费 Swagger，剩余未接的主要是优惠券、储值卡二维码和商户端线下核销链路。
 
 ## 3. Swagger 能力 vs 当前前端现状
 
@@ -97,16 +96,16 @@
 | 购物车 | 是 | 是 | 已直连 | runtime 已装配真实 `createBackendACartRepository(...)` |
 | 结算 | 是 | 是 | 已直连 | 已调用 `/api/v1/checkout/preview` 与 `/api/v1/checkout/submit` |
 | 订单 | 是 | 是 | 已直连 | 订单列表、详情与提交结果均改为真实 HTTP |
-| 用户资料 | 是 | 是 | 部分直连 | 微信登录、昵称更新已直连，密码/手机号绑定仍未接 Swagger |
+| 用户资料 | 是 | 是 | 部分直连 | 微信登录、资料刷新、昵称更新已直连，密码/手机号绑定仍未接 Swagger |
 | 地址管理 | 是 | 是 | 已直连 | runtime 已装配真实 `backend-a` 地址仓储 |
-| 余额/储值卡 | 是 | 是 | 部分直连但与 Swagger 不一致 | 当前只接了 `/member/assets/*` 自定义网关，不是 Swagger 里的 `/api/v1/balance-accounts` 与 `/api/v1/stored-value-cards/*` |
+| 余额/储值卡 | 是 | 是 | 部分直连 | 已接 `/api/v1/balance-accounts`、`/api/v1/balance-accounts/logs`、`/api/v1/stored-value-cards/recharge`，储值卡二维码仍未落页面 |
 | 优惠券 | 是 | 页面能力弱 | 未直连 | 有类型与展示概念，但没有明确仓储 / query 对接 Swagger |
 | 合作商家 | 是 | 否 | 未接入 | 当前没有对应页面或 query |
 | 客服 | 是 | 否 | 未接入 | 当前没有客服会话页面和消息数据层 |
-| 线下付款 | 是 | 否 | 未接入 | 当前没有付款码 / 核销流程页面 |
+| 线下付款 | 是 | 部分有 | 部分直连 | 用户付款码页已接 `/api/v1/offline-payments/payment-code`，商户扫码/核销仍未接入 |
 | 上传 | 是 | 间接可能需要 | 未接入 | 当前没有统一上传 gateway |
 | 员工邀请 | 是 | 否 | 未接入 | 当前没有邀请查看/绑定页面流程 |
-| 平台配置 | 是 | 弱依赖 | 未接入 | 当前未见显式平台配置 query |
+| 平台配置 | 是 | 弱依赖 | 部分直连 | 会员中心客服热线与关于我们文案已接 `/api/v1/platform/settings` |
 
 ## 4. 关键代码落点
 
@@ -147,6 +146,7 @@
 ### 4.3 会员登录、资料、地址
 
 - [`src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-auth-repository.ts`](/root/shop/src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-auth-repository.ts)
+- [`src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-auth-session.ts`](/root/shop/src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-auth-session.ts)
 - [`src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-profile-service.ts`](/root/shop/src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-profile-service.ts)
 - [`src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-security-service.ts`](/root/shop/src/entities/member-auth/infrastructure/adapters/backend-a/backend-a-member-security-service.ts)
 
@@ -154,6 +154,7 @@
 
 - `backendAMemberAuthRepository` 已通过 `POST /api/v1/auth/wechat` 获取真实 Bearer token
 - 登录页支持在 URL 携带 `code` 时自动完成微信登录，也可通过 `VITE_BACKEND_A_WECHAT_OAUTH_URL` 跳到静默授权入口
+- runtime 启动后如果本地已有 token，会后台调用 `GET /api/v1/auth/profile` 刷新资料；如果返回 `401`，则自动清空 session
 - `updateNickname` 已调用 `PATCH /api/v1/auth/profile`，并把资料同步回本地 session
 - 地址管理 runtime 已装配真实 `createBackendAMemberAddressRepository(...)`
 - 登录密码、支付密码、微信绑定手机号由于 Swagger 中没有对应接口，当前改为显式提示不支持
@@ -161,29 +162,36 @@
 对应 Swagger：
 
 - `POST /api/v1/auth/wechat`
+- `GET /api/v1/auth/profile`
 - `PATCH /api/v1/auth/profile`
 - `GET/POST/DELETE/PATCH /api/v1/user-addresses`
 
 ### 4.4 会员资产
 
 - [`src/processes/member-center/infrastructure/adapters/backend-a/backend-a-member-assets-service.ts`](/root/shop/src/processes/member-center/infrastructure/adapters/backend-a/backend-a-member-assets-service.ts)
-- [`src/processes/member-center/infrastructure/adapters/backend-a/backend-a-member-assets-http-gateway.ts`](/root/shop/src/processes/member-center/infrastructure/adapters/backend-a/backend-a-member-assets-http-gateway.ts)
+- [`src/processes/member-center/infrastructure/adapters/backend-a/backend-a-member-center-query.ts`](/root/shop/src/processes/member-center/infrastructure/adapters/backend-a/backend-a-member-center-query.ts)
+- [`src/pages/member-payment-code/ui/MemberPaymentCodePage.vue`](/root/shop/src/pages/member-payment-code/ui/MemberPaymentCodePage.vue)
 
 现状：
 
-- 存在 `GatewayFromEnv -> HTTP Gateway -> fetch` 的真实网络调用链
-- 但路径使用 `/member/assets/*`
-- 如果没有配置 `VITE_BACKEND_A_MEMBER_ASSETS_BASE_URL`，则自动回退到本地 stub gateway
+- 余额、余额流水与储值卡充值已经切到 Swagger 真实接口
+- 会员卡绑定页现在会提交 `card_no + card_secret + request_no` 到 `POST /api/v1/stored-value-cards/recharge`
+- 余额页读取 `GET /api/v1/balance-accounts` 与 `GET /api/v1/balance-accounts/logs`
+- 付款码页面已落地到 `/member/assets/payment-code`，读取 `GET /api/v1/offline-payments/payment-code`
+- 兑换记录仍保留在浏览器本地，用于承接当前前端已有的“充值历史”展示
+- 真实订单扣减余额后，页面刷新会再次读取远端余额，不再伪造本地扣款
 
 与 Swagger 的关系：
 
-- Swagger 中存在余额与储值卡接口：
+- 已直接消费的 Swagger 路径：
   - `GET /api/v1/balance-accounts`
   - `GET /api/v1/balance-accounts/logs`
   - `POST /api/v1/stored-value-cards/recharge`
+  - `GET /api/v1/offline-payments/payment-code`
+  - `GET /api/v1/platform/settings`
+- 仍未落位的 Swagger 资产相关路径：
   - `GET /api/v1/stored-value-cards/{storedValueCard}/qr`
-- 但当前代码没有直接消费这些 Swagger 路径
-- 这部分需要优先和后端确认：是 Swagger 未收录 `/member/assets/*`，还是前端当前接的是旧接口
+  - 优惠券相关接口
 
 ## 5. 当前前端有，但 Swagger 里没有的能力
 
@@ -216,10 +224,9 @@
 
 - 合作商家列表 / 详情 / 地区 / 门店类型
 - 客服会话、消息、增量拉取
-- 线下付款码、扫码识别、核销支付
+- 商户线下扫码识别、核销支付
 - 图片上传
 - 商户员工邀请查看与绑定
-- 平台基础设置
 
 这些能力如果属于本期范围，建议单独建新的 `entities / processes / pages`，不要塞进现有商品或会员模块里混用。
 
@@ -236,8 +243,8 @@
 3. 购物车与结算：接 `cart-items`、`checkout/preview`、`checkout/submit`  
    原因：这是交易主链路，能够打通下单闭环。
 
-4. 订单与余额：接 `orders`、`balance-accounts`、`stored-value-cards`、`coupons`  
-   原因：依赖前面的登录态和交易数据。
+4. 订单与余额：`orders`、`balance-accounts`、`stored-value-cards` 主链已接；下一步补 `coupons` 与储值卡二维码  
+   原因：订单、余额、充值和付款码已经打通，剩下是资产细分能力补全。
 
 5. 新能力域：合作商家、客服、线下付款、员工邀请、上传  
    原因：这些在当前代码中基本没有成熟落位，需要新建模块而不是替换旧实现。

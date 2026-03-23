@@ -11,10 +11,25 @@ import type {
   MemberFavoritesPageData,
   MemberHistoryPageData,
   MemberOrderSummary,
+  MemberPaymentCodePageData,
   MemberProfileNamePageData,
   MemberProductListItem,
   MemberSettingsPageData,
 } from '../../domain/member-center-page-data'
+
+export interface BackendAPlatformSettingsDto {
+  address: string | null
+  banners: string[]
+  business_phone: string | null
+  company_name: string
+  customer_service_phone: string | null
+  customer_service_wechat: string | null
+  domain: string | null
+  icp_number: string | null
+  id: number
+  logo: string | null
+  promo_video: string | null
+}
 
 function mapBackendAMemberProductListItem(product: ProductSummary): MemberProductListItem {
   return {
@@ -37,6 +52,14 @@ export function mapBackendAMemberCardsPageData(snapshot: MemberAssetsSnapshot): 
     balanceAmount: snapshot.balanceAmount,
     balanceLogs: snapshot.balanceLogs,
     redemptionRecords: snapshot.redemptionRecords,
+  }
+}
+
+export function mapBackendAMemberPaymentCodePageData(
+  paymentCode: MemberPaymentCodePageData['paymentCode'],
+): MemberPaymentCodePageData {
+  return {
+    paymentCode,
   }
 }
 
@@ -95,14 +118,29 @@ export function mapBackendAMemberProfileNamePageData(authResult: AuthResult | nu
   }
 }
 
-export function mapBackendAMemberAboutPageData(): MemberAboutPageData {
+export function mapBackendAMemberAboutPageData(
+  platformSettings?: BackendAPlatformSettingsDto | null,
+): MemberAboutPageData {
+  const companyName = platformSettings?.company_name?.trim() || 'Backend A 城市文化服务有限公司'
+  const operatorName = companyName
+  const organizerName = platformSettings?.domain?.trim()
+    || platformSettings?.business_phone?.trim()
+    || 'Backend A 消费促进联合体'
+  const background = [
+    platformSettings?.address?.trim() || null,
+    platformSettings?.icp_number?.trim() || null,
+  ].filter((value): value is string => Boolean(value)).join(' / ')
+  const mission = platformSettings?.customer_service_wechat?.trim()
+    ? `平台客服微信：${platformSettings.customer_service_wechat.trim()}`
+    : '通过统一契约和后端适配层，提供稳定的商城会员体验。'
+
   return {
-    companyName: 'Backend A 城市文化服务有限公司',
-    copyrightYear: 2026,
-    operatorName: 'Backend A 城市文化服务有限公司',
-    organizerName: 'Backend A 消费促进联合体',
-    platformBackground: '面向多商户、多业态城市消费场景的统一会员与交易适配前端。',
-    platformMission: '通过统一契约和后端适配层，提供稳定的商城会员体验。',
+    companyName,
+    copyrightYear: new Date().getFullYear(),
+    operatorName,
+    organizerName,
+    platformBackground: background || '面向多商户、多业态城市消费场景的统一会员与交易适配前端。',
+    platformMission: mission,
   }
 }
 
@@ -111,6 +149,7 @@ export function mapBackendAMemberCenterPageData(
   authResult: AuthResult | null,
   balanceAmount: number,
   orderSummary?: MemberOrderSummary,
+  platformSettings?: BackendAPlatformSettingsDto | null,
 ): MemberCenterPageData {
   const favoriteItems = products.slice(0, 2)
   const historyItems = products.slice(0, 3)
@@ -136,14 +175,17 @@ export function mapBackendAMemberCenterPageData(
       isLoggedIn: authResult !== null,
       username: displayName,
     },
-    servicePhone: '400-900-2026',
+    servicePhone:
+      platformSettings?.customer_service_phone?.trim()
+      || platformSettings?.business_phone?.trim()
+      || '400-900-2026',
     shortcuts: [
       { key: 'cards', label: '我的卡券', route: '/member/assets/cards' },
       { key: 'payment-code', label: '付款码', route: '/member/assets/payment-code' },
       { key: 'balance', label: '账户余额', route: '/member/assets/balance' },
       { key: 'settings', label: '用户设置', route: '/member/settings' },
     ],
-    tipText: `当前页面数据经 Backend A 适配层统一转换。当前账户余额 ${balanceAmount.toFixed(2)}。`,
+    tipText: `当前页面数据经 Backend A 适配层统一转换。当前账户余额 ${balanceAmount.toFixed(2)}。${platformSettings?.company_name ? ` 平台：${platformSettings.company_name}。` : ''}`,
   }
 }
 

@@ -32,6 +32,7 @@ export interface BackendAMemberAssetsSnapshotDto {
 
 export interface BackendABindMemberCardRequestDto {
   cardNo: string
+  cardSecret: string
 }
 
 export interface BackendABindMemberCardResponseDto {
@@ -79,6 +80,7 @@ function resolveCardTitle(cardNumber: string) {
 function mapBindMemberCardCommand(command: BindMemberCardCommand): BackendABindMemberCardRequestDto {
   return {
     cardNo: normalizeDigits(command.cardNumber),
+    cardSecret: command.cardSecret.trim(),
   }
 }
 

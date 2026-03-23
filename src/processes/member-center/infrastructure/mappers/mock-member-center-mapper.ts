@@ -15,6 +15,7 @@ import type {
   MemberFavoritesPageData,
   MemberHistoryPageData,
   MemberOrderSummary,
+  MemberPaymentCodePageData,
   MemberProfileNamePageData,
   MemberProductListItem,
   MemberSettingsPageData,
@@ -46,6 +47,19 @@ export function mapMockMemberCardsPageData(snapshot: MemberAssetsSnapshot): Memb
     balanceAmount: snapshot.balanceAmount,
     balanceLogs: snapshot.balanceLogs,
     redemptionRecords: snapshot.redemptionRecords,
+  }
+}
+
+export function mapMockMemberPaymentCodePageData(): MemberPaymentCodePageData {
+  const paymentCode = mockAccountData.memberAssetsPageData.paymentCode
+
+  return {
+    paymentCode: paymentCode
+      ? {
+          codeUrl: paymentCode.codeUrl,
+          codeValue: paymentCode.codeValue,
+        }
+      : null,
   }
 }
 

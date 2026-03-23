@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 const props = defineProps<{
   cardNumber: string
+  cardSecret: string
   isSubmitting?: boolean
 }>()
 
@@ -10,17 +11,23 @@ const emit = defineEmits<{
   (e: 'simulate-scan'): void
   (e: 'submit'): void
   (e: 'update:cardNumber', value: string): void
+  (e: 'update:cardSecret', value: string): void
 }>()
 
 const cardNumberModel = computed({
   get: () => props.cardNumber,
   set: (value: string) => emit('update:cardNumber', value.replace(/\D/g, '').slice(0, 16)),
 })
+
+const cardSecretModel = computed({
+  get: () => props.cardSecret,
+  set: (value: string) => emit('update:cardSecret', value.trim().slice(0, 32)),
+})
 </script>
 
 <template>
   <div class="bind-panel">
-    <label class="card-no-row">
+    <label class="card-input-row">
       <span>卡券编号</span>
       <input
         v-model="cardNumberModel"
@@ -28,6 +35,16 @@ const cardNumberModel = computed({
         inputmode="numeric"
         maxlength="16"
         placeholder="扫码后自动回填16位卡券编号"
+      >
+    </label>
+
+    <label class="card-input-row">
+      <span>卡券卡密</span>
+      <input
+        v-model="cardSecretModel"
+        type="text"
+        maxlength="32"
+        placeholder="请输入卡券卡密"
       >
     </label>
 
@@ -52,11 +69,11 @@ const cardNumberModel = computed({
 <style scoped>
 .bind-panel {
   display: grid;
-  grid-template-rows: 48px minmax(0, 1fr);
+  grid-template-rows: 48px 48px minmax(0, 1fr);
   min-height: 0;
 }
 
-.card-no-row {
+.card-input-row {
   display: flex;
   gap: 20px;
   align-items: center;
@@ -66,7 +83,7 @@ const cardNumberModel = computed({
   background: #fff;
 }
 
-.card-no-row span {
+.card-input-row span {
   flex: none;
   white-space: nowrap;
   color: #1a1918;
@@ -74,7 +91,7 @@ const cardNumberModel = computed({
   font-weight: 500;
 }
 
-.card-no-row input {
+.card-input-row input {
   width: 100%;
   padding: 0;
   border: 0;
@@ -85,7 +102,7 @@ const cardNumberModel = computed({
   outline: none;
 }
 
-.card-no-row input::placeholder {
+.card-input-row input::placeholder {
   color: #9c9b99;
 }
 

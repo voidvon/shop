@@ -97,6 +97,7 @@ npm run dev
 - `GET /api/v1/products`
 - `GET /api/v1/products/{product}`
 - `POST /api/v1/auth/wechat`
+- `GET /api/v1/auth/profile`
 - `PATCH /api/v1/auth/profile`
 - `GET/POST/DELETE/PATCH /api/v1/user-addresses`
 - `GET/POST/PATCH/DELETE /api/v1/cart-items`
@@ -104,6 +105,18 @@ npm run dev
 - `POST /api/v1/checkout/submit`
 - `GET /api/v1/orders`
 - `GET /api/v1/orders/{order}`
+- `GET /api/v1/platform/settings`
+- `GET /api/v1/balance-accounts`
+- `GET /api/v1/balance-accounts/logs`
+- `POST /api/v1/stored-value-cards/recharge`
+- `GET /api/v1/offline-payments/payment-code`
+
+其中会员中心相关页面已补到真实后端：
+
+- 启动后若本地已有 token，会后台调用 `GET /api/v1/auth/profile` 刷新登录态
+- “我的卡券”会真实调用储值卡充值接口
+- “账户余额”会真实读取余额与流水
+- “付款码”页面已落到 `/member/assets/payment-code`
 
 当前 `backend-a` 仍未在 Swagger 中提供、前端会显式提示不支持的能力：
 
@@ -117,6 +130,14 @@ npm run dev
 - 订单取消
 - 订单支付
 - 确认收货
+
+当前 Swagger 里仍未接完、或前端还没有完整页面承接的能力：
+
+- 储值卡二维码 `GET /api/v1/stored-value-cards/{storedValueCard}/qr`
+- 优惠券列表与领取
+- 商户端线下扫码识别 / 核销支付
+- 图片上传
+- 员工邀请
 
 只启用部分前端模块：
 

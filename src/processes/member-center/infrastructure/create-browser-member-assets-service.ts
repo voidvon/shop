@@ -32,9 +32,14 @@ export function createBrowserMemberAssetsService(
   return {
     async bindMemberCard(command: BindMemberCardCommand) {
       const cardNumber = normalizeDigits(command.cardNumber)
+      const cardSecret = command.cardSecret.trim()
 
       if (cardNumber.length !== 16) {
         throw new Error('请输入16位卡券编号')
+      }
+
+      if (!cardSecret) {
+        throw new Error('请输入卡券卡密')
       }
 
       const amount = resolveRechargeAmount(cardNumber)
