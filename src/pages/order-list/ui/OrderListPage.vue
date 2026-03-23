@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
+import { backendTarget } from '@/shared/config/backend'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
@@ -53,6 +54,7 @@ const activeTab = ref<OrderListFilterStatus>(resolveRouteStatus(route.query.stat
 const retainedPanels = ref<Set<OrderListFilterStatus>>(new Set([activeTab.value]))
 const hideTimers = new Map<OrderListFilterStatus, ReturnType<typeof setTimeout>>()
 let routeSyncTimer: ReturnType<typeof setTimeout> | null = null
+const supportsOrderTransitions = backendTarget === 'mock'
 
 function getFilteredOrders(status: OrderListFilterStatus) {
   return orderListPageData.value.orders.filter((order) => {
@@ -304,13 +306,13 @@ onBeforeUnmount(() => {
                     订单详情
                   </RouterLink>
 
-                  <template v-if="order.status === 'pending-payment'">
+                  <template v-if="supportsOrderTransitions && order.status === 'pending-payment'">
                     <button class="ghost-button" type="button" @click="handleCancelOrder(order.orderId)">取消订单</button>
                     <RouterLink class="primary-button primary-link-button" :to="{ name: 'checkout' }">余额支付</RouterLink>
                   </template>
 
                   <button
-                    v-else-if="order.status === 'pending-receipt'"
+                    v-else-if="supportsOrderTransitions && order.status === 'pending-receipt'"
                     class="primary-button"
                     type="button"
                     @click="handleConfirmReceipt(order.orderId)"

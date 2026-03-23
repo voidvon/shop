@@ -88,7 +88,7 @@ export const supportedModulesByBackend: Record<BackendType, FrontendModuleMap> =
     cart: true,
     checkout: true,
     member: true,
-    'member-mobile-register': true,
+    'member-mobile-register': false,
     promotion: true,
   },
 }

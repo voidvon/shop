@@ -2,10 +2,13 @@ import type { TradeOrderStatus } from '@/shared/types/modules'
 
 export interface CheckoutLine {
   lineTotal: number
+  lineId: string | null
   productId: string
   productImageUrl?: string | null
   productName: string
   quantity: number
+  skuId: string | null
+  specText: string | null
   unitPrice: number
 }
 
@@ -22,7 +25,10 @@ export interface CheckoutPreview {
   subtotalAmount: number
 }
 
-export interface SubmitOrderCommand extends CreateCheckoutPreviewCommand {}
+export interface SubmitOrderCommand extends CreateCheckoutPreviewCommand {
+  addressId?: string | null
+  remark?: string | null
+}
 
 export interface OrderConfirmation {
   orderId: string
@@ -75,10 +81,13 @@ export function createCheckoutLine(input: Omit<CheckoutLine, 'lineTotal'> & { li
 
   return {
     lineTotal,
+    lineId: input.lineId ?? input.productId,
     productId: input.productId,
     productImageUrl: input.productImageUrl ?? null,
     productName: input.productName,
     quantity,
+    skuId: input.skuId ?? null,
+    specText: input.specText ?? null,
     unitPrice: input.unitPrice,
   }
 }

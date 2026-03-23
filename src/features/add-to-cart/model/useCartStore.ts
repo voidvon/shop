@@ -23,7 +23,7 @@ export const useCartStore = defineStore('cart', () => {
   const errorMessage = ref<string | null>(null)
   const hasLoaded = ref(false)
   const isLoading = ref(false)
-  const pendingProductId = ref<string | null>(null)
+  const pendingLineId = ref<string | null>(null)
   const selectedSnapshot = ref<CartSnapshot>(createEmptyCartSnapshot())
   const isSelectionPending = ref(false)
 
@@ -31,19 +31,19 @@ export const useCartStore = defineStore('cart', () => {
   const lines = computed(() => snapshot.value.lines)
   const selectedItemCount = computed(() => selectedSnapshot.value.itemCount)
   const selectedLineCount = computed(() => selectedSnapshot.value.lines.length)
-  const selectedProductIds = computed(() => selectedSnapshot.value.lines.map((line) => line.productId))
+  const selectedLineIds = computed(() => selectedSnapshot.value.lines.map((line) => line.lineId))
   const selectedSubtotal = computed(() => selectedSnapshot.value.subtotal)
   const subtotal = computed(() => snapshot.value.subtotal)
   const isAllSelected = computed(
     () => snapshot.value.lines.length > 0 && selectedSnapshot.value.lines.length === snapshot.value.lines.length,
   )
 
-  function isProductPending(productId: string) {
-    return pendingProductId.value === productId
+  function isLinePending(lineId: string) {
+    return pendingLineId.value === lineId
   }
 
-  function isProductSelected(productId: string) {
-    return selectedProductIds.value.includes(productId)
+  function isLineSelected(lineId: string) {
+    return selectedLineIds.value.includes(lineId)
   }
 
   async function syncSelectedSnapshot() {
@@ -69,10 +69,12 @@ export const useCartStore = defineStore('cart', () => {
     product: ProductSummary,
     options?: {
       quantity?: number
+      skuId?: string | null
+      specText?: string | null
       unitPrice?: number
     },
   ) {
-    pendingProductId.value = product.id
+    pendingLineId.value = options?.skuId ?? product.id
     errorMessage.value = null
 
     try {
@@ -81,6 +83,8 @@ export const useCartStore = defineStore('cart', () => {
         productImageUrl: product.coverImageUrl,
         productName: product.name,
         quantity: options?.quantity ?? 1,
+        skuId: options?.skuId ?? null,
+        specText: options?.specText ?? null,
         unitPrice: options?.unitPrice ?? product.price,
       })
       await syncSelectedSnapshot()
@@ -90,16 +94,16 @@ export const useCartStore = defineStore('cart', () => {
       errorMessage.value = error instanceof Error ? error.message : '加入购物车失败'
       throw error
     } finally {
-      pendingProductId.value = null
+      pendingLineId.value = null
     }
   }
 
-  async function removeProduct(productId: string) {
-    pendingProductId.value = productId
+  async function removeProduct(lineId: string) {
+    pendingLineId.value = lineId
     errorMessage.value = null
 
     try {
-      snapshot.value = await removeCartItem(cartRepository, productId)
+      snapshot.value = await removeCartItem(cartRepository, lineId)
       await syncSelectedSnapshot()
       hasLoaded.value = true
       return snapshot.value
@@ -107,17 +111,17 @@ export const useCartStore = defineStore('cart', () => {
       errorMessage.value = error instanceof Error ? error.message : '删除购物车商品失败'
       throw error
     } finally {
-      pendingProductId.value = null
+      pendingLineId.value = null
     }
   }
 
-  async function setProductQuantity(productId: string, quantity: number) {
-    pendingProductId.value = productId
+  async function setProductQuantity(lineId: string, quantity: number) {
+    pendingLineId.value = lineId
     errorMessage.value = null
 
     try {
       snapshot.value = await setCartItemQuantity(cartRepository, {
-        productId,
+        lineId,
         quantity,
       })
       await syncSelectedSnapshot()
@@ -127,17 +131,17 @@ export const useCartStore = defineStore('cart', () => {
       errorMessage.value = error instanceof Error ? error.message : '更新购物车数量失败'
       throw error
     } finally {
-      pendingProductId.value = null
+      pendingLineId.value = null
     }
   }
 
-  async function setProductsSelected(productIds: string[], selected: boolean) {
+  async function setLinesSelected(lineIds: string[], selected: boolean) {
     isSelectionPending.value = true
     errorMessage.value = null
 
     try {
       selectedSnapshot.value = await setCartItemsSelected(cartRepository, {
-        productIds,
+        lineIds,
         selected,
       })
       hasLoaded.value = true
@@ -171,22 +175,22 @@ export const useCartStore = defineStore('cart', () => {
     errorMessage,
     hasLoaded,
     isAllSelected,
+    isLinePending,
+    isLineSelected,
     isLoading,
-    isProductSelected,
-    isProductPending,
     isSelectionPending,
     itemCount,
     lines,
     loadSnapshot,
-    pendingProductId,
+    pendingLineId,
     removeProduct,
     selectedItemCount,
     selectedLineCount,
-    selectedProductIds,
+    selectedLineIds,
     selectedSnapshot,
     selectedSubtotal,
     setProductQuantity,
-    setProductsSelected,
+    setLinesSelected,
     snapshot,
     subtotal,
   }

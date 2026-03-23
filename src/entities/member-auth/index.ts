@@ -6,6 +6,7 @@ export type {
   MemberRegisterCommand,
   MemberRegisterSmsCodeCommand,
   MemberRegisterSmsCodeResult,
+  MemberWechatLoginCommand,
 } from './domain/member-auth'
 export {
   createGuestMemberAuthSessionSnapshot,

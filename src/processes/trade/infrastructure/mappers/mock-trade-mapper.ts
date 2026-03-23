@@ -20,7 +20,7 @@ export function mapMockCartPageData(snapshot: CartSnapshot): CartPageData {
     const storeName = store?.storeName ?? '默认店铺'
     const existingGroup = groupsByStoreId.get(storeId)
     const item = {
-      lineId: line.productId,
+      lineId: line.lineId,
       productId: line.productId,
       productImageUrl: line.productImageUrl ?? product?.imageUrl ?? null,
       productName: line.productName,

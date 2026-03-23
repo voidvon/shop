@@ -14,7 +14,7 @@ export function mapBackendACartPageData(snapshot: CartSnapshot): CartPageData {
     groups: [
       {
         items: snapshot.lines.map((line) => ({
-          lineId: line.productId,
+          lineId: line.lineId,
           productId: line.productId,
           productImageUrl: line.productImageUrl ?? null,
           productName: line.productName,

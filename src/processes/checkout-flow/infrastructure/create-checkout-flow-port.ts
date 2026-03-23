@@ -4,12 +4,14 @@ import {
   type CartRepository,
 } from '@/entities/cart'
 import {
+  createCheckoutPreview,
   createCheckoutPreviewUseCase,
   createCheckoutLine,
   submitOrder,
   type CheckoutLine,
   type CreateCheckoutPreviewCommand,
   type OrderRepository,
+  type SubmitOrderCommand,
 } from '@/entities/order'
 import {
   getFeaturedProductSummaries,
@@ -18,10 +20,16 @@ import {
   type ProductSummary,
 } from '@/entities/product'
 
-import type { CheckoutFlowPort, SubmitCheckoutOrderResult } from '../domain/checkout-flow-port'
+import type {
+  CheckoutFlowPort,
+  SubmitCheckoutOrderCommand,
+  SubmitCheckoutOrderResult,
+} from '../domain/checkout-flow-port'
 
 interface CreateCheckoutFlowPortOptions {
+  allowInstantFallback?: boolean
   cartRepository: CartRepository
+  clearCartAfterSubmit?: boolean
   isCartEnabled: boolean
   orderRepository: OrderRepository
   productRepository: ProductRepository
@@ -36,8 +44,31 @@ async function clearSubmittedCartLines(
   }
 
   for (const line of command.lines) {
-    await repository.removeItem(line.productId)
+    await repository.removeItem(line.lineId ?? line.productId)
   }
+}
+
+async function rebuildPostSubmitPreview(
+  options: CreateCheckoutFlowPortOptions,
+  command: CreateCheckoutPreviewCommand,
+) {
+  if (options.clearCartAfterSubmit === false) {
+    const selectedSnapshot = await getSelectedCartSnapshot(options.cartRepository)
+
+    if (selectedSnapshot.itemCount === 0) {
+      return createCheckoutPreview({
+        lines: [],
+        source: command.source,
+      })
+    }
+
+    return createCheckoutPreviewUseCase(options.orderRepository, {
+      lines: await mapCartToCheckoutLines(selectedSnapshot, options.productRepository),
+      source: 'cart',
+    })
+  }
+
+  return createCheckoutPreviewUseCase(options.orderRepository, command)
 }
 
 async function mapCartToCheckoutLines(
@@ -50,10 +81,13 @@ async function mapCartToCheckoutLines(
       : await getProductDetail(productRepository, line.productId)
 
     return createCheckoutLine({
+      lineId: line.lineId,
       productId: line.productId,
       productImageUrl: line.productImageUrl ?? productDetail?.coverImageUrl ?? null,
       productName: line.productName,
       quantity: line.quantity,
+      skuId: line.skuId,
+      specText: line.specText,
       unitPrice: line.unitPrice,
     })
   }))
@@ -61,10 +95,13 @@ async function mapCartToCheckoutLines(
 
 function mapProductToInstantLine(product: ProductSummary): CheckoutLine {
   return createCheckoutLine({
+    lineId: product.id,
     productId: product.id,
     productImageUrl: product.coverImageUrl,
     productName: product.name,
     quantity: 1,
+    skuId: null,
+    specText: null,
     unitPrice: product.price,
   })
 }
@@ -89,6 +126,10 @@ async function resolveCheckoutCommand(
     }
   }
 
+  if (options.allowInstantFallback === false) {
+    throw new Error('请先选择要结算的商品')
+  }
+
   const products = await getFeaturedProductSummaries(options.productRepository)
   const instantProduct = products[0]
 
@@ -109,11 +150,20 @@ export function createCheckoutFlowPort(options: CreateCheckoutFlowPortOptions): 
       return createCheckoutPreviewUseCase(options.orderRepository, command)
     },
 
-    async submit(): Promise<SubmitCheckoutOrderResult> {
+    async submit(submitCommand?: SubmitCheckoutOrderCommand): Promise<SubmitCheckoutOrderResult> {
       const command = await resolveCheckoutCommand(options)
-      const confirmation = await submitOrder(options.orderRepository, command)
-      const preview = await createCheckoutPreviewUseCase(options.orderRepository, command)
-      await clearSubmittedCartLines(options.cartRepository, command)
+      const orderCommand: SubmitOrderCommand = {
+        ...command,
+        addressId: submitCommand?.addressId ?? null,
+        remark: submitCommand?.remark ?? null,
+      }
+      const confirmation = await submitOrder(options.orderRepository, orderCommand)
+
+      if (options.clearCartAfterSubmit !== false) {
+        await clearSubmittedCartLines(options.cartRepository, command)
+      }
+
+      const preview = await rebuildPostSubmitPreview(options, command)
 
       return {
         confirmation,

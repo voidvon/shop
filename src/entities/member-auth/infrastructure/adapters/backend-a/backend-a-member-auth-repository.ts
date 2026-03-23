@@ -1,80 +1,40 @@
-import type { AuthResult, AuthUserInfo } from '@/shared/types/modules'
+import { backendAHttpClient } from '@/shared/api/backend-a/backend-a-http-client'
 
 import type { MemberAuthRepository } from '../../../domain/member-auth-repository'
+import type { BackendAWechatLoginDataDto } from '../../dto/backend-a-member-auth.dto'
+import { mapBackendAWechatLoginDataDto } from '../../mappers/backend-a-member-auth-mapper'
 
-function createBackendAAuthResult(userInfo: AuthUserInfo): AuthResult {
-  const now = Date.now()
-
-  return {
-    capabilities: ['wechat-login', 'wechat-scan-card', 'recharge-card-payment', 'payment-code'],
-    security: {
-      canResetPassword: true,
-      hasBoundMobile: userInfo.mobile !== null,
-      hasPaymentPassword: false,
-    },
-    session: {
-      accessToken: `backend-a-access-token-${now}`,
-      expiresAt: '2026-12-31T23:59:59.000Z',
-      refreshToken: `backend-a-refresh-token-${now}`,
-    },
-    userInfo,
-  }
-}
-
-function normalizeBackendAUsername(account: string) {
-  if (account.includes('@')) {
-    return account.slice(0, account.indexOf('@'))
-  }
-
-  if (/^1\d{10}$/.test(account)) {
-    return `ba_${account.slice(-4)}`
-  }
-
-  return account
-}
+const backendAWechatOnlyMessage = 'Backend A 当前只支持微信公众号静默授权登录'
 
 export const backendAMemberAuthRepository: MemberAuthRepository = {
-  async login(command) {
-    const username = normalizeBackendAUsername(command.account)
-
-    return Promise.resolve(createBackendAAuthResult({
-      avatarUrl: null,
-      email: command.account.includes('@') ? command.account : null,
-      mobile: /^1\d{10}$/.test(command.account) ? command.account : null,
-      nickname: `Backend A ${username}`,
-      userId: `backend-a-member-${Date.now()}`,
-      username,
-    }))
+  async login() {
+    throw new Error(`${backendAWechatOnlyMessage}，账号密码登录未在当前 Swagger 中提供`)
   },
 
-  async registerByAccount(command) {
-    return Promise.resolve(createBackendAAuthResult({
-      avatarUrl: null,
-      email: command.email,
-      mobile: null,
-      nickname: `Backend A ${command.username}`,
-      userId: `backend-a-account-${Date.now()}`,
-      username: command.username,
-    }))
+  async loginByWechatCode(command) {
+    const code = command.code.trim()
+
+    if (!code) {
+      throw new Error('缺少微信授权 code')
+    }
+
+    const response = await backendAHttpClient.post<BackendAWechatLoginDataDto>(
+      '/api/v1/auth/wechat',
+      { code },
+    )
+
+    return mapBackendAWechatLoginDataDto(response)
   },
 
-  async registerByMobile(command) {
-    const mobileSuffix = command.mobile.slice(-4)
-
-    return Promise.resolve(createBackendAAuthResult({
-      avatarUrl: null,
-      email: null,
-      mobile: command.mobile,
-      nickname: `Backend A 手机用户${mobileSuffix}`,
-      userId: `backend-a-mobile-${Date.now()}`,
-      username: `backend_a_mobile_${mobileSuffix}`,
-    }))
+  async registerByAccount() {
+    throw new Error(`${backendAWechatOnlyMessage}，普通注册未在当前 Swagger 中提供`)
   },
 
-  async requestRegisterSmsCode(command) {
-    return Promise.resolve({
-      countdownSeconds: 90,
-      successMessage: `Backend A 验证码已发送至 ${command.mobile}`,
-    })
+  async registerByMobile() {
+    throw new Error(`${backendAWechatOnlyMessage}，手机号注册未在当前 Swagger 中提供`)
+  },
+
+  async requestRegisterSmsCode() {
+    throw new Error('Backend A 当前 Swagger 未提供注册短信验证码接口')
   },
 }

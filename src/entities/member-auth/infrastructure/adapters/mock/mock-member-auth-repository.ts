@@ -35,6 +35,18 @@ export const mockMemberAuthRepository: MemberAuthRepository = {
     }))
   },
 
+  async loginByWechatCode(command) {
+    const baseUser = mockAccountData.authResult.userInfo
+    const codeSuffix = command.code.slice(-6) || 'wechat'
+
+    return Promise.resolve(createMockAuthResult({
+      ...baseUser,
+      mobile: baseUser.mobile,
+      nickname: `微信用户${codeSuffix}`,
+      username: `wechat_${codeSuffix}`,
+    }))
+  },
+
   async registerByAccount(command) {
     return Promise.resolve(createMockAuthResult({
       avatarUrl: null,

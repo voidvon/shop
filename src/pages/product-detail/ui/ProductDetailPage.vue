@@ -76,7 +76,8 @@ const selectedText = computed(() => currentSku.value?.specText ?? '默认')
 const popupStockText = computed(() => `库存：${currentSku.value?.stock ?? product.value?.inventory ?? 0}件`)
 const currentUnitPrice = computed(() => currentSku.value?.price ?? product.value?.price ?? 0)
 const currentStock = computed(() => currentSku.value?.stock ?? product.value?.inventory ?? 0)
-const isCartPending = computed(() => (product.value ? cartStore.isProductPending(product.value.id) : false))
+const currentCartLineId = computed(() => currentSku.value?.skuId ?? product.value?.id ?? '')
+const isCartPending = computed(() => (currentCartLineId.value ? cartStore.isLinePending(currentCartLineId.value) : false))
 const isCurrentSelectionSoldOut = computed(() => currentStock.value <= 0)
 
 const reviewRateText = computed(() => {
@@ -191,6 +192,8 @@ async function submitSpecAction(action: 'buy' | 'cart') {
     try {
       const snapshot = await cartStore.addProduct(product.value, {
         quantity: purchaseQuantity.value,
+        skuId: currentSku.value?.skuId ?? null,
+        specText: currentSku.value?.specText ?? null,
         unitPrice: currentUnitPrice.value,
       })
       showSuccessToast(`已加入购物车，共 ${snapshot.itemCount} 件`)

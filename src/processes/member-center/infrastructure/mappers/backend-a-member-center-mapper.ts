@@ -42,11 +42,10 @@ export function mapBackendAMemberCardsPageData(snapshot: MemberAssetsSnapshot): 
 
 export function mapBackendAMemberSettingsPageData(authResult: AuthResult | null): MemberSettingsPageData {
   const security = authResult?.security ?? {
-    canResetPassword: true,
+    canResetPassword: false,
     hasBoundMobile: Boolean(authResult?.userInfo.mobile),
     hasPaymentPassword: false,
   }
-  const capabilities = new Set(authResult?.capabilities ?? [])
   const mobile = authResult?.userInfo.mobile
     ? `${authResult.userInfo.mobile.slice(0, 3)}****${authResult.userInfo.mobile.slice(-4)}`
     : '未绑定'

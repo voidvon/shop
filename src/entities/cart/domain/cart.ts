@@ -1,9 +1,12 @@
 export interface CartLine {
   lineTotal: number
+  lineId: string
   productId: string
   productImageUrl?: string | null
   productName: string
   quantity: number
+  skuId: string | null
+  specText: string | null
   unitPrice: number
 }
 
@@ -18,16 +21,18 @@ export interface AddCartItemCommand {
   productImageUrl?: string | null
   productName: string
   quantity: number
+  skuId?: string | null
+  specText?: string | null
   unitPrice: number
 }
 
 export interface SetCartItemQuantityCommand {
-  productId: string
+  lineId: string
   quantity: number
 }
 
 export interface SetCartItemsSelectedCommand {
-  productIds: string[]
+  lineIds: string[]
   selected: boolean
 }
 
@@ -40,10 +45,13 @@ export function createCartLine(input: AddCartItemCommand): CartLine {
 
   return {
     lineTotal: input.unitPrice * quantity,
+    lineId: input.skuId ?? input.productId,
     productId: input.productId,
     productImageUrl: input.productImageUrl ?? null,
     productName: input.productName,
     quantity,
+    skuId: input.skuId ?? null,
+    specText: input.specText ?? null,
     unitPrice: input.unitPrice,
   }
 }

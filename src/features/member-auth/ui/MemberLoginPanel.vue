@@ -4,6 +4,10 @@ import { type RouteLocationRaw } from 'vue-router'
 import { showSuccessToast, showToast, type FieldRule, type FieldValidateError } from 'vant'
 
 import { useMemberAuthRepository, useMemberAuthSession } from '@/entities/member-auth'
+import {
+  resolveBackendAWechatOauthUrl,
+} from '@/shared/api/backend-a/backend-a-config'
+import { backendTarget } from '@/shared/config/backend'
 
 import { submitMemberLogin } from '../application/submit-member-login'
 import {
@@ -12,6 +16,7 @@ import {
 } from '../domain/member-auth'
 
 const props = defineProps<{
+  isWechatAuthorizing?: boolean
   registerRoute: RouteLocationRaw
 }>()
 
@@ -47,7 +52,19 @@ function openForgotPassword() {
 }
 
 function useWechatLogin() {
-  showToast('微信登录能力待接入')
+  if (backendTarget !== 'backend-a') {
+    showToast('微信登录能力待接入')
+    return
+  }
+
+  const oauthUrl = resolveBackendAWechatOauthUrl()
+
+  if (oauthUrl) {
+    window.location.href = oauthUrl
+    return
+  }
+
+  showToast('请从微信静默授权回调页进入当前登录页，或配置 VITE_BACKEND_A_WECHAT_OAUTH_URL')
 }
 
 function handleSubmitFailed({ errors }: FormFailedInfo) {
@@ -124,8 +141,17 @@ async function handleSubmit() {
 
       <van-divider class="section-divider">其他方式</van-divider>
 
-      <van-button block class="wechat-button" icon="wechat" plain round type="success" @click="useWechatLogin">
-        微信合作账号登录
+      <van-button
+        block
+        class="wechat-button"
+        icon="wechat"
+        plain
+        round
+        type="success"
+        :disabled="props.isWechatAuthorizing"
+        @click="useWechatLogin"
+      >
+        {{ props.isWechatAuthorizing ? '微信登录中...' : '微信合作账号登录' }}
       </van-button>
 
       <div class="switch-row">

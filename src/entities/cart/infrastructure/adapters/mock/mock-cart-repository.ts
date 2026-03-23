@@ -14,29 +14,30 @@ let cartLines = initialProducts.map((product, index) =>
     unitPrice: product.price,
   }),
 )
-const selectedProductIds = new Set(cartLines.map((line) => line.productId))
+const selectedLineIds = new Set(cartLines.map((line) => line.lineId))
 
 function createCurrentSnapshot() {
   return cartLines.length > 0 ? createCartSnapshot(cartLines) : createEmptyCartSnapshot()
 }
 
 function createSelectedSnapshot() {
-  const selectedLines = cartLines.filter((line) => selectedProductIds.has(line.productId))
+  const selectedLines = cartLines.filter((line) => selectedLineIds.has(line.lineId))
   return selectedLines.length > 0 ? createCartSnapshot(selectedLines) : createEmptyCartSnapshot()
 }
 
 export const mockCartRepository: CartRepository = {
   async addItem(command) {
-    const existingLine = cartLines.find((line) => line.productId === command.productId)
+    const nextLine = createCartLine(command)
+    const existingLine = cartLines.find((line) => line.lineId === nextLine.lineId)
 
     if (existingLine) {
       existingLine.quantity += command.quantity
       existingLine.lineTotal = existingLine.quantity * existingLine.unitPrice
     } else {
-      cartLines = [...cartLines, createCartLine(command)]
+      cartLines = [...cartLines, nextLine]
     }
 
-    selectedProductIds.add(command.productId)
+    selectedLineIds.add(nextLine.lineId)
 
     return Promise.resolve(createCurrentSnapshot())
   },
@@ -49,21 +50,23 @@ export const mockCartRepository: CartRepository = {
     return Promise.resolve(createSelectedSnapshot())
   },
 
-  async removeItem(productId) {
-    cartLines = cartLines.filter((line) => line.productId !== productId)
-    selectedProductIds.delete(productId)
+  async removeItem(lineId) {
+    cartLines = cartLines.filter((line) => line.lineId !== lineId)
+    selectedLineIds.delete(lineId)
 
     return Promise.resolve(createCurrentSnapshot())
   },
 
-  async setItemQuantity({ productId, quantity }) {
+  async setItemQuantity({ lineId, quantity }) {
     cartLines = cartLines.map((line) =>
-      line.productId === productId
+      line.lineId === lineId
         ? createCartLine({
             productId: line.productId,
             productImageUrl: line.productImageUrl ?? null,
             productName: line.productName,
             quantity,
+            skuId: line.skuId,
+            specText: line.specText,
             unitPrice: line.unitPrice,
           })
         : line,
@@ -72,20 +75,20 @@ export const mockCartRepository: CartRepository = {
     return Promise.resolve(createCurrentSnapshot())
   },
 
-  async setItemsSelected({ productIds, selected }) {
-    const existingProductIds = new Set(cartLines.map((line) => line.productId))
+  async setItemsSelected({ lineIds, selected }) {
+    const existingLineIds = new Set(cartLines.map((line) => line.lineId))
 
-    productIds.forEach((productId) => {
-      if (!existingProductIds.has(productId)) {
+    lineIds.forEach((lineId) => {
+      if (!existingLineIds.has(lineId)) {
         return
       }
 
       if (selected) {
-        selectedProductIds.add(productId)
+        selectedLineIds.add(lineId)
         return
       }
 
-      selectedProductIds.delete(productId)
+      selectedLineIds.delete(lineId)
     })
 
     return Promise.resolve(createSelectedSnapshot())

@@ -1,114 +1,135 @@
-import { createEmptyCartSnapshot, type AddCartItemCommand } from '../../../domain/cart'
+import { createBackendAHttpClient } from '@/shared/api/backend-a/backend-a-http-client'
+import type { MemberAuthSession } from '@/entities/member-auth'
+
 import type { CartRepository } from '../../../domain/cart-repository'
-import type { BackendACartLineDto, BackendACartSnapshotDto } from '../../dto/backend-a-cart.dto'
+import type {
+  BackendACartItemDto,
+  BackendACartItemPayloadDto,
+} from '../../dto/backend-a-cart.dto'
 import { mapBackendACartSnapshotDto } from '../../mappers/cart-dto-mapper'
 
-let backendACartEntries: BackendACartLineDto[] = [
-  {
-    imageUrl: 'https://images.example.com/backend-a/speaker-cover.jpg',
-    qty: 2,
-    sku: 'backend-a-speaker',
-    title: '织面桌面蓝牙音箱',
-    unitAmount: 379,
-  },
-]
-const selectedProductIds = new Set(backendACartEntries.map((entry) => entry.sku))
+interface BackendAProductDetailDto {
+  id: number
+  skus: Array<{
+    id: number
+    status: number
+  }>
+}
 
-function createSnapshotDto(entries: BackendACartLineDto[]): BackendACartSnapshotDto {
+function createBackendACartHttpClient(memberAuthSession: MemberAuthSession) {
+  return createBackendAHttpClient({
+    getAccessToken: () => memberAuthSession.getSnapshot().authResult?.session.accessToken ?? null,
+  })
+}
+
+function normalizeSkuId(value: string) {
+  const parsedValue = Number.parseInt(value, 10)
+
+  if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+    throw new Error('购物车 SKU 标识无效')
+  }
+
+  return parsedValue
+}
+
+function resolvePrimarySkuId(product: BackendAProductDetailDto) {
+  const activeSku = product.skus.find((sku) => sku.status === 1) ?? product.skus[0]
+
+  if (!activeSku) {
+    throw new Error('当前商品暂无可用规格')
+  }
+
+  return activeSku.id
+}
+
+async function resolveCartSkuId(
+  httpClient: ReturnType<typeof createBackendAHttpClient>,
+  command: Parameters<CartRepository['addItem']>[0],
+) {
+  if (command.skuId) {
+    return normalizeSkuId(command.skuId)
+  }
+
+  const productId = encodeURIComponent(command.productId)
+  const product = await httpClient.get<BackendAProductDetailDto>(`/api/v1/products/${productId}`)
+  return resolvePrimarySkuId(product)
+}
+
+async function fetchCartItems(
+  httpClient: ReturnType<typeof createBackendAHttpClient>,
+) {
+  return httpClient.get<BackendACartItemDto[]>('/api/v1/cart-items')
+}
+
+function createUpdateCartPayload(input: { quantity?: number; selected?: boolean }) {
+  const payload: Record<string, unknown> = {}
+
+  if (input.quantity !== undefined) {
+    payload.quantity = Math.max(1, Math.floor(input.quantity))
+  }
+
+  if (input.selected !== undefined) {
+    payload.selected = input.selected
+  }
+
+  return payload
+}
+
+export function createBackendACartRepository(
+  memberAuthSession: MemberAuthSession,
+): CartRepository {
+  const httpClient = createBackendACartHttpClient(memberAuthSession)
+
+  async function getSnapshotItems() {
+    const items = await fetchCartItems(httpClient)
+    return items
+  }
+
   return {
-    entries,
-    payableAmount: entries.reduce((sum, entry) => sum + entry.qty * entry.unitAmount, 0),
-    totalUnits: entries.reduce((sum, entry) => sum + entry.qty, 0),
+    async addItem(command) {
+      const productSkuId = await resolveCartSkuId(httpClient, command)
+
+      await httpClient.post<BackendACartItemDto>('/api/v1/cart-items', {
+        product_sku_id: productSkuId,
+        quantity: Math.max(1, Math.floor(command.quantity)),
+        selected: true,
+      })
+
+      return mapBackendACartSnapshotDto(await getSnapshotItems())
+    },
+
+    async getSnapshot() {
+      return mapBackendACartSnapshotDto(await getSnapshotItems())
+    },
+
+    async getSelectedSnapshot() {
+      const items = await getSnapshotItems()
+      return mapBackendACartSnapshotDto(items.filter((item) => item.selected === 1))
+    },
+
+    async removeItem(lineId) {
+      await httpClient.delete<null>(`/api/v1/cart-items/${encodeURIComponent(lineId)}`)
+      return mapBackendACartSnapshotDto(await getSnapshotItems())
+    },
+
+    async setItemQuantity({ lineId, quantity }) {
+      await httpClient.patch<BackendACartItemDto>(
+        `/api/v1/cart-items/${encodeURIComponent(lineId)}`,
+        createUpdateCartPayload({ quantity }),
+      )
+
+      return mapBackendACartSnapshotDto(await getSnapshotItems())
+    },
+
+    async setItemsSelected({ lineIds, selected }) {
+      await Promise.all(lineIds.map((lineId) =>
+        httpClient.patch<BackendACartItemDto>(
+          `/api/v1/cart-items/${encodeURIComponent(lineId)}`,
+          createUpdateCartPayload({ selected }),
+        )))
+
+      const items = await getSnapshotItems()
+      return mapBackendACartSnapshotDto(items.filter((item) => item.selected === 1))
+    },
   }
-}
-
-function createEntry(command: AddCartItemCommand): BackendACartLineDto {
-  return {
-    imageUrl: command.productImageUrl ?? null,
-    qty: command.quantity,
-    sku: command.productId,
-    title: command.productName,
-    unitAmount: command.unitPrice,
-  }
-}
-
-function createCurrentSnapshot() {
-  if (backendACartEntries.length === 0) {
-    return createEmptyCartSnapshot()
-  }
-
-  return mapBackendACartSnapshotDto(createSnapshotDto(backendACartEntries))
-}
-
-function createSelectedSnapshot() {
-  const selectedEntries = backendACartEntries.filter((entry) => selectedProductIds.has(entry.sku))
-
-  if (selectedEntries.length === 0) {
-    return createEmptyCartSnapshot()
-  }
-
-  return mapBackendACartSnapshotDto(createSnapshotDto(selectedEntries))
-}
-
-export const backendACartRepository: CartRepository = {
-  async addItem(command) {
-    const existingEntry = backendACartEntries.find((entry) => entry.sku === command.productId)
-
-    if (existingEntry) {
-      existingEntry.qty += command.quantity
-    } else {
-      backendACartEntries = [...backendACartEntries, createEntry(command)]
-    }
-
-    selectedProductIds.add(command.productId)
-
-    return Promise.resolve(createCurrentSnapshot())
-  },
-
-  async getSnapshot() {
-    return Promise.resolve(createCurrentSnapshot())
-  },
-
-  async getSelectedSnapshot() {
-    return Promise.resolve(createSelectedSnapshot())
-  },
-
-  async removeItem(productId) {
-    backendACartEntries = backendACartEntries.filter((entry) => entry.sku !== productId)
-    selectedProductIds.delete(productId)
-
-    return Promise.resolve(createCurrentSnapshot())
-  },
-
-  async setItemQuantity({ productId, quantity }) {
-    backendACartEntries = backendACartEntries.map((entry) =>
-      entry.sku === productId
-        ? {
-            ...entry,
-            qty: Math.max(1, Math.floor(quantity)),
-          }
-        : entry,
-    )
-
-    return Promise.resolve(createCurrentSnapshot())
-  },
-
-  async setItemsSelected({ productIds, selected }) {
-    const existingProductIds = new Set(backendACartEntries.map((entry) => entry.sku))
-
-    productIds.forEach((productId) => {
-      if (!existingProductIds.has(productId)) {
-        return
-      }
-
-      if (selected) {
-        selectedProductIds.add(productId)
-        return
-      }
-
-      selectedProductIds.delete(productId)
-    })
-
-    return Promise.resolve(createSelectedSnapshot())
-  },
 }

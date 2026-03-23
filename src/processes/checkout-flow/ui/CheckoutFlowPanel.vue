@@ -83,7 +83,7 @@ async function consumeSelectedAddressQuery(addressId: string) {
 
 async function handleSubmit() {
   try {
-    const result = await checkoutStore.submitCurrentOrder()
+    const result = await checkoutStore.submitCurrentOrder(buyerMessage.value)
 
     if (result) {
       showSuccessToast(`订单已提交：${result.orderId}`)

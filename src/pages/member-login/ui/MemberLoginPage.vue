@@ -1,16 +1,30 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { showFailToast, showSuccessToast } from 'vant'
 
-import { MemberLoginPanel } from '@/features/member-auth'
+import {
+  submitMemberWechatLogin,
+  MemberLoginPanel,
+} from '@/features/member-auth'
+import { useMemberAuthRepository, useMemberAuthSession } from '@/entities/member-auth'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 const route = useRoute()
 const router = useRouter()
+const memberAuthRepository = useMemberAuthRepository()
+const memberAuthSession = useMemberAuthSession()
+const isWechatAuthorizing = ref(false)
+let hasHandledWechatCode = false
 
 const redirectPath = computed(() => {
   const redirect = route.query.redirect
   return typeof redirect === 'string' && redirect.startsWith('/') ? redirect : '/member'
+})
+
+const wechatCode = computed(() => {
+  const code = route.query.code
+  return typeof code === 'string' ? code : ''
 })
 
 const registerRoute = computed(() => ({
@@ -34,6 +48,28 @@ function goHome() {
 async function handleSubmitted() {
   await router.replace(redirectPath.value)
 }
+
+watch(wechatCode, async (code) => {
+  if (!code || hasHandledWechatCode) {
+    return
+  }
+
+  hasHandledWechatCode = true
+  isWechatAuthorizing.value = true
+
+  try {
+    const result = await submitMemberWechatLogin(code, {
+      repository: memberAuthRepository,
+      session: memberAuthSession,
+    })
+    showSuccessToast(result.successMessage)
+    await router.replace(redirectPath.value)
+  } catch (error) {
+    showFailToast(error instanceof Error ? error.message : '微信登录失败')
+  } finally {
+    isWechatAuthorizing.value = false
+  }
+}, { immediate: true })
 </script>
 
 <template>
@@ -41,7 +77,11 @@ async function handleSubmitted() {
     <PageTopBar title="会员登录" right-icon="wap-home-o" @back="goBack" @right="goHome" />
 
     <div class="auth-scroll">
-      <MemberLoginPanel :register-route="registerRoute" @submitted="handleSubmitted" />
+      <MemberLoginPanel
+        :is-wechat-authorizing="isWechatAuthorizing"
+        :register-route="registerRoute"
+        @submitted="handleSubmitted"
+      />
     </div>
   </section>
 </template>

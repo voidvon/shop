@@ -1,38 +1,10 @@
-import type { AuthResult } from '@/shared/types/modules'
-
-import type { MemberAuthSessionPersistence } from '../../../domain/member-auth'
 import type { MemberAuthSession } from '../../../domain/member-auth-session'
 import type {
   ChangeMemberLoginPasswordCommand,
   ChangeMemberPaymentPasswordCommand,
   MemberSecurityService,
 } from '../../../domain/member-security-service'
-
-function resolvePersistence(): MemberAuthSessionPersistence {
-  if (typeof window === 'undefined') {
-    return 'local'
-  }
-
-  return window.localStorage.getItem('shop.member-auth.session')
-    ? 'local'
-    : 'session'
-}
-
-function assertAuthenticated(authResult: AuthResult | null): asserts authResult is AuthResult {
-  if (!authResult) {
-    throw new Error('当前未登录，无法修改账户安全信息')
-  }
-}
-
-function updateHasPaymentPassword(authResult: AuthResult): AuthResult {
-  return {
-    ...authResult,
-    security: {
-      ...authResult.security,
-      hasPaymentPassword: true,
-    },
-  }
-}
+import { requireAuthenticatedAuthResult } from './backend-a-member-auth-session'
 
 function validateChangePassword(
   command: ChangeMemberLoginPasswordCommand | ChangeMemberPaymentPasswordCommand,
@@ -59,18 +31,19 @@ function validateChangePassword(
 export function createBackendAMemberSecurityService(memberAuthSession: MemberAuthSession): MemberSecurityService {
   return {
     async changeLoginPassword(command) {
-      assertAuthenticated(memberAuthSession.getSnapshot().authResult)
+      requireAuthenticatedAuthResult(memberAuthSession, '当前未登录，无法修改账户安全信息')
 
       validateChangePassword(command, {
         emptyMessage: '请完整填写登录密码信息',
         invalidMessage: '新密码至少 6 位',
         validateNewPassword: (value) => value.length >= 6,
       })
+
+      throw new Error('Backend A 当前 Swagger 未提供登录密码修改接口')
     },
 
     async changePaymentPassword(command) {
-      const authResult = memberAuthSession.getSnapshot().authResult
-      assertAuthenticated(authResult)
+      requireAuthenticatedAuthResult(memberAuthSession, '当前未登录，无法修改账户安全信息')
 
       validateChangePassword(command, {
         emptyMessage: '请完整填写支付密码信息',
@@ -79,10 +52,7 @@ export function createBackendAMemberSecurityService(memberAuthSession: MemberAut
         validateNewPassword: (value) => /^\d{6}$/.test(value),
       })
 
-      memberAuthSession.setAuthResult(
-        updateHasPaymentPassword(authResult),
-        { persistence: resolvePersistence() },
-      )
+      throw new Error('Backend A 当前 Swagger 未提供支付密码修改接口')
     },
   }
 }

@@ -8,7 +8,7 @@ import type { CartRepository } from '../domain/cart-repository'
 
 interface StoredCartState {
   lines: CartLine[]
-  selectedProductIds: string[]
+  selectedLineIds: string[]
 }
 
 interface CreateBrowserCartRepositoryOptions {
@@ -31,6 +31,8 @@ function normalizeStoredCartLine(value: unknown): CartLine | null {
 
   if (
     typeof candidate.productId !== 'string'
+    || (candidate.skuId !== null && candidate.skuId !== undefined && typeof candidate.skuId !== 'string')
+    || (candidate.specText !== null && candidate.specText !== undefined && typeof candidate.specText !== 'string')
     || typeof candidate.productName !== 'string'
     || typeof candidate.quantity !== 'number'
     || typeof candidate.unitPrice !== 'number'
@@ -43,6 +45,8 @@ function normalizeStoredCartLine(value: unknown): CartLine | null {
     productImageUrl: candidate.productImageUrl ?? null,
     productName: candidate.productName,
     quantity: candidate.quantity,
+    skuId: candidate.skuId ?? null,
+    specText: candidate.specText ?? null,
     unitPrice: candidate.unitPrice,
   })
 }
@@ -54,7 +58,7 @@ function createCartStorageKey(scopeKey: string) {
 function createEmptyStoredCartState(): StoredCartState {
   return {
     lines: [],
-    selectedProductIds: [],
+    selectedLineIds: [],
   }
 }
 
@@ -67,6 +71,7 @@ function parseStoredCartState(storedValue: string | null, storageKey: string): S
     const parsedValue = JSON.parse(storedValue) as {
       lines?: unknown
       selectedProductIds?: unknown
+      selectedLineIds?: unknown
     }
 
     const lines = Array.isArray(parsedValue.lines)
@@ -74,16 +79,20 @@ function parseStoredCartState(storedValue: string | null, storageKey: string): S
           .map(normalizeStoredCartLine)
           .filter((line): line is CartLine => Boolean(line))
       : []
-    const existingProductIds = new Set(lines.map((line) => line.productId))
-    const selectedProductIds = Array.isArray(parsedValue.selectedProductIds)
-      ? parsedValue.selectedProductIds
-          .filter((productId): productId is string => typeof productId === 'string')
-          .filter((productId) => existingProductIds.has(productId))
-      : lines.map((line) => line.productId)
+    const existingLineIds = new Set(lines.map((line) => line.lineId))
+    const selectedLineIds = Array.isArray(parsedValue.selectedLineIds)
+      ? parsedValue.selectedLineIds
+          .filter((lineId): lineId is string => typeof lineId === 'string')
+          .filter((lineId) => existingLineIds.has(lineId))
+      : Array.isArray(parsedValue.selectedProductIds)
+        ? parsedValue.selectedProductIds
+            .filter((lineId): lineId is string => typeof lineId === 'string')
+            .filter((lineId) => existingLineIds.has(lineId))
+      : lines.map((line) => line.lineId)
 
     return {
       lines,
-      selectedProductIds,
+      selectedLineIds,
     }
   } catch {
     window.localStorage.removeItem(storageKey)
@@ -132,8 +141,8 @@ function createSnapshot(lines: CartLine[]) {
 }
 
 function createSelectedSnapshot(state: StoredCartState) {
-  const selectedProductIds = new Set(state.selectedProductIds)
-  const selectedLines = state.lines.filter((line) => selectedProductIds.has(line.productId))
+  const selectedLineIds = new Set(state.selectedLineIds)
+  const selectedLines = state.lines.filter((line) => selectedLineIds.has(line.lineId))
   return createSnapshot(selectedLines)
 }
 
@@ -146,17 +155,18 @@ export function createBrowserCartRepository(options: CreateBrowserCartRepository
     async addItem(command) {
       const scopeKey = resolveScopeKey()
       const state = readStoredCartState(scopeKey)
-      const existingLine = state.lines.find((line) => line.productId === command.productId)
+      const nextLine = createCartLine(command)
+      const existingLine = state.lines.find((line) => line.lineId === nextLine.lineId)
 
       if (existingLine) {
         existingLine.quantity += command.quantity
         existingLine.lineTotal = existingLine.quantity * existingLine.unitPrice
       } else {
-        state.lines = [...state.lines, createCartLine(command)]
+        state.lines = [...state.lines, nextLine]
       }
 
-      if (!state.selectedProductIds.includes(command.productId)) {
-        state.selectedProductIds = [...state.selectedProductIds, command.productId]
+      if (!state.selectedLineIds.includes(nextLine.lineId)) {
+        state.selectedLineIds = [...state.selectedLineIds, nextLine.lineId]
       }
 
       writeStoredCartState(scopeKey, state)
@@ -174,12 +184,12 @@ export function createBrowserCartRepository(options: CreateBrowserCartRepository
       return createSelectedSnapshot(state)
     },
 
-    async removeItem(productId) {
+    async removeItem(lineId) {
       const scopeKey = resolveScopeKey()
       const state = readStoredCartState(scopeKey)
       const nextState = {
-        lines: state.lines.filter((line) => line.productId !== productId),
-        selectedProductIds: state.selectedProductIds.filter((selectedId) => selectedId !== productId),
+        lines: state.lines.filter((line) => line.lineId !== lineId),
+        selectedLineIds: state.selectedLineIds.filter((selectedId) => selectedId !== lineId),
       }
 
       writeStoredCartState(scopeKey, nextState)
@@ -187,18 +197,20 @@ export function createBrowserCartRepository(options: CreateBrowserCartRepository
       return createSnapshot(nextState.lines)
     },
 
-    async setItemQuantity({ productId, quantity }) {
+    async setItemQuantity({ lineId, quantity }) {
       const scopeKey = resolveScopeKey()
       const state = readStoredCartState(scopeKey)
       const nextState = {
         ...state,
         lines: state.lines.map((line) =>
-          line.productId === productId
+          line.lineId === lineId
             ? createCartLine({
                 productId: line.productId,
                 productImageUrl: line.productImageUrl ?? null,
                 productName: line.productName,
                 quantity,
+                skuId: line.skuId,
+                specText: line.specText,
                 unitPrice: line.unitPrice,
               })
             : line,
@@ -210,28 +222,28 @@ export function createBrowserCartRepository(options: CreateBrowserCartRepository
       return createSnapshot(nextState.lines)
     },
 
-    async setItemsSelected({ productIds, selected }) {
+    async setItemsSelected({ lineIds, selected }) {
       const scopeKey = resolveScopeKey()
       const state = readStoredCartState(scopeKey)
-      const existingProductIds = new Set(state.lines.map((line) => line.productId))
-      const nextSelectedProductIds = new Set(state.selectedProductIds)
+      const existingLineIds = new Set(state.lines.map((line) => line.lineId))
+      const nextSelectedLineIds = new Set(state.selectedLineIds)
 
-      productIds.forEach((productId) => {
-        if (!existingProductIds.has(productId)) {
+      lineIds.forEach((lineId) => {
+        if (!existingLineIds.has(lineId)) {
           return
         }
 
         if (selected) {
-          nextSelectedProductIds.add(productId)
+          nextSelectedLineIds.add(lineId)
           return
         }
 
-        nextSelectedProductIds.delete(productId)
+        nextSelectedLineIds.delete(lineId)
       })
 
       const nextState = {
         ...state,
-        selectedProductIds: [...nextSelectedProductIds],
+        selectedLineIds: [...nextSelectedLineIds],
       }
 
       writeStoredCartState(scopeKey, nextState)

@@ -27,6 +27,10 @@ export interface MemberRegisterSmsCodeResult {
   successMessage: string
 }
 
+export interface MemberWechatLoginCommand {
+  code: string
+}
+
 export type MemberAuthSessionPersistence = 'local' | 'session'
 
 export interface MemberAuthSessionSnapshot {

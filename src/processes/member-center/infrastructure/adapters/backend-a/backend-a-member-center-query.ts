@@ -1,11 +1,9 @@
 import type { MemberAuthSession } from '@/entities/member-auth'
 import { backendAProductRepository } from '@/entities/product'
-import { getBackendAOrderSeedRecords } from '@/entities/order/infrastructure/adapters/backend-a/backend-a-order-repository'
-import { readBrowserOrderRecords } from '@/entities/order/infrastructure/browser-order-storage'
+import { createBackendAOrderListPageDataReader } from '@/processes/trade/infrastructure/adapters/backend-a/backend-a-trade-readers'
 
 import type { MemberAssetsService } from '../../../domain/member-assets-service'
 import type { MemberCenterQuery } from '../../../domain/member-center-query'
-import { createBrowserMemberOrderSummaryReader } from '../../create-browser-member-order-summary-reader'
 import {
   mapBackendAMemberAboutPageData,
   mapBackendAMemberCardBindPageData,
@@ -16,19 +14,50 @@ import {
   mapBackendAMemberProfileNamePageData,
   mapBackendAMemberSettingsPageData,
 } from '../../mappers/backend-a-member-center-mapper'
+import type { MemberOrderSummary } from '../../../domain/member-center-page-data'
+
+const emptyMemberOrderSummary: MemberOrderSummary = {
+  pendingPaymentCount: 0,
+  pendingReceiptCount: 0,
+  pendingReviewCount: 0,
+  pendingShipmentCount: 0,
+  refundAndReturnCount: 0,
+}
 
 export function createBackendAMemberCenterQuery(
   memberAuthSession: MemberAuthSession,
   memberAssetsService: MemberAssetsService,
 ): MemberCenterQuery {
-  const scopeKey = () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest'
-  const getMemberOrderSummary = createBrowserMemberOrderSummaryReader({
-    readOrders: () => readBrowserOrderRecords(
-      'backend-a',
-      scopeKey(),
-      getBackendAOrderSeedRecords,
-    ),
-  })
+  const getOrderListPageData = createBackendAOrderListPageDataReader(memberAuthSession)
+
+  async function getMemberOrderSummary() {
+    const orderListPageData = await getOrderListPageData()
+
+    return orderListPageData.orders.reduce<MemberOrderSummary>((summary, order) => {
+      switch (order.status) {
+        case 'pending-payment':
+          summary.pendingPaymentCount += 1
+          break
+        case 'pending-shipment':
+          summary.pendingShipmentCount += 1
+          break
+        case 'pending-receipt':
+          summary.pendingReceiptCount += 1
+          break
+        case 'pending-review':
+          summary.pendingReviewCount += 1
+          break
+        case 'refunding':
+        case 'returning':
+          summary.refundAndReturnCount += 1
+          break
+        default:
+          break
+      }
+
+      return summary
+    }, { ...emptyMemberOrderSummary })
+  }
 
   return {
     async getMemberAboutPageData() {
@@ -48,12 +77,13 @@ export function createBackendAMemberCenterQuery(
     async getMemberCenterPageData() {
       const products = await backendAProductRepository.getFeaturedProductSummaries()
       const snapshot = await memberAssetsService.getSnapshot()
+      const memberOrderSummary = await getMemberOrderSummary()
       return Promise.resolve(
         mapBackendAMemberCenterPageData(
           products,
           memberAuthSession.getSnapshot().authResult,
           snapshot.balanceAmount,
-          getMemberOrderSummary(),
+          memberOrderSummary,
         ),
       )
     },

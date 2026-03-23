@@ -22,7 +22,10 @@ export {
 } from './domain/order'
 export type { OrderRepository } from './domain/order-repository'
 export { createBrowserOrderRepository } from './infrastructure/create-browser-order-repository'
-export { backendAOrderRepository } from './infrastructure/adapters/backend-a/backend-a-order-repository'
+export {
+  createBackendAOrderRepository,
+  getBackendAOrderSeedRecords,
+} from './infrastructure/adapters/backend-a/backend-a-order-repository'
 export { mockOrderRepository } from './infrastructure/adapters/mock/mock-order-repository'
 export { provideOrderRepository, useOrderRepository } from './infrastructure/order-repository-provider'
 export { default as OrderProductRow } from './ui/OrderProductRow.vue'

@@ -16,7 +16,7 @@ const {
   isAllSelected,
   isItemPending,
   isLoading,
-  isProductSelected,
+  isLineSelected,
   isSelectionPending,
   isGroupSelected,
   loadCartPage,
@@ -26,7 +26,7 @@ const {
   setAllSelected,
   setGroupSelected,
   setItemQuantity,
-  setProductSelected,
+  setLineSelected,
 } = useCartPageModel()
 
 const cartGroups = computed(() => cartPageData.value.groups)
@@ -68,26 +68,26 @@ async function handleGroupCheckedChange(storeId: string, checked: boolean) {
   }
 }
 
-async function handleProductCheckedChange(productId: string, checked: boolean) {
+async function handleLineCheckedChange(lineId: string, checked: boolean) {
   try {
-    await setProductSelected(productId, checked)
+    await setLineSelected(lineId, checked)
   } catch {
     showFailToast(errorMessage.value ?? '更新待结算商品失败')
   }
 }
 
-async function handleRemoveItem(productId: string) {
+async function handleRemoveItem(lineId: string) {
   try {
-    await removeItem(productId)
+    await removeItem(lineId)
     showSuccessToast('已从购物车移除')
   } catch {
     showFailToast(errorMessage.value ?? '删除购物车商品失败')
   }
 }
 
-async function handleQuantityChange(productId: string, value: string | number) {
+async function handleQuantityChange(lineId: string, value: string | number) {
   try {
-    await setItemQuantity(productId, normalizeStepperValue(value))
+    await setItemQuantity(lineId, normalizeStepperValue(value))
   } catch {
     showFailToast(errorMessage.value ?? '更新购物车数量失败')
   }
@@ -143,14 +143,14 @@ onActivated(() => {
             </header>
 
             <div class="rows-wrap">
-              <van-swipe-cell v-for="item in group.items" :key="item.lineId" :disabled="isItemPending(item.productId)">
+              <van-swipe-cell v-for="item in group.items" :key="item.lineId" :disabled="isItemPending(item.lineId)">
                 <article class="cart-item-row">
                   <van-checkbox
                     class="item-check"
-                    :model-value="isProductSelected(item.productId)"
+                    :model-value="isLineSelected(item.lineId)"
                     checked-color="#ff8a1f"
                     :disabled="isSelectionPending"
-                    @update:model-value="handleProductCheckedChange(item.productId, $event)"
+                    @update:model-value="handleLineCheckedChange(item.lineId, $event)"
                   />
 
                   <button class="item-link" type="button" @click="goToProductDetail(item.productId)">
@@ -176,8 +176,8 @@ onActivated(() => {
                     min="1"
                     disable-input
                     button-size="26"
-                    :disabled="isItemPending(item.productId)"
-                    @update:model-value="handleQuantityChange(item.productId, $event)"
+                    :disabled="isItemPending(item.lineId)"
+                    @update:model-value="handleQuantityChange(item.lineId, $event)"
                   />
                 </article>
 
@@ -185,8 +185,8 @@ onActivated(() => {
                   <button
                     class="swipe-delete-button"
                     type="button"
-                    :disabled="isItemPending(item.productId)"
-                    @click="handleRemoveItem(item.productId)"
+                    :disabled="isItemPending(item.lineId)"
+                    @click="handleRemoveItem(item.lineId)"
                   >
                     删除
                   </button>

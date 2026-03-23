@@ -1,81 +1,30 @@
-import type { AuthResult } from '@/shared/types/modules'
+import { createBackendAHttpClient } from '@/shared/api/backend-a/backend-a-http-client'
 
-import type { MemberAuthSessionPersistence } from '../../../domain/member-auth'
 import type { MemberAuthSession } from '../../../domain/member-auth-session'
 import type {
   BindMemberMobileByWechatResult,
   MemberProfileService,
   UpdateMemberNicknameCommand,
 } from '../../../domain/member-profile-service'
-
-function resolvePersistence(): MemberAuthSessionPersistence {
-  if (typeof window === 'undefined') {
-    return 'local'
-  }
-
-  return window.localStorage.getItem('shop.member-auth.session')
-    ? 'local'
-    : 'session'
-}
-
-function createBackendAWechatMobile() {
-  const seed = `${Date.now()}`.slice(-8)
-  return `138${seed}`
-}
-
-function buildNextAuthResult(authResult: AuthResult, mobile: string): AuthResult {
-  return {
-    ...authResult,
-    security: {
-      ...authResult.security,
-      hasBoundMobile: true,
-    },
-    userInfo: {
-      ...authResult.userInfo,
-      mobile,
-    },
-  }
-}
-
-function buildNextAuthResultWithNickname(authResult: AuthResult, nickname: string): AuthResult {
-  return {
-    ...authResult,
-    userInfo: {
-      ...authResult.userInfo,
-      nickname,
-    },
-  }
-}
+import type { BackendAUserProfileDto } from '../../dto/backend-a-member-auth.dto'
+import { mapBackendAUserProfileToAuthResult } from '../../mappers/backend-a-member-auth-mapper'
+import {
+  replaceMemberAuthSession,
+  requireAuthenticatedAuthResult,
+} from './backend-a-member-auth-session'
 
 export function createBackendAMemberProfileService(memberAuthSession: MemberAuthSession): MemberProfileService {
+  const httpClient = createBackendAHttpClient({
+    getAccessToken: () => memberAuthSession.getSnapshot().authResult?.session.accessToken ?? null,
+  })
+
   return {
     async bindMobileByWechat(): Promise<BindMemberMobileByWechatResult> {
-      const authResult = memberAuthSession.getSnapshot().authResult
-
-      if (!authResult) {
-        throw new Error('当前未登录，无法绑定手机号')
-      }
-
-      if (!authResult.capabilities.includes('wechat-mobile-bind')) {
-        throw new Error('当前后端暂未接入微信手机号授权')
-      }
-
-      const mobile = authResult.userInfo.mobile ?? createBackendAWechatMobile()
-
-      memberAuthSession.setAuthResult(
-        buildNextAuthResult(authResult, mobile),
-        { persistence: resolvePersistence() },
-      )
-
-      return { mobile }
+      throw new Error('Backend A 当前 Swagger 未提供微信手机号绑定接口')
     },
 
     async updateNickname(command: UpdateMemberNicknameCommand): Promise<void> {
-      const authResult = memberAuthSession.getSnapshot().authResult
-
-      if (!authResult) {
-        throw new Error('当前未登录，无法保存昵称')
-      }
+      const authResult = requireAuthenticatedAuthResult(memberAuthSession, '当前未登录，无法保存昵称')
 
       const nickname = command.nickname.trim()
 
@@ -83,9 +32,14 @@ export function createBackendAMemberProfileService(memberAuthSession: MemberAuth
         throw new Error('请输入用户昵称')
       }
 
-      memberAuthSession.setAuthResult(
-        buildNextAuthResultWithNickname(authResult, nickname),
-        { persistence: resolvePersistence() },
+      const profile = await httpClient.patch<BackendAUserProfileDto>(
+        '/api/v1/auth/profile',
+        { nickname },
+      )
+
+      replaceMemberAuthSession(
+        memberAuthSession,
+        mapBackendAUserProfileToAuthResult(profile, authResult.session, authResult),
       )
     },
   }

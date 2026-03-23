@@ -16,10 +16,12 @@ import {
   type MemberFavoriteRepository,
 } from '@/entities/member-favorite'
 import {
+  createBackendAMemberAddressRepository,
   createBrowserMemberAddressRepository,
   type MemberAddressRepository,
 } from '@/entities/member-address'
 import {
+  createBackendACartRepository,
   createBrowserCartRepository,
   type CartRepository,
 } from '@/entities/cart'
@@ -30,12 +32,10 @@ import {
   type AfterSaleSnapshot,
 } from '@/entities/after-sale'
 import {
+  createBackendAOrderRepository,
   createBrowserOrderRepository,
   type OrderRepository,
 } from '@/entities/order'
-import {
-  getBackendAOrderSeedRecords,
-} from '@/entities/order/infrastructure/adapters/backend-a/backend-a-order-repository'
 import {
   getMockOrderSeedRecords,
 } from '@/entities/order/infrastructure/adapters/mock/mock-order-repository'
@@ -69,17 +69,21 @@ import {
   type TradeQuery,
 } from '@/processes/trade'
 import {
-  createBrowserOrderListPageDataReader,
-} from '@/processes/trade/infrastructure/create-browser-order-list-page-data-reader'
-import {
-  createBrowserOrderDetailPageDataReader,
-} from '@/processes/trade/infrastructure/create-browser-order-detail-page-data-reader'
+  createBackendAOrderDetailPageDataReader,
+  createBackendAOrderListPageDataReader,
+} from '@/processes/trade/infrastructure/adapters/backend-a/backend-a-trade-readers'
 import {
   mapBackendACartPageData,
 } from '@/processes/trade/infrastructure/mappers/backend-a-trade-mapper'
 import {
   mapMockCartPageData,
 } from '@/processes/trade/infrastructure/mappers/mock-trade-mapper'
+import {
+  createBrowserOrderListPageDataReader,
+} from '@/processes/trade/infrastructure/create-browser-order-list-page-data-reader'
+import {
+  createBrowserOrderDetailPageDataReader,
+} from '@/processes/trade/infrastructure/create-browser-order-detail-page-data-reader'
 import { getMockStore, mockTradeData } from '@/shared/mocks'
 import { backendTarget, getBackendLabel, type BackendType } from '@/shared/config/backend'
 import {
@@ -176,16 +180,31 @@ function resolveMemberSecurityService(type: BackendType, memberAuthSession: Memb
   }
 }
 
-function resolveCartRepository(memberAuthSession: MemberAuthSession) {
-  return createBrowserCartRepository({
-    getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
-  })
+function resolveCartRepository(type: BackendType, memberAuthSession: MemberAuthSession) {
+  switch (type) {
+    case 'backend-a':
+      return createBackendACartRepository(memberAuthSession)
+    case 'mock':
+    default:
+      return createBrowserCartRepository({
+        getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+      })
+  }
 }
 
-function resolveMemberAddressRepository(memberAuthSession: MemberAuthSession) {
-  return createBrowserMemberAddressRepository({
-    getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
-  })
+function resolveMemberAddressRepository(
+  type: BackendType,
+  memberAuthSession: MemberAuthSession,
+) {
+  switch (type) {
+    case 'backend-a':
+      return createBackendAMemberAddressRepository(memberAuthSession)
+    case 'mock':
+    default:
+      return createBrowserMemberAddressRepository({
+        getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+      })
+  }
 }
 
 function resolveMemberAssetsService(type: BackendType, memberAuthSession: MemberAuthSession) {
@@ -201,16 +220,7 @@ function resolveMemberAssetsService(type: BackendType, memberAuthSession: Member
 function resolveOrderRepository(type: BackendType, memberAuthSession: MemberAuthSession) {
   switch (type) {
     case 'backend-a':
-      return createBrowserOrderRepository({
-        defaultStoreName: 'Backend A 选品馆',
-        getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
-        getSeedRecords: getBackendAOrderSeedRecords,
-        namespace: 'backend-a',
-        resolveDiscount: (command) => {
-          const subtotal = command.lines.reduce((sum, line) => sum + line.lineTotal, 0)
-          return command.source === 'cart' ? Math.round(subtotal * 0.08) : Math.round(subtotal * 0.05)
-        },
-      })
+      return createBackendAOrderRepository(memberAuthSession)
     case 'mock':
     default:
       return createBrowserOrderRepository({
@@ -602,6 +612,38 @@ function resolveTradeQuery(
 
   switch (type) {
     case 'backend-a':
+      return createTradeQuery({
+        cartRepository,
+        getAfterSaleListPageData: async () => {
+          const snapshot = await afterSaleRepository.getSnapshot()
+          return mergeSavedAfterSaleApplicationsIntoList(seedAfterSaleListPageData, snapshot)
+        },
+        getOrderDetailPageData: createBackendAOrderDetailPageDataReader(memberAuthSession),
+        getOrderListPageData: createBackendAOrderListPageDataReader(memberAuthSession),
+        getRefundDetailPageData: async (refundId) => {
+          const snapshot = await afterSaleRepository.getSnapshot()
+          const savedRecord = snapshot.applications.find((item) => item.refundId === refundId) ?? null
+          const seedDetail = seedRefundDetailPageDataById[refundId] ?? null
+
+          if (savedRecord?.type === 'refund') {
+            return createSavedRefundDetail(savedRecord, seedDetail)
+          }
+
+          return seedDetail
+        },
+        getReturnDetailPageData: async (refundId) => {
+          const snapshot = await afterSaleRepository.getSnapshot()
+          const savedRecord = snapshot.applications.find((item) => item.refundId === refundId) ?? null
+          const seedDetail = seedReturnDetailPageDataById[refundId] ?? null
+
+          if (savedRecord?.type === 'return') {
+            return createSavedReturnDetail(savedRecord, snapshot, seedDetail)
+          }
+
+          return seedDetail ? mergeSavedReturnShipment(seedDetail, snapshot) : null
+        },
+        mapCartPageData: mapBackendACartPageData,
+      })
     case 'mock':
     default:
       return createTradeQuery({
@@ -620,14 +662,14 @@ function resolveTradeQuery(
           readOrders: () => readBrowserOrderRecords(
             type,
             memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
-            type === 'mock' ? getMockOrderSeedRecords : getBackendAOrderSeedRecords,
+            getMockOrderSeedRecords,
           ),
         }),
         getOrderListPageData: createBrowserOrderListPageDataReader({
           readOrders: () => readBrowserOrderRecords(
             type,
             memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
-            type === 'mock' ? getMockOrderSeedRecords : getBackendAOrderSeedRecords,
+            getMockOrderSeedRecords,
           ),
         }),
         getRefundDetailPageData: async (refundId) => {
@@ -679,8 +721,8 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
   const memberSecurityService = resolveMemberSecurityService(type, memberAuthSession)
   const memberAssetsService = resolveMemberAssetsService(type, memberAuthSession)
   const afterSaleRepository = resolveAfterSaleRepository(type, memberAuthSession)
-  const cartRepository = resolveCartRepository(memberAuthSession)
-  const memberAddressRepository = resolveMemberAddressRepository(memberAuthSession)
+  const cartRepository = resolveCartRepository(type, memberAuthSession)
+  const memberAddressRepository = resolveMemberAddressRepository(type, memberAuthSession)
   const memberFavoriteRepository = createBrowserMemberFavoriteRepository()
   const repositories = {
     afterSale: afterSaleRepository,
@@ -703,7 +745,9 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
     label: getBackendLabel(type),
     queries: {
       checkoutFlow: createCheckoutFlowPort({
+        allowInstantFallback: type !== 'backend-a',
         cartRepository,
+        clearCartAfterSubmit: type !== 'backend-a',
         isCartEnabled: enabledModules.cart,
         orderRepository: repositories.order,
         productRepository: repositories.product,

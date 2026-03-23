@@ -1,0 +1,3274 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "微信 H5 商城系统 API",
+        "description": "微信 H5 商城系统前端接口文档（V1），商户核销员使用普通微信用户 Token，通过商户员工关系拥有核销权限",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/",
+            "description": "当前服务地址"
+        }
+    ],
+    "paths": {
+        "/api/v1/auth/wechat": {
+            "post": {
+                "tags": [
+                    "用户认证"
+                ],
+                "summary": "微信公众号静默授权登录",
+                "operationId": "532c4992bb8a6ec8574f8f6968e50c08",
+                "requestBody": {
+                    "description": "前端在微信静默授权回调页中拿到code后，直接把code提交给后端。后端会自动换取openid，并自动登录或注册用户。",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WechatLoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "登录成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WechatLoginResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/profile": {
+            "get": {
+                "tags": [
+                    "用户认证"
+                ],
+                "summary": "获取当前用户资料",
+                "operationId": "8af6382edf21d8a225081d91e6233ce5",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserProfile"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "用户认证"
+                ],
+                "summary": "更新当前用户资料",
+                "operationId": "205b3d2dc23c661573d0ecc3c49280c3",
+                "requestBody": {
+                    "description": "只更新传入的字段，未传字段保持不变。",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nickname": {
+                                        "description": "用户昵称",
+                                        "type": "string",
+                                        "example": "新昵称"
+                                    },
+                                    "avatar": {
+                                        "description": "头像地址",
+                                        "type": "string",
+                                        "example": "https://example.com/avatar.jpg"
+                                    },
+                                    "mobile": {
+                                        "description": "手机号",
+                                        "type": "string",
+                                        "example": "13800138000"
+                                    },
+                                    "name": {
+                                        "description": "姓名",
+                                        "type": "string",
+                                        "example": "张三"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "更新成功"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserProfile"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/merchant-staff-invites/{token}": {
+            "get": {
+                "tags": [
+                    "员工邀请"
+                ],
+                "summary": "查看商户员工邀请链接信息",
+                "operationId": "c59342fb8ae042549733f0a0fc5f213f",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "邀请不存在",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/merchant-staff-invites/{token}/bind": {
+            "post": {
+                "tags": [
+                    "员工邀请"
+                ],
+                "summary": "当前微信用户通过邀请链接绑定为商户员工",
+                "operationId": "7a3e15e7622c6d77a3a50915dc97e561",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "绑定成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "绑定失败",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/platform/settings": {
+            "get": {
+                "tags": [
+                    "平台"
+                ],
+                "summary": "获取平台基础信息",
+                "operationId": "e3dbe47ff370edb2beeeca87f4c51c5b",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlatformSettingPayload"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/home": {
+            "get": {
+                "tags": [
+                    "首页"
+                ],
+                "summary": "首页聚合接口",
+                "operationId": "5a4f3cbd18230b9ed3b0d64ce6235e1d",
+                "parameters": [
+                    {
+                        "name": "recommend_limit",
+                        "in": "query",
+                        "description": "推荐商品返回数量，为空时使用默认值12",
+                        "schema": {
+                            "type": "integer",
+                            "default": 12
+                        }
+                    },
+                    {
+                        "name": "latest_limit",
+                        "in": "query",
+                        "description": "最新商品返回数量，为空时使用默认值12",
+                        "schema": {
+                            "type": "integer",
+                            "default": 12
+                        }
+                    },
+                    {
+                        "name": "category_limit",
+                        "in": "query",
+                        "description": "首页分类返回数量，为空时使用默认值12",
+                        "schema": {
+                            "type": "integer",
+                            "default": 12
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "platform": {
+                                                    "$ref": "#/components/schemas/PlatformSettingPayload"
+                                                },
+                                                "categories": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/ProductCategoryItem"
+                                                    }
+                                                },
+                                                "recommended_products": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/ProductPayload"
+                                                    }
+                                                },
+                                                "latest_products": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/ProductPayload"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/product-categories": {
+            "get": {
+                "tags": [
+                    "分类"
+                ],
+                "summary": "获取商品分类列表和树",
+                "operationId": "e84cecb8989fe77072a77569ceb913c4",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "list": {
+                                                    "description": "扁平分类列表",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/ProductCategoryItem"
+                                                    }
+                                                },
+                                                "tree": {
+                                                    "description": "树形分类结构",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/ProductCategoryItem"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/partner-regions": {
+            "get": {
+                "tags": [
+                    "合作商家"
+                ],
+                "summary": "合作地区列表",
+                "operationId": "9a33a3361edd6c5eacbf84b240270f01",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/partner-store-types": {
+            "get": {
+                "tags": [
+                    "合作商家"
+                ],
+                "summary": "合作门店类型列表",
+                "operationId": "c2af809d4ee36cd3aed486851b659132",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/partner-merchants": {
+            "get": {
+                "tags": [
+                    "合作商家"
+                ],
+                "summary": "合作商家列表",
+                "operationId": "c4967cd2cf7d19b88b231e90aba67c39",
+                "parameters": [
+                    {
+                        "name": "region_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "store_type_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/partner-merchants/{partnerMerchant}": {
+            "get": {
+                "tags": [
+                    "合作商家"
+                ],
+                "summary": "合作商家详情",
+                "operationId": "1955e7eb19e3ac92cd02d3c1239c7961",
+                "parameters": [
+                    {
+                        "name": "partnerMerchant",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/products": {
+            "get": {
+                "tags": [
+                    "商品"
+                ],
+                "summary": "商品列表",
+                "operationId": "5b88b78c669f137280821bbb0425d7fd",
+                "parameters": [
+                    {
+                        "name": "merchant_id",
+                        "in": "query",
+                        "description": "按商户ID筛选",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "按分类ID筛选；如果传父分类ID，会连带查询子分类商品",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "description": "商品标题关键字模糊搜索",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "排序字段：sales_count 或 price",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "sales_count",
+                                "price"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sort_dir",
+                        "in": "query",
+                        "description": "排序方向：asc 或 desc",
+                        "schema": {
+                            "type": "string",
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "min_price",
+                        "in": "query",
+                        "description": "最低价",
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    },
+                    {
+                        "name": "max_price",
+                        "in": "query",
+                        "description": "最高价",
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "分页大小，默认10",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 35
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 4
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/ProductPayload"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/products/{product}": {
+            "get": {
+                "tags": [
+                    "商品"
+                ],
+                "summary": "商品详情",
+                "operationId": "5237db5f696e2efd7d4d21d6b7240771",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProductPayload"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cart-items": {
+            "get": {
+                "tags": [
+                    "购物车"
+                ],
+                "summary": "购物车列表",
+                "operationId": "050d39c83854d42d954cffbb6f1410f0",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CartItemPayload"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "购物车"
+                ],
+                "summary": "加入购物车",
+                "operationId": "a9c5c40e873dbe9d64828127ba4767be",
+                "requestBody": {
+                    "description": "传SKU加入购物车；同一用户对同一个SKU重复加入时会更新已有购物车项。",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "product_sku_id",
+                                    "quantity"
+                                ],
+                                "properties": {
+                                    "product_sku_id": {
+                                        "description": "商品SKU ID",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quantity": {
+                                        "description": "加入数量",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "selected": {
+                                        "description": "是否默认勾选",
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "已更新",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "已更新"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/CartItemPayload"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/cart-items/{cartItem}": {
+            "delete": {
+                "tags": [
+                    "购物车"
+                ],
+                "summary": "删除购物车项",
+                "operationId": "aa893a598a8099853346880c2cbaf62e",
+                "parameters": [
+                    {
+                        "name": "cartItem",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "已删除",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "已删除"
+                                        },
+                                        "data": {
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "购物车"
+                ],
+                "summary": "更新购物车项",
+                "operationId": "0cce6e850d7bd7f7b8a492a93d8a1318",
+                "parameters": [
+                    {
+                        "name": "cartItem",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "只更新数量和选中状态，未传字段保持不变。",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "quantity": {
+                                        "description": "更新后的数量",
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "selected": {
+                                        "description": "是否选中",
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "已更新",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "已更新"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/CartItemPayload"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/checkout/preview": {
+            "post": {
+                "tags": [
+                    "结算"
+                ],
+                "summary": "预结算",
+                "operationId": "af42f207a500d29321a9491c18774246",
+                "requestBody": {
+                    "description": "按购物车已选商品生成预结算结果，并根据 merchant_id + balance_type_id 自动拆单。coupon_usages 用于给指定分组绑定优惠券。",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "cart_item_ids": {
+                                        "description": "要参与结算的购物车项ID数组；不传时默认结算当前用户已选中的购物车项",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "coupon_usages": {
+                                        "description": "按订单组使用的优惠券；如果没有可用优惠券，可直接不传",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/CheckoutCouponUsage"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "order_count": {
+                                                    "description": "拆分后的订单组数量",
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "total_amount": {
+                                                    "description": "所有商品原始总金额",
+                                                    "type": "string",
+                                                    "example": "206.00"
+                                                },
+                                                "payable_amount": {
+                                                    "description": "优惠后应付总金额",
+                                                    "type": "string",
+                                                    "example": "186.00"
+                                                },
+                                                "groups": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/CheckoutPreviewGroup"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/checkout/submit": {
+            "post": {
+                "tags": [
+                    "结算"
+                ],
+                "summary": "提交订单",
+                "operationId": "6c3ea7c473f168a08dbc44a60f7ddc65",
+                "requestBody": {
+                    "description": "正式下单接口。会锁库存、校验余额、扣减余额并删除对应购物车项。",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cart_item_ids"
+                                ],
+                                "properties": {
+                                    "cart_item_ids": {
+                                        "description": "要下单的购物车项ID数组",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "address_id": {
+                                        "description": "收货地址ID；非实物商品可不传",
+                                        "type": "integer"
+                                    },
+                                    "remark": {
+                                        "description": "订单备注",
+                                        "type": "string"
+                                    },
+                                    "submit_no": {
+                                        "description": "客户端提交幂等号，不传则后端自动生成",
+                                        "type": "string"
+                                    },
+                                    "coupon_usages": {
+                                        "description": "按订单组使用的优惠券",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/CheckoutCouponUsage"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "下单成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "下单成功"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/OrderPayload"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/orders": {
+            "get": {
+                "tags": [
+                    "订单"
+                ],
+                "summary": "订单列表",
+                "operationId": "dfbfe01ca53dcd2bfacf721f115c3dfe",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "分页大小",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/OrderPayload"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/orders/{order}": {
+            "get": {
+                "tags": [
+                    "订单"
+                ],
+                "summary": "订单详情",
+                "operationId": "015cacc737aee9ac5e3d5b96f6aa1fc5",
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/OrderPayload"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/balance-accounts": {
+            "get": {
+                "tags": [
+                    "余额"
+                ],
+                "summary": "余额账户列表",
+                "operationId": "50c47e7cae10b0bc906701eb998a131f",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BalanceAccountPayload"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/balance-accounts/logs": {
+            "get": {
+                "tags": [
+                    "余额"
+                ],
+                "summary": "余额流水",
+                "operationId": "9b6940330f6e0f3ade60a771056c77f5",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/stored-value-cards/recharge": {
+            "post": {
+                "tags": [
+                    "储值卡"
+                ],
+                "summary": "绑定储值卡并转入线上余额",
+                "operationId": "c9ad29192f9b1b36f881edea42e5d7f4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "card_no",
+                                    "card_secret"
+                                ],
+                                "properties": {
+                                    "card_no": {
+                                        "description": "储值卡卡号",
+                                        "type": "string",
+                                        "example": "DG2026000001"
+                                    },
+                                    "card_secret": {
+                                        "description": "储值卡卡密",
+                                        "type": "string",
+                                        "example": "ab12cd"
+                                    },
+                                    "request_no": {
+                                        "description": "绑定请求幂等号",
+                                        "type": "string",
+                                        "example": "bind_001"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "绑定成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/stored-value-cards/{storedValueCard}/qr": {
+            "get": {
+                "tags": [
+                    "储值卡"
+                ],
+                "summary": "获取储值卡二维码文本内容",
+                "operationId": "c96ac7e454e74f94d2387b9fc1905a44",
+                "parameters": [
+                    {
+                        "name": "storedValueCard",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/StoredValueCardQrPayload"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/coupons": {
+            "get": {
+                "tags": [
+                    "优惠券"
+                ],
+                "summary": "我的优惠券",
+                "operationId": "07faa0b5644edccf4dc51c22c1f41931",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/UserAddressPayload"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/coupons/{couponTemplate}/claim": {
+            "post": {
+                "tags": [
+                    "优惠券"
+                ],
+                "summary": "领取优惠券",
+                "operationId": "b601dddbf735b8dd06a731223580f9a0",
+                "parameters": [
+                    {
+                        "name": "couponTemplate",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "领取成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user-addresses": {
+            "get": {
+                "tags": [
+                    "用户认证"
+                ],
+                "summary": "地址列表",
+                "operationId": "e97863349144d6ec19c1910c3b6fbdeb",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "用户认证"
+                ],
+                "summary": "新增地址",
+                "operationId": "6e728c8d53cb3528bafc6ee55739f9c2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "consignee_name",
+                                    "mobile",
+                                    "street"
+                                ],
+                                "properties": {
+                                    "consignee_name": {
+                                        "description": "收货人姓名",
+                                        "type": "string",
+                                        "example": "张三"
+                                    },
+                                    "mobile": {
+                                        "description": "收货手机号",
+                                        "type": "string",
+                                        "example": "13800138000"
+                                    },
+                                    "province": {
+                                        "description": "省",
+                                        "type": "string",
+                                        "example": "湖北省"
+                                    },
+                                    "city": {
+                                        "description": "市",
+                                        "type": "string",
+                                        "example": "武汉市"
+                                    },
+                                    "district": {
+                                        "description": "区",
+                                        "type": "string",
+                                        "example": "江汉区"
+                                    },
+                                    "street": {
+                                        "description": "详细地址",
+                                        "type": "string",
+                                        "example": "建设大道100号"
+                                    },
+                                    "postal_code": {
+                                        "description": "邮编",
+                                        "type": "string",
+                                        "example": "430000"
+                                    },
+                                    "is_default": {
+                                        "description": "是否默认地址：1是 0否",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "新增成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "地址新增成功"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserAddressPayload"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user-addresses/{userAddress}": {
+            "delete": {
+                "tags": [
+                    "用户认证"
+                ],
+                "summary": "删除地址",
+                "operationId": "6b05ee93d25333227c34b552ebea0e3b",
+                "parameters": [
+                    {
+                        "name": "userAddress",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "用户认证"
+                ],
+                "summary": "更新地址",
+                "operationId": "24e29b2b91dde31de19fa1e9dfefc786",
+                "parameters": [
+                    {
+                        "name": "userAddress",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "consignee_name",
+                                    "mobile",
+                                    "street"
+                                ],
+                                "properties": {
+                                    "consignee_name": {
+                                        "description": "收货人姓名",
+                                        "type": "string",
+                                        "example": "张三"
+                                    },
+                                    "mobile": {
+                                        "description": "收货手机号",
+                                        "type": "string",
+                                        "example": "13800138000"
+                                    },
+                                    "province": {
+                                        "description": "省",
+                                        "type": "string",
+                                        "example": "湖北省"
+                                    },
+                                    "city": {
+                                        "description": "市",
+                                        "type": "string",
+                                        "example": "武汉市"
+                                    },
+                                    "district": {
+                                        "description": "区",
+                                        "type": "string",
+                                        "example": "江汉区"
+                                    },
+                                    "street": {
+                                        "description": "详细地址",
+                                        "type": "string",
+                                        "example": "建设大道100号"
+                                    },
+                                    "postal_code": {
+                                        "description": "邮编",
+                                        "type": "string",
+                                        "example": "430000"
+                                    },
+                                    "is_default": {
+                                        "description": "是否默认地址：1是 0否",
+                                        "type": "integer",
+                                        "example": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "地址更新成功"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserAddressPayload"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/customer-service/conversations": {
+            "get": {
+                "tags": [
+                    "客服"
+                ],
+                "summary": "客服会话列表",
+                "operationId": "266810945dfa3b6dfe8449a8bb90e478",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "客服"
+                ],
+                "summary": "创建客服留言会话",
+                "operationId": "e9b4a676a8b77b5676baa89cbe7c0f40",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "content"
+                                ],
+                                "properties": {
+                                    "subject": {
+                                        "type": "string",
+                                        "example": "订单咨询"
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "example": "你好，我想咨询一下订单发货时间"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "留言成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/customer-service/unread-summary": {
+            "get": {
+                "tags": [
+                    "客服"
+                ],
+                "summary": "客服未读汇总",
+                "operationId": "d0b25e4d2b48d8ea7c5f25def4ef9f83",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/customer-service/conversations/{customerServiceConversation}": {
+            "get": {
+                "tags": [
+                    "客服"
+                ],
+                "summary": "客服会话详情",
+                "operationId": "2fc31630de31901f6ed61415956827f6",
+                "parameters": [
+                    {
+                        "name": "customerServiceConversation",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/customer-service/conversations/{customerServiceConversation}/messages": {
+            "get": {
+                "tags": [
+                    "客服"
+                ],
+                "summary": "客服消息列表",
+                "operationId": "b53201c99df7ba57ae4c67e039e0eecf",
+                "parameters": [
+                    {
+                        "name": "customerServiceConversation",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 50
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "客服"
+                ],
+                "summary": "用户追加客服留言",
+                "operationId": "40bb417c20c9af62bdad478a1a320d2d",
+                "parameters": [
+                    {
+                        "name": "customerServiceConversation",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "content"
+                                ],
+                                "properties": {
+                                    "content": {
+                                        "type": "string",
+                                        "example": "请帮我尽快处理，谢谢"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "发送成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/customer-service/conversations/{customerServiceConversation}/increment": {
+            "get": {
+                "tags": [
+                    "客服"
+                ],
+                "summary": "增量拉取客服消息",
+                "operationId": "98a68ae238c2db57604d740e8a3eab1e",
+                "parameters": [
+                    {
+                        "name": "customerServiceConversation",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "after_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 50
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/offline-payments/payment-code": {
+            "get": {
+                "tags": [
+                    "线下付款"
+                ],
+                "summary": "获取用户付款码",
+                "operationId": "2561689048384acb424312b6e895eb59",
+                "responses": {
+                    "200": {
+                        "description": "生成成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/merchant/offline-payments/scan": {
+            "post": {
+                "tags": [
+                    "线下付款"
+                ],
+                "summary": "商户核销员扫码识别用户付款码或储值卡二维码",
+                "operationId": "1e910c9f454354f9eb527ddea97b0a10",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "payment_token": {
+                                        "type": "string",
+                                        "example": "PAY202603180001"
+                                    },
+                                    "card_qr_content": {
+                                        "type": "string",
+                                        "example": "card_no=DG2026000001&card_secret=ab12cd"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "扫码成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/merchant/offline-payments/pay": {
+            "post": {
+                "tags": [
+                    "线下付款"
+                ],
+                "summary": "商户核销员提交线下支付",
+                "operationId": "da985892ef8470f40d7d7df01bcb2f79",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "merchant_id",
+                                    "amount",
+                                    "idempotency_key"
+                                ],
+                                "properties": {
+                                    "payment_token": {
+                                        "type": "string",
+                                        "example": "PAY202603180001"
+                                    },
+                                    "card_qr_content": {
+                                        "type": "string",
+                                        "example": "card_no=DG2026000001&card_secret=ab12cd"
+                                    },
+                                    "merchant_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "balance_type_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 20
+                                    },
+                                    "idempotency_key": {
+                                        "type": "string",
+                                        "example": "offline_pay_001"
+                                    },
+                                    "remark": {
+                                        "type": "string",
+                                        "example": "线下消费"
+                                    },
+                                    "attachments": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "path": {
+                                                    "type": "string",
+                                                    "example": "uploads/images/test.jpg"
+                                                },
+                                                "disk": {
+                                                    "type": "string",
+                                                    "example": "public"
+                                                },
+                                                "mime_type": {
+                                                    "type": "string",
+                                                    "example": "image/jpeg"
+                                                },
+                                                "size": {
+                                                    "type": "integer",
+                                                    "example": 12345
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "支付结果",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "支付失败",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/uploads/images": {
+            "post": {
+                "tags": [
+                    "上传"
+                ],
+                "summary": "上传图片",
+                "operationId": "65d23f10422488d662cc0662c20c5ab3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "image"
+                                ],
+                                "properties": {
+                                    "image": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "上传成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ApiResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "type": "object",
+                        "nullable": true,
+                        "additionalProperties": true
+                    }
+                },
+                "type": "object"
+            },
+            "ApiErrorResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 422
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "参数错误"
+                    },
+                    "data": {
+                        "type": "object",
+                        "nullable": true,
+                        "additionalProperties": true
+                    }
+                },
+                "type": "object"
+            },
+            "UserProfile": {
+                "properties": {
+                    "id": {
+                        "description": "用户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "openid": {
+                        "description": "微信openid，静默授权登录的唯一标识",
+                        "type": "string",
+                        "example": "oAbCdEf123456"
+                    },
+                    "unionid": {
+                        "description": "微信unionid，部分账号场景下可能为空",
+                        "type": "string",
+                        "example": "oUnion123456",
+                        "nullable": true
+                    },
+                    "nickname": {
+                        "description": "用户昵称",
+                        "type": "string",
+                        "example": "微信用户"
+                    },
+                    "avatar": {
+                        "description": "用户头像",
+                        "type": "string",
+                        "example": "https://example.com/avatar.jpg",
+                        "nullable": true
+                    },
+                    "mobile": {
+                        "description": "用户手机号",
+                        "type": "string",
+                        "example": "13800138000",
+                        "nullable": true
+                    },
+                    "name": {
+                        "description": "用户姓名或展示名称",
+                        "type": "string",
+                        "example": "张三"
+                    },
+                    "status": {
+                        "description": "状态：1启用",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "last_login_at": {
+                        "description": "最后登录时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-23T12:00:00+08:00",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "创建时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-20T12:00:00+08:00",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "description": "更新时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-23T12:00:00+08:00",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "WechatLoginRequest": {
+                "required": [
+                    "code"
+                ],
+                "properties": {
+                    "code": {
+                        "description": "微信公众号静默授权回调返回的code，前端从URL参数中取到后传给后端",
+                        "type": "string",
+                        "example": "081aBcDeFgHijKlMn"
+                    }
+                },
+                "type": "object"
+            },
+            "WechatLoginData": {
+                "properties": {
+                    "token": {
+                        "description": "Bearer Token，前端后续请求需放到 Authorization 头中",
+                        "type": "string",
+                        "example": "4|uuVZCHusdbClgz1ansqUS7mfp7Gy6ymDwyz9Ootl"
+                    },
+                    "token_type": {
+                        "description": "Token 类型",
+                        "type": "string",
+                        "example": "Bearer"
+                    },
+                    "is_new_user": {
+                        "description": "是否为本次登录首次自动创建的新用户",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/UserProfile"
+                    }
+                },
+                "type": "object"
+            },
+            "WechatLoginResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "登录成功"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/WechatLoginData"
+                    }
+                },
+                "type": "object"
+            },
+            "PlatformSettingPayload": {
+                "properties": {
+                    "id": {
+                        "description": "平台设置ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "company_name": {
+                        "description": "平台公司名称",
+                        "type": "string",
+                        "example": "微信 H5 商城系统"
+                    },
+                    "logo": {
+                        "description": "平台Logo",
+                        "type": "string",
+                        "example": "uploads/platform/logo.png",
+                        "nullable": true
+                    },
+                    "banners": {
+                        "description": "首页Banner图片列表",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "uploads/platform/banner-1.jpg"
+                        }
+                    },
+                    "promo_video": {
+                        "description": "宣传视频",
+                        "type": "string",
+                        "example": "uploads/platform/promo.mp4",
+                        "nullable": true
+                    },
+                    "address": {
+                        "description": "平台地址",
+                        "type": "string",
+                        "example": "福建省泉州市",
+                        "nullable": true
+                    },
+                    "customer_service_phone": {
+                        "description": "客服电话",
+                        "type": "string",
+                        "example": "400-800-9000",
+                        "nullable": true
+                    },
+                    "business_phone": {
+                        "description": "商务电话",
+                        "type": "string",
+                        "example": "0595-88888888",
+                        "nullable": true
+                    },
+                    "domain": {
+                        "description": "平台域名",
+                        "type": "string",
+                        "example": "https://mall.example.com",
+                        "nullable": true
+                    },
+                    "icp_number": {
+                        "description": "备案号",
+                        "type": "string",
+                        "example": "闽ICP备12345678号",
+                        "nullable": true
+                    },
+                    "customer_service_wechat": {
+                        "description": "客服微信号",
+                        "type": "string",
+                        "example": "mall_kefu_01",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "ProductCategoryItem": {
+                "properties": {
+                    "id": {
+                        "description": "分类ID",
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "name": {
+                        "description": "分类名称",
+                        "type": "string",
+                        "example": "甄选干货"
+                    },
+                    "logo": {
+                        "description": "分类Logo",
+                        "type": "string",
+                        "example": "uploads/categories/logo.png",
+                        "nullable": true
+                    },
+                    "sort": {
+                        "description": "排序值",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "children": {
+                        "description": "子分类列表，仅分类树接口中会出现",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductCategoryItem"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "MerchantSimple": {
+                "properties": {
+                    "id": {
+                        "description": "商户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "商户名称",
+                        "type": "string",
+                        "example": "御欣堂"
+                    },
+                    "short_name": {
+                        "description": "商户简称",
+                        "type": "string",
+                        "example": "御欣堂",
+                        "nullable": true
+                    },
+                    "logo": {
+                        "description": "商户Logo",
+                        "type": "string",
+                        "example": "uploads/merchants/logo.png",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "BalanceTypeSimple": {
+                "properties": {
+                    "id": {
+                        "description": "余额类型ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "余额类型名称",
+                        "type": "string",
+                        "example": "通用余额"
+                    },
+                    "code": {
+                        "description": "余额类型编码",
+                        "type": "string",
+                        "example": "general"
+                    }
+                },
+                "type": "object"
+            },
+            "ProductSkuPayload": {
+                "properties": {
+                    "id": {
+                        "description": "SKU ID",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "sku_code": {
+                        "description": "SKU编码",
+                        "type": "string",
+                        "example": "IMP000010",
+                        "nullable": true
+                    },
+                    "name": {
+                        "description": "SKU名称",
+                        "type": "string",
+                        "example": "默认规格"
+                    },
+                    "specs": {
+                        "description": "SKU规格JSON",
+                        "type": "object",
+                        "nullable": true,
+                        "additionalProperties": true
+                    },
+                    "price": {
+                        "description": "SKU价格，字符串形式返回",
+                        "type": "string",
+                        "example": "88.00"
+                    },
+                    "stock": {
+                        "description": "库存",
+                        "type": "integer",
+                        "example": 999
+                    },
+                    "image": {
+                        "description": "SKU图片",
+                        "type": "string",
+                        "example": "uploads/products/sku.jpg",
+                        "nullable": true
+                    },
+                    "sales_count": {
+                        "description": "SKU销量",
+                        "type": "integer",
+                        "example": 23
+                    },
+                    "status": {
+                        "description": "状态：1启用",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "ProductPayload": {
+                "properties": {
+                    "id": {
+                        "description": "商品ID",
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "merchant_id": {
+                        "description": "所属商户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "product_category_id": {
+                        "description": "所属分类ID",
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "balance_type_id": {
+                        "description": "结算使用的余额类型ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "description": "商品标题",
+                        "type": "string",
+                        "example": "韩国即食海参500克"
+                    },
+                    "subtitle": {
+                        "description": "商品副标题",
+                        "type": "string",
+                        "example": "韩国野生海参，纯手工泡发，0添加",
+                        "nullable": true
+                    },
+                    "main_images": {
+                        "description": "商品主图列表",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "uploads/products/main.jpg"
+                        }
+                    },
+                    "detail": {
+                        "description": "商品详情",
+                        "type": "string",
+                        "example": "商品详情说明",
+                        "nullable": true
+                    },
+                    "sales_count": {
+                        "description": "商品销量",
+                        "type": "integer",
+                        "example": 452
+                    },
+                    "sort": {
+                        "description": "排序值",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "is_recommended": {
+                        "description": "是否推荐：1是 0否",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "status": {
+                        "description": "状态：1上架",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "merchant": {
+                        "$ref": "#/components/schemas/MerchantSimple"
+                    },
+                    "category": {
+                        "$ref": "#/components/schemas/ProductCategoryItem"
+                    },
+                    "balanceType": {
+                        "$ref": "#/components/schemas/BalanceTypeSimple"
+                    },
+                    "skus": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductSkuPayload"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "UserAddressPayload": {
+                "properties": {
+                    "id": {
+                        "description": "地址ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "所属用户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "consignee_name": {
+                        "description": "收货人姓名",
+                        "type": "string",
+                        "example": "张三"
+                    },
+                    "mobile": {
+                        "description": "收货手机号",
+                        "type": "string",
+                        "example": "13800138000"
+                    },
+                    "province": {
+                        "description": "省",
+                        "type": "string",
+                        "example": "湖北省",
+                        "nullable": true
+                    },
+                    "city": {
+                        "description": "市",
+                        "type": "string",
+                        "example": "武汉市",
+                        "nullable": true
+                    },
+                    "district": {
+                        "description": "区",
+                        "type": "string",
+                        "example": "江汉区",
+                        "nullable": true
+                    },
+                    "street": {
+                        "description": "详细地址",
+                        "type": "string",
+                        "example": "建设大道100号"
+                    },
+                    "postal_code": {
+                        "description": "邮编",
+                        "type": "string",
+                        "example": "430000",
+                        "nullable": true
+                    },
+                    "is_default": {
+                        "description": "是否默认地址：1是 0否",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "CartItemPayload": {
+                "properties": {
+                    "id": {
+                        "description": "购物车项ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "所属用户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "merchant_id": {
+                        "description": "所属商户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "product_id": {
+                        "description": "商品ID",
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "product_sku_id": {
+                        "description": "SKU ID",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "balance_type_id": {
+                        "description": "余额类型ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "quantity": {
+                        "description": "购买数量",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "selected": {
+                        "description": "是否选中：1选中 0未选中",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "merchant": {
+                        "$ref": "#/components/schemas/MerchantSimple"
+                    },
+                    "product": {
+                        "$ref": "#/components/schemas/ProductPayload"
+                    },
+                    "sku": {
+                        "$ref": "#/components/schemas/ProductSkuPayload"
+                    }
+                },
+                "type": "object"
+            },
+            "CheckoutCouponUsage": {
+                "properties": {
+                    "merchant_id": {
+                        "description": "订单分组所属商户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "balance_type_id": {
+                        "description": "订单分组所属余额类型ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_coupon_id": {
+                        "description": "要使用的用户优惠券ID；如果不使用优惠券则不要传这一组对象",
+                        "type": "integer",
+                        "example": 20
+                    }
+                },
+                "type": "object"
+            },
+            "CheckoutPreviewItem": {
+                "properties": {
+                    "cart_item_id": {
+                        "description": "购物车项ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "product_id": {
+                        "description": "商品ID",
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "product_title": {
+                        "description": "商品标题",
+                        "type": "string",
+                        "example": "韩国即食海参500克"
+                    },
+                    "product_sku_id": {
+                        "description": "SKU ID",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "sku_name": {
+                        "description": "SKU名称",
+                        "type": "string",
+                        "example": "默认规格"
+                    },
+                    "price": {
+                        "description": "单价",
+                        "type": "string",
+                        "example": "88.00"
+                    },
+                    "quantity": {
+                        "description": "数量",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "line_total": {
+                        "description": "当前行小计",
+                        "type": "string",
+                        "example": "176.00"
+                    }
+                },
+                "type": "object"
+            },
+            "CheckoutPreviewGroup": {
+                "properties": {
+                    "merchant_id": {
+                        "description": "分单后的商户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "merchant_name": {
+                        "description": "商户名称",
+                        "type": "string",
+                        "example": "御欣堂"
+                    },
+                    "balance_type_id": {
+                        "description": "该订单使用的余额类型ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "balance_type_name": {
+                        "description": "余额类型名称",
+                        "type": "string",
+                        "example": "通用余额"
+                    },
+                    "total_amount": {
+                        "description": "原始总金额",
+                        "type": "string",
+                        "example": "176.00"
+                    },
+                    "coupon_amount": {
+                        "description": "优惠金额",
+                        "type": "string",
+                        "example": "20.00"
+                    },
+                    "payable_amount": {
+                        "description": "应付金额",
+                        "type": "string",
+                        "example": "156.00"
+                    },
+                    "user_coupon_id": {
+                        "description": "实际命中的用户优惠券ID",
+                        "type": "integer",
+                        "example": 20,
+                        "nullable": true
+                    },
+                    "coupon_name": {
+                        "description": "优惠券名称",
+                        "type": "string",
+                        "example": "满200减20",
+                        "nullable": true
+                    },
+                    "coupon_error": {
+                        "description": "优惠券不可用时的提示文案",
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "available_balance": {
+                        "description": "当前余额账户可用金额",
+                        "type": "string",
+                        "example": "500.00"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CheckoutPreviewItem"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "OrderItemPayload": {
+                "properties": {
+                    "id": {
+                        "description": "订单项ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "product_id": {
+                        "description": "商品ID",
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "product_sku_id": {
+                        "description": "SKU ID",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "product_title": {
+                        "description": "商品标题",
+                        "type": "string",
+                        "example": "韩国即食海参500克"
+                    },
+                    "sku_name": {
+                        "description": "SKU名称",
+                        "type": "string",
+                        "example": "默认规格"
+                    },
+                    "price": {
+                        "description": "成交单价",
+                        "type": "string",
+                        "example": "88.00"
+                    },
+                    "quantity": {
+                        "description": "购买数量",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "total_amount": {
+                        "description": "订单项总金额",
+                        "type": "string",
+                        "example": "176.00"
+                    },
+                    "image": {
+                        "description": "商品图片",
+                        "type": "string",
+                        "example": "uploads/products/main.jpg",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "OrderPayload": {
+                "properties": {
+                    "id": {
+                        "description": "订单ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "order_no": {
+                        "description": "订单编号",
+                        "type": "string",
+                        "example": "ORD202603230001"
+                    },
+                    "submit_no": {
+                        "description": "提交幂等号",
+                        "type": "string",
+                        "example": "SUB202603230001",
+                        "nullable": true
+                    },
+                    "user_id": {
+                        "description": "下单用户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "merchant_id": {
+                        "description": "商户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "balance_type_id": {
+                        "description": "余额类型ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_coupon_id": {
+                        "description": "使用的用户优惠券ID",
+                        "type": "integer",
+                        "example": 20,
+                        "nullable": true
+                    },
+                    "item_count": {
+                        "description": "商品件数",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "total_amount": {
+                        "description": "订单总金额",
+                        "type": "string",
+                        "example": "176.00"
+                    },
+                    "coupon_amount": {
+                        "description": "优惠金额",
+                        "type": "string",
+                        "example": "20.00"
+                    },
+                    "payable_amount": {
+                        "description": "应付金额",
+                        "type": "string",
+                        "example": "156.00"
+                    },
+                    "paid_amount": {
+                        "description": "实付金额",
+                        "type": "string",
+                        "example": "156.00"
+                    },
+                    "status": {
+                        "description": "订单状态",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "delivery_status": {
+                        "description": "发货状态",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "payment_status": {
+                        "description": "支付状态：1已支付",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "paid_at": {
+                        "description": "支付时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-23T12:00:00+08:00",
+                        "nullable": true
+                    },
+                    "remark": {
+                        "description": "订单备注",
+                        "type": "string",
+                        "example": "请尽快发货",
+                        "nullable": true
+                    },
+                    "merchant": {
+                        "$ref": "#/components/schemas/MerchantSimple"
+                    },
+                    "balanceType": {
+                        "$ref": "#/components/schemas/BalanceTypeSimple"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrderItemPayload"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "BalanceAccountPayload": {
+                "properties": {
+                    "id": {
+                        "description": "余额账户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "用户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "balance_type_id": {
+                        "description": "余额类型ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "available_amount": {
+                        "description": "可用余额",
+                        "type": "string",
+                        "example": "500.00"
+                    },
+                    "frozen_amount": {
+                        "description": "冻结金额",
+                        "type": "string",
+                        "example": "0.00"
+                    },
+                    "balance_type": {
+                        "$ref": "#/components/schemas/BalanceTypeSimple"
+                    }
+                },
+                "type": "object"
+            },
+            "StoredValueCardQrPayload": {
+                "properties": {
+                    "id": {
+                        "description": "储值卡ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "card_no": {
+                        "description": "储值卡卡号",
+                        "type": "string",
+                        "example": "DG2026000001"
+                    },
+                    "card_secret": {
+                        "description": "储值卡卡密",
+                        "type": "string",
+                        "example": "ab12cd"
+                    },
+                    "qr_content": {
+                        "description": "二维码文本内容，前端可直接用来生成二维码",
+                        "type": "string",
+                        "example": "card_no=DG2026000001&card_secret=ab12cd"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Laravel Sanctum Bearer Token",
+                "bearerFormat": "Bearer",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "用户认证",
+            "description": "用户端登录与资料接口"
+        },
+        {
+            "name": "员工邀请",
+            "description": "商户员工邀请链接与绑定"
+        },
+        {
+            "name": "平台",
+            "description": "平台基础信息"
+        },
+        {
+            "name": "首页",
+            "description": "首页聚合接口"
+        },
+        {
+            "name": "分类",
+            "description": "商品分类接口"
+        },
+        {
+            "name": "合作商家",
+            "description": "合作商家、地区和门店类型接口"
+        },
+        {
+            "name": "客服",
+            "description": "客服留言与回复"
+        },
+        {
+            "name": "商品",
+            "description": "商品列表与详情"
+        },
+        {
+            "name": "购物车",
+            "description": "购物车增删改查"
+        },
+        {
+            "name": "结算",
+            "description": "预结算与提交订单"
+        },
+        {
+            "name": "订单",
+            "description": "用户订单"
+        },
+        {
+            "name": "余额",
+            "description": "余额账户与流水"
+        },
+        {
+            "name": "储值卡",
+            "description": "储值卡绑定与二维码"
+        },
+        {
+            "name": "优惠券",
+            "description": "优惠券列表与领取"
+        },
+        {
+            "name": "线下付款",
+            "description": "用户付款码、商户扫码与支付"
+        },
+        {
+            "name": "上传",
+            "description": "图片上传"
+        }
+    ]
+}

@@ -8,7 +8,7 @@
 
 除后端适配外，当前还引入了通用“模块注册表”机制：前端可以通过环境配置决定启用哪些模块，runtime 再与后端支持矩阵求交集，得到当前租户真正可用的能力集合。模块的标签、摘要、依赖和入口层级统一写在 manifest 中，供壳层和首页装配复用。
 
-当前还新增了一个最小 `checkout-flow` process，用来演示跨实体流程如何编排 `product/cart/order`：有购物车时从购物车进入，没有购物车时退化为“立即购买”。
+当前还新增了一个最小 `checkout-flow` process，用来编排 `product/cart/order`：在 `backend-a` 下从真实购物车进入预结算与下单，在 `mock` 下仍保留“没有购物车时退化为立即购买”的演示路径。
 
 首页和模块页面当前由 `app/composition/module-composition-registry.ts` 统一装配：`shared/config/modules.ts` 只描述模块元数据，具体哪些组件出现在首页主区/侧栏、哪些模块有独立页面入口，都由 app 层 composition registry 决定，避免 `shared` 反向依赖业务组件。
 
@@ -45,7 +45,7 @@ entities/product/
 - `features/product-catalog` 与 `features/add-to-cart` 使用 Pinia 管理界面状态与用例编排。
 - `pages/product-detail` 作为路由级页面，消费 `ProductDetail` 并通过 composition registry 挂到 `catalog` 模块路由下。
 - `processes/checkout-flow` 作为 checkout 示例，编排 `product/cart/order` 三个实体。
-- `entities/product`、`entities/cart`、`entities/order` 定义实体规则、仓储契约、用例以及 `mock/backend-a` 适配示例；其中购物车当前默认装配为浏览器本地仓储。
+- `entities/product`、`entities/cart`、`entities/order` 定义实体规则、仓储契约、用例以及 `mock/backend-a` 适配示例；其中 `backend-a` 已真实装配购物车、结算和订单链路。
 - `entities/product` 额外演示了“字段表 + 通用 mapper helper”的做法：后端只需要提供 DTO 和字段映射配置，就能得到统一的前端商品模型。
 - `shared/ui` 提供基础布局壳和通用卡片，不承载业务语义。
 - `app/providers/backend` 根据环境变量选择当前后端实现，并注入实体仓储。
@@ -72,6 +72,51 @@ npm run dev
 ```sh
 VITE_BACKEND_TARGET=backend-a npm run dev
 ```
+
+指定真实后端基地址：
+
+```sh
+VITE_BACKEND_TARGET=backend-a \
+VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
+npm run dev
+```
+
+如果已经有微信公众号静默授权跳转地址，也可以一起配置：
+
+```sh
+VITE_BACKEND_TARGET=backend-a \
+VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
+VITE_BACKEND_A_WECHAT_OAUTH_URL="https://your-wechat-oauth-entry" \
+npm run dev
+```
+
+当前 `backend-a` 已真实接入：
+
+- `GET /api/v1/home`
+- `GET /api/v1/product-categories`
+- `GET /api/v1/products`
+- `GET /api/v1/products/{product}`
+- `POST /api/v1/auth/wechat`
+- `PATCH /api/v1/auth/profile`
+- `GET/POST/DELETE/PATCH /api/v1/user-addresses`
+- `GET/POST/PATCH/DELETE /api/v1/cart-items`
+- `POST /api/v1/checkout/preview`
+- `POST /api/v1/checkout/submit`
+- `GET /api/v1/orders`
+- `GET /api/v1/orders/{order}`
+
+当前 `backend-a` 仍未在 Swagger 中提供、前端会显式提示不支持的能力：
+
+- 账号密码登录
+- 普通注册
+- 手机号注册
+- 注册短信验证码
+- 登录密码修改
+- 支付密码修改
+- 微信绑定手机号
+- 订单取消
+- 订单支付
+- 确认收货
 
 只启用部分前端模块：
 

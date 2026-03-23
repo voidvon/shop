@@ -7,6 +7,7 @@ export type {
 } from './domain/member-address'
 export type { MemberAddressRepository } from './domain/member-address-repository'
 export { createBrowserMemberAddressRepository } from './infrastructure/create-browser-member-address-repository'
+export { createBackendAMemberAddressRepository } from './infrastructure/adapters/backend-a/backend-a-member-address-repository'
 export {
   provideMemberAddressRepository,
   useMemberAddressRepository,

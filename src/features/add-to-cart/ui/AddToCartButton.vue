@@ -14,7 +14,7 @@ const props = defineProps<{
 const cartStore = useCartStore()
 const isCartEnabled = useModuleAvailability('cart')
 
-const isPending = computed(() => cartStore.isProductPending(props.product.id))
+const isPending = computed(() => cartStore.isLinePending(props.product.id))
 
 async function handleAddToCart() {
   if (!isCartEnabled.value) {

@@ -25,7 +25,7 @@ onMounted(() => {
 <template>
   <SectionCard
     title="购物车概览"
-    :description="`商品能力仍由 ${currentBackendLabel} 装配，购物车状态当前仅保存在浏览器本地。`"
+    :description="`商品与购物车能力当前由 ${currentBackendLabel} 装配。`"
   >
     <p v-if="!isCartEnabled" class="state">当前租户未启用 cart 模块，这块能力可以整体抽离。</p>
 
@@ -46,7 +46,7 @@ onMounted(() => {
     <p v-else-if="visibleLines.length === 0" class="state">购物车还是空的，先挑一件商品试试。</p>
 
     <ul v-else class="line-list">
-      <li v-for="line in visibleLines" :key="line.productId">
+      <li v-for="line in visibleLines" :key="line.lineId">
         <div>
           <strong>{{ line.productName }}</strong>
           <span>{{ line.quantity }} 件</span>

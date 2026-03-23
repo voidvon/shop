@@ -35,31 +35,31 @@ export function useCartPageModel() {
     }
   }
 
-  function isItemPending(productId: string) {
-    return cartStore.isProductPending(productId)
+  function isItemPending(lineId: string) {
+    return cartStore.isLinePending(lineId)
   }
 
-  function isProductSelected(productId: string) {
-    return cartStore.isProductSelected(productId)
+  function isLineSelected(lineId: string) {
+    return cartStore.isLineSelected(lineId)
   }
 
   function isGroupSelected(group: CartPageGroup) {
-    return group.items.length > 0 && group.items.every((item) => cartStore.isProductSelected(item.productId))
+    return group.items.length > 0 && group.items.every((item) => cartStore.isLineSelected(item.lineId))
   }
 
   async function setAllSelected(selected: boolean) {
-    const productIds = cartPageData.value.groups.flatMap((group) =>
-      group.items.map((item) => item.productId),
+    const lineIds = cartPageData.value.groups.flatMap((group) =>
+      group.items.map((item) => item.lineId),
     )
 
-    if (productIds.length === 0) {
+    if (lineIds.length === 0) {
       return
     }
 
     errorMessage.value = null
 
     try {
-      await cartStore.setProductsSelected(productIds, selected)
+      await cartStore.setLinesSelected(lineIds, selected)
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '更新待结算商品失败'
       throw error
@@ -67,38 +67,38 @@ export function useCartPageModel() {
   }
 
   async function setGroupSelected(group: CartPageGroup, selected: boolean) {
-    const productIds = group.items.map((item) => item.productId)
+    const lineIds = group.items.map((item) => item.lineId)
 
-    if (productIds.length === 0) {
+    if (lineIds.length === 0) {
       return
     }
 
     errorMessage.value = null
 
     try {
-      await cartStore.setProductsSelected(productIds, selected)
+      await cartStore.setLinesSelected(lineIds, selected)
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '更新待结算商品失败'
       throw error
     }
   }
 
-  async function setProductSelected(productId: string, selected: boolean) {
+  async function setLineSelected(lineId: string, selected: boolean) {
     errorMessage.value = null
 
     try {
-      await cartStore.setProductsSelected([productId], selected)
+      await cartStore.setLinesSelected([lineId], selected)
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '更新待结算商品失败'
       throw error
     }
   }
 
-  async function removeItem(productId: string) {
+  async function removeItem(lineId: string) {
     errorMessage.value = null
 
     try {
-      await cartStore.removeProduct(productId)
+      await cartStore.removeProduct(lineId)
       await refreshCartPage()
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '删除购物车商品失败'
@@ -106,11 +106,11 @@ export function useCartPageModel() {
     }
   }
 
-  async function setItemQuantity(productId: string, quantity: number) {
+  async function setItemQuantity(lineId: string, quantity: number) {
     errorMessage.value = null
 
     try {
-      await cartStore.setProductQuantity(productId, quantity)
+      await cartStore.setProductQuantity(lineId, quantity)
       await refreshCartPage()
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '更新购物车数量失败'
@@ -124,7 +124,7 @@ export function useCartPageModel() {
     isAllSelected: computed(() => cartStore.isAllSelected),
     isLoading,
     isItemPending,
-    isProductSelected,
+    isLineSelected,
     isSelectionPending: computed(() => cartStore.isSelectionPending),
     isGroupSelected,
     loadCartPage,
@@ -134,6 +134,6 @@ export function useCartPageModel() {
     setAllSelected,
     setGroupSelected,
     setItemQuantity,
-    setProductSelected,
+    setLineSelected,
   }
 }

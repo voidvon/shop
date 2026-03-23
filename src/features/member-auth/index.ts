@@ -1,4 +1,5 @@
 export { submitMemberLogin } from './application/submit-member-login'
+export { submitMemberWechatLogin } from './application/submit-member-wechat-login'
 export { registerMemberAccount } from './application/register-member-account'
 export { registerMemberByMobile } from './application/register-member-by-mobile'
 export { requestMemberRegisterSmsCode } from './application/request-member-register-sms-code'

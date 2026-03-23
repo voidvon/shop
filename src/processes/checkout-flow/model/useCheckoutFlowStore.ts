@@ -90,7 +90,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     }
   }
 
-  async function submitCurrentOrder() {
+  async function submitCurrentOrder(remark?: string) {
     if (!isCheckoutEnabled.value) {
       return
     }
@@ -113,7 +113,10 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
         throw new Error(errorMessage.value)
       }
 
-      const result = await checkoutFlowPort.submit()
+      const result = await checkoutFlowPort.submit({
+        addressId: selectedAddress.value.id,
+        remark: remark?.trim() ? remark.trim() : null,
+      })
       const spendCommand: SpendMemberBalanceCommand = {
         amount: result.confirmation.payableAmount,
         description: `商城订单 ${result.confirmation.orderId} 余额支付`,
