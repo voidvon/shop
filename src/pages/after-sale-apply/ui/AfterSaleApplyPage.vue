@@ -115,7 +115,7 @@ async function handleSubmit() {
     description: description.value,
     orderId: orderId.value,
     orderItemId: orderItemId.value,
-    paymentMethod: orderDetailPageData.value.paymentMethod ?? '在线支付',
+    paymentMethod: orderDetailPageData.value.paymentMethod ?? '账户余额',
     quantity: applyQuantity.value,
     reason: selectedReason.value,
     type: activeType.value,
@@ -278,7 +278,7 @@ onMounted(() => {
         <section class="summary-card">
           <div class="summary-row">
             <span>原支付方式</span>
-            <strong>{{ orderDetailPageData.paymentMethod ?? '在线支付' }}</strong>
+            <strong>{{ orderDetailPageData.paymentMethod ?? '账户余额' }}</strong>
           </div>
           <div class="summary-row">
             <span>预计退款金额</span>

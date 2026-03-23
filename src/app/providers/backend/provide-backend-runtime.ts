@@ -2,6 +2,8 @@ import type { App } from 'vue'
 
 import {
   provideMemberAuthRepository,
+  provideMemberProfileService,
+  provideMemberSecurityService,
   provideMemberAuthSession,
 } from '@/entities/member-auth'
 import { provideAfterSaleRepository } from '@/entities/after-sale'
@@ -11,7 +13,10 @@ import { provideCartRepository } from '@/entities/cart'
 import { provideOrderRepository } from '@/entities/order'
 import { provideProductRepository } from '@/entities/product'
 import { provideCheckoutFlowPort } from '@/processes/checkout-flow'
-import { provideMemberCenterQuery } from '@/processes/member-center'
+import {
+  provideMemberAssetsService,
+  provideMemberCenterQuery,
+} from '@/processes/member-center'
 import { provideStorefrontQuery } from '@/processes/storefront'
 import { provideTradeQuery } from '@/processes/trade'
 
@@ -23,6 +28,8 @@ export function provideBackendRuntime(app: App) {
 
   provideBackendRuntimeContext(app, runtime)
   provideMemberAuthRepository(app, runtime.auth.repository)
+  provideMemberProfileService(app, runtime.auth.profileService)
+  provideMemberSecurityService(app, runtime.auth.securityService)
   provideMemberAuthSession(app, runtime.auth.session)
   provideAfterSaleRepository(app, runtime.repositories.afterSale)
   provideCartRepository(app, runtime.repositories.cart)
@@ -31,6 +38,7 @@ export function provideBackendRuntime(app: App) {
   provideOrderRepository(app, runtime.repositories.order)
   provideProductRepository(app, runtime.repositories.product)
   provideCheckoutFlowPort(app, runtime.queries.checkoutFlow)
+  provideMemberAssetsService(app, runtime.services.memberAssets)
   provideMemberCenterQuery(app, runtime.queries.memberCenter)
   provideStorefrontQuery(app, runtime.queries.storefront)
   provideTradeQuery(app, runtime.queries.trade)

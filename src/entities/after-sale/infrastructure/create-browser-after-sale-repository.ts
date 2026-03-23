@@ -131,7 +131,7 @@ export function createBrowserAfterSaleRepository(
         ...command,
         appliedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
         description: normalizeValue(command.description) || null,
-        paymentMethod: normalizeValue(command.paymentMethod) || '在线支付',
+        paymentMethod: normalizeValue(command.paymentMethod) || '账户余额',
         productImageUrl: normalizeValue(command.productImageUrl),
         productName: normalizeValue(command.productName),
         reason: normalizeValue(command.reason),

@@ -4,7 +4,8 @@ import { useMemberCenterQuery, type MemberCardsPageData } from '@/processes/memb
 
 const emptyMemberCardsPageData: MemberCardsPageData = {
   balanceAmount: 0,
-  cardNumber: null,
+  balanceLogs: [],
+  redemptionRecords: [],
 }
 
 export function useMemberCardsPageModel() {

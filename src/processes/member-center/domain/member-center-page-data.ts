@@ -33,12 +33,58 @@ export interface MemberCenterPageData {
   tipText: string
 }
 
+export interface MemberCardRedemptionRecord {
+  amount: number
+  cardNumber: string
+  cardTitle: string
+  id: string
+  occurredAt: string
+  redeemedCode: string
+}
+
 export interface MemberCardsPageData {
   balanceAmount: number
-  cardNumber: string | null
+  balanceLogs: AccountBalanceLog[]
+  redemptionRecords: MemberCardRedemptionRecord[]
+}
+
+export interface MemberSettingsItem {
+  key:
+    | 'login-password'
+    | 'profile-name'
+    | 'mobile'
+    | 'payment-password'
+    | 'about'
+  label: string
+  route: string
+  value: string | null
+}
+
+export interface MemberSettingsPageData {
+  security: {
+    canResetPassword: boolean
+    hasBoundMobile: boolean
+    hasPaymentPassword: boolean
+  }
+  settings: MemberSettingsItem[]
+}
+
+export interface MemberProfileNamePageData {
+  currentNickname: string
+  maxLength: number
+}
+
+export interface MemberAboutPageData {
+  companyName: string
+  copyrightYear: number
+  operatorName: string
+  organizerName: string
+  platformBackground: string
+  platformMission: string
 }
 
 export interface MemberCardBindPageData {
+  canScanCode: boolean
   cardNumber: string | null
 }
 
@@ -57,3 +103,4 @@ export interface MemberFavoritesPageData {
 export interface MemberHistoryPageData {
   items: MemberProductListItem[]
 }
+import type { AccountBalanceLog } from '@/shared/types/modules'

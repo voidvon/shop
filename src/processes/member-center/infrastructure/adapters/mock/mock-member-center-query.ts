@@ -2,36 +2,57 @@ import type { MemberAuthSession } from '@/entities/member-auth'
 import { getMockOrderSeedRecords } from '@/entities/order/infrastructure/adapters/mock/mock-order-repository'
 import { readBrowserOrderRecords } from '@/entities/order/infrastructure/browser-order-storage'
 
+import type { MemberAssetsService } from '../../../domain/member-assets-service'
 import type { MemberCenterQuery } from '../../../domain/member-center-query'
 import { createBrowserMemberOrderSummaryReader } from '../../create-browser-member-order-summary-reader'
 import {
+  mapMockMemberAboutPageData,
   mapMockMemberCardBindPageData,
   mapMockMemberCardsPageData,
   mapMockMemberCenterPageData,
   mapMockMemberFavoritesPageData,
   mapMockMemberHistoryPageData,
+  mapMockMemberProfileNamePageData,
+  mapMockMemberSettingsPageData,
 } from '../../mappers/mock-member-center-mapper'
 
-export function createMockMemberCenterQuery(memberAuthSession: MemberAuthSession): MemberCenterQuery {
+export function createMockMemberCenterQuery(
+  memberAuthSession: MemberAuthSession,
+  memberAssetsService: MemberAssetsService,
+): MemberCenterQuery {
+  const scopeKey = () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest'
   const getMemberOrderSummary = createBrowserMemberOrderSummaryReader({
     readOrders: () => readBrowserOrderRecords(
       'mock',
-      memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+      scopeKey(),
       getMockOrderSeedRecords,
     ),
   })
 
   return {
+    async getMemberAboutPageData() {
+      return Promise.resolve(mapMockMemberAboutPageData())
+    },
+
     async getMemberCardBindPageData() {
-      return Promise.resolve(mapMockMemberCardBindPageData())
+      const snapshot = await memberAssetsService.getSnapshot()
+      return Promise.resolve(mapMockMemberCardBindPageData(snapshot.bindPage))
     },
 
     async getMemberCardsPageData() {
-      return Promise.resolve(mapMockMemberCardsPageData())
+      const snapshot = await memberAssetsService.getSnapshot()
+      return Promise.resolve(mapMockMemberCardsPageData(snapshot))
     },
 
     async getMemberCenterPageData() {
-      return Promise.resolve(mapMockMemberCenterPageData(getMemberOrderSummary()))
+      const snapshot = await memberAssetsService.getSnapshot()
+      return Promise.resolve(
+        mapMockMemberCenterPageData(
+          memberAuthSession.getSnapshot().authResult,
+          snapshot.balanceAmount,
+          getMemberOrderSummary(),
+        ),
+      )
     },
 
     async getMemberFavoritesPageData() {
@@ -40,6 +61,14 @@ export function createMockMemberCenterQuery(memberAuthSession: MemberAuthSession
 
     async getMemberHistoryPageData() {
       return Promise.resolve(mapMockMemberHistoryPageData())
+    },
+
+    async getMemberProfileNamePageData() {
+      return Promise.resolve(mapMockMemberProfileNamePageData(memberAuthSession.getSnapshot().authResult))
+    },
+
+    async getMemberSettingsPageData() {
+      return Promise.resolve(mapMockMemberSettingsPageData(memberAuthSession.getSnapshot().authResult))
     },
   }
 }

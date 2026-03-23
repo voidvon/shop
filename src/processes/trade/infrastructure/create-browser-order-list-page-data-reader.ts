@@ -19,7 +19,7 @@ function mapOrderRecord(order: OrderRecord): OrderListEntry {
     orderId: order.orderId,
     orderNo: order.orderNo,
     shippingAmount: order.shippingAmount,
-    status: order.status,
+    status: order.status === 'all' ? 'pending-payment' : order.status,
     statusText: order.statusText,
     storeName: order.storeName,
     totalAmount: order.totalAmount,

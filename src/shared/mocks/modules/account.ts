@@ -21,6 +21,7 @@ import { mockAddresses, mockImageUrl, mockProducts, mockStores, mockUser } from 
 
 export const mockAccountCapabilities: AccountCapability[] = [
   'wechat-login',
+  'wechat-mobile-bind',
   'wechat-scan-card',
   'recharge-card-payment',
   'payment-code',
@@ -97,13 +98,12 @@ export const mockMemberCenterPageData: MemberCenterPageData = {
 }
 
 export const mockMemberSettingsPageData: MemberSettingsPageData = {
+  security: mockAccountSecurityState,
   settings: [
     { key: 'login-password', label: '登录密码', route: '/member/password', value: '修改登录密码' },
     { key: 'profile-name', label: '用户昵称', route: '/member/profile-name', value: mockUser.nickname },
     { key: 'mobile', label: '手机号码', route: '/member/mobile', value: mockUser.mobile },
     { key: 'payment-password', label: '支付密码', route: '/member/pay-password', value: '已设置' },
-    { key: 'address-book', label: '收货地址', route: '/member/address-book', value: '管理地址' },
-    { key: 'feedback', label: '用户反馈', route: '/member/feedback', value: null },
     { key: 'about', label: '关于我们', route: '/member/about', value: null },
   ],
 }

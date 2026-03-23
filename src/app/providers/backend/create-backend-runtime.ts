@@ -1,8 +1,14 @@
 import {
   backendAMemberAuthRepository,
+  createBackendAMemberProfileService,
+  createBackendAMemberSecurityService,
   createBrowserMemberAuthSession,
+  createMockMemberProfileService,
+  createMockMemberSecurityService,
   mockMemberAuthRepository,
   type MemberAuthRepository,
+  type MemberProfileService,
+  type MemberSecurityService,
   type MemberAuthSession,
 } from '@/entities/member-auth'
 import {
@@ -46,8 +52,11 @@ import {
   type CheckoutFlowPort,
 } from '@/processes/checkout-flow'
 import {
+  createBackendAMemberAssetsService,
   createBackendAMemberCenterQuery,
   createMockMemberCenterQuery,
+  createMockMemberAssetsService,
+  type MemberAssetsService,
   type MemberCenterQuery,
 } from '@/processes/member-center'
 import {
@@ -87,7 +96,9 @@ export interface BackendCapabilities {
 
 export interface BackendRuntime {
   auth: {
+    profileService: MemberProfileService
     repository: MemberAuthRepository
+    securityService: MemberSecurityService
     session: MemberAuthSession
   }
   capabilities: BackendCapabilities
@@ -98,6 +109,9 @@ export interface BackendRuntime {
     memberCenter: MemberCenterQuery
     storefront: StorefrontQuery
     trade: TradeQuery
+  }
+  services: {
+    memberAssets: MemberAssetsService
   }
   repositories: {
     afterSale: AfterSaleRepository
@@ -142,6 +156,26 @@ function resolveMemberAuthRepository(type: BackendType) {
   }
 }
 
+function resolveMemberProfileService(type: BackendType, memberAuthSession: MemberAuthSession) {
+  switch (type) {
+    case 'backend-a':
+      return createBackendAMemberProfileService(memberAuthSession)
+    case 'mock':
+    default:
+      return createMockMemberProfileService(memberAuthSession)
+  }
+}
+
+function resolveMemberSecurityService(type: BackendType, memberAuthSession: MemberAuthSession) {
+  switch (type) {
+    case 'backend-a':
+      return createBackendAMemberSecurityService(memberAuthSession)
+    case 'mock':
+    default:
+      return createMockMemberSecurityService(memberAuthSession)
+  }
+}
+
 function resolveCartRepository(memberAuthSession: MemberAuthSession) {
   return createBrowserCartRepository({
     getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
@@ -152,6 +186,16 @@ function resolveMemberAddressRepository(memberAuthSession: MemberAuthSession) {
   return createBrowserMemberAddressRepository({
     getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
   })
+}
+
+function resolveMemberAssetsService(type: BackendType, memberAuthSession: MemberAuthSession) {
+  switch (type) {
+    case 'backend-a':
+      return createBackendAMemberAssetsService(memberAuthSession)
+    case 'mock':
+    default:
+      return createMockMemberAssetsService(memberAuthSession)
+  }
 }
 
 function resolveOrderRepository(type: BackendType, memberAuthSession: MemberAuthSession) {
@@ -236,7 +280,7 @@ function createSeedRefundRecord(item: typeof mockTradeData.afterSaleListPageData
     description: detail?.description ?? null,
     status: item.status,
     statusText: item.statusText,
-    paymentMethod: detail?.amountDetail.paymentMethod ?? '在线支付',
+    paymentMethod: detail?.amountDetail.paymentMethod ?? '账户余额',
   }
 }
 
@@ -264,7 +308,7 @@ function createSeedReturnRecord(item: typeof mockTradeData.afterSaleListPageData
     description: detail?.description ?? null,
     status: item.status,
     statusText: item.statusText,
-    paymentMethod: detail?.amountDetail.paymentMethod ?? '在线支付',
+    paymentMethod: detail?.amountDetail.paymentMethod ?? '账户余额',
   }
 }
 
@@ -613,13 +657,17 @@ function resolveTradeQuery(
   }
 }
 
-function resolveMemberCenterQuery(type: BackendType, memberAuthSession: MemberAuthSession) {
+function resolveMemberCenterQuery(
+  type: BackendType,
+  memberAuthSession: MemberAuthSession,
+  memberAssetsService: MemberAssetsService,
+) {
   switch (type) {
     case 'backend-a':
-      return createBackendAMemberCenterQuery(memberAuthSession)
+      return createBackendAMemberCenterQuery(memberAuthSession, memberAssetsService)
     case 'mock':
     default:
-      return createMockMemberCenterQuery(memberAuthSession)
+      return createMockMemberCenterQuery(memberAuthSession, memberAssetsService)
   }
 }
 
@@ -627,6 +675,9 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
   const supportedModules = supportedModulesByBackend[type]
   const enabledModules = resolveRuntimeEnabledModules(type)
   const memberAuthSession = createBrowserMemberAuthSession()
+  const memberProfileService = resolveMemberProfileService(type, memberAuthSession)
+  const memberSecurityService = resolveMemberSecurityService(type, memberAuthSession)
+  const memberAssetsService = resolveMemberAssetsService(type, memberAuthSession)
   const afterSaleRepository = resolveAfterSaleRepository(type, memberAuthSession)
   const cartRepository = resolveCartRepository(memberAuthSession)
   const memberAddressRepository = resolveMemberAddressRepository(memberAuthSession)
@@ -642,7 +693,9 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
 
   return {
     auth: {
+      profileService: memberProfileService,
       repository: resolveMemberAuthRepository(type),
+      securityService: memberSecurityService,
       session: memberAuthSession,
     },
     capabilities: capabilitiesByBackend[type],
@@ -655,9 +708,12 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
         orderRepository: repositories.order,
         productRepository: repositories.product,
       }),
-      memberCenter: resolveMemberCenterQuery(type, memberAuthSession),
+      memberCenter: resolveMemberCenterQuery(type, memberAuthSession, memberAssetsService),
       storefront: resolveStorefrontQuery(type),
       trade: resolveTradeQuery(type, afterSaleRepository, cartRepository, memberAuthSession),
+    },
+    services: {
+      memberAssets: memberAssetsService,
     },
     repositories,
     supportedModules,

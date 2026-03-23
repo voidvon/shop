@@ -12,10 +12,17 @@ import {
   type CheckoutPreview,
   type OrderConfirmation,
 } from '@/entities/order'
+import {
+  getMemberAssetsSnapshot,
+  spendMemberBalance,
+  useMemberAssetsService,
+  type SpendMemberBalanceCommand,
+} from '@/processes/member-center'
 
 export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const checkoutFlowPort = useCheckoutFlowPort()
   const memberAddressStore = useMemberAddressStore()
+  const memberAssetsService = useMemberAssetsService()
   const memberAuthSession = useMemberAuthSession()
   const tradeStore = useTradeStore()
   const isCheckoutEnabled = useModuleAvailability('checkout')
@@ -30,6 +37,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const selectedAddress = computed(() =>
     memberAddressStore.resolveSelectedAddress(selectedAddressId.value ?? undefined),
   )
+  const availableBalance = ref(0)
   const submissionMessage = ref<string | null>(null)
   const sourceLabel = computed(() =>
     preview.value?.source === 'cart' ? '从购物车进入' : '从立即购买进入',
@@ -69,6 +77,8 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
 
     try {
       preview.value = await checkoutFlowPort.getPreview()
+      const assetsSnapshot = await getMemberAssetsSnapshot(memberAssetsService)
+      availableBalance.value = assetsSnapshot.balanceAmount
       await syncSelectedAddress()
       confirmation.value = null
       submissionMessage.value = null
@@ -96,9 +106,21 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     errorMessage.value = null
 
     try {
+      const payableAmount = preview.value?.payableAmount ?? 0
+
+      if (payableAmount > availableBalance.value) {
+        errorMessage.value = `账户余额不足，当前余额 ${availableBalance.value.toFixed(2)}`
+        throw new Error(errorMessage.value)
+      }
+
       const result = await checkoutFlowPort.submit()
+      const spendCommand: SpendMemberBalanceCommand = {
+        amount: result.confirmation.payableAmount,
+        description: `商城订单 ${result.confirmation.orderId} 余额支付`,
+      }
+      availableBalance.value = await spendMemberBalance(memberAssetsService, spendCommand)
       confirmation.value = result.confirmation
-      submissionMessage.value = `订单 ${result.confirmation.orderId} 已提交，应付 ${result.confirmation.payableAmount}`
+      submissionMessage.value = `订单 ${result.confirmation.orderId} 已提交，已使用账户余额支付 ${result.confirmation.payableAmount}`
       preview.value = result.preview
       await tradeStore.recordSubmittedOrder(result.confirmation, result.preview)
       return result.confirmation
@@ -115,6 +137,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   })
 
   return {
+    availableBalance,
     confirmation,
     errorMessage,
     hasLoaded,

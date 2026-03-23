@@ -11,6 +11,7 @@ export interface AuthUserInfo {
 
 export type AccountCapability =
   | 'wechat-login'
+  | 'wechat-mobile-bind'
   | 'wechat-scan-card'
   | 'recharge-card-payment'
   | 'payment-code'

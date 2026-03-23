@@ -160,7 +160,7 @@ function synthesizeOrderDetailPageData(
     orderNo: record.orderNo,
     orderType: 'physical',
     payableAmount: record.totalAmount,
-    paymentMethod: record.status === 'pending-payment' || record.status === 'cancelled' ? null : '在线支付',
+    paymentMethod: record.status === 'pending-payment' || record.status === 'cancelled' ? null : (record.paymentMethod ?? '账户余额'),
     promotions: [],
     shippingAmount: record.shippingAmount,
     status: record.status === 'all' ? 'pending-payment' : record.status,
@@ -201,7 +201,7 @@ export function createBrowserOrderDetailPageDataReader(
       paymentMethod:
         record.status === 'pending-payment' || record.status === 'cancelled'
           ? null
-          : seedDetail.paymentMethod ?? '在线支付',
+          : record.paymentMethod ?? seedDetail.paymentMethod ?? '账户余额',
       shippingAmount: record.shippingAmount,
       status: record.status === 'all' ? seedDetail.status : record.status,
       statusHint: seedDetail.status === record.status ? seedDetail.statusHint : resolveStatusHint(record.status),

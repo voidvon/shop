@@ -8,17 +8,25 @@ import { CheckoutPage } from '@/pages/checkout'
 import { HomePage } from '@/pages/home'
 import { MemberCardBindPage } from '@/pages/member-card-bind'
 import { MemberCardsPage } from '@/pages/member-cards'
+import { MemberBalancePage } from '@/pages/member-balance'
+import { MemberAboutPage } from '@/pages/member-about'
 import { MemberAddressesPage } from '@/pages/member-addresses'
 import { MemberCenterPage } from '@/pages/member-center'
 import { MemberFavoritesPage } from '@/pages/member-favorites'
 import { MemberHistoryPage } from '@/pages/member-history'
 import { MemberLoginPage } from '@/pages/member-login'
+import { MemberMobilePage } from '@/pages/member-mobile'
+import { MemberPasswordPage } from '@/pages/member-password'
+import { MemberPayPasswordPage } from '@/pages/member-pay-password'
+import { MemberProfileNamePage } from '@/pages/member-profile-name'
 import { MemberRegisterMobilePage } from '@/pages/member-register-mobile'
 import { MemberRegisterPage } from '@/pages/member-register'
+import { MemberSettingsPage } from '@/pages/member-settings'
 import { OrderDetailPage } from '@/pages/order-detail'
 import { OrderListPage } from '@/pages/order-list'
 import { OrderSearchResultsPage } from '@/pages/order-search-results'
 import { ProductDetailPage } from '@/pages/product-detail'
+import { LogisticsDetailPage } from '@/pages/logistics-detail'
 import { PromotionHubPage } from '@/pages/promotion-hub'
 import { RefundDetailPage } from '@/pages/refund-detail'
 import { ReturnDetailPage } from '@/pages/return-detail'
@@ -221,6 +229,17 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         },
       }),
       createModuleRoute({
+        path: '/member/orders/:orderId/logistics',
+        name: 'member-order-logistics',
+        component: LogisticsDetailPage,
+        props: true,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '物流详情',
+        },
+      }),
+      createModuleRoute({
         path: '/member/orders/:orderId/items/:orderItemId/after-sale/apply',
         name: 'member-after-sale-apply',
         component: AfterSaleApplyPage,
@@ -305,6 +324,16 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         },
       }),
       createModuleRoute({
+        path: '/member/assets/balance',
+        name: 'member-balance',
+        component: MemberBalancePage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '账户余额',
+        },
+      }),
+      createModuleRoute({
         path: '/member/assets/cards/bind',
         name: 'member-card-bind',
         component: MemberCardBindPage,
@@ -323,6 +352,66 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
           keepAlive: true,
           requiresAuth: true,
           title: '地址管理',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/settings',
+        name: 'member-settings',
+        component: MemberSettingsPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '用户设置',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/password',
+        name: 'member-password',
+        component: MemberPasswordPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '登录密码',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/profile-name',
+        name: 'member-profile-name',
+        component: MemberProfileNamePage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '用户昵称',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/mobile',
+        name: 'member-mobile',
+        component: MemberMobilePage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '手机号码',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/pay-password',
+        name: 'member-pay-password',
+        component: MemberPayPasswordPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '支付密码',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/about',
+        name: 'member-about',
+        component: MemberAboutPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '关于我们',
         },
       }),
     ],

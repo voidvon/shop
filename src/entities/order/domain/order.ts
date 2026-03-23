@@ -27,6 +27,7 @@ export interface SubmitOrderCommand extends CreateCheckoutPreviewCommand {}
 export interface OrderConfirmation {
   orderId: string
   payableAmount: number
+  paymentMethod: string
   source: 'cart' | 'instant'
   submittedAt: string
 }
@@ -44,6 +45,7 @@ export interface OrderRecord {
   items: OrderRecordItem[]
   orderId: string
   orderNo: string
+  paymentMethod: string | null
   shippingAmount: number
   status: TradeOrderStatus
   statusText: string

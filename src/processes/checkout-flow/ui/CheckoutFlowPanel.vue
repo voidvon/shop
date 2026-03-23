@@ -13,6 +13,7 @@ const checkoutStore = useCheckoutFlowStore()
 const route = useRoute()
 const router = useRouter()
 const {
+  availableBalance,
   confirmation,
   errorMessage,
   isCheckoutEnabled,
@@ -28,6 +29,7 @@ const previewLines = computed(() => preview.value?.lines ?? [])
 const payableAmountText = computed(() => formatAmount(preview.value?.payableAmount ?? 0))
 const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAmount ?? 0))
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
+const availableBalanceText = computed(() => formatAmount(availableBalance.value))
 const merchantTitle = computed(() => preview.value?.source === 'cart' ? '购物车商品' : '立即购买商品')
 const buyerMessage = ref('')
 const selectedAddressQueryId = computed(() =>
@@ -145,8 +147,9 @@ function formatAmount(value: number) {
           </van-cell-group>
 
           <van-cell-group class="checkout-cell-group meta-card">
-            <van-cell title="支付方式：" value="在线付款" />
-            <van-cell title="发票信息：" value="不需要发票" />
+            <van-cell title="支付方式：" value="账户余额支付" />
+            <van-cell title="当前余额：" :value="`¥${availableBalanceText}`" />
+            <van-cell title="发票信息：" value="暂不支持" />
           </van-cell-group>
 
           <section class="merchant-card">
@@ -205,6 +208,10 @@ function formatAmount(value: number) {
               <strong class="explain-amount">{{ discountAmountText }}</strong>
             </div>
             <div class="explain-row">
+              <span>余额支付后剩余</span>
+              <strong class="explain-amount">{{ formatAmount(Math.max(availableBalance - (preview?.payableAmount ?? 0), 0)) }}</strong>
+            </div>
+            <div class="explain-row">
               <span>数据来源</span>
               <strong class="explain-value">{{ currentBackendLabel }}</strong>
             </div>
@@ -216,9 +223,9 @@ function formatAmount(value: number) {
     <van-submit-bar
       class="checkout-submit-bar"
       :price="Math.round((preview?.payableAmount ?? 0) * 100)"
-      button-text="提交订单"
+      button-text="余额支付并提交"
       :loading="isSubmitting"
-      :disabled="!preview || !isCheckoutEnabled || isLoading"
+      :disabled="!preview || !isCheckoutEnabled || isLoading || availableBalance < (preview?.payableAmount ?? 0)"
       @submit="handleSubmit"
     />
   </section>

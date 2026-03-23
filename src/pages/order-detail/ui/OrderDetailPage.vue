@@ -30,7 +30,6 @@ const {
   isLoading,
   loadOrderDetailPage,
   orderDetailPageData,
-  payOrder,
 } = useOrderDetailPageModel()
 
 const orderId = computed(() => normalizeRouteParam(route.params.orderId))
@@ -56,6 +55,10 @@ function canApplyAfterSale(actions: { enabled: boolean; key: string }[]) {
   return canUseAction(actions, 'refund') || canUseAction(actions, 'return')
 }
 
+function canViewLogistics(actions: { enabled: boolean; key: string }[]) {
+  return canUseAction(actions, 'view-logistics')
+}
+
 function resolveAfterSaleQueryType(actions: { enabled: boolean; key: string }[]) {
   return canUseAction(actions, 'return') ? 'return' : 'refund'
 }
@@ -78,12 +81,7 @@ async function handlePayOrder() {
     return
   }
 
-  try {
-    await payOrder(orderDetailPageData.value.orderId)
-    showSuccessToast('支付状态已更新')
-  } catch {
-    showFailToast('订单支付失败')
-  }
+  void router.push({ name: 'checkout' })
 }
 
 async function handleConfirmReceipt() {
@@ -167,6 +165,15 @@ onMounted(() => {
             <p>{{ orderDetailPageData.logistics.description }}</p>
             <small>最近更新：{{ orderDetailPageData.logistics.updatedAt }}</small>
           </div>
+
+          <RouterLink
+            v-else-if="canViewLogistics(orderDetailPageData.actions)"
+            class="logistics-empty-link"
+            :to="{ name: 'member-order-logistics', params: { orderId: orderDetailPageData.orderId } }"
+          >
+            <span>物流详情暂未接入</span>
+            <small>当前先保留空页面占位，后续可接真实物流轨迹。</small>
+          </RouterLink>
         </section>
 
         <section class="address-card">
@@ -334,7 +341,7 @@ onMounted(() => {
         type="button"
         @click="handlePayOrder"
       >
-        去付款
+        余额支付
       </button>
     </footer>
   </section>

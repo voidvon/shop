@@ -3,40 +3,47 @@ import { computed } from 'vue'
 
 const props = defineProps<{
   cardNumber: string
+  isSubmitting?: boolean
 }>()
 
 const emit = defineEmits<{
+  (e: 'simulate-scan'): void
   (e: 'submit'): void
   (e: 'update:cardNumber', value: string): void
 }>()
 
 const cardNumberModel = computed({
   get: () => props.cardNumber,
-  set: (value: string) => emit('update:cardNumber', value),
+  set: (value: string) => emit('update:cardNumber', value.replace(/\D/g, '').slice(0, 16)),
 })
 </script>
 
 <template>
   <div class="bind-panel">
     <label class="card-no-row">
-      <span>卡号</span>
+      <span>卡券编号</span>
       <input
         v-model="cardNumberModel"
         type="text"
         inputmode="numeric"
         maxlength="16"
-        placeholder="请输入16位文惠卡卡号"
+        placeholder="扫码后自动回填16位卡券编号"
       >
     </label>
 
     <div class="bind-body">
       <section class="scan-section">
-        <van-icon name="scan" size="108" />
-        <strong>扫码绑卡</strong>
+        <button class="scan-button" type="button" @click="emit('simulate-scan')">
+          <van-icon name="scan" size="108" />
+        </button>
+        <strong>扫码读取卡券编号</strong>
+        <p>当前联调版本会模拟扫码结果，并将卡券编号提交到后端充值。</p>
       </section>
 
       <div class="action-area">
-        <button class="primary-button" type="button" @click="emit('submit')">确认绑卡</button>
+        <button class="primary-button" :disabled="isSubmitting" type="button" @click="emit('submit')">
+          {{ isSubmitting ? '充值中...' : '确认绑定并充值' }}
+        </button>
       </div>
     </div>
   </div>
@@ -95,6 +102,17 @@ const cardNumberModel = computed({
   justify-items: center;
   align-content: start;
   padding-top: 24px;
+  text-align: center;
+}
+
+.scan-button {
+  display: grid;
+  place-items: center;
+  width: 168px;
+  height: 168px;
+  border: 0;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #fff3eb 0%, #ffe5d3 100%);
   color: #ff6a1a;
 }
 
@@ -102,6 +120,14 @@ const cardNumberModel = computed({
   color: #d89575;
   font-size: 18px;
   font-weight: 600;
+}
+
+.scan-section p {
+  margin: 0;
+  max-width: 240px;
+  color: #9c7f70;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .action-area {
@@ -120,5 +146,9 @@ const cardNumberModel = computed({
   font-size: 16px;
   font-weight: 600;
   box-shadow: 0 1px 6px rgba(26, 25, 24, 0.08);
+}
+
+.primary-button:disabled {
+  opacity: 0.72;
 }
 </style>

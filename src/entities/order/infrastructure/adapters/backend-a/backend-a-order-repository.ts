@@ -27,6 +27,7 @@ export function getBackendAOrderSeedRecords(): OrderRecord[] {
       ],
       orderId: 'backend-a-order-1',
       orderNo: 'BACKENDA20260321001',
+      paymentMethod: null,
       shippingAmount: 0,
       status: 'pending-payment',
       statusText: '待付款',

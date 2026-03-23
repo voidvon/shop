@@ -30,6 +30,7 @@ function createConfirmation(
   return {
     orderId: `${namespace}-${Date.now()}`,
     payableAmount: preview.payableAmount,
+    paymentMethod: '账户余额',
     source: command.source,
     submittedAt: new Date().toISOString(),
   }
@@ -53,9 +54,10 @@ function createOrderRecord(
     })),
     orderId: confirmation.orderId,
     orderNo: confirmation.orderId.toUpperCase().replace(/[^A-Z0-9]/g, ''),
+    paymentMethod: confirmation.paymentMethod,
     shippingAmount: 0,
-    status: 'pending-payment',
-    statusText: '待付款',
+    status: 'pending-shipment',
+    statusText: '待发货',
     storeName: defaultStoreName,
     totalAmount: confirmation.payableAmount,
   }

@@ -18,6 +18,7 @@ export function getMockOrderSeedRecords(): OrderRecord[] {
     })),
     orderId: order.orderId,
     orderNo: order.orderNo,
+    paymentMethod: mockTradeData.orderDetailPageDataById[order.orderId]?.paymentMethod ?? null,
     shippingAmount: order.shippingAmount,
     status: order.status,
     statusText: order.statusText,

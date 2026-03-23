@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useMemberCenterQuery, type MemberCardBindPageData } from '@/processes/member-center'
 
 const emptyMemberCardBindPageData: MemberCardBindPageData = {
+  canScanCode: true,
   cardNumber: null,
 }
 

@@ -48,6 +48,11 @@ export interface MemberSettingItem {
 }
 
 export interface MemberSettingsPageData {
+  security: {
+    canResetPassword: boolean
+    hasBoundMobile: boolean
+    hasPaymentPassword: boolean
+  }
   settings: MemberSettingItem[]
 }
 

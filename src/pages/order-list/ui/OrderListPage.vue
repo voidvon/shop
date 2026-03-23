@@ -28,7 +28,6 @@ const {
   confirmReceipt,
   loadOrderListPage,
   orderListPageData,
-  payOrder,
 } = useOrderListPageModel()
 
 const keyword = ref('')
@@ -116,15 +115,6 @@ async function handleCancelOrder(orderId: string) {
     showSuccessToast('订单已取消')
   } catch {
     showFailToast('取消订单失败')
-  }
-}
-
-async function handlePayOrder(orderId: string) {
-  try {
-    await payOrder(orderId)
-    showSuccessToast('支付状态已更新')
-  } catch {
-    showFailToast('订单支付失败')
   }
 }
 
@@ -316,7 +306,7 @@ onBeforeUnmount(() => {
 
                   <template v-if="order.status === 'pending-payment'">
                     <button class="ghost-button" type="button" @click="handleCancelOrder(order.orderId)">取消订单</button>
-                    <button class="primary-button" type="button" @click="handlePayOrder(order.orderId)">去付款</button>
+                    <RouterLink class="primary-button primary-link-button" :to="{ name: 'checkout' }">余额支付</RouterLink>
                   </template>
 
                   <button
@@ -517,6 +507,13 @@ onBeforeUnmount(() => {
   color: #fff;
   font-size: 13px;
   font-weight: 600;
+}
+
+.primary-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 </style>
