@@ -5,12 +5,13 @@ import {
 import { backendAProductRepository } from '@/entities/product'
 import type { BackendAProductDetailDto } from '@/entities/product/infrastructure/dto/backend-a-product.dto'
 
-import type { StorefrontQuery } from '../../../domain/storefront-query'
+import type { CategoryProductsQuery, StorefrontQuery } from '../../../domain/storefront-query'
 import {
   type BackendAStorefrontCategoryDto,
   type BackendAStorefrontHomeDto,
   type BackendAStorefrontProductDto,
-  mapBackendACategoryPageData,
+  mapBackendACategoryProducts,
+  mapBackendACategoryTree,
   mapBackendAHomePageData,
   mapBackendAProductDetailPageData,
 } from '../../mappers/backend-a-storefront-mapper'
@@ -28,21 +29,37 @@ interface BackendAStorefrontProductsResponseDto {
   total: number
 }
 
-export const backendAStorefrontQuery: StorefrontQuery = {
-  async getCategoryPageData() {
-    const [categoryData, productData] = await Promise.all([
-      backendAHttpClient.get<BackendAProductCategoriesResponseDto>('/api/v1/product-categories'),
-      backendAHttpClient.get<BackendAStorefrontProductsResponseDto>('/api/v1/products', {
-        per_page: 100,
-        sort_by: 'sales_count',
-        sort_dir: 'desc',
-      }),
-    ])
+async function fetchBackendACategoryTreeDto() {
+  return backendAHttpClient.get<BackendAProductCategoriesResponseDto>('/api/v1/product-categories')
+}
 
-    return mapBackendACategoryPageData(
-      categoryData.tree,
-      productData.data.filter((product) => product.status === 1),
-    )
+async function fetchBackendACategoryProductsDto(query: CategoryProductsQuery = {}) {
+  return backendAHttpClient.get<BackendAStorefrontProductsResponseDto>('/api/v1/products', {
+    ...(query.categoryId ? { category_id: query.categoryId } : {}),
+    ...(query.keyword ? { keyword: query.keyword } : {}),
+    per_page: 100,
+    sort_by: 'sales_count',
+    sort_dir: 'desc',
+  })
+}
+
+async function fetchBackendACategoryTree() {
+  const categoryData = await fetchBackendACategoryTreeDto()
+  return mapBackendACategoryTree(categoryData.tree)
+}
+
+async function fetchBackendACategoryProducts(query: CategoryProductsQuery = {}) {
+  const response = await fetchBackendACategoryProductsDto(query)
+  return mapBackendACategoryProducts(response.data.filter((product) => product.status === 1))
+}
+
+export const backendAStorefrontQuery: StorefrontQuery = {
+  async getCategoryProducts(query) {
+    return fetchBackendACategoryProducts(query)
+  },
+
+  async getCategoryTree() {
+    return fetchBackendACategoryTree()
   },
 
   async getHomePageData() {

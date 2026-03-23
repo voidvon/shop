@@ -2,11 +2,12 @@ import { mockCatalogData, mockProducts, mockPublicData } from '@/shared/mocks'
 
 import type {
   CategoryPageCategory,
-  CategoryPageData,
+  CategoryPageProductCard,
   HomePageData,
   PageProductCard,
   ProductDetailPageData,
 } from '../../domain/storefront-page-data'
+import type { CategoryProductsQuery } from '../../domain/storefront-query'
 
 type MockProductFeedItem = (typeof mockPublicData.homePageData.productFeed.list)[number]
 type MockRecommendationItem =
@@ -36,6 +37,63 @@ function mapMockCategoryTree(categories: MockCategoryTree): CategoryPageCategory
   }))
 }
 
+function collectCategoryIds(categories: MockCategoryTree, targetCategoryId: string): string[] | null {
+  for (const category of categories) {
+    if (category.categoryId === targetCategoryId) {
+      return collectLeafCategoryIds(category)
+    }
+
+    const nestedMatch = collectCategoryIds(category.children, targetCategoryId)
+    if (nestedMatch) {
+      return nestedMatch
+    }
+  }
+
+  return null
+}
+
+function collectLeafCategoryIds(category: MockCategoryTree[number]): string[] {
+  if (category.children.length === 0) {
+    return [category.categoryId]
+  }
+
+  return category.children.flatMap((child) => collectLeafCategoryIds(child))
+}
+
+export function mapMockCategoryTreeData(): CategoryPageCategory[] {
+  return mapMockCategoryTree(mockCatalogData.categoryEntryPageData.primaryCategories)
+}
+
+export function mapMockCategoryProducts(query: CategoryProductsQuery = {}): CategoryPageProductCard[] {
+  const normalizedKeyword = query.keyword?.trim().toLowerCase() ?? ''
+  const matchedCategoryIds = query.categoryId
+    ? new Set(collectCategoryIds(mockCatalogData.categoryEntryPageData.primaryCategories, query.categoryId) ?? [])
+    : null
+
+  return mockProducts
+    .filter((product) => {
+      if (matchedCategoryIds && !matchedCategoryIds.has(product.categoryId)) {
+        return false
+      }
+
+      if (!normalizedKeyword) {
+        return true
+      }
+
+      const searchText = `${product.productName} ${product.categoryName}`.toLowerCase()
+      return searchText.includes(normalizedKeyword)
+    })
+    .map((product) => ({
+      categoryId: product.categoryId,
+      categoryName: product.categoryName,
+      id: product.productId,
+      imageUrl: product.imageUrl,
+      marketPrice: product.marketPrice,
+      name: product.productName,
+      price: product.price,
+    }))
+}
+
 export function mapMockHomePageData(): HomePageData {
   return {
     banners: mockPublicData.homePageData.banners.map((banner) => ({
@@ -50,21 +108,6 @@ export function mapMockHomePageData(): HomePageData {
       id: category.categoryId,
       imageUrl: category.imageUrl,
       label: category.categoryName,
-    })),
-  }
-}
-
-export function mapMockCategoryPageData(): CategoryPageData {
-  return {
-    primaryCategories: mapMockCategoryTree(mockCatalogData.categoryEntryPageData.primaryCategories),
-    products: mockProducts.map((product) => ({
-      categoryId: product.categoryId,
-      categoryName: product.categoryName,
-      id: product.productId,
-      imageUrl: product.imageUrl,
-      marketPrice: product.marketPrice,
-      name: product.productName,
-      price: product.price,
     })),
   }
 }

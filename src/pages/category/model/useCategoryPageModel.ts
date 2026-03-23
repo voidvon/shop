@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   useStorefrontQuery,
   type CategoryPageCategory,
-  type CategoryPageData,
+  type CategoryPageProductCard,
 } from '@/processes/storefront'
 
 function findPrimaryCategory(categories: CategoryPageCategory[], categoryId: string) {
@@ -44,14 +44,17 @@ export function useCategoryPageModel() {
   const route = useRoute()
   const router = useRouter()
 
-  const categoryPageData = ref<CategoryPageData | null>(null)
+  const primaryCategories = ref<CategoryPageCategory[]>([])
+  const products = ref<CategoryPageProductCard[]>([])
   const errorMessage = ref<string | null>(null)
-  const isLoading = ref(false)
+  const isLoadingCategories = ref(false)
+  const isLoadingProducts = ref(false)
   const keyword = ref('')
   const selectedPrimaryCategoryId = ref('')
   const selectedSecondaryCategoryId = ref('')
+  let latestProductsRequestId = 0
 
-  const primaryCategories = computed(() => categoryPageData.value?.primaryCategories ?? [])
+  const isLoading = computed(() => isLoadingCategories.value || isLoadingProducts.value)
 
   const activePrimaryCategory = computed(() =>
     findPrimaryCategory(primaryCategories.value, selectedPrimaryCategoryId.value),
@@ -68,30 +71,26 @@ export function useCategoryPageModel() {
 
   const visibleProducts = computed(() => {
     const normalizedKeyword = keyword.value.trim().toLowerCase()
-    let products = categoryPageData.value?.products ?? []
-
-    if (activeSecondaryCategory.value) {
-      products = products.filter((product) => product.categoryId === activeSecondaryCategory.value?.id)
-    } else if (activePrimaryCategory.value) {
-      const secondaryCategoryIds = new Set(activePrimaryCategory.value.children.map((category) => category.id))
-      products = products.filter((product) => secondaryCategoryIds.has(product.categoryId))
-    }
 
     if (!normalizedKeyword) {
-      return products
+      return products.value
     }
 
-    return products.filter((product) => {
+    return products.value.filter((product) => {
       const searchText = `${product.name} ${product.categoryName}`.toLowerCase()
       return searchText.includes(normalizedKeyword)
     })
   })
 
-  function applyRouteSelection(data: CategoryPageData) {
+  function resolveSelectedCategoryId() {
+    return activeSecondaryCategory.value?.id || activePrimaryCategory.value?.id || ''
+  }
+
+  function applyRouteSelection(categories: CategoryPageCategory[]) {
     const { keyword: routeKeyword, primaryCategoryId, secondaryCategoryId } = resolveRouteCategoryIds(route)
     const primaryCategory = primaryCategoryId
-      ? findPrimaryCategory(data.primaryCategories, primaryCategoryId)
-      : findPrimaryCategoryBySecondaryId(data.primaryCategories, secondaryCategoryId) ?? data.primaryCategories[0] ?? null
+      ? findPrimaryCategory(categories, primaryCategoryId)
+      : findPrimaryCategoryBySecondaryId(categories, secondaryCategoryId) ?? categories[0] ?? null
     const secondaryCategory =
       primaryCategory?.children.find((category) => category.id === secondaryCategoryId)
       ?? primaryCategory?.children[0]
@@ -100,6 +99,41 @@ export function useCategoryPageModel() {
     selectedPrimaryCategoryId.value = primaryCategory?.id ?? ''
     selectedSecondaryCategoryId.value = secondaryCategory?.id ?? resolveInitialSecondaryCategoryId(primaryCategory)
     keyword.value = routeKeyword
+  }
+
+  async function loadProductsForSelectedCategory() {
+    const categoryId = resolveSelectedCategoryId()
+    const requestId = ++latestProductsRequestId
+
+    if (!categoryId) {
+      products.value = []
+      isLoadingProducts.value = false
+      return
+    }
+
+    isLoadingProducts.value = true
+    errorMessage.value = null
+    products.value = []
+
+    try {
+      const nextProducts = await storefrontQuery.getCategoryProducts({ categoryId })
+
+      if (requestId !== latestProductsRequestId) {
+        return
+      }
+
+      products.value = nextProducts
+    } catch (error) {
+      if (requestId !== latestProductsRequestId) {
+        return
+      }
+
+      errorMessage.value = error instanceof Error ? error.message : '分类商品加载失败'
+    } finally {
+      if (requestId === latestProductsRequestId) {
+        isLoadingProducts.value = false
+      }
+    }
   }
 
   async function syncRouteCategoryIds(primaryCategoryId: string, secondaryCategoryId: string) {
@@ -140,25 +174,29 @@ export function useCategoryPageModel() {
     selectedPrimaryCategoryId.value = nextPrimaryCategoryId
     selectedSecondaryCategoryId.value = nextSecondaryCategoryId
     void syncRouteCategoryIds(nextPrimaryCategoryId, nextSecondaryCategoryId)
+    void loadProductsForSelectedCategory()
   }
 
   function selectSecondaryCategory(categoryId: string) {
     selectedSecondaryCategoryId.value = categoryId
     void syncRouteCategoryIds(selectedPrimaryCategoryId.value, categoryId)
+    void loadProductsForSelectedCategory()
   }
 
   async function loadCategoryPage() {
-    isLoading.value = true
+    isLoadingCategories.value = true
     errorMessage.value = null
+    products.value = []
 
     try {
-      const data = await storefrontQuery.getCategoryPageData()
-      categoryPageData.value = data
-      applyRouteSelection(data)
+      const categories = await storefrontQuery.getCategoryTree()
+      primaryCategories.value = categories
+      applyRouteSelection(categories)
+      await loadProductsForSelectedCategory()
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '分类页数据加载失败'
     } finally {
-      isLoading.value = false
+      isLoadingCategories.value = false
     }
   }
 
@@ -171,11 +209,16 @@ export function useCategoryPageModel() {
       normalizeRouteValue(route.query.secondaryCategoryId),
     ],
     () => {
-      if (!categoryPageData.value) {
+      if (primaryCategories.value.length === 0) {
         return
       }
 
-      applyRouteSelection(categoryPageData.value)
+      const previousSelectedCategoryId = resolveSelectedCategoryId()
+      applyRouteSelection(primaryCategories.value)
+
+      if (resolveSelectedCategoryId() !== previousSelectedCategoryId) {
+        void loadProductsForSelectedCategory()
+      }
     },
   )
 

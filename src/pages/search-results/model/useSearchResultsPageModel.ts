@@ -1,4 +1,4 @@
-import { onMounted, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { defaultHotSearchKeywords } from '@/shared/config/search'
@@ -6,7 +6,7 @@ import {
   normalizeSearchKeyword,
   saveSearchHistoryKeyword,
 } from '@/shared/lib/search-history'
-import { useStorefrontQuery } from '@/processes/storefront'
+import { useStorefrontQuery, type CategoryPageProductCard } from '@/processes/storefront'
 
 function normalizeRouteKeyword(value: unknown) {
   if (Array.isArray(value)) {
@@ -25,7 +25,7 @@ export function useSearchResultsPageModel() {
   const hotKeywords = ref([...defaultHotSearchKeywords])
   const isLoading = ref(false)
   const keyword = ref(normalizeRouteKeyword(route.query.keyword))
-  const results = ref<Awaited<ReturnType<typeof storefrontQuery.getCategoryPageData>>['products']>([])
+  const results = ref<CategoryPageProductCard[]>([])
 
   async function loadSearchResults() {
     const normalizedKeyword = normalizeSearchKeyword(keyword.value)
@@ -39,13 +39,7 @@ export function useSearchResultsPageModel() {
     errorMessage.value = null
 
     try {
-      const data = await storefrontQuery.getCategoryPageData()
-      const nextKeyword = normalizedKeyword.toLowerCase()
-
-      results.value = data.products.filter((product) => {
-        const searchText = `${product.name} ${product.categoryName}`.toLowerCase()
-        return searchText.includes(nextKeyword)
-      })
+      results.value = await storefrontQuery.getCategoryProducts({ keyword: normalizedKeyword })
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '搜索结果加载失败'
     } finally {
@@ -92,10 +86,6 @@ export function useSearchResultsPageModel() {
     },
     { immediate: true },
   )
-
-  onMounted(() => {
-    void loadSearchResults()
-  })
 
   return {
     applyKeyword,

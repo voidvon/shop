@@ -7,7 +7,7 @@ import { resolveBackendAMediaUrl } from '@/shared/api/backend-a/backend-a-config
 
 import type {
   CategoryPageCategory,
-  CategoryPageData,
+  CategoryPageProductCard,
   HomePageData,
   PageProductCard,
   ProductDetailPageData,
@@ -119,31 +119,33 @@ export function mapBackendAProductCard(product: ProductSummary): PageProductCard
   }
 }
 
-export function mapBackendACategoryPageData(
+export function mapBackendACategoryTree(
   categories: BackendAStorefrontCategoryDto[],
-  products: BackendAStorefrontProductDto[],
-): CategoryPageData {
-  return {
-    primaryCategories: categories.map((category) => {
-      const secondaryCategories = collectLeafCategories(ensureArray(category.children))
+): CategoryPageCategory[] {
+  return categories.map((category) => {
+    const secondaryCategories = collectLeafCategories(ensureArray(category.children))
 
-      return {
-        children: secondaryCategories.length > 0 ? secondaryCategories : [mapCategoryNode(category)],
-        id: String(category.id),
-        imageUrl: resolveBackendAMediaUrl(category.logo),
-        label: category.name,
-      }
-    }),
-    products: products.map((product) => ({
-      categoryId: String(product.category?.id ?? ''),
-      categoryName: product.category?.name ?? '未分类',
-      id: String(product.id),
-      imageUrl: resolveProductImage(product),
-      marketPrice: null,
-      name: product.title,
-      price: resolveProductPrice(product),
-    })),
-  }
+    return {
+      children: secondaryCategories.length > 0 ? secondaryCategories : [mapCategoryNode(category)],
+      id: String(category.id),
+      imageUrl: resolveBackendAMediaUrl(category.logo),
+      label: category.name,
+    }
+  })
+}
+
+export function mapBackendACategoryProducts(
+  products: BackendAStorefrontProductDto[],
+): CategoryPageProductCard[] {
+  return products.map((product) => ({
+    categoryId: String(product.category?.id ?? ''),
+    categoryName: product.category?.name ?? '未分类',
+    id: String(product.id),
+    imageUrl: resolveProductImage(product),
+    marketPrice: null,
+    name: product.title,
+    price: resolveProductPrice(product),
+  }))
 }
 
 export function mapBackendAHomePageData(data: BackendAStorefrontHomeDto): HomePageData {

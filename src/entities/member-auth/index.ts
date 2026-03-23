@@ -29,6 +29,7 @@ export {
   getBrowserMemberAuthSessionSnapshot,
   readStoredMemberAuthResult,
 } from './infrastructure/create-browser-member-auth-session'
+export { seedDevMemberAuthSession } from './infrastructure/seed-dev-member-auth-session'
 export { backendAMemberAuthRepository } from './infrastructure/adapters/backend-a/backend-a-member-auth-repository'
 export { createBackendAMemberProfileService } from './infrastructure/adapters/backend-a/backend-a-member-profile-service'
 export { hydrateBackendAMemberAuthSession } from './infrastructure/adapters/backend-a/backend-a-member-auth-session'

@@ -32,7 +32,6 @@ async function handleLogout() {
     await showConfirmDialog({
       title: '退出登录',
       message: '确认退出当前账号吗？',
-      theme: 'round-button',
     })
 
     const result = await logoutMember(memberAuthSession)
@@ -50,7 +49,6 @@ async function handleLogout() {
 
 <template>
   <van-button
-    class="member-logout-button"
     plain
     round
     size="small"
@@ -61,13 +59,3 @@ async function handleLogout() {
     退出登录
   </van-button>
 </template>
-
-<style scoped>
-.member-logout-button {
-  min-width: 96px;
-  border-color: rgba(255, 255, 255, 0.42);
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  backdrop-filter: blur(8px);
-}
-</style>

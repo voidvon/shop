@@ -1,11 +1,18 @@
 import type {
-  CategoryPageData,
+  CategoryPageCategory,
+  CategoryPageProductCard,
   HomePageData,
   ProductDetailPageData,
 } from './storefront-page-data'
 
+export interface CategoryProductsQuery {
+  categoryId?: string
+  keyword?: string
+}
+
 export interface StorefrontQuery {
-  getCategoryPageData(): Promise<CategoryPageData>
+  getCategoryProducts(query?: CategoryProductsQuery): Promise<CategoryPageProductCard[]>
+  getCategoryTree(): Promise<CategoryPageCategory[]>
   getHomePageData(): Promise<HomePageData>
   getProductDetailPageData(productId: string): Promise<ProductDetailPageData | null>
 }

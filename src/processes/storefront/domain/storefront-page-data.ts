@@ -20,11 +20,6 @@ export interface CategoryPageProductCard extends PageProductCard {
   categoryName: string
 }
 
-export interface CategoryPageData {
-  primaryCategories: CategoryPageCategory[]
-  products: CategoryPageProductCard[]
-}
-
 export interface HomeQuickCategory {
   id: string
   imageUrl: string | null

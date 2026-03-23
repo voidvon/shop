@@ -3,14 +3,19 @@ import { mockCatalogData } from '@/shared/mocks'
 
 import type { StorefrontQuery } from '../../../domain/storefront-query'
 import {
-  mapMockCategoryPageData,
+  mapMockCategoryProducts,
+  mapMockCategoryTreeData,
   mapMockHomePageData,
   mapMockProductDetailPageData,
 } from '../../mappers/mock-storefront-mapper'
 
 export const mockStorefrontQuery: StorefrontQuery = {
-  async getCategoryPageData() {
-    return Promise.resolve(mapMockCategoryPageData())
+  async getCategoryProducts(query) {
+    return Promise.resolve(mapMockCategoryProducts(query))
+  },
+
+  async getCategoryTree() {
+    return Promise.resolve(mapMockCategoryTreeData())
   },
 
   async getHomePageData() {

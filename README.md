@@ -90,6 +90,17 @@ VITE_BACKEND_A_WECHAT_OAUTH_URL="https://your-wechat-oauth-entry" \
 npm run dev
 ```
 
+如果后端当前只有一个可用 token，可在开发环境临时预置：
+
+```sh
+VITE_BACKEND_TARGET=backend-a \
+VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
+VITE_DEV_MEMBER_ACCESS_TOKEN="your-access-token" \
+npm run dev
+```
+
+启动后会把 token 写入 `localStorage.shop.member-auth.session`，再自动请求 `GET /api/v1/auth/profile` 补全用户资料。这个入口只在 `import.meta.env.DEV` 下生效。
+
 当前 `backend-a` 已真实接入：
 
 - `GET /api/v1/home`

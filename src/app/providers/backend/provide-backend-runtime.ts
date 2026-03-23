@@ -6,6 +6,7 @@ import {
   provideMemberProfileService,
   provideMemberSecurityService,
   provideMemberAuthSession,
+  seedDevMemberAuthSession,
 } from '@/entities/member-auth'
 import { provideAfterSaleRepository } from '@/entities/after-sale'
 import { provideMemberAddressRepository } from '@/entities/member-address'
@@ -45,6 +46,7 @@ export function provideBackendRuntime(app: App) {
   provideTradeQuery(app, runtime.queries.trade)
 
   if (runtime.type === 'backend-a') {
+    seedDevMemberAuthSession(runtime.auth.session)
     void hydrateBackendAMemberAuthSession(runtime.auth.session)
   }
 
