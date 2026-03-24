@@ -11,6 +11,7 @@ import type {
   HomePageData,
   PageProductCard,
   ProductDetailPageData,
+  StoreHomePageData,
 } from '../../domain/storefront-page-data'
 
 export interface BackendAStorefrontCategoryDto {
@@ -49,8 +50,147 @@ export interface BackendAStorefrontHomeDto {
   products?: BackendAStorefrontProductDto[] | null
 }
 
+export interface BackendAPartnerMerchantDto {
+  [key: string]: unknown
+}
+
+interface MapBackendAStoreHomePageDataInput {
+  merchant: BackendAPartnerMerchantDto | null
+  products: ProductSummary[]
+  storeId: string
+}
+
 function ensureArray<T>(input: T[] | null | undefined): T[] {
   return Array.isArray(input) ? input : []
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function pickRecord(input: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = input[key]
+
+    if (isRecord(value)) {
+      return value
+    }
+  }
+
+  return null
+}
+
+function pickStringFromSources(sources: Array<Record<string, unknown> | null>, keys: string[]) {
+  for (const source of sources) {
+    if (!source) {
+      continue
+    }
+
+    for (const key of keys) {
+      const value = source[key]
+
+      if (typeof value === 'string' && value.trim()) {
+        return value.trim()
+      }
+    }
+  }
+
+  return null
+}
+
+function pickNumberFromSources(sources: Array<Record<string, unknown> | null>, keys: string[]) {
+  for (const source of sources) {
+    if (!source) {
+      continue
+    }
+
+    for (const key of keys) {
+      const value = source[key]
+
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        return value
+      }
+
+      if (typeof value === 'string' && value.trim()) {
+        const parsedValue = Number.parseFloat(value)
+
+        if (Number.isFinite(parsedValue)) {
+          return parsedValue
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+function pickBooleanFromSources(sources: Array<Record<string, unknown> | null>, keys: string[]) {
+  for (const source of sources) {
+    if (!source) {
+      continue
+    }
+
+    for (const key of keys) {
+      const value = source[key]
+
+      if (typeof value === 'boolean') {
+        return value
+      }
+
+      if (typeof value === 'number') {
+        return value > 0
+      }
+
+      if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase()
+
+        if (['1', 'true', 'yes', 'y'].includes(normalized)) {
+          return true
+        }
+
+        if (['0', 'false', 'no', 'n'].includes(normalized)) {
+          return false
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+function pickStringArrayFromSources(sources: Array<Record<string, unknown> | null>, keys: string[]) {
+  for (const source of sources) {
+    if (!source) {
+      continue
+    }
+
+    for (const key of keys) {
+      const value = source[key]
+
+      if (Array.isArray(value)) {
+        const items = value
+          .map((item) => (typeof item === 'string' ? item.trim() : ''))
+          .filter(Boolean)
+
+        if (items.length > 0) {
+          return items
+        }
+      }
+
+      if (typeof value === 'string' && value.trim()) {
+        const items = value
+          .split(/[、,，|]/)
+          .map((item) => item.trim())
+          .filter(Boolean)
+
+        if (items.length > 0) {
+          return items
+        }
+      }
+    }
+  }
+
+  return []
 }
 
 function resolveActiveSkus(product: Pick<BackendAProductDetailDto, 'skus'>) {
@@ -181,6 +321,62 @@ export function mapBackendAHomePageData(
     featuredProducts,
     promo_video: promoVideo,
     quickCategories,
+  }
+}
+
+export function mapBackendAStoreHomePageData(
+  input: MapBackendAStoreHomePageDataInput,
+): StoreHomePageData {
+  const rootSource = input.merchant && isRecord(input.merchant) ? input.merchant : {}
+  const nestedMerchantSource = pickRecord(rootSource, ['merchant', 'partnerMerchant', 'store', 'detail'])
+  const sources = [rootSource, nestedMerchantSource]
+  const storeName =
+    pickStringFromSources(sources, ['short_name', 'shortName', 'store_name', 'storeName', 'name', 'title'])
+    ?? input.products[0]?.tags.find((tag) => !tag.includes('推荐'))
+    ?? `店铺 ${input.storeId}`
+  const storeLogoUrl = resolveBackendAMediaUrl(
+    pickStringFromSources(sources, ['logo', 'logo_url', 'logoUrl', 'image', 'cover', 'avatar']),
+  )
+  const followerCount = pickNumberFromSources(
+    sources,
+    ['follower_count', 'followerCount', 'fans_count', 'fansCount', 'favorite_count', 'favoriteCount'],
+  ) ?? 0
+  const businessHours = pickStringFromSources(
+    sources,
+    ['business_hours', 'businessHours', 'opening_hours', 'openingHours'],
+  )
+  const phone = pickStringFromSources(
+    sources,
+    ['phone', 'mobile', 'tel', 'telephone', 'contact_phone', 'customer_service_phone'],
+  )
+  const address = pickStringFromSources(
+    sources,
+    ['address', 'detail_address', 'detailAddress', 'location', 'merchant_address'],
+  )
+  const summary = pickStringFromSources(
+    sources,
+    ['summary', 'description', 'intro', 'introduction', 'content', 'remark'],
+  )
+  const benefitTips = pickStringArrayFromSources(
+    sources,
+    ['benefit_tips', 'benefitTips', 'service_tags', 'serviceTags', 'tags', 'advantages'],
+  )
+
+  return {
+    address,
+    benefitTips,
+    businessHours,
+    followerCount,
+    isFavorited: pickBooleanFromSources(sources, ['is_favorited', 'isFavorited', 'favorited']) ?? false,
+    phone,
+    products: input.products,
+    storeId:
+      pickStringFromSources(sources, ['store_id', 'storeId', 'merchant_id', 'merchantId', 'id'])
+      ?? input.storeId,
+    storeLogoUrl,
+    storeName,
+    summary,
+    tabs: ['home', 'all-products', 'new-products', 'promotions'],
   }
 }
 

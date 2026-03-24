@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { onActivated, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
 
 import { useMemberFavoriteStore } from '@/entities/member-favorite'
-import { formatCurrency } from '@/shared/lib/currency'
+import { ProductCompactCard } from '@/entities/product'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
@@ -126,25 +125,16 @@ onActivated(() => {
         />
 
         <div v-else class="product-grid">
-          <RouterLink
+          <ProductCompactCard
             v-for="product in visibleProducts"
             :key="`${activeSecondaryCategory?.id || activePrimaryCategory?.id}-${product.id}`"
-            class="product-card"
+            :image-url="product.imageUrl"
+            :is-favorited="isProductFavorited(product.id)"
+            :market-price="product.marketPrice"
+            :name="product.name"
+            :price="product.price"
             :to="{ name: 'product-detail', params: { productId: product.id } }"
-          >
-            <span v-if="isProductFavorited(product.id)" class="favorite-badge">
-              <van-icon name="like" size="12" />
-              已收藏
-            </span>
-            <img :src="product.imageUrl || '/images/image-placeholder.svg'" :alt="product.name">
-            <div class="name-wrapper">
-              <strong>{{ product.name }}</strong>
-            </div>
-            <div class="price-row">
-              <span>{{ formatCurrency(product.price) }}</span>
-              <small v-if="product.marketPrice">{{ formatCurrency(product.marketPrice) }}</small>
-            </div>
-          </RouterLink>
+          />
         </div>
       </div>
     </section>
@@ -306,71 +296,7 @@ onActivated(() => {
 .product-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px 8px;
+  gap: 12px;
   padding-bottom: 96px;
-}
-
-.product-card {
-  position: relative;
-  display: grid;
-  gap: 8px;
-  padding: 0 0 8px;
-  border-radius: 12px;
-  background: #fff;
-}
-
-.favorite-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 8px;
-  border-radius: 999px;
-  background: rgba(255, 247, 237, 0.96);
-  color: #c2410c;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-}
-
-.product-card img {
-  width: 100%;
-  height: 140px;
-  border-radius: 8px;
-  object-fit: cover;
-  background: #edecea;
-}
-
-.name-wrapper,
-.price-row {
-  padding: 0 8px;
-}
-
-.name-wrapper strong {
-  display: block;
-  color: #1a1918;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.35;
-}
-
-.price-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.price-row span {
-  color: #d08068;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.price-row small {
-  color: #9c9b99;
-  font-size: 13px;
-  text-decoration: line-through;
 }
 </style>

@@ -35,6 +35,7 @@ import { ReturnShipmentPage } from '@/pages/return-shipment'
 import { SearchPage } from '@/pages/search'
 import { SearchResultsPage } from '@/pages/search-results'
 import { StorePage } from '@/pages/store'
+import { StoreSearchResultsPage } from '@/pages/store-search-results'
 import type { MainNavigationKey, MainNavigationMeta } from '@/shared/config/main-navigation'
 import type { FrontendModule } from '@/shared/config/modules'
 
@@ -116,6 +117,15 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         meta: {
           description: '店铺主页与店内商品浏览',
           title: '店铺详情',
+        },
+      }),
+      createModuleRoute({
+        path: '/stores/:storeId/search/results',
+        name: 'store-search-results',
+        component: StoreSearchResultsPage,
+        meta: {
+          description: '店内商品搜索结果',
+          title: '店内搜索',
         },
       }),
       createModuleRoute({

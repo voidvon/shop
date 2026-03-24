@@ -12,4 +12,5 @@ export { backendAProductRepository } from './infrastructure/adapters/backend-a/b
 export { mockProductRepository } from './infrastructure/adapters/mock/mock-product-repository'
 export { provideProductRepository, useProductRepository } from './infrastructure/product-repository-provider'
 export { default as ProductCard } from './ui/ProductCard.vue'
+export { default as ProductCompactCard } from './ui/ProductCompactCard.vue'
 export { default as ProductDetailView } from './ui/ProductDetailView.vue'

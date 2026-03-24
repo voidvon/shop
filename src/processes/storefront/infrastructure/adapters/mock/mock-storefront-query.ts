@@ -7,6 +7,7 @@ import {
   mapMockCategoryTreeData,
   mapMockHomePageData,
   mapMockProductDetailPageData,
+  mapMockStoreHomePageData,
 } from '../../mappers/mock-storefront-mapper'
 
 export const mockStorefrontQuery: StorefrontQuery = {
@@ -31,5 +32,10 @@ export const mockStorefrontQuery: StorefrontQuery = {
     }
 
     return mapMockProductDetailPageData(product, pageData)
+  },
+
+  async getStoreHomePageData(storeId) {
+    const products = await mockProductRepository.getMerchantProductSummaries(storeId)
+    return mapMockStoreHomePageData(storeId, products)
   },
 }

@@ -3,11 +3,13 @@ import type {
   CategoryPageProductCard,
   HomePageData,
   ProductDetailPageData,
+  StoreHomePageData,
 } from './storefront-page-data'
 
 export interface CategoryProductsQuery {
   categoryId?: string
   keyword?: string
+  merchantId?: string
 }
 
 export interface StorefrontQuery {
@@ -15,4 +17,5 @@ export interface StorefrontQuery {
   getCategoryTree(): Promise<CategoryPageCategory[]>
   getHomePageData(): Promise<HomePageData>
   getProductDetailPageData(productId: string): Promise<ProductDetailPageData | null>
+  getStoreHomePageData(storeId: string): Promise<StoreHomePageData | null>
 }

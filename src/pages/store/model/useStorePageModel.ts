@@ -1,9 +1,7 @@
 import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 
-import {
-  type ProductSummary,
-  useProductRepository,
-} from '@/entities/product'
+import { type ProductSummary } from '@/entities/product'
+import { useStorefrontQuery } from '@/processes/storefront'
 
 type StoreTabKey = 'home' | 'all-products' | 'new-products' | 'promotions'
 
@@ -33,37 +31,33 @@ export function useStorePageModel(
   storeId: MaybeRefOrGetter<string>,
   preferredStoreName: MaybeRefOrGetter<string | null | undefined>,
 ) {
-  const productRepository = useProductRepository()
+  const storefrontQuery = useStorefrontQuery()
 
   const activeTab = ref<StoreTabKey>('home')
   const errorMessage = ref<string | null>(null)
   const isLoading = ref(false)
+  const isStoreFavorited = ref(false)
   const keyword = ref('')
   const products = ref<ProductSummary[]>([])
+  const storeAddress = ref<string | null>(null)
+  const storeBenefitsSource = ref<string[]>([])
+  const storeBusinessHours = ref<string | null>(null)
+  const storeLogoUrl = ref<string | null>(null)
+  const storePhone = ref<string | null>(null)
+  const storeResolvedName = ref<string | null>(null)
+  let latestRequestId = 0
 
   const normalizedStoreId = computed(() => toValue(storeId).trim())
   const storeName = computed(() =>
-    normalizeStoreName(normalizedStoreId.value, toValue(preferredStoreName)),
+    normalizeStoreName(
+      normalizedStoreId.value,
+      storeResolvedName.value ?? toValue(preferredStoreName),
+    ),
   )
-  const filteredProducts = computed(() => {
-    const trimmedKeyword = keyword.value.trim().toLowerCase()
-
-    if (!trimmedKeyword) {
-      return products.value
-    }
-
-    return products.value.filter((product) =>
-      [
-        product.name,
-        product.summary,
-        product.category,
-        ...product.tags,
-      ].some((field) => field.toLowerCase().includes(trimmedKeyword)),
-    )
-  })
-  const recommendedProducts = computed(() => filteredProducts.value.slice(0, 6))
-  const promotionProducts = computed(() => createPromotionProducts(filteredProducts.value))
-  const newProducts = computed(() => [...filteredProducts.value].reverse())
+  const tabs = ['home', 'all-products', 'new-products', 'promotions'] as const
+  const recommendedProducts = computed(() => products.value.slice(0, 6))
+  const promotionProducts = computed(() => createPromotionProducts(products.value))
+  const newProducts = computed(() => [...products.value].reverse())
   const visibleProducts = computed(() => {
     if (activeTab.value === 'home') {
       return recommendedProducts.value
@@ -77,7 +71,7 @@ export function useStorePageModel(
       return promotionProducts.value
     }
 
-    return filteredProducts.value
+    return products.value
   })
   const storeStats = computed(() => ({
     monthlySales: products.value.reduce((sum, product) => sum + product.monthlySales, 0),
@@ -85,20 +79,33 @@ export function useStorePageModel(
     productCount: products.value.length,
   }))
   const storeBenefits = computed(() => {
+    if (storeBenefitsSource.value.length > 0) {
+      return storeBenefitsSource.value
+    }
+
     const dynamicBenefits = [
       storeStats.value.onSaleCount > 0 ? `在售 ${storeStats.value.onSaleCount} 件好物` : null,
       storeStats.value.monthlySales > 0 ? `累计月销 ${storeStats.value.monthlySales}` : null,
+      storeBusinessHours.value ? `营业时间 ${storeBusinessHours.value}` : null,
       products.value[0]?.category ? `${products.value[0].category} 精选好物` : null,
     ].filter((item): item is string => Boolean(item))
 
     return dynamicBenefits.length > 0 ? dynamicBenefits : defaultBenefits
   })
-  const heroImageUrl = computed(() => products.value[0]?.coverImageUrl ?? null)
+  const heroImageUrl = computed(() => products.value[0]?.coverImageUrl ?? storeLogoUrl.value ?? null)
   const isEmpty = computed(() => !isLoading.value && !errorMessage.value && visibleProducts.value.length === 0)
 
   async function loadStorePage() {
+    const requestId = ++latestRequestId
+
     if (!normalizedStoreId.value) {
       products.value = []
+      storeAddress.value = null
+      storeBenefitsSource.value = []
+      storeBusinessHours.value = null
+      storeLogoUrl.value = null
+      storePhone.value = null
+      storeResolvedName.value = null
       errorMessage.value = '缺少店铺标识'
       return
     }
@@ -107,17 +114,60 @@ export function useStorePageModel(
     errorMessage.value = null
 
     try {
-      products.value = await productRepository.getMerchantProductSummaries(normalizedStoreId.value)
+      const storePageData = await storefrontQuery.getStoreHomePageData(normalizedStoreId.value)
+
+      if (requestId !== latestRequestId) {
+        return
+      }
+
+      if (!storePageData) {
+        products.value = []
+        storeAddress.value = null
+        storeBenefitsSource.value = []
+        storeBusinessHours.value = null
+        storeLogoUrl.value = null
+        storePhone.value = null
+        storeResolvedName.value = null
+        isStoreFavorited.value = false
+        errorMessage.value = '未找到店铺信息'
+        return
+      }
+
+      products.value = storePageData.products
+      storeAddress.value = storePageData.address
+      storeBenefitsSource.value = storePageData.benefitTips
+      storeBusinessHours.value = storePageData.businessHours
+      storeLogoUrl.value = storePageData.storeLogoUrl
+      storePhone.value = storePageData.phone
+      storeResolvedName.value = storePageData.storeName
+      isStoreFavorited.value = storePageData.isFavorited
     } catch (error) {
+      if (requestId !== latestRequestId) {
+        return
+      }
+
       products.value = []
+      storeAddress.value = null
+      storeBenefitsSource.value = []
+      storeBusinessHours.value = null
+      storeLogoUrl.value = null
+      storePhone.value = null
+      storeResolvedName.value = null
+      isStoreFavorited.value = false
       errorMessage.value = error instanceof Error ? error.message : '店铺商品加载失败'
     } finally {
-      isLoading.value = false
+      if (requestId === latestRequestId) {
+        isLoading.value = false
+      }
     }
   }
 
   function selectTab(tab: StoreTabKey) {
     activeTab.value = tab
+  }
+
+  function toggleStoreFavorite() {
+    isStoreFavorited.value = !isStoreFavorited.value
   }
 
   watch(
@@ -136,14 +186,20 @@ export function useStorePageModel(
     heroImageUrl,
     isEmpty,
     isLoading,
+    isStoreFavorited,
     keyword,
     loadStorePage,
     promotionProducts,
     recommendedProducts,
     selectTab,
+    storeAddress,
     storeBenefits,
+    storeLogoUrl,
     storeName,
+    storePhone,
     storeStats,
+    tabs,
+    toggleStoreFavorite,
     visibleProducts,
   }
 }

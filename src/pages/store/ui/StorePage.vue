@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { showToast, type PopoverAction } from 'vant'
+import { useRoute, useRouter } from 'vue-router'
 
-import { formatCurrency } from '@/shared/lib/currency'
+import { ProductCompactCard } from '@/entities/product'
+import { normalizeSearchKeyword } from '@/shared/lib/search-history'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
@@ -10,17 +12,21 @@ import { useStorePageModel } from '../model/useStorePageModel'
 
 const route = useRoute()
 const router = useRouter()
+const topActions: PopoverAction[] = [
+  { text: '刷新店铺', value: 'refresh' },
+  { text: '返回首页', value: 'home' },
+]
+const footerActions = [
+  { key: 'store', icon: 'shop-o', label: '店铺信息' },
+  { key: 'coupon', icon: 'coupon-o', label: '奖励领券' },
+  { key: 'service', icon: 'service-o', label: '联系客服' },
+  { key: 'about', icon: 'info-o', label: '关于我们' },
+] as const
 
 const storeId = computed(() => String(route.params.storeId ?? ''))
 const preferredStoreName = computed(() =>
   typeof route.query.name === 'string' ? route.query.name : null,
 )
-const tabs = [
-  { key: 'home', label: '店铺首页' },
-  { key: 'all-products', label: '全部商品' },
-  { key: 'new-products', label: '最新商品' },
-  { key: 'promotions', label: '促销活动' },
-] as const
 
 const {
   activeTab,
@@ -28,14 +34,43 @@ const {
   heroImageUrl,
   isEmpty,
   isLoading,
+  isStoreFavorited,
   keyword,
   loadStorePage,
-  selectTab,
+  storeAddress,
   storeBenefits,
+  storeLogoUrl,
   storeName,
+  storePhone,
   storeStats,
+  tabs,
+  toggleStoreFavorite: toggleStoreFavoriteState,
   visibleProducts,
 } = useStorePageModel(storeId, preferredStoreName)
+
+const primaryBenefit = computed(() => storeBenefits.value[0] ?? '支持售后无忧')
+const storeSummary = computed(() => {
+  if (storeStats.value.productCount === 0) {
+    return '店铺正在整理上新中'
+  }
+
+  return `${storeStats.value.productCount} 款商品 · 月销 ${storeStats.value.monthlySales}`
+})
+const sectionTitle = computed(() => {
+  if (activeTab.value === 'all-products') {
+    return '全部商品'
+  }
+
+  if (activeTab.value === 'new-products') {
+    return '最新上架'
+  }
+
+  if (activeTab.value === 'promotions') {
+    return '促销活动'
+  }
+
+  return '店主推荐'
+})
 
 function goBack() {
   if (globalThis.window?.history.state?.back) {
@@ -44,6 +79,55 @@ function goBack() {
   }
 
   void router.push('/')
+}
+
+function handleToggleStoreFavorite() {
+  toggleStoreFavoriteState()
+  showToast(isStoreFavorited.value ? '已关注店铺' : '已取消关注')
+}
+
+function handleTopAction(action: PopoverAction) {
+  if (action.value === 'refresh') {
+    void loadStorePage()
+    return
+  }
+
+  void router.push('/')
+}
+
+function handleFooterAction(actionKey: (typeof footerActions)[number]['key']) {
+  if (actionKey === 'store') {
+    globalThis.window?.scrollTo({ top: 0, behavior: 'smooth' })
+    return
+  }
+
+  const actionMap = {
+    about: storeAddress.value ?? '店铺介绍暂未配置',
+    coupon: '领券功能暂未开放',
+    service: storePhone.value ? `联系电话 ${storePhone.value}` : '客服入口暂未开放',
+  } as const
+
+  showToast(actionMap[actionKey as keyof typeof actionMap])
+}
+
+function handleSearchSubmit() {
+  const normalizedKeyword = normalizeSearchKeyword(keyword.value)
+
+  if (!normalizedKeyword) {
+    showToast('请输入搜索关键词')
+    return
+  }
+
+  void router.push({
+    name: 'store-search-results',
+    params: {
+      storeId: storeId.value,
+    },
+    query: {
+      keyword: normalizedKeyword,
+      ...(storeName.value ? { name: storeName.value } : {}),
+    },
+  })
 }
 </script>
 
@@ -54,345 +138,329 @@ function goBack() {
         <van-icon name="arrow-left" size="20" />
       </button>
 
-      <strong>店铺详情</strong>
+      <SearchField
+        v-model="keyword"
+        aria-label="搜索店内商品"
+        class="store-search"
+        placeholder="搜索店铺内商品"
+        variant="soft"
+        @submit="handleSearchSubmit"
+      />
 
-      <button class="nav-button" type="button" aria-label="刷新店铺数据" @click="loadStorePage">
-        <van-icon name="replay" size="18" />
-      </button>
+      <van-popover :actions="topActions" placement="bottom-end" teleport="body" @select="handleTopAction">
+        <template #reference>
+          <button class="nav-button nav-button-accent" type="button" aria-label="更多店铺操作">
+            <van-icon name="bars" size="20" />
+          </button>
+        </template>
+      </van-popover>
     </header>
 
     <div class="store-scroll">
       <section class="store-hero">
-        <div class="store-hero-backdrop" :style="heroImageUrl ? { backgroundImage: `url(${heroImageUrl})` } : undefined" />
-        <div class="store-hero-overlay" />
+        <div
+          class="store-hero-backdrop"
+          :style="heroImageUrl ? { backgroundImage: `linear-gradient(90deg, rgba(43, 37, 33, 0.56), rgba(43, 37, 33, 0.56)), url(${heroImageUrl})` } : undefined"
+        />
 
         <div class="store-hero-content">
           <div class="store-identity">
-            <div class="store-logo">{{ storeName.slice(0, 1) }}</div>
+            <div class="store-logo">
+              <img v-if="storeLogoUrl" :src="storeLogoUrl" :alt="storeName" class="store-logo-image">
+              <van-icon v-else name="shop-o" size="28" />
+            </div>
 
             <div class="store-copy">
-              <span class="store-badge">商家主页</span>
               <h1>{{ storeName }}</h1>
-              <p>从商品详情页进入的店铺展示页，优先呈现店内可售商品与主推好物。</p>
+              <p>{{ storeSummary }}</p>
+              <span class="store-benefit">{{ primaryBenefit }}</span>
             </div>
           </div>
 
-          <div class="store-stats">
-            <div class="store-stat">
-              <strong>{{ storeStats.productCount }}</strong>
-              <span>全部商品</span>
-            </div>
-            <div class="store-stat">
-              <strong>{{ storeStats.onSaleCount }}</strong>
-              <span>在售数量</span>
-            </div>
-            <div class="store-stat">
-              <strong>{{ storeStats.monthlySales }}</strong>
-              <span>累计月销</span>
-            </div>
-          </div>
-
-          <div class="benefit-row">
-            <span v-for="benefit in storeBenefits" :key="benefit" class="benefit-chip">{{ benefit }}</span>
-          </div>
+          <van-button class="follow-button" round size="small" type="default" @click="handleToggleStoreFavorite">
+            {{ isStoreFavorited ? '取消收藏' : '收藏店铺' }}
+          </van-button>
         </div>
       </section>
 
       <section class="store-panel">
-        <SearchField
-          v-model="keyword"
-          aria-label="搜索店内商品"
-          class="store-search"
-          placeholder="搜索店内商品、分类或标签"
-          variant="outlined"
-        />
-
-        <div class="tab-row" role="tablist" aria-label="店铺内容切换">
-          <button
-            v-for="tab in tabs"
-            :key="tab.key"
-            class="tab-button"
-            :class="{ 'tab-button-active': activeTab === tab.key }"
-            type="button"
-            @click="selectTab(tab.key)"
-          >
-            {{ tab.label }}
-          </button>
+        <div class="store-tabs-shell">
+          <van-tabs v-model:active="activeTab">
+            <van-tab
+              v-for="tab in tabs"
+              :key="tab"
+              :name="tab"
+              :title="tab === 'home'
+                ? '店铺首页'
+                : tab === 'all-products'
+                  ? '全部商品'
+                  : tab === 'new-products'
+                    ? '最新商品'
+                    : '促销活动'"
+            />
+          </van-tabs>
         </div>
 
-        <p v-if="errorMessage" class="status-card">
-          {{ errorMessage }}
-        </p>
+        <div class="store-panel-content">
+          <header class="section-head">
+            <span class="section-accent" />
+            <strong>{{ sectionTitle }}</strong>
+          </header>
 
-        <div v-else-if="isLoading" class="product-grid">
-          <div v-for="index in 6" :key="index" class="product-card product-card-skeleton">
-            <van-skeleton avatar avatar-shape="square" title :row="2" />
+          <p v-if="errorMessage" class="status-card">
+            {{ errorMessage }}
+          </p>
+
+          <div v-else-if="isLoading" class="product-grid">
+            <div v-for="index in 6" :key="index" class="product-card-skeleton">
+              <div class="product-skeleton-media" />
+              <div class="product-skeleton-line product-skeleton-line-name" />
+              <div class="product-skeleton-line product-skeleton-line-price" />
+            </div>
           </div>
-        </div>
 
-        <EmptyState
-          v-else-if="isEmpty"
-          class="store-empty"
-          description="当前店铺还没有可展示的商品，稍后再来看看。"
-          description-width="220px"
-          icon="shop-o"
-          title="暂无店铺商品"
-        />
+          <EmptyState
+            v-else-if="isEmpty"
+            class="store-empty"
+            description="当前店铺还没有可展示的商品，稍后再来看看。"
+            description-width="220px"
+            icon="shop-o"
+            title="暂无店铺商品"
+          />
 
-        <div v-else class="product-grid">
-          <RouterLink
-            v-for="product in visibleProducts"
-            :key="product.id"
-            class="product-card"
-            :to="{ name: 'product-detail', params: { productId: product.id } }"
-          >
-            <img
-              class="product-image"
-              :src="product.coverImageUrl || '/images/image-placeholder.svg'"
-              :alt="product.name"
-            >
-
-            <div class="product-copy">
-              <strong>{{ product.name }}</strong>
-              <p>{{ product.summary || product.category }}</p>
-            </div>
-
-            <div class="product-meta">
-              <span class="product-price">{{ formatCurrency(product.price) }}</span>
-              <span class="product-sales">月销 {{ product.monthlySales }}</span>
-            </div>
-          </RouterLink>
+          <div v-else class="product-grid">
+            <ProductCompactCard
+              v-for="product in visibleProducts"
+              :key="product.id"
+              :image-url="product.coverImageUrl"
+              :market-price="product.price + 10"
+              :name="product.name"
+              :price="product.price"
+              :to="{ name: 'product-detail', params: { productId: product.id } }"
+            />
+          </div>
         </div>
       </section>
     </div>
+
+    <footer class="store-action-bar" aria-label="店铺快捷操作">
+      <button
+        v-for="action in footerActions"
+        :key="action.key"
+        class="store-action-item"
+        type="button"
+        @click="handleFooterAction(action.key)"
+      >
+        <van-icon :name="action.icon" size="20" />
+        {{ action.label }}
+      </button>
+    </footer>
   </section>
 </template>
 
 <style scoped>
 .store-page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 402px;
+  margin: 0 auto;
   min-height: 100vh;
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at top, rgba(245, 158, 11, 0.18), transparent 34%),
-    linear-gradient(180deg, #fbf7f0 0%, #f4efe7 100%);
+  background: #f5f4f1;
+  overflow-x: clip;
+}
+
+.store-page *,
+.store-page *::before,
+.store-page *::after {
+  box-sizing: border-box;
 }
 
 .store-top-bar {
   position: sticky;
   top: 0;
   z-index: 10;
-  display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) 24px;
-  gap: 16px;
+  display: flex;
+  gap: 10px;
   align-items: center;
-  padding: 14px 16px;
-  background: rgba(251, 247, 240, 0.92);
-  backdrop-filter: blur(14px);
-}
-
-.store-top-bar strong {
-  color: #2f241b;
-  font-size: 16px;
-  font-weight: 700;
-  text-align: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eeeae5;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
 }
 
 .nav-button {
+  flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 0;
   background: transparent;
-  color: #6a5342;
+  color: #7e7a76;
+}
+
+.nav-button-accent {
+  color: #f08a3e;
 }
 
 .store-scroll {
   display: grid;
-  gap: 18px;
-  padding: 0 0 28px;
+  gap: 16px;
+  width: 100%;
+  padding: 12px 0 calc(90px + env(safe-area-inset-bottom, 0px));
+}
+
+.store-search {
+  flex: 1;
+  min-width: 0;
 }
 
 .store-hero {
   position: relative;
   overflow: hidden;
-  min-height: 268px;
-  margin: 0 14px;
-  border-radius: 28px;
-  background: linear-gradient(135deg, #2f241b 0%, #7c4a2c 55%, #d17f1f 100%);
-  box-shadow: 0 18px 40px rgba(61, 36, 18, 0.2);
-}
-
-.store-hero-backdrop,
-.store-hero-overlay {
-  position: absolute;
-  inset: 0;
+  width: calc(100% - 32px);
+  margin: 0 16px;
+  border-radius: 18px;
+  min-height: 146px;
+  background: linear-gradient(180deg, #5a4033 0%, #2b2521 100%);
 }
 
 .store-hero-backdrop {
+  position: absolute;
+  inset: 0;
   background-position: center;
   background-size: cover;
-  opacity: 0.18;
-  transform: scale(1.06);
-}
-
-.store-hero-overlay {
-  background:
-    linear-gradient(180deg, rgba(20, 14, 9, 0.05) 0%, rgba(20, 14, 9, 0.68) 100%),
-    radial-gradient(circle at top right, rgba(255, 231, 179, 0.38), transparent 34%);
+  opacity: 0.28;
 }
 
 .store-hero-content {
   position: relative;
   z-index: 1;
-  display: grid;
-  gap: 18px;
-  padding: 22px 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 16px;
 }
 
 .store-identity {
-  display: grid;
-  grid-template-columns: 60px minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
 }
 
 .store-logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 60px;
-  height: 60px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 22px;
-  background: rgba(255, 248, 234, 0.16);
-  color: #fff8eb;
-  font-size: 26px;
-  font-weight: 800;
-  text-transform: uppercase;
+  width: 58px;
+  height: 58px;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  background: #d93a2f;
+  color: #fff;
+}
+
+.store-logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
 }
 
 .store-copy {
   display: grid;
-  gap: 8px;
-}
-
-.store-badge {
-  display: inline-flex;
-  width: fit-content;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(255, 243, 214, 0.16);
-  color: #ffe7b3;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  gap: 4px;
+  min-width: 0;
 }
 
 .store-copy h1 {
   margin: 0;
-  color: #fffaf2;
-  font-size: 28px;
-  font-weight: 800;
-  line-height: 1.1;
+  overflow: hidden;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .store-copy p {
   margin: 0;
-  color: rgba(255, 245, 228, 0.78);
+  color: #f4eee8;
   font-size: 13px;
-  line-height: 1.6;
+  font-weight: 500;
 }
 
-.store-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.store-stat {
-  display: grid;
-  gap: 6px;
-  padding: 14px 12px;
-  border-radius: 18px;
-  background: rgba(255, 248, 234, 0.12);
-}
-
-.store-stat strong {
-  color: #fff8eb;
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.store-stat span {
-  color: rgba(255, 245, 228, 0.74);
+.store-benefit {
+  color: #ffd7b3;
   font-size: 12px;
+  font-weight: 600;
 }
 
-.benefit-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.benefit-chip {
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(255, 248, 234, 0.14);
-  color: #fff5e4;
-  font-size: 12px;
+.follow-button {
+  flex: none;
+  --van-button-default-height: 36px;
+  --van-button-default-border-color: rgba(255, 255, 255, 0.92);
+  --van-button-default-color: #2b2521;
+  --van-button-default-background: rgba(255, 255, 255, 0.92);
   font-weight: 600;
 }
 
 .store-panel {
   display: grid;
-  gap: 16px;
-  padding: 0 14px;
-}
-
-.store-search {
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 10px 24px rgba(54, 33, 20, 0.06);
-}
-
-.tab-row {
-  display: flex;
   gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
+  width: calc(100% - 32px);
+  margin: 0 16px;
 }
 
-.tab-row::-webkit-scrollbar {
-  display: none;
+.store-panel-content {
+  display: grid;
+  gap: 16px;
 }
 
-.tab-button {
-  flex: none;
-  padding: 10px 16px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82);
-  color: #7a6858;
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.tab-button-active {
-  border-color: rgba(209, 127, 31, 0.22);
+.store-tabs-shell {
+  overflow: hidden;
+  padding-top: 6px;
+  border-radius: 18px;
   background: #fff;
-  color: #a24c14;
-  box-shadow: 0 8px 20px rgba(209, 127, 31, 0.12);
+}
+
+.store-tabs-shell :deep(.van-tabs__nav--line) {
+  padding-bottom: 10px;
+}
+
+.store-tabs-shell :deep(.van-tabs__line) {
+  bottom: 10px;
+}
+
+.section-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.section-accent {
+  width: 3px;
+  height: 20px;
+  border-radius: 2px;
+  background: #4ea7ff;
+}
+
+.section-head strong {
+  color: #2f2a26;
+  font-size: 24px;
+  font-weight: 700;
 }
 
 .status-card {
   margin: 0;
-  padding: 16px 18px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.92);
+  padding: 16px 0;
+  background: transparent;
   color: #8a3b12;
   font-size: 14px;
   line-height: 1.6;
@@ -400,87 +468,82 @@ function goBack() {
 
 .store-empty {
   min-height: 240px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.88);
+  border-radius: 18px;
+  background: #faf8f6;
 }
 
 .product-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.product-card {
-  display: grid;
   gap: 12px;
-  padding: 12px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 16px 30px rgba(54, 33, 20, 0.08);
-  text-decoration: none;
 }
 
 .product-card-skeleton {
-  min-height: 248px;
-}
-
-.product-image {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 16px;
-  object-fit: cover;
-  background: #f2ede6;
-}
-
-.product-copy {
   display: grid;
-  gap: 6px;
+  gap: 12px;
 }
 
-.product-copy strong {
-  color: #24180f;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.5;
+.product-skeleton-media {
+  width: 100%;
+  height: 140px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f2f0ed 25%, #f8f6f3 37%, #f2f0ed 63%);
 }
 
-.product-copy p {
-  display: -webkit-box;
-  margin: 0;
-  overflow: hidden;
-  color: #8c7a69;
-  font-size: 12px;
-  line-height: 1.5;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+.product-skeleton-line {
+  height: 14px;
+  border-radius: 999px;
+  background: #f1eeea;
 }
 
-.product-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+.product-skeleton-line-name {
+  width: 75%;
 }
 
-.product-price {
-  color: #b45309;
-  font-size: 15px;
-  font-weight: 800;
+.product-skeleton-line-price {
+  width: 45%;
 }
 
-.product-sales {
-  color: #9a8a7a;
-  font-size: 11px;
+.store-action-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 12;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  width: 100%;
+  padding: 8px 10px calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid #eeeae5;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+}
+
+.store-action-item {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  min-width: 0;
+  padding: 6px 0 0;
+  border: 0;
+  background: transparent;
+  color: #9c9b99;
+  font-size: 10px;
+  font-weight: 500;
 }
 
 @media (max-width: 360px) {
-  .store-stats,
-  .product-grid {
-    grid-template-columns: 1fr;
+  .store-top-bar,
+  .store-hero-content,
+  .store-identity {
+    align-items: flex-start;
   }
 
-  .store-identity {
-    grid-template-columns: 1fr;
+  .store-hero-content {
+    flex-direction: column;
+  }
+
+  .follow-button {
+    width: 100%;
   }
 }
 </style>

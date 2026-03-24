@@ -7,6 +7,8 @@ export type {
   ProductDetailPageData,
   ProductSkuOption,
   ProductStoreInfo,
+  StoreHomePageData,
+  StoreHomeTabKey,
 } from './domain/storefront-page-data'
 export type { CategoryProductsQuery, StorefrontQuery } from './domain/storefront-query'
 export { backendAStorefrontQuery } from './infrastructure/adapters/backend-a/backend-a-storefront-query'

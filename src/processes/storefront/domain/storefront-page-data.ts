@@ -1,4 +1,4 @@
-import type { ProductDetail } from '@/entities/product'
+import type { ProductDetail, ProductSummary } from '@/entities/product'
 
 export interface PageProductCard {
   id: string
@@ -39,6 +39,23 @@ export interface HomePageData {
   featuredProducts: PageProductCard[]
   promo_video: string | null
   quickCategories: HomeQuickCategory[]
+}
+
+export type StoreHomeTabKey = 'home' | 'all-products' | 'new-products' | 'promotions'
+
+export interface StoreHomePageData {
+  address: string | null
+  benefitTips: string[]
+  businessHours: string | null
+  followerCount: number
+  isFavorited: boolean
+  phone: string | null
+  products: ProductSummary[]
+  storeId: string
+  storeLogoUrl: string | null
+  storeName: string
+  summary: string | null
+  tabs: StoreHomeTabKey[]
 }
 
 export interface ProductSkuOption {

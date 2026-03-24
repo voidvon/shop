@@ -1,4 +1,6 @@
 import { mockCatalogData, mockProducts, mockPublicData } from '@/shared/mocks'
+import { getMockStore } from '@/shared/mocks'
+import type { ProductSummary } from '@/entities/product'
 
 import type {
   CategoryPageCategory,
@@ -6,6 +8,7 @@ import type {
   HomePageData,
   PageProductCard,
   ProductDetailPageData,
+  StoreHomePageData,
 } from '../../domain/storefront-page-data'
 import type { CategoryProductsQuery } from '../../domain/storefront-query'
 
@@ -69,9 +72,14 @@ export function mapMockCategoryProducts(query: CategoryProductsQuery = {}): Cate
   const matchedCategoryIds = query.categoryId
     ? new Set(collectCategoryIds(mockCatalogData.categoryEntryPageData.primaryCategories, query.categoryId) ?? [])
     : null
+  const normalizedMerchantId = query.merchantId?.trim() ?? ''
 
   return mockProducts
     .filter((product) => {
+      if (normalizedMerchantId && product.storeId !== normalizedMerchantId) {
+        return false
+      }
+
       if (matchedCategoryIds && !matchedCategoryIds.has(product.categoryId)) {
         return false
       }
@@ -110,6 +118,32 @@ export function mapMockHomePageData(): HomePageData {
       imageUrl: category.imageUrl,
       label: category.categoryName,
     })),
+  }
+}
+
+export function mapMockStoreHomePageData(
+  storeId: string,
+  products: ProductSummary[],
+): StoreHomePageData | null {
+  const store = getMockStore(storeId)
+
+  if (!store) {
+    return null
+  }
+
+  return {
+    address: store.address,
+    benefitTips: [...store.benefitTips],
+    businessHours: store.businessHours,
+    followerCount: store.followerCount,
+    isFavorited: true,
+    phone: store.phone,
+    products,
+    storeId: store.storeId,
+    storeLogoUrl: store.logoUrl,
+    storeName: store.storeName,
+    summary: `${store.storeName} · 营业时间 ${store.businessHours}`,
+    tabs: ['home', 'all-products', 'new-products', 'promotions'],
   }
 }
 

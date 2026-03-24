@@ -9,11 +9,13 @@ import type { CategoryProductsQuery, StorefrontQuery } from '../../../domain/sto
 import {
   type BackendAStorefrontCategoryDto,
   type BackendAStorefrontHomeDto,
+  type BackendAPartnerMerchantDto,
   type BackendAStorefrontProductDto,
   mapBackendACategoryProducts,
   mapBackendACategoryTree,
   mapBackendAHomePageData,
   mapBackendAProductDetailPageData,
+  mapBackendAStoreHomePageData,
 } from '../../mappers/backend-a-storefront-mapper'
 
 interface BackendAProductCategoriesResponseDto {
@@ -37,6 +39,7 @@ async function fetchBackendACategoryProductsDto(query: CategoryProductsQuery = {
   return backendAHttpClient.get<BackendAStorefrontProductsResponseDto>('/api/v1/products', {
     ...(query.categoryId ? { category_id: query.categoryId } : {}),
     ...(query.keyword ? { keyword: query.keyword } : {}),
+    ...(query.merchantId ? { merchant_id: query.merchantId } : {}),
     per_page: 100,
     sort_by: 'sales_count',
     sort_dir: 'desc',
@@ -46,6 +49,20 @@ async function fetchBackendACategoryProductsDto(query: CategoryProductsQuery = {
 async function fetchBackendACategoryTree() {
   const categoryData = await fetchBackendACategoryTreeDto()
   return mapBackendACategoryTree(categoryData.tree)
+}
+
+async function fetchBackendAPartnerMerchantDto(storeId: string) {
+  try {
+    return await backendAHttpClient.get<BackendAPartnerMerchantDto>(
+      `/api/v1/partner-merchants/${encodeURIComponent(storeId)}`,
+    )
+  } catch (error) {
+    if (error instanceof BackendAHttpError && error.status === 404) {
+      return null
+    }
+
+    throw error
+  }
 }
 
 async function fetchBackendACategoryProducts(query: CategoryProductsQuery = {}) {
@@ -102,5 +119,35 @@ export const backendAStorefrontQuery: StorefrontQuery = {
       .slice(0, 3)
 
     return mapBackendAProductDetailPageData(product, recommendedProducts)
+  },
+
+  async getStoreHomePageData(storeId: string) {
+    const normalizedStoreId = storeId.trim()
+
+    if (!normalizedStoreId) {
+      return null
+    }
+
+    const [merchantResult, productsResult] = await Promise.allSettled([
+      fetchBackendAPartnerMerchantDto(normalizedStoreId),
+      backendAProductRepository.getMerchantProductSummaries(normalizedStoreId),
+    ])
+
+    if (merchantResult.status === 'rejected' && productsResult.status === 'rejected') {
+      throw merchantResult.reason
+    }
+
+    const merchant = merchantResult.status === 'fulfilled' ? merchantResult.value : null
+    const products = productsResult.status === 'fulfilled' ? productsResult.value : []
+
+    if (!merchant && products.length === 0) {
+      return null
+    }
+
+    return mapBackendAStoreHomePageData({
+      merchant,
+      products,
+      storeId: normalizedStoreId,
+    })
   },
 }
