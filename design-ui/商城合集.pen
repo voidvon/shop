@@ -708,19 +708,27 @@
                               "width": "fill_container"
                             },
                             "4IgSc": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 148
                             },
                             "wtitn": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "x": 8
                             },
                             "hKBHN": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 176
                             },
                             "zJcpN": {
-                              "content": "¥99.00"
+                              "content": "¥99.00",
+                              "x": 8
                             },
                             "adUN0": {
-                              "content": "¥129.00"
+                              "content": "¥129.00",
+                              "x": 71,
+                              "y": 1.5
                             }
                           }
                         },
@@ -733,12 +741,31 @@
                           "x": 183,
                           "y": 0,
                           "descendants": {
+                            "graT7": {
+                              "width": "fill_container"
+                            },
+                            "4IgSc": {
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 148
+                            },
+                            "wtitn": {
+                              "width": "fill_container",
+                              "x": 8
+                            },
+                            "hKBHN": {
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 176
+                            },
                             "zJcpN": {
-                              "content": "¥199.00"
+                              "content": "¥199.00",
+                              "x": 8
                             },
                             "adUN0": {
                               "content": "¥259.00",
-                              "x": 78
+                              "x": 78,
+                              "y": 1.5
                             }
                           }
                         }
@@ -764,20 +791,27 @@
                               "width": "fill_container"
                             },
                             "4IgSc": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 148
                             },
                             "wtitn": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "x": 8
                             },
                             "hKBHN": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 176
                             },
                             "zJcpN": {
-                              "content": "¥299.00"
+                              "content": "¥299.00",
+                              "x": 8
                             },
                             "adUN0": {
                               "content": "¥399.00",
-                              "x": 81
+                              "x": 81,
+                              "y": 1.5
                             }
                           }
                         },
@@ -790,12 +824,31 @@
                           "x": 183,
                           "y": 0,
                           "descendants": {
+                            "graT7": {
+                              "width": "fill_container"
+                            },
+                            "4IgSc": {
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 148
+                            },
+                            "wtitn": {
+                              "width": "fill_container",
+                              "x": 8
+                            },
+                            "hKBHN": {
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 176
+                            },
                             "zJcpN": {
-                              "content": "¥399.00"
+                              "content": "¥399.00",
+                              "x": 8
                             },
                             "adUN0": {
                               "content": "¥499.00",
-                              "x": 81
+                              "x": 81,
+                              "y": 1.5
                             }
                           }
                         }
@@ -1571,21 +1624,29 @@
                                   "width": "fill_container"
                                 },
                                 "4IgSc": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 148
                                 },
                                 "wtitn": {
                                   "content": "神经酰胺修护精华",
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "x": 8
                                 },
                                 "hKBHN": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 176
                                 },
                                 "zJcpN": {
-                                  "content": "¥189"
+                                  "content": "¥189",
+                                  "x": 8
                                 },
                                 "adUN0": {
                                   "enabled": true,
-                                  "content": "¥229.00"
+                                  "content": "¥229.00",
+                                  "x": 53,
+                                  "y": 1.5
                                 }
                               }
                             },
@@ -1602,21 +1663,29 @@
                                   "width": "fill_container"
                                 },
                                 "4IgSc": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 148
                                 },
                                 "wtitn": {
                                   "content": "积雪草舒缓面霜",
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "x": 8
                                 },
                                 "hKBHN": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 176
                                 },
                                 "zJcpN": {
-                                  "content": "¥129"
+                                  "content": "¥129",
+                                  "x": 8
                                 },
                                 "adUN0": {
                                   "enabled": true,
-                                  "content": "¥169.00"
+                                  "content": "¥169.00",
+                                  "x": 52,
+                                  "y": 1.5
                                 }
                               }
                             }
@@ -1642,21 +1711,29 @@
                                   "width": "fill_container"
                                 },
                                 "4IgSc": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 148
                                 },
                                 "wtitn": {
                                   "content": "烟酰胺透亮安瓶",
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "x": 8
                                 },
                                 "hKBHN": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 176
                                 },
                                 "zJcpN": {
-                                  "content": "¥159"
+                                  "content": "¥159",
+                                  "x": 8
                                 },
                                 "adUN0": {
                                   "content": "¥199.00",
-                                  "enabled": true
+                                  "enabled": true,
+                                  "x": 52,
+                                  "y": 1.5
                                 }
                               }
                             },
@@ -1673,21 +1750,29 @@
                                   "width": "fill_container"
                                 },
                                 "4IgSc": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 148
                                 },
                                 "wtitn": {
                                   "content": "胶原紧致眼霜",
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "x": 8
                                 },
                                 "hKBHN": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 176
                                 },
                                 "zJcpN": {
-                                  "content": "¥219"
+                                  "content": "¥219",
+                                  "x": 8
                                 },
                                 "adUN0": {
                                   "content": "¥269.00",
-                                  "enabled": true
+                                  "enabled": true,
+                                  "x": 52,
+                                  "y": 1.5
                                 }
                               }
                             }
@@ -1713,21 +1798,29 @@
                                   "width": "fill_container"
                                 },
                                 "4IgSc": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 148
                                 },
                                 "wtitn": {
                                   "content": "益生元舒缓喷雾",
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "x": 8
                                 },
                                 "hKBHN": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 176
                                 },
                                 "zJcpN": {
-                                  "content": "¥99"
+                                  "content": "¥99",
+                                  "x": 8
                                 },
                                 "adUN0": {
                                   "content": "¥129.00",
-                                  "enabled": true
+                                  "enabled": true,
+                                  "x": 46,
+                                  "y": 1.5
                                 }
                               }
                             },
@@ -1744,21 +1837,29 @@
                                   "width": "fill_container"
                                 },
                                 "4IgSc": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 148
                                 },
                                 "wtitn": {
                                   "content": "角鲨烷修护乳",
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "x": 8
                                 },
                                 "hKBHN": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 176
                                 },
                                 "zJcpN": {
-                                  "content": "¥149"
+                                  "content": "¥149",
+                                  "x": 8
                                 },
                                 "adUN0": {
                                   "content": "¥189.00",
-                                  "enabled": true
+                                  "enabled": true,
+                                  "x": 53,
+                                  "y": 1.5
                                 }
                               }
                             }
@@ -1784,21 +1885,29 @@
                                   "width": "fill_container"
                                 },
                                 "4IgSc": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 148
                                 },
                                 "wtitn": {
                                   "content": "氨基酸净润洁面",
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "x": 8
                                 },
                                 "hKBHN": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 176
                                 },
                                 "zJcpN": {
-                                  "content": "¥89"
+                                  "content": "¥89",
+                                  "x": 8
                                 },
                                 "adUN0": {
                                   "content": "¥109.00",
-                                  "enabled": true
+                                  "enabled": true,
+                                  "x": 46,
+                                  "y": 1.5
                                 }
                               }
                             },
@@ -1815,21 +1924,29 @@
                                   "width": "fill_container"
                                 },
                                 "4IgSc": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 148
                                 },
                                 "wtitn": {
                                   "content": "多肽弹润晚霜",
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "x": 8
                                 },
                                 "hKBHN": {
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "height": "fit_content",
+                                  "y": 176
                                 },
                                 "zJcpN": {
-                                  "content": "¥239"
+                                  "content": "¥239",
+                                  "x": 8
                                 },
                                 "adUN0": {
                                   "content": "¥299.00",
-                                  "enabled": true
+                                  "enabled": true,
+                                  "x": 56,
+                                  "y": 1.5
                                 }
                               }
                             }
@@ -2973,7 +3090,29 @@
               "name": "topBarTabsRef",
               "width": "fill_container",
               "x": 0,
-              "y": 0
+              "y": 0,
+              "descendants": {
+                "mDiSd": {
+                  "x": 16,
+                  "y": 15.5
+                },
+                "bfroE": {
+                  "width": "fit_content",
+                  "height": "fit_content",
+                  "x": 128.5,
+                  "y": 17
+                },
+                "g6lJC": {
+                  "x": 59
+                },
+                "GrE6h": {
+                  "x": 118
+                },
+                "LMaqO": {
+                  "x": 366,
+                  "y": 18
+                }
+              }
             },
             {
               "type": "frame",
@@ -3427,26 +3566,36 @@
                           "type": "ref",
                           "ref": "TQrkL",
                           "width": "fill_container",
+                          "x": 0,
+                          "y": 0,
                           "descendants": {
                             "graT7": {
                               "width": "fill_container"
                             },
                             "4IgSc": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 148
                             },
                             "wtitn": {
                               "content": "黑木耳250克",
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "x": 8
                             },
                             "hKBHN": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 176
                             },
                             "zJcpN": {
-                              "content": "¥49.00"
+                              "content": "¥49.00",
+                              "x": 8
                             },
                             "adUN0": {
                               "content": "¥69.00",
-                              "enabled": true
+                              "enabled": true,
+                              "x": 72,
+                              "y": 1.5
                             }
                           }
                         },
@@ -3455,26 +3604,36 @@
                           "type": "ref",
                           "ref": "TQrkL",
                           "width": "fill_container",
+                          "x": 187,
+                          "y": 0,
                           "descendants": {
                             "graT7": {
                               "width": "fill_container"
                             },
                             "4IgSc": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 148
                             },
                             "wtitn": {
                               "content": "野生红菇250克",
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "x": 8
                             },
                             "hKBHN": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 176
                             },
                             "zJcpN": {
-                              "content": "¥428.00"
+                              "content": "¥428.00",
+                              "x": 8
                             },
                             "adUN0": {
                               "content": "¥468.00",
-                              "enabled": true
+                              "enabled": true,
+                              "x": 82,
+                              "y": 1.5
                             }
                           }
                         }
@@ -3492,26 +3651,36 @@
                           "type": "ref",
                           "ref": "TQrkL",
                           "width": "fill_container",
+                          "x": 0,
+                          "y": 0,
                           "descendants": {
                             "graT7": {
                               "width": "fill_container"
                             },
                             "4IgSc": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 148
                             },
                             "wtitn": {
                               "content": "阿胶糕礼盒",
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "x": 8
                             },
                             "hKBHN": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 176
                             },
                             "zJcpN": {
-                              "content": "¥298.00"
+                              "content": "¥298.00",
+                              "x": 8
                             },
                             "adUN0": {
                               "content": "¥338.00",
-                              "enabled": true
+                              "enabled": true,
+                              "x": 81,
+                              "y": 1.5
                             }
                           }
                         },
@@ -3520,26 +3689,36 @@
                           "type": "ref",
                           "ref": "TQrkL",
                           "width": "fill_container",
+                          "x": 187,
+                          "y": 0,
                           "descendants": {
                             "graT7": {
                               "width": "fill_container"
                             },
                             "4IgSc": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 148
                             },
                             "wtitn": {
                               "content": "腊味蒸鸡",
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "x": 8
                             },
                             "hKBHN": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 176
                             },
                             "zJcpN": {
-                              "content": "¥380.00"
+                              "content": "¥380.00",
+                              "x": 8
                             },
                             "adUN0": {
                               "content": "¥420.00",
-                              "enabled": true
+                              "enabled": true,
+                              "x": 82,
+                              "y": 1.5
                             }
                           }
                         }
@@ -3560,7 +3739,59 @@
           "height": 82,
           "layoutPosition": "absolute",
           "x": 0,
-          "y": 898
+          "y": 898,
+          "descendants": {
+            "z0cGd": {
+              "height": "fill_container",
+              "x": 12,
+              "y": 12
+            },
+            "LksED": {
+              "width": "fill_container",
+              "height": "fill_container"
+            },
+            "4wWsV": {
+              "x": 11,
+              "y": 6
+            },
+            "POehK": {
+              "x": 9,
+              "y": 28
+            },
+            "GUdXL": {
+              "width": "fill_container",
+              "height": "fill_container",
+              "x": 56
+            },
+            "jUpx2": {
+              "x": 11,
+              "y": 6
+            },
+            "8PUVL": {
+              "x": 3.5,
+              "y": 28
+            },
+            "87s2v": {
+              "width": "fill_container",
+              "height": "fill_container",
+              "x": 120,
+              "y": 12
+            },
+            "pTuRj": {
+              "x": 34,
+              "y": 14
+            },
+            "KYNAw": {
+              "width": "fill_container",
+              "height": "fill_container",
+              "x": 261,
+              "y": 12
+            },
+            "u61Nb": {
+              "x": 26.5,
+              "y": 14
+            }
+          }
         }
       ]
     },
@@ -3585,13 +3816,31 @@
           "x": 0,
           "y": 0,
           "descendants": {
+            "mDiSd": {
+              "x": 16,
+              "y": 15.5
+            },
+            "bfroE": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 128.5,
+              "y": 17
+            },
             "gobql": {
               "fill": "#3C3B39",
               "fontWeight": "500"
             },
+            "g6lJC": {
+              "x": 59
+            },
             "GrE6h": {
               "fill": "#EA580C",
-              "fontWeight": "700"
+              "fontWeight": "700",
+              "x": 118
+            },
+            "LMaqO": {
+              "x": 366,
+              "y": 18
             }
           }
         },
@@ -3811,7 +4060,29 @@
               "name": "topBarTabsRef",
               "width": "fill_container",
               "x": 0,
-              "y": 0
+              "y": 0,
+              "descendants": {
+                "mDiSd": {
+                  "x": 16,
+                  "y": 15.5
+                },
+                "bfroE": {
+                  "width": "fit_content",
+                  "height": "fit_content",
+                  "x": 128.5,
+                  "y": 17
+                },
+                "g6lJC": {
+                  "x": 59
+                },
+                "GrE6h": {
+                  "x": 118
+                },
+                "LMaqO": {
+                  "x": 366,
+                  "y": 18
+                }
+              }
             },
             {
               "type": "frame",
@@ -4265,26 +4536,36 @@
                           "type": "ref",
                           "ref": "TQrkL",
                           "width": "fill_container",
+                          "x": 0,
+                          "y": 0,
                           "descendants": {
                             "graT7": {
                               "width": "fill_container"
                             },
                             "4IgSc": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 148
                             },
                             "wtitn": {
                               "content": "黑木耳250克",
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "x": 8
                             },
                             "hKBHN": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 176
                             },
                             "zJcpN": {
-                              "content": "¥49.00"
+                              "content": "¥49.00",
+                              "x": 8
                             },
                             "adUN0": {
                               "content": "¥69.00",
-                              "enabled": true
+                              "enabled": true,
+                              "x": 72,
+                              "y": 1.5
                             }
                           }
                         },
@@ -4293,26 +4574,36 @@
                           "type": "ref",
                           "ref": "TQrkL",
                           "width": "fill_container",
+                          "x": 187,
+                          "y": 0,
                           "descendants": {
                             "graT7": {
                               "width": "fill_container"
                             },
                             "4IgSc": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 148
                             },
                             "wtitn": {
                               "content": "野生红菇250克",
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "x": 8
                             },
                             "hKBHN": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 176
                             },
                             "zJcpN": {
-                              "content": "¥428.00"
+                              "content": "¥428.00",
+                              "x": 8
                             },
                             "adUN0": {
                               "content": "¥468.00",
-                              "enabled": true
+                              "enabled": true,
+                              "x": 82,
+                              "y": 1.5
                             }
                           }
                         }
@@ -4330,26 +4621,36 @@
                           "type": "ref",
                           "ref": "TQrkL",
                           "width": "fill_container",
+                          "x": 0,
+                          "y": 0,
                           "descendants": {
                             "graT7": {
                               "width": "fill_container"
                             },
                             "4IgSc": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 148
                             },
                             "wtitn": {
                               "content": "阿胶糕礼盒",
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "x": 8
                             },
                             "hKBHN": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 176
                             },
                             "zJcpN": {
-                              "content": "¥298.00"
+                              "content": "¥298.00",
+                              "x": 8
                             },
                             "adUN0": {
                               "content": "¥338.00",
-                              "enabled": true
+                              "enabled": true,
+                              "x": 81,
+                              "y": 1.5
                             }
                           }
                         },
@@ -4358,26 +4659,36 @@
                           "type": "ref",
                           "ref": "TQrkL",
                           "width": "fill_container",
+                          "x": 187,
+                          "y": 0,
                           "descendants": {
                             "graT7": {
                               "width": "fill_container"
                             },
                             "4IgSc": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 148
                             },
                             "wtitn": {
                               "content": "腊味蒸鸡",
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "x": 8
                             },
                             "hKBHN": {
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "height": "fit_content",
+                              "y": 176
                             },
                             "zJcpN": {
-                              "content": "¥380.00"
+                              "content": "¥380.00",
+                              "x": 8
                             },
                             "adUN0": {
                               "content": "¥420.00",
-                              "enabled": true
+                              "enabled": true,
+                              "x": 82,
+                              "y": 1.5
                             }
                           }
                         }
@@ -4743,7 +5054,59 @@
           "height": 82,
           "layoutPosition": "absolute",
           "x": 0,
-          "y": 898
+          "y": 898,
+          "descendants": {
+            "z0cGd": {
+              "height": "fill_container",
+              "x": 12,
+              "y": 12
+            },
+            "LksED": {
+              "width": "fill_container",
+              "height": "fill_container"
+            },
+            "4wWsV": {
+              "x": 11,
+              "y": 6
+            },
+            "POehK": {
+              "x": 9,
+              "y": 28
+            },
+            "GUdXL": {
+              "width": "fill_container",
+              "height": "fill_container",
+              "x": 56
+            },
+            "jUpx2": {
+              "x": 11,
+              "y": 6
+            },
+            "8PUVL": {
+              "x": 3.5,
+              "y": 28
+            },
+            "87s2v": {
+              "width": "fill_container",
+              "height": "fill_container",
+              "x": 120,
+              "y": 12
+            },
+            "pTuRj": {
+              "x": 34,
+              "y": 14
+            },
+            "KYNAw": {
+              "width": "fill_container",
+              "height": "fill_container",
+              "x": 261,
+              "y": 12
+            },
+            "u61Nb": {
+              "x": 26.5,
+              "y": 14
+            }
+          }
         }
       ]
     },
@@ -4927,6 +5290,10 @@
               "x": 0,
               "y": 0,
               "descendants": {
+                "mDiSd": {
+                  "x": 16,
+                  "y": 15.5
+                },
                 "bfroE": {
                   "type": "frame",
                   "id": "CyI6J",
@@ -4945,6 +5312,10 @@
                       "fontWeight": "600"
                     }
                   ]
+                },
+                "LMaqO": {
+                  "x": 366,
+                  "y": 18
                 }
               }
             },
@@ -5973,56 +6344,88 @@
           "width": 402,
           "height": 95,
           "descendants": {
+            "nav__eCNzr": {
+              "x": 20,
+              "y": 16
+            },
             "nav__STpiG": {
-              "fill": "#00000000"
+              "fill": "#00000000",
+              "width": "fill_container",
+              "height": "fill_container",
+              "x": 4,
+              "y": 4
             },
             "nav__Iq9la": {
               "fill": "#A8A7A5",
               "iconFontName": "house",
               "width": 20,
-              "height": 20
+              "height": 20,
+              "x": 34,
+              "y": 8.5
             },
             "nav__daTpO": {
               "content": "首页",
               "fill": "#A8A7A5",
               "fontWeight": "500",
               "fontSize": 9,
-              "fontFamily": "Outfit"
+              "fontFamily": "Outfit",
+              "x": 34.5,
+              "y": 32.5
             },
             "nav__GYmji": {
-              "fill": "#00000000"
+              "fill": "#00000000",
+              "width": "fill_container",
+              "height": "fill_container",
+              "x": 92,
+              "y": 4
             },
             "nav__JuZEP": {
               "fill": "#A8A7A5",
               "iconFontName": "layout-grid",
               "width": 20,
-              "height": 20
+              "height": 20,
+              "x": 34,
+              "y": 8.5
             },
             "nav__xpDZ0": {
               "content": "分类",
               "fill": "#A8A7A5",
               "fontWeight": "500",
               "fontSize": 9,
-              "fontFamily": "Outfit"
+              "fontFamily": "Outfit",
+              "x": 34.5,
+              "y": 32.5
             },
             "nav__DGplz": {
-              "fill": "#FFF1E7"
+              "fill": "#FFF1E7",
+              "width": "fill_container",
+              "height": "fill_container",
+              "x": 180,
+              "y": 4
             },
             "nav__Zl5jP": {
               "fill": "#FF7A1A",
               "iconFontName": "shopping-cart",
               "width": 20,
-              "height": 20
+              "height": 20,
+              "x": 34,
+              "y": 8.5
             },
             "nav__shJUx": {
               "content": "购物车",
               "fill": "#FF7A1A",
               "fontWeight": "600",
               "fontSize": 9,
-              "fontFamily": "Outfit"
+              "fontFamily": "Outfit",
+              "x": 30,
+              "y": 32.5
             },
             "nav__r1ggU": {
-              "fill": "#00000000"
+              "fill": "#00000000",
+              "width": "fill_container",
+              "height": "fill_container",
+              "x": 268,
+              "y": 4
             },
             "nav__Ck90t": {
               "fill": "#A8A7A5",
@@ -6038,7 +6441,8 @@
               "fontWeight": "500",
               "fontSize": 9,
               "fontFamily": "Outfit",
-              "y": 32.5
+              "y": 32.5,
+              "x": 34.5
             }
           }
         }
@@ -6150,7 +6554,15 @@
             "mDiSd": {
               "fill": "#3C3B39",
               "width": 24,
-              "height": 24
+              "height": 24,
+              "x": 16,
+              "y": 16
+            },
+            "bfroE": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 170.5,
+              "y": 16.5
             },
             "gobql": {
               "content": "我的卡券",
@@ -6166,7 +6578,9 @@
               "enabled": false
             },
             "LMaqO": {
-              "fill": "#00000000"
+              "fill": "#00000000",
+              "x": 366,
+              "y": 18
             }
           }
         },
@@ -6392,7 +6806,8 @@
               "fill": "#3C3B39",
               "width": 24,
               "height": 24,
-              "y": 16
+              "y": 16,
+              "x": 16
             },
             "bfroE": {
               "width": "fit_content",
@@ -6414,7 +6829,9 @@
               "enabled": false
             },
             "LMaqO": {
-              "fill": "#00000000"
+              "fill": "#00000000",
+              "x": 366,
+              "y": 18
             }
           }
         },
@@ -6843,7 +7260,9 @@
           "y": 0,
           "descendants": {
             "mDiSd": {
-              "fill": "#3C3B39"
+              "fill": "#3C3B39",
+              "x": 16,
+              "y": 15.5
             },
             "bfroE": {
               "type": "frame",
@@ -6865,7 +7284,9 @@
               ]
             },
             "LMaqO": {
-              "fill": "#6D6C6A"
+              "fill": "#6D6C6A",
+              "x": 366,
+              "y": 18
             }
           }
         },
@@ -6962,10 +7383,22 @@
               "y": 99,
               "descendants": {
                 "hFheq": {
-                  "content": "支付方式："
+                  "content": "支付方式：",
+                  "x": 16,
+                  "y": 18
+                },
+                "Xhr9l": {
+                  "width": "fit_content",
+                  "height": "fit_content",
+                  "x": 306,
+                  "y": 18
                 },
                 "BBbs6": {
                   "content": "在线付款"
+                },
+                "1sxPP": {
+                  "x": 64,
+                  "y": 2
                 }
               }
             },
@@ -6978,10 +7411,22 @@
               "y": 167,
               "descendants": {
                 "hFheq": {
-                  "content": "发票信息："
+                  "content": "发票信息：",
+                  "x": 16,
+                  "y": 18
+                },
+                "Xhr9l": {
+                  "width": "fit_content",
+                  "height": "fit_content",
+                  "x": 292,
+                  "y": 18
                 },
                 "BBbs6": {
                   "content": "不需要发票"
+                },
+                "1sxPP": {
+                  "x": 78,
+                  "y": 2
                 }
               }
             },
@@ -7002,11 +7447,19 @@
                   "x": 0,
                   "y": 0,
                   "descendants": {
+                    "0qxbE": {
+                      "width": "fit_content",
+                      "height": "fit_content",
+                      "x": 16,
+                      "y": 11
+                    },
                     "lyaJP": {
-                      "fill": "#6D6C6A"
+                      "fill": "#6D6C6A",
+                      "y": 2
                     },
                     "R3ywE": {
-                      "content": "优味供应链"
+                      "content": "优味供应链",
+                      "x": 26
                     },
                     "gTZK2": {
                       "enabled": false
@@ -7022,6 +7475,12 @@
                   "x": 0,
                   "y": 44,
                   "descendants": {
+                    "OrZcj": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 16,
+                      "y": 24
+                    },
                     "clGXP": {
                       "width": 64,
                       "height": 64,
@@ -7029,21 +7488,40 @@
                       "fill": "#F1ECE6"
                     },
                     "P4baM": {
-                      "fill": "#C4B8AA"
+                      "fill": "#C4B8AA",
+                      "x": 23,
+                      "y": 23
+                    },
+                    "Pbx5u": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 76,
+                      "y": 6
                     },
                     "wz9Ih": {
                       "content": "黄金果农桂圆干260g1袋",
-                      "fontWeight": "500"
+                      "fontWeight": "500",
+                      "width": "fill_container"
+                    },
+                    "YC121": {
+                      "width": "fit_content",
+                      "height": "fit_content",
+                      "y": 30
                     },
                     "hxkcH": {
                       "width": 12,
-                      "height": 12
+                      "height": 12,
+                      "y": 5
                     },
                     "hQYB0": {
-                      "content": "36.00"
+                      "content": "36.00",
+                      "x": 18
                     },
                     "uvFAl": {
-                      "height": "fit_content"
+                      "height": "fit_content",
+                      "width": "fit_content",
+                      "x": 367,
+                      "y": 46
                     },
                     "csZaa": {
                       "content": "1件",
@@ -7168,7 +7646,37 @@
           "ref": "GTAxb",
           "name": "submitBar",
           "x": 0,
-          "y": 912
+          "y": 912,
+          "descendants": {
+            "myQMp": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "y": 23
+            },
+            "rqzYs": {
+              "x": 16,
+              "y": 1.5
+            },
+            "GbXYh": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 90
+            },
+            "TWCws": {
+              "y": 4
+            },
+            "uFwz3": {
+              "x": 20
+            },
+            "R9kEd": {
+              "height": "fill_container",
+              "x": 280
+            },
+            "C8V1L": {
+              "x": 28.5,
+              "y": 22.5
+            }
+          }
         }
       ]
     },
@@ -7374,7 +7882,9 @@
           "y": 0,
           "descendants": {
             "mDiSd": {
-              "fill": "#3C3B39"
+              "fill": "#3C3B39",
+              "x": 16,
+              "y": 15.5
             },
             "bfroE": {
               "type": "frame",
@@ -7396,7 +7906,9 @@
               ]
             },
             "LMaqO": {
-              "fill": "#6D6C6A"
+              "fill": "#6D6C6A",
+              "x": 366,
+              "y": 18
             }
           }
         },
@@ -7667,11 +8179,23 @@
                   "x": 0,
                   "y": 0,
                   "descendants": {
+                    "0qxbE": {
+                      "width": "fit_content",
+                      "height": "fit_content",
+                      "x": 16,
+                      "y": 11
+                    },
+                    "lyaJP": {
+                      "y": 2
+                    },
                     "R3ywE": {
-                      "content": "御欣堂"
+                      "content": "御欣堂",
+                      "x": 26
                     },
                     "gTZK2": {
-                      "content": "待付款"
+                      "content": "待付款",
+                      "x": 344,
+                      "y": 12
                     }
                   }
                 },
@@ -7684,20 +8208,50 @@
                   "x": 0,
                   "y": 44,
                   "descendants": {
+                    "OrZcj": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 16,
+                      "y": 14
+                    },
                     "clGXP": {
                       "fill": "#D7D0C5"
                     },
                     "P4baM": {
-                      "fill": "#F6F1EA"
+                      "fill": "#F6F1EA",
+                      "x": 33,
+                      "y": 33
+                    },
+                    "Pbx5u": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 96,
+                      "y": 16
                     },
                     "wz9Ih": {
-                      "content": "关东即食海参500克"
+                      "content": "关东即食海参500克",
+                      "width": "fill_container"
+                    },
+                    "YC121": {
+                      "width": "fit_content",
+                      "height": "fit_content",
+                      "y": 30
+                    },
+                    "hxkcH": {
+                      "y": 4
                     },
                     "hQYB0": {
-                      "content": "660.00"
+                      "content": "660.00",
+                      "x": 20
+                    },
+                    "uvFAl": {
+                      "width": "fit_content",
+                      "x": 374,
+                      "y": 14
                     },
                     "csZaa": {
-                      "content": "x1"
+                      "content": "x1",
+                      "y": 68
                     }
                   }
                 },
@@ -7814,13 +8368,22 @@
                   "y": 0,
                   "descendants": {
                     "0qxbE": {
-                      "width": "fit_content"
+                      "width": "fit_content",
+                      "height": "fit_content",
+                      "x": 16,
+                      "y": 11
+                    },
+                    "lyaJP": {
+                      "y": 2
                     },
                     "R3ywE": {
-                      "content": "优味供应链"
+                      "content": "优味供应链",
+                      "x": 26
                     },
                     "gTZK2": {
-                      "content": "待付款"
+                      "content": "待付款",
+                      "x": 344,
+                      "y": 12
                     }
                   }
                 },
@@ -7833,28 +8396,50 @@
                   "x": 0,
                   "y": 44,
                   "descendants": {
+                    "OrZcj": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 16,
+                      "y": 14
+                    },
                     "clGXP": {
                       "fill": "#DDE8D6"
                     },
                     "P4baM": {
-                      "fill": "#90A56C"
+                      "fill": "#90A56C",
+                      "x": 33,
+                      "y": 33
                     },
                     "Pbx5u": {
                       "height": "fit_content",
-                      "y": 6
+                      "y": 6,
+                      "width": "fill_container",
+                      "x": 96
                     },
                     "wz9Ih": {
-                      "content": "森宝萌宝系列悬挂式抽纸挂抽1280张（6提/箱装）"
+                      "content": "森宝萌宝系列悬挂式抽纸挂抽1280张（6提/箱装）",
+                      "width": "fill_container"
                     },
                     "YC121": {
                       "width": "fit_content",
-                      "y": 50
+                      "y": 50,
+                      "height": "fit_content"
+                    },
+                    "hxkcH": {
+                      "y": 4
                     },
                     "hQYB0": {
-                      "content": "46.90"
+                      "content": "46.90",
+                      "x": 20
+                    },
+                    "uvFAl": {
+                      "width": "fit_content",
+                      "x": 374,
+                      "y": 14
                     },
                     "csZaa": {
-                      "content": "x1"
+                      "content": "x1",
+                      "y": 68
                     }
                   }
                 },
@@ -7867,23 +8452,50 @@
                   "x": 0,
                   "y": 156,
                   "descendants": {
+                    "OrZcj": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 16,
+                      "y": 14
+                    },
                     "clGXP": {
                       "fill": "#0B0B0B"
                     },
                     "P4baM": {
-                      "fill": "#FFFFFF80"
+                      "fill": "#FFFFFF80",
+                      "x": 33,
+                      "y": 33
+                    },
+                    "Pbx5u": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 96,
+                      "y": 16
                     },
                     "wz9Ih": {
-                      "content": "黄金果农高山银耳35gx1罐"
+                      "content": "黄金果农高山银耳35gx1罐",
+                      "width": "fill_container"
                     },
                     "YC121": {
-                      "width": "fit_content"
+                      "width": "fit_content",
+                      "height": "fit_content",
+                      "y": 30
+                    },
+                    "hxkcH": {
+                      "y": 4
                     },
                     "hQYB0": {
-                      "content": "78.00"
+                      "content": "78.00",
+                      "x": 20
+                    },
+                    "uvFAl": {
+                      "width": "fit_content",
+                      "x": 374,
+                      "y": 14
                     },
                     "csZaa": {
-                      "content": "x1"
+                      "content": "x1",
+                      "y": 68
                     }
                   }
                 },
@@ -7897,33 +8509,49 @@
                   "y": 268,
                   "descendants": {
                     "OrZcj": {
-                      "width": "fill_container"
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 16,
+                      "y": 14
                     },
                     "clGXP": {
                       "fill": "#E9E0D3"
                     },
                     "P4baM": {
-                      "fill": "#BFAE97"
+                      "fill": "#BFAE97",
+                      "x": 33,
+                      "y": 33
                     },
                     "Pbx5u": {
-                      "width": "fill_container"
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 96,
+                      "y": 16
                     },
                     "wz9Ih": {
                       "content": "黄金果农桂圆干260gx1袋",
                       "width": "fill_container"
                     },
                     "YC121": {
-                      "width": "fit_content"
+                      "width": "fit_content",
+                      "height": "fit_content",
+                      "y": 30
+                    },
+                    "hxkcH": {
+                      "y": 4
                     },
                     "hQYB0": {
-                      "content": "36.00"
+                      "content": "36.00",
+                      "x": 20
                     },
                     "uvFAl": {
                       "width": "fit_content",
-                      "x": 372
+                      "x": 372,
+                      "y": 14
                     },
                     "csZaa": {
-                      "content": "x2"
+                      "content": "x2",
+                      "y": 68
                     }
                   }
                 },
@@ -7972,6 +8600,679 @@
               ]
             }
           ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "wIcpY",
+      "x": 1966,
+      "y": 3220,
+      "name": "商家首页 / Unified",
+      "clip": true,
+      "width": 402,
+      "height": 980,
+      "fill": "#FFFFFF",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "5PdnF",
+          "type": "ref",
+          "ref": "QwsNY",
+          "name": "storeTopNavRef",
+          "width": "fill_container",
+          "x": 0,
+          "y": 0,
+          "descendants": {
+            "jEddX": {
+              "x": 12,
+              "y": 15
+            },
+            "yjRQ6": {
+              "width": "fill_container",
+              "height": "fill_container",
+              "x": 44,
+              "y": 8
+            },
+            "zcdWp": {
+              "x": 12,
+              "y": 10
+            },
+            "0EBXd": {
+              "x": 36,
+              "y": 8
+            },
+            "BV5f0": {
+              "x": 368,
+              "y": 15
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "1i508",
+          "name": "storeHero",
+          "width": "fill_container",
+          "height": 146,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 90,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#5A4033",
+                "position": 0
+              },
+              {
+                "color": "#2B2521",
+                "position": 1
+              }
+            ]
+          },
+          "padding": [
+            18,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "CfKFh",
+              "name": "heroInfo",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "CJrRx",
+                  "name": "avatar",
+                  "width": 58,
+                  "height": 58,
+                  "fill": "#D93A2F",
+                  "cornerRadius": 29,
+                  "stroke": {
+                    "thickness": 3,
+                    "fill": "#FFFFFFCC"
+                  },
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "cZ5df",
+                      "name": "avatarIcon",
+                      "width": 28,
+                      "height": 28,
+                      "iconFontName": "storefront",
+                      "iconFontFamily": "Material Symbols Rounded",
+                      "weight": 500,
+                      "fill": "#FFFFFF"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "LLstg",
+                  "name": "storeMeta",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "T5oWA",
+                      "name": "storeName",
+                      "fill": "#FFFFFF",
+                      "content": "优味供应链",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nP3le",
+                      "name": "storeFav",
+                      "fill": "#F4EEE8",
+                      "content": "2人收藏",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ntuiW",
+                      "name": "storeTag",
+                      "fill": "#FFD7B3",
+                      "content": "满99包邮",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "2Lci7",
+              "name": "favBtn",
+              "fill": "#FFFFFF24",
+              "cornerRadius": 10,
+              "padding": [
+                8,
+                14
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "bXxGR",
+                  "name": "favText",
+                  "fill": "#FFFFFF",
+                  "content": "取消收藏",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "2w06C",
+          "name": "tabs",
+          "width": "fill_container",
+          "height": 46,
+          "stroke": {
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "#EEEAE5"
+          },
+          "padding": [
+            0,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "Q9Q3O",
+              "name": "tabHome",
+              "fill": "#EA580C",
+              "content": "店铺首页",
+              "fontFamily": "DM Sans",
+              "fontSize": 15,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "qMaPn",
+              "name": "tabAll",
+              "fill": "#58524D",
+              "content": "全部商品",
+              "fontFamily": "DM Sans",
+              "fontSize": 15,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "RR2Tn",
+              "name": "tabNew",
+              "fill": "#58524D",
+              "content": "最新商品",
+              "fontFamily": "DM Sans",
+              "fontSize": 15,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "0BtqE",
+              "name": "tabPromo",
+              "fill": "#58524D",
+              "content": "促销活动",
+              "fontFamily": "DM Sans",
+              "fontSize": 15,
+              "fontWeight": "500"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "H1uWu",
+          "name": "content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "#FFFFFF",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            16,
+            16,
+            12,
+            16
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "5fZRM",
+              "name": "sectionTitle",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 2,
+                  "id": "LmpVq",
+                  "name": "sectionAccent",
+                  "fill": "#4EA7FF",
+                  "width": 3,
+                  "height": 20
+                },
+                {
+                  "type": "text",
+                  "id": "QmsBy",
+                  "name": "sectionLabel",
+                  "fill": "#2F2A26",
+                  "content": "店主推荐",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 24,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "0IgzN",
+              "name": "productGrid",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "fstg7",
+                  "name": "row1",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "id": "qrMqe",
+                      "type": "ref",
+                      "ref": "TQrkL",
+                      "name": "storeCardRef1",
+                      "width": 171,
+                      "x": 0,
+                      "y": 0,
+                      "descendants": {
+                        "graT7": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "./images/store-home-card-1.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "wtitn": {
+                          "content": "黄金果芒果干"
+                        },
+                        "zJcpN": {
+                          "content": "¥49.90"
+                        },
+                        "adUN0": {
+                          "content": "¥59.90",
+                          "x": 72
+                        }
+                      }
+                    },
+                    {
+                      "id": "ofjlR",
+                      "type": "ref",
+                      "ref": "TQrkL",
+                      "name": "storeCardRef2",
+                      "width": 171,
+                      "x": 199,
+                      "y": 0,
+                      "descendants": {
+                        "graT7": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "./images/store-home-card-2.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "wtitn": {
+                          "content": "黄金果芒果干2袋"
+                        },
+                        "zJcpN": {
+                          "content": "¥52.00"
+                        },
+                        "adUN0": {
+                          "content": "¥62.00"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "MasI3",
+                  "name": "row2",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "id": "LIkso",
+                      "type": "ref",
+                      "ref": "TQrkL",
+                      "name": "storeCardRef3",
+                      "width": 171,
+                      "x": 0,
+                      "y": 0,
+                      "descendants": {
+                        "graT7": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "./images/store-home-card-3.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "wtitn": {
+                          "content": "黄金果芒果条礼盒"
+                        },
+                        "zJcpN": {
+                          "content": "¥39.90"
+                        },
+                        "adUN0": {
+                          "content": "¥49.90"
+                        }
+                      }
+                    },
+                    {
+                      "id": "sjIEi",
+                      "type": "ref",
+                      "ref": "TQrkL",
+                      "name": "storeCardRef4",
+                      "width": 171,
+                      "x": 199,
+                      "y": 0,
+                      "descendants": {
+                        "graT7": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "./images/store-home-card-4.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "wtitn": {
+                          "content": "浓香椰蓉球"
+                        },
+                        "zJcpN": {
+                          "content": "¥29.90"
+                        },
+                        "adUN0": {
+                          "content": "¥39.90"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "qUYo0",
+          "name": "bottomNav",
+          "width": "fill_container",
+          "height": 74,
+          "fill": "#FFFFFF",
+          "stroke": {
+            "thickness": {
+              "top": 1
+            },
+            "fill": "#EEEAE5"
+          },
+          "padding": [
+            8,
+            10,
+            12,
+            10
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "5hTuo",
+              "name": "navStore",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "xNoIT",
+                  "name": "navStoreIcon",
+                  "width": 20,
+                  "height": 20,
+                  "iconFontName": "storefront",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "weight": 500,
+                  "fill": "#9C9B99"
+                },
+                {
+                  "type": "text",
+                  "id": "mI7Qa",
+                  "name": "navStoreText",
+                  "fill": "#9C9B99",
+                  "content": "店铺信息",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 10,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "BTnFV",
+              "name": "navCoupon",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "v4DF2",
+                  "name": "navCouponIcon",
+                  "width": 20,
+                  "height": 20,
+                  "iconFontName": "confirmation_number",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "weight": 500,
+                  "fill": "#9C9B99"
+                },
+                {
+                  "type": "text",
+                  "id": "Y9o49",
+                  "name": "navCouponText",
+                  "fill": "#9C9B99",
+                  "content": "奖励领券",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 10,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "3vbEO",
+              "name": "navService",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "YEMJL",
+                  "name": "navServiceIcon",
+                  "width": 20,
+                  "height": 20,
+                  "iconFontName": "support_agent",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "weight": 500,
+                  "fill": "#9C9B99"
+                },
+                {
+                  "type": "text",
+                  "id": "YODva",
+                  "name": "navServiceText",
+                  "fill": "#9C9B99",
+                  "content": "联系客服",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 10,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "qWyru",
+              "name": "navAbout",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "4jxjp",
+                  "name": "navAboutIcon",
+                  "width": 20,
+                  "height": 20,
+                  "iconFontName": "info",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "weight": 500,
+                  "fill": "#9C9B99"
+                },
+                {
+                  "type": "text",
+                  "id": "cDUpm",
+                  "name": "navAboutText",
+                  "fill": "#9C9B99",
+                  "content": "关于我们",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 10,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "QwsNY",
+      "x": 40,
+      "y": 1340,
+      "name": "Component/TopNav/StoreSearchShared",
+      "reusable": true,
+      "width": 402,
+      "height": 52,
+      "stroke": {
+        "thickness": {
+          "bottom": 1
+        },
+        "fill": "#EEEAE5"
+      },
+      "gap": 10,
+      "padding": [
+        8,
+        12
+      ],
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "icon_font",
+          "id": "jEddX",
+          "name": "backIcon",
+          "width": 22,
+          "height": 22,
+          "iconFontName": "chevron-left",
+          "iconFontFamily": "lucide",
+          "fill": "#7E7A76"
+        },
+        {
+          "type": "frame",
+          "id": "yjRQ6",
+          "name": "searchField",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "#F5F3F1",
+          "cornerRadius": 18,
+          "gap": 8,
+          "padding": [
+            0,
+            12
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon_font",
+              "id": "zcdWp",
+              "name": "searchIcon",
+              "width": 16,
+              "height": 16,
+              "iconFontName": "search",
+              "iconFontFamily": "lucide",
+              "fill": "#A7A29D"
+            },
+            {
+              "type": "text",
+              "id": "0EBXd",
+              "name": "searchText",
+              "fill": "#B6B0AA",
+              "content": "搜索店铺内商品",
+              "fontFamily": "DM Sans",
+              "fontSize": 14,
+              "fontWeight": "500"
+            }
+          ]
+        },
+        {
+          "type": "icon_font",
+          "id": "BV5f0",
+          "name": "menuIcon",
+          "width": 22,
+          "height": 22,
+          "iconFontName": "menu",
+          "iconFontFamily": "lucide",
+          "fill": "#F08A3E"
         }
       ]
     }
