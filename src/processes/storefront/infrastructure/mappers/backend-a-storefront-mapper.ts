@@ -40,14 +40,13 @@ export interface BackendAStorefrontProductDto {
 
 export interface BackendAStorefrontHomeDto {
   categories?: BackendAStorefrontCategoryDto[] | null
-  latest_products?: BackendAStorefrontProductDto[] | null
   platform: {
     address: string | null
     banners?: string[] | null
     company_name: string | null
     promo_video?: string | null
   }
-  recommended_products?: BackendAStorefrontProductDto[] | null
+  products?: BackendAStorefrontProductDto[] | null
 }
 
 function ensureArray<T>(input: T[] | null | undefined): T[] {
@@ -166,23 +165,16 @@ export function mapBackendAHomeBanners(data: BackendAStorefrontHomeDto): HomePag
 export function mapBackendAHomePageData(
   data: BackendAStorefrontHomeDto,
 ): HomePageData {
-  const recommendedProducts = ensureArray(data.recommended_products)
-  const latestProducts = ensureArray(data.latest_products)
   const categories = ensureArray(data.categories)
   const banners = mapBackendAHomeBanners(data)
   const promoVideo = resolveBackendAMediaUrl(data.platform?.promo_video)
-  const featuredProducts = Array.from(
-    new Map(
-      [...recommendedProducts, ...latestProducts]
-        .map((product) => [String(product.id), mapBackendAStorefrontProductCard(product)]),
-    ).values(),
-  )
+  const featuredProducts = ensureArray(data.products).map(mapBackendAStorefrontProductCard)
 
   const quickCategories = categories.map((category) => ({
-      id: String(category.id),
-      imageUrl: resolveBackendAMediaUrl(category.logo),
-      label: category.name,
-    }))
+    id: String(category.id),
+    imageUrl: resolveBackendAMediaUrl(category.logo),
+    label: category.name,
+  }))
 
   return {
     banners,

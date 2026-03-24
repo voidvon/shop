@@ -1,7 +1,7 @@
 # API 接口明细索引
 
 来源：[`openapi.json`](/root/shop/docs/api/openapi.json)  
-抓取时间：`2026-03-23`
+抓取时间：`2026-03-24`
 
 说明：
 
@@ -90,7 +90,7 @@
 
 | 方法 | 路径 | 鉴权 | 参数 | 请求体 | 成功响应 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| GET | /api/v1/home | 公开 | query:recommend_limit, query:latest_limit, query:category_limit | - | object | 首页聚合接口 |
+| GET | /api/v1/home | 公开 | query:product_limit, query:category_limit | - | object | 首页聚合接口 |
 
 ## 线下付款
 

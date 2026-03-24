@@ -4,7 +4,7 @@
 
 - Swagger 页面：`http://123.207.4.226:8080/api/documentation`
 - OpenAPI JSON：`http://123.207.4.226:8080/docs?api-docs.json`
-- 最近一次抓取时间：`2026-03-23`
+- 最近一次抓取时间：`2026-03-24`
 - 原始文件：[`openapi.json`](/root/shop/docs/api/openapi.json)
 
 说明：
@@ -143,6 +143,7 @@
 - 以 [`endpoints.md`](/root/shop/docs/api/endpoints.md) 作为方法、路径、鉴权、参数、请求体和响应模型的速查表
 - 以 [`frontend-integration-status.md`](/root/shop/docs/api/frontend-integration-status.md) 作为“当前代码已经接了什么、哪些还没接、哪些与 Swagger 不一致”的对照清单
 - 后续如果后端 Swagger 变更，优先重新抓取 `openapi.json`，再同步更新本文件中的统计与分组
+- `GET /api/v1/home` 已在本次抓取中更新为 `query:product_limit, category_limit`，响应商品字段改为 `products`
 
 ## 6. 刷新方式
 

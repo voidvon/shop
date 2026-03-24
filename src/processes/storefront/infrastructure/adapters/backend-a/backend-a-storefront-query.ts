@@ -65,6 +65,7 @@ export const backendAStorefrontQuery: StorefrontQuery = {
   async getHomePageData() {
     const homeData = await backendAHttpClient.get<BackendAStorefrontHomeDto>('/api/v1/home', {
       category_limit: 8,
+      product_limit: 50,
     })
 
     const mappedHomePageData = mapBackendAHomePageData(homeData)

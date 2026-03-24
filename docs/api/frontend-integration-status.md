@@ -6,7 +6,7 @@
 - 当前运行时装配：[`src/app/providers/backend/create-backend-runtime.ts`](/root/shop/src/app/providers/backend/create-backend-runtime.ts)
 - 现有 `backend-a` 适配层与浏览器仓储实现
 
-更新时间：`2026-03-23`
+更新时间：`2026-03-24`
 
 ## 1. 先看结论
 
@@ -90,7 +90,7 @@
 
 | 业务域 | Swagger 中是否存在 | 当前前端是否有页面/流程 | 当前接入状态 | 现状说明 |
 | --- | --- | --- | --- | --- |
-| 首页 | 是 | 是 | 已直连 | `backendAStorefrontQuery` 已调用 `/api/v1/home` |
+| 首页 | 是 | 是 | 已直连 | `backendAStorefrontQuery` 已按最新 Swagger 调用 `/api/v1/home`，使用 `product_limit + category_limit` 并映射 `products` |
 | 分类 | 是 | 是 | 已直连 | 已调用 `/api/v1/product-categories` 与 `/api/v1/products` |
 | 商品列表/商品详情 | 是 | 是 | 已直连 | `backendAProductRepository` 已调用 `/api/v1/products` 与 `/api/v1/products/{product}` |
 | 购物车 | 是 | 是 | 已直连 | runtime 已装配真实 `createBackendACartRepository(...)` |
@@ -118,6 +118,7 @@
 
 - `backendAProductRepository` 已切到真实 `/api/v1/products` 与 `/api/v1/products/{product}`
 - `backendAStorefrontQuery` 已切到真实 `/api/v1/home` 与 `/api/v1/product-categories`
+- 最新 Swagger 中 `/api/v1/home` 只返回 `products`，并使用 `product_limit` 控制数量；当前前端已完成适配
 - 当前仍保留了前端自己的页面模型，后端 DTO 没有直接泄漏到页面层
 - 商品详情页中的评分、店铺分数、默认规格文案仍有少量前端兜底展示，不是 Swagger 原样透传
 

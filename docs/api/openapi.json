@@ -282,21 +282,12 @@
                 "operationId": "5a4f3cbd18230b9ed3b0d64ce6235e1d",
                 "parameters": [
                     {
-                        "name": "recommend_limit",
+                        "name": "product_limit",
                         "in": "query",
-                        "description": "推荐商品返回数量，为空时使用默认值12",
+                        "description": "首页商品返回数量，为空时使用默认值50",
                         "schema": {
                             "type": "integer",
-                            "default": 12
-                        }
-                    },
-                    {
-                        "name": "latest_limit",
-                        "in": "query",
-                        "description": "最新商品返回数量，为空时使用默认值12",
-                        "schema": {
-                            "type": "integer",
-                            "default": 12
+                            "default": 50
                         }
                     },
                     {
@@ -335,13 +326,8 @@
                                                         "$ref": "#/components/schemas/ProductCategoryItem"
                                                     }
                                                 },
-                                                "recommended_products": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/ProductPayload"
-                                                    }
-                                                },
-                                                "latest_products": {
+                                                "products": {
+                                                    "description": "首页商品列表，排序规则：推荐降序 -> 销量降序 -> 创建时间倒序",
                                                     "type": "array",
                                                     "items": {
                                                         "$ref": "#/components/schemas/ProductPayload"
