@@ -66,6 +66,7 @@ const {
 } = useStorePageModel(storeId, preferredStoreName)
 
 const primaryBenefit = computed(() => storeBenefits.value[0] ?? '支持售后无忧')
+const storeLogoDisplayUrl = computed(() => heroImageUrl.value ?? storeLogoUrl.value)
 const filterDrawerVisible = ref(false)
 const loadMoreTriggerRef = ref<HTMLElement | null>(null)
 const isAllProductsTab = computed(() => activeTab.value === 'all-products')
@@ -333,7 +334,7 @@ watch(
         <div class="store-hero-content">
           <div class="store-identity">
             <div class="store-logo">
-              <img v-if="storeLogoUrl" :src="storeLogoUrl" :alt="storeName" class="store-logo-image">
+              <img v-if="storeLogoDisplayUrl" :src="storeLogoDisplayUrl" :alt="storeName" class="store-logo-image">
               <van-icon v-else name="shop-o" size="28" />
             </div>
 
@@ -342,11 +343,11 @@ watch(
               <p>{{ storeSummary }}</p>
               <span class="store-benefit">{{ primaryBenefit }}</span>
             </div>
-          </div>
 
-          <van-button class="follow-button" round size="small" type="default" @click="handleToggleStoreFavorite">
-            {{ isStoreFavorited ? '取消收藏' : '收藏店铺' }}
-          </van-button>
+            <van-button class="follow-button" round size="small" type="default" @click="handleToggleStoreFavorite">
+              {{ isStoreFavorited ? '取消收藏' : '收藏店铺' }}
+            </van-button>
+          </div>
         </div>
 
         <div class="store-meta-grid">
@@ -615,7 +616,6 @@ watch(
   width: calc(100% - 32px);
   margin: 0 16px;
   border-radius: 18px;
-  min-height: 220px;
   background: linear-gradient(180deg, #5a4033 0%, #2b2521 100%);
 }
 
@@ -632,21 +632,19 @@ watch(
   z-index: 1;
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 18px 16px 14px;
+  padding: 16px 16px 6px;
 }
 
 .store-meta-grid {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
   gap: 10px;
-  padding: 0 16px 18px;
+  padding: 0 16px 16px;
 }
 
 .store-meta-item {
+  flex: 1;
   display: grid;
   gap: 6px;
   min-width: 0;
@@ -677,7 +675,8 @@ watch(
 .store-identity {
   display: flex;
   gap: 12px;
-  align-items: flex-start;
+  align-items: center;
+  width: 100%;
   min-width: 0;
 }
 
@@ -702,6 +701,7 @@ watch(
 
 .store-copy {
   display: grid;
+  flex: 1;
   gap: 4px;
   min-width: 0;
 }
@@ -731,12 +731,27 @@ watch(
 }
 
 .follow-button {
-  flex: none;
-  --van-button-default-height: 36px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-self: flex-start;
+  margin-left: auto;
+  width: auto;
+  min-width: 0;
+  padding: 0;
+  white-space: nowrap;
+  font-weight: 600;
+  --van-button-small-height: 30px;
+  --van-button-small-padding: 0 10px;
   --van-button-default-border-color: rgba(255, 255, 255, 0.92);
   --van-button-default-color: #2b2521;
   --van-button-default-background: rgba(255, 255, 255, 0.92);
-  font-weight: 600;
+  --van-button-border-width: 1px;
+  font-size: 12px;
+}
+
+.follow-button :deep(.van-button__content) {
+  padding: 0 8px;
+  white-space: nowrap;
 }
 
 .store-panel {
@@ -1075,21 +1090,16 @@ watch(
 
 @media (max-width: 360px) {
   .store-top-bar,
-  .store-hero-content,
   .store-identity {
     align-items: flex-start;
   }
 
-  .store-hero-content {
-    flex-direction: column;
-  }
-
   .follow-button {
-    width: 100%;
+    width: auto;
   }
 
   .store-meta-grid {
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
   }
 }
 </style>

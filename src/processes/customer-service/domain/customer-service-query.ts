@@ -16,4 +16,5 @@ export interface CustomerServiceQuery {
   getConversationList(query?: { perPage?: number }): Promise<CustomerServiceConversationSummary[]>
   getConversationMessages(conversationId: string, query?: { perPage?: number }): Promise<CustomerServiceMessage[]>
   getUnreadSummary(): Promise<CustomerServiceUnreadSummary>
+  uploadConversationImage(file: File): Promise<string>
 }

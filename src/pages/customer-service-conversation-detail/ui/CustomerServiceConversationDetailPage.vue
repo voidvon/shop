@@ -13,15 +13,18 @@ const POLLING_INTERVAL_MS = 12000
 const route = useRoute()
 const router = useRouter()
 const draftMessage = ref('')
+const imageInputRef = useTemplateRef<HTMLInputElement>('imageInputRef')
 const messageListRef = useTemplateRef<HTMLDivElement>('messageListRef')
 
 const {
+  appendImageMessage,
   appendMessage,
   conversation,
   errorMessage,
   hasMessages,
   isLoading,
   isSending,
+  isUploadingImage,
   loadConversationDetailPage,
   messages,
   syncConversationIncrement,
@@ -46,6 +49,88 @@ const canReply = computed(() => conversation.value?.canReply !== false)
 const footerPlaceholder = computed(() => (
   canReply.value ? '请输入消息' : '当前会话暂不可继续发送'
 ))
+const isComposerBusy = computed(() => isSending.value || isUploadingImage.value)
+const markdownImagePattern = /^!\[([^\]]*)\]\(([^)]+)\)(?:\s*[\r\n]+([\s\S]+))?$/
+const taggedImagePattern = /^【图片】\s*(\S+)(?:\s*[\r\n]+([\s\S]+))?$/
+
+function normalizeImageSource(value: string) {
+  const normalizedValue = value.trim()
+
+  if (!normalizedValue) {
+    return null
+  }
+
+  if (
+    normalizedValue.startsWith('http://')
+    || normalizedValue.startsWith('https://')
+    || normalizedValue.startsWith('data:image/')
+    || normalizedValue.startsWith('/')
+    || normalizedValue.startsWith('./')
+    || normalizedValue.startsWith('../')
+  ) {
+    return normalizedValue
+  }
+
+  return null
+}
+
+function resolveImageMessagePayload(content: string) {
+  const normalizedContent = content.trim()
+
+  if (!normalizedContent) {
+    return null
+  }
+
+  const markdownMatch = normalizedContent.match(markdownImagePattern)
+
+  if (markdownMatch) {
+    const imageUrl = normalizeImageSource(markdownMatch[2] ?? '')
+
+    if (!imageUrl) {
+      return null
+    }
+
+    return {
+      alt: markdownMatch[1]?.trim() || '聊天图片',
+      caption: markdownMatch[3]?.trim() || null,
+      url: imageUrl,
+    }
+  }
+
+  const taggedMatch = normalizedContent.match(taggedImagePattern)
+
+  if (taggedMatch) {
+    const imageUrl = normalizeImageSource(taggedMatch[1] ?? '')
+
+    if (!imageUrl) {
+      return null
+    }
+
+    return {
+      alt: '聊天图片',
+      caption: taggedMatch[2]?.trim() || null,
+      url: imageUrl,
+    }
+  }
+
+  return null
+}
+
+function isImageMessage(content: string) {
+  return Boolean(resolveImageMessagePayload(content))
+}
+
+function resolveImageMessageUrl(content: string) {
+  return resolveImageMessagePayload(content)?.url ?? ''
+}
+
+function resolveImageMessageAlt(content: string) {
+  return resolveImageMessagePayload(content)?.alt ?? '聊天图片'
+}
+
+function resolveImageMessageCaption(content: string) {
+  return resolveImageMessagePayload(content)?.caption ?? ''
+}
 
 function formatDateTime(value: string | null) {
   if (!value) {
@@ -164,6 +249,43 @@ async function handleSendMessage() {
   }
 }
 
+function openAttachmentPicker() {
+  if (!canReply.value || isComposerBusy.value) {
+    return
+  }
+
+  imageInputRef.value?.click()
+}
+
+async function handleImageFileChange(event: Event) {
+  if (!conversationId.value) {
+    return
+  }
+
+  const inputElement = event.target as HTMLInputElement | null
+  const selectedFile = inputElement?.files?.[0] ?? null
+
+  if (!selectedFile) {
+    return
+  }
+
+  if (inputElement) {
+    inputElement.value = ''
+  }
+
+  if (!selectedFile.type.startsWith('image/')) {
+    showToast('请选择图片文件')
+    return
+  }
+
+  try {
+    await appendImageMessage(conversationId.value, selectedFile)
+    await scrollToBottom()
+  } catch (error) {
+    showFailToast(error instanceof Error ? error.message : '图片发送失败')
+  }
+}
+
 function handleMessageKeydown(event: KeyboardEvent) {
   if (event.key !== 'Enter' || event.shiftKey || event.isComposing) {
     return
@@ -279,11 +401,24 @@ onBeforeUnmount(() => {
               <div
                 class="message-bubble"
                 :class="{
+                  'message-bubble-image': isImageMessage(message.content),
                   'message-bubble-member': message.senderRole === 'member',
                   'message-bubble-service': message.senderRole !== 'member',
                 }"
               >
-                {{ message.content }}
+                <template v-if="isImageMessage(message.content)">
+                  <img
+                    class="message-image"
+                    :src="resolveImageMessageUrl(message.content)"
+                    :alt="resolveImageMessageAlt(message.content)"
+                  >
+                  <p v-if="resolveImageMessageCaption(message.content)" class="message-image-caption">
+                    {{ resolveImageMessageCaption(message.content) }}
+                  </p>
+                </template>
+                <template v-else>
+                  {{ message.content }}
+                </template>
               </div>
             </div>
           </article>
@@ -300,6 +435,22 @@ onBeforeUnmount(() => {
     </div>
 
     <footer class="composer-bar">
+      <input
+        ref="imageInputRef"
+        class="composer-file-input"
+        accept="image/*"
+        type="file"
+        @change="handleImageFileChange"
+      >
+      <button
+        type="button"
+        class="attachment-button"
+        :disabled="!canReply || isComposerBusy"
+        @click="openAttachmentPicker"
+      >
+        <van-loading v-if="isUploadingImage" size="18" />
+        <van-icon v-else name="photograph" size="20" />
+      </button>
       <van-field
         v-model="draftMessage"
         autosize
@@ -313,7 +464,7 @@ onBeforeUnmount(() => {
       />
       <van-button
         color="#07c160"
-        :disabled="!canReply || !draftMessage.trim()"
+        :disabled="!canReply || !draftMessage.trim() || isUploadingImage"
         :loading="isSending"
         round
         type="primary"
@@ -328,10 +479,11 @@ onBeforeUnmount(() => {
 <style scoped>
 .customer-service-detail-page {
   display: flex;
-  min-height: 100vh;
-  min-height: 100dvh;
   flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
   background: #ededed;
+  overflow: hidden;
 }
 
 .chat-status-bar {
@@ -393,8 +545,9 @@ onBeforeUnmount(() => {
 
 .message-list {
   display: flex;
-  min-height: 0;
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   flex-direction: column;
   gap: 10px;
   overflow-y: auto;
@@ -473,6 +626,12 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
+.message-bubble-image {
+  min-width: 0;
+  max-width: min(calc(100% - 56px), 248px);
+  padding: 8px;
+}
+
 .message-bubble-member {
   background: #95ec69;
   color: #1f2329;
@@ -483,38 +642,96 @@ onBeforeUnmount(() => {
   color: #1f2329;
 }
 
+.message-image {
+  display: block;
+  width: 100%;
+  max-width: 232px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.08);
+  object-fit: cover;
+}
+
+.message-image-caption {
+  margin: 8px 2px 2px;
+  color: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .message-empty {
   margin-top: 48px;
 }
 
 .composer-bar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 10px;
-  align-items: flex-end;
-  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  align-items: center;
+  padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid rgba(33, 33, 33, 0.06);
   background: #f7f7f7;
 }
 
+.composer-file-input {
+  display: none;
+}
+
+.attachment-button {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #6b7280;
+}
+
+.attachment-button:disabled {
+  opacity: 0.45;
+}
+
 .composer-input {
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  border-radius: 6px;
   background: #fff;
+}
+
+.composer-input :deep(.van-cell) {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
 }
 
 .composer-input :deep(.van-field__control) {
   max-height: 120px;
+  min-height: 20px;
+  padding: 0;
+  line-height: 20px;
 }
 
 .composer-input :deep(.van-field__body) {
-  align-items: flex-end;
+  align-items: center;
+  min-height: 30px;
 }
 
 .composer-input :deep(.van-field__value) {
-  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
 }
 
 .composer-bar :deep(.van-button) {
+  align-self: center;
+  height: 34px;
   min-width: 70px;
   --van-button-primary-border-color: #07c160;
 }

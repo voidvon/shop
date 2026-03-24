@@ -9,6 +9,15 @@ import {
 
 const emptyConversationMessages: CustomerServiceMessage[] = []
 
+function normalizeImageAlt(fileName: string) {
+  const baseName = fileName
+    .replace(/\.[^.]+$/, '')
+    .replace(/[\r\n\[\]\(\)]/g, ' ')
+    .trim()
+
+  return baseName || '图片'
+}
+
 function dedupeMessages(messages: CustomerServiceMessage[]) {
   const seenIds = new Set<string>()
   const nextMessages: CustomerServiceMessage[] = []
@@ -48,6 +57,7 @@ export function useCustomerServiceConversationDetailPageModel() {
   const errorMessage = ref<string | null>(null)
   const isLoading = ref(false)
   const isSending = ref(false)
+  const isUploadingImage = ref(false)
   const messages = ref<CustomerServiceMessage[]>(emptyConversationMessages)
 
   const hasMessages = computed(() => messages.value.length > 0)
@@ -93,6 +103,25 @@ export function useCustomerServiceConversationDetailPageModel() {
     }
   }
 
+  async function appendImageMessage(conversationId: string, file: File) {
+    isUploadingImage.value = true
+    errorMessage.value = null
+
+    try {
+      const uploadedImageUrl = await customerServiceQuery.uploadConversationImage(file)
+
+      await appendMessage(
+        conversationId,
+        `![${normalizeImageAlt(file.name)}](${uploadedImageUrl})`,
+      )
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : '图片发送失败'
+      throw error
+    } finally {
+      isUploadingImage.value = false
+    }
+  }
+
   async function syncConversationIncrement(conversationId: string) {
     try {
       const nextMessages = await customerServiceQuery.getConversationIncrement({
@@ -120,12 +149,14 @@ export function useCustomerServiceConversationDetailPageModel() {
   }
 
   return {
+    appendImageMessage,
     appendMessage,
     conversation,
     errorMessage,
     hasMessages,
     isLoading,
     isSending,
+    isUploadingImage,
     loadConversationDetailPage,
     messages,
     syncConversationIncrement,

@@ -264,5 +264,30 @@ export function createMockCustomerServiceQuery(
     async getUnreadSummary() {
       return buildUnreadSummary(readStoredConversations(getScopeKey()))
     },
+
+    async uploadConversationImage(file) {
+      if (typeof FileReader === 'undefined') {
+        throw new Error('当前环境不支持图片读取')
+      }
+
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+
+        reader.onload = () => {
+          if (typeof reader.result === 'string' && reader.result) {
+            resolve(reader.result)
+            return
+          }
+
+          reject(new Error('图片读取失败'))
+        }
+
+        reader.onerror = () => {
+          reject(new Error('图片读取失败'))
+        }
+
+        reader.readAsDataURL(file)
+      })
+    },
   }
 }

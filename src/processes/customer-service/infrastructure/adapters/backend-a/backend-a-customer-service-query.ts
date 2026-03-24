@@ -1,4 +1,5 @@
 import { createBackendAHttpClient } from '@/shared/api/backend-a/backend-a-http-client'
+import { resolveBackendAMediaUrl } from '@/shared/api/backend-a/backend-a-config'
 
 import type { MemberAuthSession } from '@/entities/member-auth'
 
@@ -17,6 +18,89 @@ import {
   sortCustomerServiceConversations,
   sortCustomerServiceMessages,
 } from '../../mappers/backend-a-customer-service-mapper'
+
+type BackendAUploadRecord = Record<string, unknown>
+
+function isRecord(value: unknown): value is BackendAUploadRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function normalizeCandidateString(value: unknown) {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const normalizedValue = value.trim()
+  return normalizedValue ? normalizedValue : null
+}
+
+function findNestedUploadValue(
+  input: unknown,
+  predicate: (key: string, value: string) => boolean,
+  depth = 0,
+): string | null {
+  if (depth > 4 || input === null || input === undefined) {
+    return null
+  }
+
+  if (Array.isArray(input)) {
+    for (const item of input) {
+      const matchedValue = findNestedUploadValue(item, predicate, depth + 1)
+
+      if (matchedValue) {
+        return matchedValue
+      }
+    }
+
+    return null
+  }
+
+  if (!isRecord(input)) {
+    return null
+  }
+
+  for (const [rawKey, rawValue] of Object.entries(input)) {
+    const value = normalizeCandidateString(rawValue)
+
+    if (value && predicate(rawKey.toLowerCase(), value)) {
+      return value
+    }
+  }
+
+  for (const rawValue of Object.values(input)) {
+    const matchedValue = findNestedUploadValue(rawValue, predicate, depth + 1)
+
+    if (matchedValue) {
+      return matchedValue
+    }
+  }
+
+  return null
+}
+
+function resolveUploadedImageUrl(input: unknown) {
+  const uploadUrl = findNestedUploadValue(input, (key, value) => {
+    if (key.includes('url')) {
+      return true
+    }
+
+    if (key.includes('path')) {
+      return value.includes('/') || value.startsWith('uploads/')
+    }
+
+    if (key.includes('image')) {
+      return true
+    }
+
+    return false
+  })
+
+  if (!uploadUrl) {
+    return null
+  }
+
+  return resolveBackendAMediaUrl(uploadUrl) ?? uploadUrl
+}
 
 function createBackendACustomerServiceHttpClient(memberAuthSession: MemberAuthSession) {
   return createBackendAHttpClient({
@@ -127,6 +211,20 @@ export function createBackendACustomerServiceQuery(
     async getUnreadSummary() {
       const response = await httpClient.get<unknown>('/api/v1/customer-service/unread-summary')
       return mapBackendACustomerServiceUnreadSummary(response)
+    },
+
+    async uploadConversationImage(file) {
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const response = await httpClient.post<unknown>('/api/v1/uploads/images', formData)
+      const uploadedImageUrl = resolveUploadedImageUrl(response)
+
+      if (!uploadedImageUrl) {
+        throw new Error('图片上传成功，但未返回图片地址')
+      }
+
+      return uploadedImageUrl
     },
   }
 }

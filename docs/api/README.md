@@ -146,6 +146,29 @@
 - 后续如果后端 Swagger 变更，优先重新抓取 `openapi.json`，再同步更新本文件中的统计与分组
 - `GET /api/v1/home` 已在本次抓取中更新为 `query:product_limit, category_limit`，响应商品字段改为 `products`
 
+## 5.1 当前项目范围内不接入的接口
+
+以下接口虽然存在于后端 OpenAPI 中，但属于后台/商户侧能力，不在当前会员端 H5 项目范围内：
+
+- 合作商家列表相关
+  - `GET /api/v1/partner-regions`
+  - `GET /api/v1/partner-store-types`
+  - `GET /api/v1/partner-merchants`
+- 商户侧扫码核销相关
+  - `POST /api/v1/merchant/offline-payments/scan`
+  - `POST /api/v1/merchant/offline-payments/pay`
+- 商户员工邀请相关
+  - `GET /api/v1/merchant-staff-invites/{token}`
+  - `POST /api/v1/merchant-staff-invites/{token}/bind`
+- 储值卡二维码展示相关
+  - `GET /api/v1/stored-value-cards/{storedValueCard}/qr`
+
+说明：
+
+- 当前项目仍会使用 `GET /api/v1/partner-merchants/{partnerMerchant}` 作为店铺详情来源
+- 当前项目仍会使用 `POST /api/v1/stored-value-cards/recharge` 处理储值卡绑定充值
+- 以上“不接入”仅表示当前前台会员端不实现，不代表后端接口无效
+
 ## 6. 刷新方式
 
 可在项目根目录执行：

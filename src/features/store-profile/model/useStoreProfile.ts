@@ -1,6 +1,7 @@
 import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 
-import { useStorefrontQuery } from '@/processes/storefront'
+import { type ProductSummary } from '@/entities/product'
+import { type StoreHomeTabKey, useStorefrontQuery } from '@/processes/storefront'
 
 function normalizeStoreName(storeId: string, preferredName: string | null | undefined) {
   const trimmedName = preferredName?.trim()
@@ -20,6 +21,7 @@ export function useStoreProfile(
 
   const errorMessage = ref<string | null>(null)
   const isLoading = ref(false)
+  const isStoreFavorited = ref(false)
   const productCount = ref(0)
   const monthlySales = ref(0)
   const onSaleCount = ref(0)
@@ -29,8 +31,10 @@ export function useStoreProfile(
   const storeFollowerCount = ref(0)
   const storeLogoUrl = ref<string | null>(null)
   const storePhone = ref<string | null>(null)
+  const storeProducts = ref<ProductSummary[]>([])
   const storeResolvedName = ref<string | null>(null)
   const storeSummary = ref<string | null>(null)
+  const tabs = ref<StoreHomeTabKey[]>([])
   let latestRequestId = 0
 
   const normalizedStoreId = computed(() => toValue(storeId).trim())
@@ -52,6 +56,7 @@ export function useStoreProfile(
     if (!normalizedStoreId.value) {
       errorMessage.value = '缺少店铺标识'
       isLoading.value = false
+      isStoreFavorited.value = false
       productCount.value = 0
       monthlySales.value = 0
       onSaleCount.value = 0
@@ -61,8 +66,10 @@ export function useStoreProfile(
       storeFollowerCount.value = 0
       storeLogoUrl.value = null
       storePhone.value = null
+      storeProducts.value = []
       storeResolvedName.value = null
       storeSummary.value = null
+      tabs.value = []
       return
     }
 
@@ -78,6 +85,7 @@ export function useStoreProfile(
 
       if (!storePageData) {
         errorMessage.value = '未找到店铺信息'
+        isStoreFavorited.value = false
         productCount.value = 0
         monthlySales.value = 0
         onSaleCount.value = 0
@@ -87,11 +95,14 @@ export function useStoreProfile(
         storeFollowerCount.value = 0
         storeLogoUrl.value = null
         storePhone.value = null
+        storeProducts.value = []
         storeResolvedName.value = null
         storeSummary.value = null
+        tabs.value = []
         return
       }
 
+      isStoreFavorited.value = storePageData.isFavorited
       productCount.value = storePageData.products.length
       monthlySales.value = storePageData.products.reduce((sum, product) => sum + product.monthlySales, 0)
       onSaleCount.value = storePageData.products.filter((product) => product.inventory > 0).length
@@ -101,14 +112,17 @@ export function useStoreProfile(
       storeFollowerCount.value = storePageData.followerCount
       storeLogoUrl.value = storePageData.storeLogoUrl
       storePhone.value = storePageData.phone
+      storeProducts.value = storePageData.products
       storeResolvedName.value = storePageData.storeName
       storeSummary.value = storePageData.summary
+      tabs.value = storePageData.tabs
     } catch (error) {
       if (requestId !== latestRequestId) {
         return
       }
 
       errorMessage.value = error instanceof Error ? error.message : '店铺信息加载失败'
+      isStoreFavorited.value = false
       productCount.value = 0
       monthlySales.value = 0
       onSaleCount.value = 0
@@ -118,8 +132,10 @@ export function useStoreProfile(
       storeFollowerCount.value = 0
       storeLogoUrl.value = null
       storePhone.value = null
+      storeProducts.value = []
       storeResolvedName.value = null
       storeSummary.value = null
+      tabs.value = []
     } finally {
       if (requestId === latestRequestId) {
         isLoading.value = false
@@ -138,6 +154,7 @@ export function useStoreProfile(
   return {
     errorMessage,
     isLoading,
+    isStoreFavorited,
     loadStoreProfile,
     storeAddress,
     storeBenefits,
@@ -146,7 +163,9 @@ export function useStoreProfile(
     storeLogoUrl,
     storeName,
     storePhone,
+    storeProducts,
     storeStats,
     storeSummary,
+    tabs,
   }
 }
