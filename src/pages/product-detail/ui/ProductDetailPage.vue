@@ -29,6 +29,7 @@ const tabs = [
   { key: 'detail', label: '详情' },
   { key: 'review', label: '评价' },
 ] as const
+const loadingRecommendItems = [1, 2, 3, 4] as const
 
 const activeTab = ref<(typeof tabs)[number]['key']>('goods')
 const lastContentTab = ref<'goods' | 'detail'>('goods')
@@ -263,7 +264,96 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
       <TopBarMoreMenuButton aria-label="更多操作" />
     </header>
 
-    <p v-if="isLoading" class="state-card">正在加载商品详情...</p>
+    <template v-if="isLoading">
+      <div class="detail-scroll detail-scroll-skeleton" aria-label="商品详情骨架屏">
+        <section class="hero-wrap">
+          <div class="hero-image-box hero-image-box-skeleton">
+            <van-skeleton title :row="0" class="hero-skeleton" />
+          </div>
+        </section>
+
+        <div class="detail-content">
+          <section class="summary-block">
+            <van-skeleton title :row="0" class="summary-title-skeleton" />
+            <van-skeleton title :row="0" class="summary-subtitle-skeleton summary-subtitle-skeleton-first" />
+            <van-skeleton title :row="0" class="summary-subtitle-skeleton summary-subtitle-skeleton-second" />
+
+            <div class="price-row">
+              <van-skeleton title :row="0" class="price-skeleton" />
+            </div>
+          </section>
+
+          <div class="info-row info-row-skeleton-wrap">
+            <van-skeleton title :row="0" class="info-label-skeleton" />
+
+            <div class="info-value-skeleton-group">
+              <van-skeleton title :row="0" class="info-value-skeleton" />
+              <van-skeleton title :row="0" class="info-arrow-skeleton" />
+            </div>
+          </div>
+
+          <div class="info-row info-row-skeleton-wrap">
+            <div class="review-left">
+              <van-skeleton title :row="0" class="review-label-skeleton" />
+              <van-skeleton title :row="0" class="review-rate-skeleton" />
+            </div>
+
+            <div class="review-right">
+              <van-skeleton title :row="0" class="review-count-skeleton" />
+              <van-skeleton title :row="0" class="info-arrow-skeleton" />
+            </div>
+          </div>
+
+          <section class="merchant-card merchant-card-skeleton">
+            <div class="merchant-head merchant-head-skeleton">
+              <van-skeleton title :row="0" class="merchant-head-title-skeleton" />
+              <van-skeleton title :row="0" class="info-arrow-skeleton" />
+            </div>
+
+            <div class="merchant-store merchant-store-skeleton">
+              <van-skeleton title :row="0" class="merchant-store-icon-skeleton" />
+              <van-skeleton title :row="0" class="merchant-store-name-skeleton" />
+            </div>
+
+            <div class="metric-row">
+              <div v-for="item in 3" :key="item" class="metric-item metric-item-skeleton">
+                <van-skeleton title :row="0" class="metric-label-skeleton" />
+                <van-skeleton title :row="0" class="metric-value-skeleton" />
+              </div>
+            </div>
+          </section>
+
+          <section class="recommend-section">
+            <van-skeleton title :row="0" class="recommend-title-skeleton" />
+
+            <div class="recommend-grid">
+              <div
+                v-for="item in loadingRecommendItems.slice(0, 2)"
+                :key="item"
+                class="recommend-card recommend-card-skeleton"
+              >
+                <van-skeleton title :row="2" class="recommend-card-body-skeleton" />
+              </div>
+            </div>
+          </section>
+
+          <section class="detail-panel detail-panel-skeleton">
+            <van-skeleton title :row="0" class="detail-trigger-skeleton" />
+
+            <div class="detail-copy detail-copy-skeleton">
+              <van-skeleton title :row="2" class="detail-copy-body-skeleton" />
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <footer class="action-bar action-bar-skeleton">
+        <van-skeleton title :row="0" class="tool-button-skeleton" />
+        <van-skeleton title :row="0" class="tool-button-skeleton" />
+        <van-skeleton title :row="0" class="action-button-skeleton" />
+        <van-skeleton title :row="0" class="action-button-skeleton" />
+      </footer>
+    </template>
 
     <div v-else-if="errorMessage" class="state-card error-state">
       <p>{{ errorMessage }}</p>
@@ -869,6 +959,252 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   padding: 12px 12px calc(20px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid #eeeae5;
   background: #fff;
+}
+
+.detail-scroll-skeleton {
+  display: block;
+}
+
+.hero-skeleton {
+  height: 100%;
+}
+
+.hero-skeleton :deep(.van-skeleton__content),
+.hero-skeleton :deep(.van-skeleton__title) {
+  height: 100%;
+}
+
+.hero-skeleton :deep(.van-skeleton__title) {
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+}
+
+.hero-image-box-skeleton {
+  background: #f7f2eb;
+}
+
+.summary-title-skeleton :deep(.van-skeleton__title) {
+  width: 78%;
+  height: 28px;
+  margin: 0;
+  border-radius: 10px;
+}
+
+.summary-subtitle-skeleton :deep(.van-skeleton__title) {
+  height: 14px;
+  margin: 0;
+  border-radius: 8px;
+  background: #efe7dc;
+}
+
+.summary-subtitle-skeleton-first :deep(.van-skeleton__title) {
+  width: 92%;
+}
+
+.summary-subtitle-skeleton-second :deep(.van-skeleton__title) {
+  width: 54%;
+}
+
+.price-skeleton :deep(.van-skeleton__title) {
+  width: 116px;
+  height: 30px;
+  margin: 0;
+  border-radius: 10px;
+  background: #efe7dc;
+}
+
+.info-row-skeleton-wrap {
+  pointer-events: none;
+  border: 0;
+  background: transparent;
+  padding-inline: 0;
+  min-height: auto;
+}
+
+.info-label-skeleton :deep(.van-skeleton__title),
+.info-value-skeleton :deep(.van-skeleton__title),
+.review-label-skeleton :deep(.van-skeleton__title),
+.review-rate-skeleton :deep(.van-skeleton__title),
+.review-count-skeleton :deep(.van-skeleton__title),
+.merchant-head-title-skeleton :deep(.van-skeleton__title),
+.merchant-store-icon-skeleton :deep(.van-skeleton__title),
+.merchant-store-name-skeleton :deep(.van-skeleton__title),
+.metric-label-skeleton :deep(.van-skeleton__title),
+.metric-value-skeleton :deep(.van-skeleton__title),
+.recommend-title-skeleton :deep(.van-skeleton__title),
+.recommend-card-body-skeleton :deep(.van-skeleton__title),
+.detail-trigger-skeleton :deep(.van-skeleton__title),
+.detail-copy-body-skeleton :deep(.van-skeleton__title),
+.attribute-list-body-skeleton :deep(.van-skeleton__title),
+.tool-button-skeleton :deep(.van-skeleton__title),
+.action-button-skeleton :deep(.van-skeleton__title) {
+  margin: 0;
+  background: #efe7dc;
+}
+
+.info-value-skeleton-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.info-label-skeleton :deep(.van-skeleton__title) {
+  width: 38px;
+  height: 14px;
+  border-radius: 8px;
+}
+
+.info-value-skeleton :deep(.van-skeleton__title) {
+  width: 96px;
+  height: 14px;
+  border-radius: 8px;
+}
+
+.review-label-skeleton :deep(.van-skeleton__title) {
+  width: 58px;
+  height: 14px;
+  border-radius: 8px;
+}
+
+.review-rate-skeleton :deep(.van-skeleton__title) {
+  width: 70px;
+  height: 14px;
+  border-radius: 8px;
+}
+
+.review-count-skeleton :deep(.van-skeleton__title) {
+  width: 74px;
+  height: 14px;
+  border-radius: 8px;
+}
+
+.info-arrow-skeleton :deep(.van-skeleton__title) {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+}
+
+.merchant-head-skeleton {
+  pointer-events: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.merchant-card-skeleton,
+.detail-panel-skeleton {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.merchant-head-title-skeleton :deep(.van-skeleton__title) {
+  width: 72px;
+  height: 16px;
+  border-radius: 8px;
+}
+
+.merchant-store-skeleton {
+  gap: 10px;
+}
+
+.merchant-store-icon-skeleton :deep(.van-skeleton__title) {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+}
+
+.merchant-store-name-skeleton :deep(.van-skeleton__title) {
+  width: 128px;
+  height: 16px;
+  border-radius: 8px;
+}
+
+.metric-item-skeleton {
+  gap: 8px;
+}
+
+.metric-label-skeleton :deep(.van-skeleton__title) {
+  width: 48px;
+  height: 12px;
+  border-radius: 6px;
+}
+
+.metric-value-skeleton :deep(.van-skeleton__title) {
+  width: 32px;
+  height: 12px;
+  border-radius: 6px;
+}
+
+.recommend-title-skeleton :deep(.van-skeleton__title) {
+  width: 96px;
+  height: 20px;
+}
+
+.recommend-card-skeleton {
+  display: block;
+}
+
+.recommend-card-body-skeleton :deep(.van-skeleton__title) {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 10px;
+}
+
+.recommend-card-body-skeleton :deep(.van-skeleton__row:first-of-type) {
+  width: 100%;
+}
+
+.recommend-card-body-skeleton :deep(.van-skeleton__row:last-of-type) {
+  width: 60%;
+}
+
+.detail-trigger-skeleton :deep(.van-skeleton__title) {
+  width: 112px;
+  height: 14px;
+  border-radius: 8px;
+}
+
+.detail-copy-skeleton,
+.detail-copy-skeleton {
+  padding: 16px;
+  border-radius: 16px;
+  background: #faf6f1;
+}
+
+.detail-copy-body-skeleton :deep(.van-skeleton__title) {
+  width: 68%;
+  height: 14px;
+  border-radius: 8px;
+  background: #efe7dc;
+}
+
+.detail-copy-body-skeleton :deep(.van-skeleton__row:first-of-type) {
+  width: 100%;
+  background: #efe7dc;
+}
+
+.detail-copy-body-skeleton :deep(.van-skeleton__row:last-of-type) {
+  width: 74%;
+  background: #efe7dc;
+}
+
+.action-bar-skeleton {
+  border-top-color: #f3eee8;
+}
+
+.tool-button-skeleton :deep(.van-skeleton__title) {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+}
+
+.action-button-skeleton :deep(.van-skeleton__title) {
+  width: 100%;
+  height: 44px;
+  border-radius: 999px;
 }
 
 .review-drawer {

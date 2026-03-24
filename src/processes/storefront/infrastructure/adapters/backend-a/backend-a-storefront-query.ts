@@ -9,9 +9,11 @@ import type { CategoryProductsQuery, StorefrontQuery } from '../../../domain/sto
 import {
   type BackendAStorefrontCategoryDto,
   type BackendAStorefrontHomeDto,
+  type BackendAPlatformSettingsDto,
   type BackendAStorefrontProductDto,
   mapBackendACategoryProducts,
   mapBackendACategoryTree,
+  mapBackendAHomeBanners,
   mapBackendAHomePageData,
   mapBackendAProductDetailPageData,
 } from '../../mappers/backend-a-storefront-mapper'
@@ -53,6 +55,16 @@ async function fetchBackendACategoryProducts(query: CategoryProductsQuery = {}) 
   return mapBackendACategoryProducts(response.data.filter((product) => product.status === 1))
 }
 
+async function fetchBackendAHomeBanners() {
+  const platformSettings = await backendAHttpClient.get<BackendAPlatformSettingsDto>('/api/v1/platform/settings')
+
+  if (import.meta.env.DEV) {
+    console.log('[storefront] platform settings', platformSettings)
+  }
+
+  return mapBackendAHomeBanners(platformSettings)
+}
+
 export const backendAStorefrontQuery: StorefrontQuery = {
   async getCategoryProducts(query) {
     return fetchBackendACategoryProducts(query)
@@ -63,8 +75,12 @@ export const backendAStorefrontQuery: StorefrontQuery = {
   },
 
   async getHomePageData() {
-    const homeData = await backendAHttpClient.get<BackendAStorefrontHomeDto>('/api/v1/home')
-    return mapBackendAHomePageData(homeData)
+    const [homeData, banners] = await Promise.all([
+      backendAHttpClient.get<BackendAStorefrontHomeDto>('/api/v1/home'),
+      fetchBackendAHomeBanners(),
+    ])
+
+    return mapBackendAHomePageData(homeData, banners)
   },
 
   async getProductDetailPageData(productId: string) {

@@ -25,6 +25,7 @@ declare module 'vue' {
     VanIcon: typeof import('vant/es')['Icon']
     VanPopover: typeof import('vant/es')['Popover']
     VanPopup: typeof import('vant/es')['Popup']
+    VanSkeleton: typeof import('vant/es')['Skeleton']
     VanStepper: typeof import('vant/es')['Stepper']
     VanSticky: typeof import('vant/es')['Sticky']
     VanSubmitBar: typeof import('vant/es')['SubmitBar']

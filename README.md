@@ -101,6 +101,19 @@ npm run dev
 
 启动后会把 token 写入 `localStorage.shop.member-auth.session`，再自动请求 `GET /api/v1/auth/profile` 补全用户资料。这个入口只在 `import.meta.env.DEV` 下生效。
 
+如果要联调“我的卡券/储值卡绑定”，也可以给开发环境预置一组模拟扫码结果：
+
+```sh
+VITE_BACKEND_TARGET=backend-a \
+VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
+VITE_DEV_MEMBER_ACCESS_TOKEN="your-access-token" \
+VITE_DEV_MEMBER_CARD_NO="你的16位卡号" \
+VITE_DEV_MEMBER_CARD_SECRET="你的卡密" \
+npm run dev
+```
+
+这样“绑定卡券”页点击扫码按钮时，会模拟扫码成功，并直接调用 `POST /api/v1/stored-value-cards/recharge`。
+
 当前 `backend-a` 已真实接入：
 
 - `GET /api/v1/home`

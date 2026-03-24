@@ -17,6 +17,8 @@ const cardSecret = ref('')
 const { bindMemberCard } = useMemberCardBinding()
 const { errorMessage, isLoading, loadMemberCardsPage, memberCardsPageData } = useMemberCardsPageModel()
 const bindDrawerVisible = computed(() => route.query.drawer === 'bind')
+const devCardNumber = import.meta.env.VITE_DEV_MEMBER_CARD_NO?.trim() ?? ''
+const devCardSecret = import.meta.env.VITE_DEV_MEMBER_CARD_SECRET?.trim() ?? ''
 
 function formatAmount(amount: number) {
   return amount.toFixed(2)
@@ -26,8 +28,12 @@ function maskCardNumber(cardNumberValue: string) {
   return cardNumberValue.replace(/(\d{4})\d+(\d{4})/, '$1 **** **** $2')
 }
 
-function buildMockCardNumber() {
-  return `${Date.now()}`.slice(-16).padStart(16, '6')
+function resolveSimulatedCardNumber() {
+  return devCardNumber || cardNumber.value
+}
+
+function resolveSimulatedCardSecret() {
+  return devCardSecret || cardSecret.value
 }
 
 function goBack() {
@@ -89,10 +95,6 @@ function handleBindDrawerVisibilityChange(show: boolean) {
   void closeBindDrawer()
 }
 
-function simulateScan() {
-  cardNumber.value = buildMockCardNumber()
-}
-
 async function submitBindCard() {
   isSubmitting.value = true
 
@@ -109,6 +111,27 @@ async function submitBindCard() {
   } finally {
     isSubmitting.value = false
   }
+}
+
+async function simulateScan() {
+  const simulatedCardNumber = resolveSimulatedCardNumber()
+  const simulatedCardSecret = resolveSimulatedCardSecret()
+
+  if (!simulatedCardNumber) {
+    showFailToast('未读取到卡券编号，请手动输入后重试')
+    return
+  }
+
+  cardNumber.value = simulatedCardNumber
+  cardSecret.value = simulatedCardSecret
+
+  if (!simulatedCardSecret) {
+    showFailToast('未读取到卡券卡密，请手动输入后重试')
+    return
+  }
+
+  showSuccessToast('已读取卡券信息，正在提交绑定')
+  await submitBindCard()
 }
 
 watch(bindDrawerVisible, (visible, previousVisible) => {

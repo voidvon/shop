@@ -5,6 +5,8 @@ interface ImportMetaEnv {
   readonly VITE_BACKEND_A_MEMBER_ASSETS_BASE_URL?: string
   readonly VITE_BACKEND_A_MEMBER_ASSETS_TIMEOUT_MS?: string
   readonly VITE_DEV_MEMBER_ACCESS_TOKEN?: string
+  readonly VITE_DEV_MEMBER_CARD_NO?: string
+  readonly VITE_DEV_MEMBER_CARD_SECRET?: string
   readonly VITE_ENABLED_MODULES?: string
 }
 

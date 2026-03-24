@@ -50,11 +50,11 @@ const cardSecretModel = computed({
 
     <div class="bind-body">
       <section class="scan-section">
-        <button class="scan-button" type="button" @click="emit('simulate-scan')">
+        <button class="scan-button" :disabled="isSubmitting" type="button" @click="emit('simulate-scan')">
           <van-icon name="scan" size="108" />
         </button>
-        <strong>扫码读取卡券编号</strong>
-        <p>当前联调版本会模拟扫码结果，并将卡券编号提交到后端充值。</p>
+        <strong>{{ isSubmitting ? '绑定中...' : '扫码绑定卡券' }}</strong>
+        <p>点击扫码后会自动读取卡券信息，并完成绑定充值。</p>
       </section>
 
       <div class="action-area">
@@ -131,6 +131,10 @@ const cardSecretModel = computed({
   border-radius: 28px;
   background: linear-gradient(180deg, #fff3eb 0%, #ffe5d3 100%);
   color: #ff6a1a;
+}
+
+.scan-button:disabled {
+  opacity: 0.72;
 }
 
 .scan-section strong {

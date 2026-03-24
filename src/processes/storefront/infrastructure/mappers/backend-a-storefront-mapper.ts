@@ -49,6 +49,12 @@ export interface BackendAStorefrontHomeDto {
   recommended_products?: BackendAStorefrontProductDto[] | null
 }
 
+export interface BackendAPlatformSettingsDto {
+  address: string | null
+  banners?: string[] | null
+  company_name: string | null
+}
+
 function ensureArray<T>(input: T[] | null | undefined): T[] {
   return Array.isArray(input) ? input : []
 }
@@ -148,11 +154,27 @@ export function mapBackendACategoryProducts(
   }))
 }
 
-export function mapBackendAHomePageData(data: BackendAStorefrontHomeDto): HomePageData {
+export function mapBackendAHomeBanners(data: BackendAPlatformSettingsDto): HomePageData['banners'] {
+  const platformBanners = ensureArray(data.banners)
+  const companyName = data.company_name?.trim() || '平台'
+  const bannerDescription = data.address?.trim() || ''
+
+  return platformBanners.map((banner, index) => ({
+    description: bannerDescription,
+    eyebrow: companyName,
+    imageUrl: resolveBackendAMediaUrl(banner),
+    linkUrl: '/',
+    title: platformBanners.length > 1 ? `${companyName} ${index + 1}` : companyName,
+  }))
+}
+
+export function mapBackendAHomePageData(
+  data: BackendAStorefrontHomeDto,
+  banners: HomePageData['banners'],
+): HomePageData {
   const recommendedProducts = ensureArray(data.recommended_products)
   const latestProducts = ensureArray(data.latest_products)
   const categories = ensureArray(data.categories)
-  const platformBanners = ensureArray(data.platform.banners)
   const featuredProducts = Array.from(
     new Map(
       [...recommendedProducts, ...latestProducts]
@@ -161,22 +183,13 @@ export function mapBackendAHomePageData(data: BackendAStorefrontHomeDto): HomePa
   )
 
   const quickCategories = categories.map((category) => ({
-    id: String(category.id),
-    imageUrl: resolveBackendAMediaUrl(category.logo),
-    label: category.name,
-  }))
-
-  const companyName = data.platform.company_name?.trim() || '平台'
-  const bannerDescription = data.platform.address?.trim() || ''
+      id: String(category.id),
+      imageUrl: resolveBackendAMediaUrl(category.logo),
+      label: category.name,
+    }))
 
   return {
-    banners: platformBanners.map((banner, index) => ({
-      description: bannerDescription,
-      eyebrow: companyName,
-      imageUrl: resolveBackendAMediaUrl(banner),
-      linkUrl: '/',
-      title: platformBanners.length > 1 ? `${companyName} ${index + 1}` : companyName,
-    })),
+    banners,
     featuredProducts,
     quickCategories,
   }
