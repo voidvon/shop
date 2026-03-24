@@ -136,7 +136,7 @@ onActivated(() => {
               <van-icon name="like" size="12" />
               已收藏
             </span>
-            <img :src="product.imageUrl || '/favicon.ico'" :alt="product.name">
+            <img :src="product.imageUrl || '/images/image-placeholder.svg'" :alt="product.name">
             <div class="name-wrapper">
               <strong>{{ product.name }}</strong>
             </div>

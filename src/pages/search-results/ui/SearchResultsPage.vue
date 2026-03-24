@@ -78,7 +78,7 @@ function handleKeywordSelect(nextKeyword: string) {
             class="result-card"
             :to="{ name: 'product-detail', params: { productId: product.id } }"
           >
-            <img :src="product.imageUrl || '/favicon.ico'" :alt="product.name">
+            <img :src="product.imageUrl || '/images/image-placeholder.svg'" :alt="product.name">
 
             <div class="result-copy">
               <strong>{{ product.name }}</strong>

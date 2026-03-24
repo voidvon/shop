@@ -21,13 +21,15 @@ const {
 } = useHomePageModel()
 const router = useRouter()
 const memberFavoriteStore = useMemberFavoriteStore()
+const promoVideoRef = ref<HTMLVideoElement | null>(null)
+const promoVideoUrl = computed(() => homePageData.value.promo_video)
 const carouselItems = computed(() =>
   homePageData.value.banners.map((banner) => ({
     ...banner,
-    imageUrl: banner.imageUrl || '/favicon.ico',
+    imageUrl: banner.imageUrl || '/images/image-placeholder.svg',
   })),
 )
-const quickCategories = computed(() => homePageData.value.quickCategories.slice(0, 8))
+const quickCategories = computed(() => homePageData.value.quickCategories)
 const loadMoreTriggerRef = ref<HTMLElement | null>(null)
 
 function isProductFavorited(productId: string) {
@@ -40,6 +42,30 @@ function syncFavoriteState(force = false) {
 
 function goToSearchPage() {
   void router.push({ name: 'search' })
+}
+
+async function ensurePromoVideoPlayback() {
+  if (!promoVideoUrl.value) {
+    return
+  }
+
+  await nextTick()
+
+  const video = promoVideoRef.value
+
+  if (!video) {
+    return
+  }
+
+  video.muted = true
+  video.defaultMuted = true
+  video.playsInline = true
+
+  try {
+    await video.play()
+  } catch {
+    // iOS may still defer autoplay in some visibility states.
+  }
 }
 
 function tryLoadMoreOnScroll() {
@@ -64,6 +90,7 @@ function tryLoadMoreOnScroll() {
 onMounted(() => {
   void loadHomePage()
   syncFavoriteState()
+  void ensurePromoVideoPlayback()
 
   window.addEventListener('scroll', tryLoadMoreOnScroll, { passive: true })
   window.addEventListener('resize', tryLoadMoreOnScroll)
@@ -71,6 +98,7 @@ onMounted(() => {
 
 onActivated(() => {
   syncFavoriteState(true)
+  void ensurePromoVideoPlayback()
 })
 
 onUnmounted(() => {
@@ -85,6 +113,10 @@ watch(
     tryLoadMoreOnScroll()
   },
 )
+
+watch(promoVideoUrl, () => {
+  void ensurePromoVideoPlayback()
+})
 </script>
 
 <template>
@@ -98,7 +130,23 @@ watch(
     </van-sticky>
 
     <div class="content-wrapper">
-      <ImageCarousel :bleed-x="'48px'" :items="carouselItems" />
+      <section v-if="promoVideoUrl" class="promo-video-card">
+        <video
+          ref="promoVideoRef"
+          class="promo-video-player"
+          :src="promoVideoUrl"
+          autoplay
+          controlslist="nodownload nofullscreen noremoteplayback"
+          disablepictureinpicture
+          loop
+          muted
+          playsinline
+          webkit-playsinline="true"
+          preload="metadata"
+        />
+      </section>
+
+      <ImageCarousel v-else :bleed-x="'48px'" :items="carouselItems" />
 
       <section class="category-grid">
         <RouterLink
@@ -107,7 +155,7 @@ watch(
           class="category-card"
           :to="{ name: 'category', params: { primaryCategoryId: category.id } }"
         >
-          <img :src="category.imageUrl || '/favicon.ico'" :alt="category.label">
+          <img :src="category.imageUrl || '/images/image-placeholder.svg'" :alt="category.label">
           <strong>{{ category.label }}</strong>
         </RouterLink>
       </section>
@@ -140,7 +188,7 @@ watch(
                 <van-icon name="like" size="12" />
                 已收藏
               </span>
-              <img :src="product.imageUrl || '/favicon.ico'" :alt="product.name">
+              <img :src="product.imageUrl || '/images/image-placeholder.svg'" :alt="product.name">
               <strong>{{ product.name }}</strong>
               <div class="price-row">
                 <span>{{ formatCurrency(product.price) }}</span>
@@ -183,6 +231,22 @@ watch(
   display: grid;
   gap: 24px;
   padding: 12px 24px calc(24px + var(--app-bottom-nav-offset, 0px));
+}
+
+.promo-video-card {
+  overflow: hidden;
+  border-radius: 16px;
+  background: #111;
+  box-shadow: 0 10px 24px rgba(17, 17, 17, 0.14);
+}
+
+.promo-video-player {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #111;
+  object-fit: cover;
+  pointer-events: none;
 }
 
 .sticky-search {

@@ -104,6 +104,7 @@ export function mapMockHomePageData(): HomePageData {
       title: banner.title ?? '',
     })),
     featuredProducts: mockPublicData.homePageData.productFeed.list.map(mapMockProductCard),
+    promo_video: null,
     quickCategories: mockPublicData.homePageData.categoryEntries.map((category) => ({
       id: category.categoryId,
       imageUrl: category.imageUrl,

@@ -83,7 +83,7 @@ export interface MockAddressSeed {
   recipientPhone: string
 }
 
-export const mockImageUrl = '/favicon.ico'
+export const mockImageUrl = '/images/image-placeholder.svg'
 
 export const mockAreas = [
   { areaId: 'area-jianghan', areaName: '江汉区' },

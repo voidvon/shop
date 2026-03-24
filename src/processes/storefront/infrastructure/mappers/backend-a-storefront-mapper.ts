@@ -45,14 +45,9 @@ export interface BackendAStorefrontHomeDto {
     address: string | null
     banners?: string[] | null
     company_name: string | null
+    promo_video?: string | null
   }
   recommended_products?: BackendAStorefrontProductDto[] | null
-}
-
-export interface BackendAPlatformSettingsDto {
-  address: string | null
-  banners?: string[] | null
-  company_name: string | null
 }
 
 function ensureArray<T>(input: T[] | null | undefined): T[] {
@@ -154,10 +149,10 @@ export function mapBackendACategoryProducts(
   }))
 }
 
-export function mapBackendAHomeBanners(data: BackendAPlatformSettingsDto): HomePageData['banners'] {
-  const platformBanners = ensureArray(data.banners)
-  const companyName = data.company_name?.trim() || '平台'
-  const bannerDescription = data.address?.trim() || ''
+export function mapBackendAHomeBanners(data: BackendAStorefrontHomeDto): HomePageData['banners'] {
+  const platformBanners = ensureArray(data.platform?.banners)
+  const companyName = data.platform?.company_name?.trim() || '平台'
+  const bannerDescription = data.platform?.address?.trim() || ''
 
   return platformBanners.map((banner, index) => ({
     description: bannerDescription,
@@ -170,11 +165,12 @@ export function mapBackendAHomeBanners(data: BackendAPlatformSettingsDto): HomeP
 
 export function mapBackendAHomePageData(
   data: BackendAStorefrontHomeDto,
-  banners: HomePageData['banners'],
 ): HomePageData {
   const recommendedProducts = ensureArray(data.recommended_products)
   const latestProducts = ensureArray(data.latest_products)
   const categories = ensureArray(data.categories)
+  const banners = mapBackendAHomeBanners(data)
+  const promoVideo = resolveBackendAMediaUrl(data.platform?.promo_video)
   const featuredProducts = Array.from(
     new Map(
       [...recommendedProducts, ...latestProducts]
@@ -191,6 +187,7 @@ export function mapBackendAHomePageData(
   return {
     banners,
     featuredProducts,
+    promo_video: promoVideo,
     quickCategories,
   }
 }

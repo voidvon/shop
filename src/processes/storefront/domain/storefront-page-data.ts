@@ -37,6 +37,7 @@ export interface HomeBanner {
 export interface HomePageData {
   banners: HomeBanner[]
   featuredProducts: PageProductCard[]
+  promo_video: string | null
   quickCategories: HomeQuickCategory[]
 }
 
