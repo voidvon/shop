@@ -10,6 +10,7 @@ import type {
   CategoryPageProductCard,
   HomePageData,
   PageProductCard,
+  PlatformSettingsData,
   ProductDetailPageData,
   StoreHomePageData,
 } from '../../domain/storefront-page-data'
@@ -48,6 +49,17 @@ export interface BackendAStorefrontHomeDto {
     promo_video?: string | null
   }
   products?: BackendAStorefrontProductDto[] | null
+}
+
+export interface BackendAPlatformSettingsDto {
+  address: string | null
+  business_phone: string | null
+  company_name: string | null
+  customer_service_phone: string | null
+  customer_service_wechat: string | null
+  domain: string | null
+  icp_number: string | null
+  logo: string | null
 }
 
 export interface BackendAPartnerMerchantDto {
@@ -321,6 +333,21 @@ export function mapBackendAHomePageData(
     featuredProducts,
     promo_video: promoVideo,
     quickCategories,
+  }
+}
+
+export function mapBackendAPlatformSettingsData(
+  data: BackendAPlatformSettingsDto,
+): PlatformSettingsData {
+  return {
+    address: data.address?.trim() || null,
+    businessPhone: data.business_phone?.trim() || null,
+    companyName: data.company_name?.trim() || '平台信息待完善',
+    customerServicePhone: data.customer_service_phone?.trim() || null,
+    customerServiceWechat: data.customer_service_wechat?.trim() || null,
+    domain: data.domain?.trim() || null,
+    icpNumber: data.icp_number?.trim() || null,
+    logoUrl: resolveBackendAMediaUrl(data.logo),
   }
 }
 

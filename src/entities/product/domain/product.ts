@@ -1,5 +1,6 @@
 export interface ProductSummary {
   id: string
+  categoryId: string
   name: string
   category: string
   summary: string

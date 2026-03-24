@@ -89,6 +89,7 @@ function mapSkuSellingPoint(sku: BackendAProductSkuDto) {
 
 const backendAProductSummaryFieldMap = {
   category: (dto: BackendAProductSummaryDto) => dto.category?.name ?? '未分类',
+  categoryId: (dto: BackendAProductSummaryDto) => String(dto.category?.id ?? dto.product_category_id),
   coverImageUrl: (dto: BackendAProductSummaryDto) =>
     resolveBackendAMediaUrl(dto.main_images[0] ?? resolveActiveSkus(dto)[0]?.image ?? null),
   id: (dto: BackendAProductSummaryDto) => String(dto.id),

@@ -5,6 +5,8 @@ import type { RouteRecordRaw } from 'vue-router'
 import { CartPage } from '@/pages/cart'
 import { CategoryPage } from '@/pages/category'
 import { CheckoutPage } from '@/pages/checkout'
+import { CustomerServiceConversationDetailPage } from '@/pages/customer-service-conversation-detail'
+import { CustomerServiceConversationListPage } from '@/pages/customer-service-conversation-list'
 import { HomePage } from '@/pages/home'
 import { MemberCardBindPage } from '@/pages/member-card-bind'
 import { MemberCardsPage } from '@/pages/member-cards'
@@ -35,6 +37,7 @@ import { ReturnShipmentPage } from '@/pages/return-shipment'
 import { SearchPage } from '@/pages/search'
 import { SearchResultsPage } from '@/pages/search-results'
 import { StorePage } from '@/pages/store'
+import { StoreAboutPage } from '@/pages/store-about'
 import { StoreSearchResultsPage } from '@/pages/store-search-results'
 import type { MainNavigationKey, MainNavigationMeta } from '@/shared/config/main-navigation'
 import type { FrontendModule } from '@/shared/config/modules'
@@ -117,6 +120,15 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         meta: {
           description: '店铺主页与店内商品浏览',
           title: '店铺详情',
+        },
+      }),
+      createModuleRoute({
+        path: '/stores/:storeId/about',
+        name: 'store-about',
+        component: StoreAboutPage,
+        meta: {
+          description: '店铺信息与介绍',
+          title: '关于我们',
         },
       }),
       createModuleRoute({
@@ -226,6 +238,27 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
           keepAlive: true,
           requiresAuth: true,
           title: '我的订单',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/customer-service',
+        name: 'member-customer-service',
+        component: CustomerServiceConversationListPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '联系客服',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/customer-service/:conversationId',
+        name: 'member-customer-service-conversation',
+        component: CustomerServiceConversationDetailPage,
+        props: true,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '客服会话',
         },
       }),
       createModuleRoute({

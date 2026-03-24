@@ -41,6 +41,17 @@ export interface HomePageData {
   quickCategories: HomeQuickCategory[]
 }
 
+export interface PlatformSettingsData {
+  address: string | null
+  businessPhone: string | null
+  companyName: string
+  customerServicePhone: string | null
+  customerServiceWechat: string | null
+  domain: string | null
+  icpNumber: string | null
+  logoUrl: string | null
+}
+
 export type StoreHomeTabKey = 'home' | 'all-products' | 'new-products' | 'promotions'
 
 export interface StoreHomePageData {

@@ -7,7 +7,7 @@ export {
   type ProductDetail,
   type ProductSummary,
 } from './domain/product'
-export type { ProductRepository } from './domain/product-repository'
+export type { MerchantProductQuery, ProductRepository, ProductSummaryPage } from './domain/product-repository'
 export { backendAProductRepository } from './infrastructure/adapters/backend-a/backend-a-product-repository'
 export { mockProductRepository } from './infrastructure/adapters/mock/mock-product-repository'
 export { provideProductRepository, useProductRepository } from './infrastructure/product-repository-provider'

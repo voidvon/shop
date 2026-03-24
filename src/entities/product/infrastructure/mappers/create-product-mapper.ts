@@ -4,6 +4,7 @@ type FieldResolver<TSource, TValue> = keyof TSource | ((source: TSource) => TVal
 
 export interface ProductSummaryFieldMap<TSource> {
   category: FieldResolver<TSource, string>
+  categoryId: FieldResolver<TSource, string>
   coverImageUrl?: FieldResolver<TSource, string | null>
   id: FieldResolver<TSource, string>
   inventory: FieldResolver<TSource, number>
@@ -44,6 +45,7 @@ function cloneAttributes(values: ProductAttribute[]) {
 export function createProductSummaryMapper<TSource>(fieldMap: ProductSummaryFieldMap<TSource>) {
   return (source: TSource): ProductSummary => ({
     category: resolveField(source, fieldMap.category),
+    categoryId: resolveField(source, fieldMap.categoryId),
     coverImageUrl: fieldMap.coverImageUrl ? resolveField(source, fieldMap.coverImageUrl) : null,
     id: resolveField(source, fieldMap.id),
     inventory: resolveField(source, fieldMap.inventory),

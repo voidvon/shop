@@ -18,6 +18,7 @@
 - 原始 OpenAPI：[`openapi.json`](/root/shop/docs/api/openapi.json)
 - 接口明细索引：[`endpoints.md`](/root/shop/docs/api/endpoints.md)
 - 前端接入现状：[`frontend-integration-status.md`](/root/shop/docs/api/frontend-integration-status.md)
+- 商家首页开发清单：[`store-home-integration-tasks.md`](/root/shop/docs/api/store-home-integration-tasks.md)
 
 ## 2. 总览
 

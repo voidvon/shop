@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { showToast, type PopoverAction } from 'vant'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { showToast, type DropdownItemOption, type PopoverAction } from 'vant'
 import { useRoute, useRouter } from 'vue-router'
 
 import { ProductCompactCard } from '@/entities/product'
@@ -17,7 +17,7 @@ const topActions: PopoverAction[] = [
   { text: '返回首页', value: 'home' },
 ]
 const footerActions = [
-  { key: 'store', icon: 'shop-o', label: '店铺信息' },
+  { key: 'products', icon: 'apps-o', label: '全部商品' },
   { key: 'coupon', icon: 'coupon-o', label: '奖励领券' },
   { key: 'service', icon: 'service-o', label: '联系客服' },
   { key: 'about', icon: 'info-o', label: '关于我们' },
@@ -30,32 +30,106 @@ const preferredStoreName = computed(() =>
 
 const {
   activeTab,
+  applyPriceFilter,
+  categoryOptions,
   errorMessage,
+  hasActiveProductFilters,
   heroImageUrl,
   isEmpty,
   isLoading,
+  isLoadingMoreProducts,
+  isProductsFinished,
   isStoreFavorited,
   keyword,
+  loadMoreProducts,
   loadStorePage,
+  maxPriceInput,
+  minPriceInput,
+  selectedCategoryId,
+  setSelectedCategory,
+  resetSortOption,
   storeAddress,
   storeBenefits,
+  storeBusinessHours,
+  storeFollowerCount,
   storeLogoUrl,
   storeName,
-  storePhone,
   storeStats,
+  resetProductFilters,
+  selectTab,
+  setSortOption,
+  sortDirection,
+  sortField,
   tabs,
   toggleStoreFavorite: toggleStoreFavoriteState,
   visibleProducts,
 } = useStorePageModel(storeId, preferredStoreName)
 
 const primaryBenefit = computed(() => storeBenefits.value[0] ?? '支持售后无忧')
+const filterDrawerVisible = ref(false)
+const loadMoreTriggerRef = ref<HTMLElement | null>(null)
+const isAllProductsTab = computed(() => activeTab.value === 'all-products')
+const comprehensiveSortOptions: DropdownItemOption[] = [
+  { text: '综合排序', value: 'default' },
+]
+const salesSortOptions: DropdownItemOption[] = [
+  { text: '销量正序', value: 'asc' },
+  { text: '销量倒序', value: 'desc' },
+] 
+const priceSortOptions: DropdownItemOption[] = [
+  { text: '价格正序', value: 'asc' },
+  { text: '价格倒序', value: 'desc' },
+]
+const comprehensiveSortValue = computed({
+  get: () => (sortField.value === 'default' ? 'default' : ''),
+  set: (value) => {
+    if (String(value) === 'default') {
+      resetSortOption()
+    }
+  },
+})
+const salesSortValue = computed({
+  get: () => (sortField.value === 'sales' ? sortDirection.value : ''),
+  set: (value) => {
+    handleSortChange('sales', String(value))
+  },
+})
+const priceSortValue = computed({
+  get: () => (sortField.value === 'price' ? sortDirection.value : ''),
+  set: (value) => {
+    handleSortChange('price', String(value))
+  },
+})
+const storeMetaItems = computed(() => [
+  {
+    key: 'followers',
+    label: '关注数',
+    value: storeFollowerCount.value > 0 ? `${storeFollowerCount.value} 人` : '暂无',
+  },
+  {
+    key: 'hours',
+    label: '营业时间',
+    value: storeBusinessHours.value ?? '待补充',
+  },
+  {
+    key: 'address',
+    label: '店铺地址',
+    value: storeAddress.value ?? '待补充',
+  },
+])
 const storeSummary = computed(() => {
+  if (storeFollowerCount.value > 0) {
+    return `${storeStats.value.productCount} 款商品 · ${storeFollowerCount.value} 人关注`
+  }
+
   if (storeStats.value.productCount === 0) {
     return '店铺正在整理上新中'
   }
 
   return `${storeStats.value.productCount} 款商品 · 月销 ${storeStats.value.monthlySales}`
 })
+
+const productCountText = computed(() => `${visibleProducts.value.length} 件`)
 const sectionTitle = computed(() => {
   if (activeTab.value === 'all-products') {
     return '全部商品'
@@ -81,6 +155,10 @@ function goBack() {
   void router.push('/')
 }
 
+function scrollToProductsPanel() {
+  document.getElementById('store-products-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 function handleToggleStoreFavorite() {
   toggleStoreFavoriteState()
   showToast(isStoreFavorited.value ? '已关注店铺' : '已取消关注')
@@ -96,18 +174,70 @@ function handleTopAction(action: PopoverAction) {
 }
 
 function handleFooterAction(actionKey: (typeof footerActions)[number]['key']) {
-  if (actionKey === 'store') {
-    globalThis.window?.scrollTo({ top: 0, behavior: 'smooth' })
+  if (actionKey === 'products') {
+    selectTab('all-products')
+    void nextTick(() => {
+      scrollToProductsPanel()
+    })
     return
   }
 
-  const actionMap = {
-    about: storeAddress.value ?? '店铺介绍暂未配置',
-    coupon: '领券功能暂未开放',
-    service: storePhone.value ? `联系电话 ${storePhone.value}` : '客服入口暂未开放',
-  } as const
+  if (actionKey === 'about') {
+    void router.push({
+      name: 'store-about',
+      params: {
+        storeId: storeId.value,
+      },
+      query: {
+        ...(storeName.value ? { name: storeName.value } : {}),
+      },
+    })
+    return
+  }
 
-  showToast(actionMap[actionKey as keyof typeof actionMap])
+  if (actionKey === 'service') {
+    void router.push({
+      name: 'member-customer-service',
+      query: {
+        composer: 'create',
+        content: storeName.value ? `您好，我想咨询店铺“${storeName.value}”相关问题。` : undefined,
+        storeId: storeId.value,
+        storeName: storeName.value || undefined,
+        subject: storeName.value ? `店铺咨询 · ${storeName.value}` : '店铺咨询',
+      },
+    })
+    return
+  }
+
+  showToast('领券功能暂未开放')
+}
+
+function handleSortChange(field: 'sales' | 'price', nextValue: string) {
+  if (nextValue === 'asc' || nextValue === 'desc') {
+    setSortOption(field, nextValue)
+  }
+}
+
+function handleCategorySelect(categoryId: string) {
+  setSelectedCategory(categoryId)
+}
+
+function openFilterDrawer() {
+  filterDrawerVisible.value = true
+}
+
+function closeFilterDrawer() {
+  filterDrawerVisible.value = false
+}
+
+function applyDrawerFilter() {
+  applyPriceFilter()
+  closeFilterDrawer()
+}
+
+function resetDrawerFilter() {
+  resetProductFilters()
+  closeFilterDrawer()
 }
 
 function handleSearchSubmit() {
@@ -129,6 +259,43 @@ function handleSearchSubmit() {
     },
   })
 }
+
+function tryLoadMoreOnScroll() {
+  if (
+    typeof window === 'undefined'
+    || !loadMoreTriggerRef.value
+    || isLoading.value
+    || isLoadingMoreProducts.value
+    || isProductsFinished.value
+  ) {
+    return
+  }
+
+  const triggerTop = loadMoreTriggerRef.value.getBoundingClientRect().top
+  const viewportBottom = window.innerHeight + 160
+
+  if (triggerTop <= viewportBottom) {
+    void loadMoreProducts()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', tryLoadMoreOnScroll, { passive: true })
+  window.addEventListener('resize', tryLoadMoreOnScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', tryLoadMoreOnScroll)
+  window.removeEventListener('resize', tryLoadMoreOnScroll)
+})
+
+watch(
+  () => [activeTab.value, visibleProducts.value.length, isProductsFinished.value],
+  async () => {
+    await nextTick()
+    tryLoadMoreOnScroll()
+  },
+)
 </script>
 
 <template>
@@ -181,9 +348,15 @@ function handleSearchSubmit() {
             {{ isStoreFavorited ? '取消收藏' : '收藏店铺' }}
           </van-button>
         </div>
-      </section>
 
-      <section class="store-panel">
+        <div class="store-meta-grid">
+          <article v-for="item in storeMetaItems" :key="item.key" class="store-meta-item">
+            <span>{{ item.label }}</span>
+            <strong>{{ item.value }}</strong>
+          </article>
+        </div>
+      </section>
+      <section id="store-products-panel" class="store-panel">
         <div class="store-tabs-shell">
           <van-tabs v-model:active="activeTab">
             <van-tab
@@ -202,9 +375,33 @@ function handleSearchSubmit() {
         </div>
 
         <div class="store-panel-content">
-          <header class="section-head">
-            <span class="section-accent" />
-            <strong>{{ sectionTitle }}</strong>
+          <section v-if="isAllProductsTab" class="filter-toolbar" aria-label="全部商品筛选">
+            <div class="sort-dropdown-shell">
+              <van-dropdown-menu active-color="#c25b0a" class="sort-dropdown">
+                <van-dropdown-item v-model="comprehensiveSortValue" title="综合" :options="comprehensiveSortOptions" />
+                <van-dropdown-item v-model="salesSortValue" title="销量" :options="salesSortOptions" />
+                <van-dropdown-item v-model="priceSortValue" title="价格" :options="priceSortOptions" />
+              </van-dropdown-menu>
+            </div>
+
+            <button
+              class="filter-trigger-button"
+              :class="{ 'filter-trigger-button-active': hasActiveProductFilters }"
+              type="button"
+              @click="openFilterDrawer"
+            >
+              <van-icon name="filter-o" size="16" />
+              <span>筛选</span>
+            </button>
+          </section>
+
+          <header class="section-head section-head-spaced">
+            <div class="section-title-wrap">
+              <span class="section-accent" />
+              <strong>{{ sectionTitle }}</strong>
+            </div>
+
+            <span class="section-count">{{ productCountText }}</span>
           </header>
 
           <p v-if="errorMessage" class="status-card">
@@ -239,6 +436,17 @@ function handleSearchSubmit() {
               :to="{ name: 'product-detail', params: { productId: product.id } }"
             />
           </div>
+
+          <div
+            v-if="!isEmpty && !errorMessage && visibleProducts.length > 0"
+            ref="loadMoreTriggerRef"
+            class="load-more-trigger"
+            :class="{ 'load-more-trigger-finished': isProductsFinished }"
+          >
+            <span v-if="isLoadingMoreProducts">加载更多商品中...</span>
+            <span v-else-if="isProductsFinished">已经到底了</span>
+            <span v-else>继续下滑加载更多</span>
+          </div>
         </div>
       </section>
     </div>
@@ -255,6 +463,89 @@ function handleSearchSubmit() {
         {{ action.label }}
       </button>
     </footer>
+
+    <van-popup
+      v-model:show="filterDrawerVisible"
+      class="filter-drawer"
+      position="right"
+      teleport="body"
+    >
+      <section class="filter-drawer-panel">
+        <header class="filter-drawer-head">
+          <strong>商品筛选</strong>
+          <button class="filter-drawer-close" type="button" aria-label="关闭筛选抽屉" @click="closeFilterDrawer">
+            <van-icon name="cross" size="18" />
+          </button>
+        </header>
+
+        <div class="filter-drawer-body">
+          <section class="filter-section">
+            <div class="filter-section-head">
+              <strong>商品分类</strong>
+            </div>
+
+            <div class="category-chip-list">
+              <button
+                class="category-chip"
+                :class="{ 'category-chip-active': selectedCategoryId === '' }"
+                type="button"
+                @click="handleCategorySelect('')"
+              >
+                全部分类
+              </button>
+
+              <button
+                v-for="category in categoryOptions"
+                :key="category.id"
+                class="category-chip"
+                :class="{ 'category-chip-active': selectedCategoryId === category.id }"
+                type="button"
+                @click="handleCategorySelect(category.id)"
+              >
+                {{ category.label }}
+              </button>
+            </div>
+          </section>
+
+          <section class="filter-section">
+            <div class="filter-section-head">
+              <strong>价格区间</strong>
+            </div>
+
+            <label class="price-field">
+              <span>最低价</span>
+              <input
+                v-model="minPriceInput"
+                inputmode="decimal"
+                placeholder="0"
+                type="number"
+                @keyup.enter="applyDrawerFilter"
+              >
+            </label>
+
+            <label class="price-field">
+              <span>最高价</span>
+              <input
+                v-model="maxPriceInput"
+                inputmode="decimal"
+                placeholder="不限"
+                type="number"
+                @keyup.enter="applyDrawerFilter"
+              >
+            </label>
+          </section>
+        </div>
+
+        <footer class="filter-drawer-actions">
+          <button class="filter-action-button" type="button" @click="resetDrawerFilter">
+            重置
+          </button>
+          <button class="filter-action-button filter-action-button-primary" type="button" @click="applyDrawerFilter">
+            确认
+          </button>
+        </footer>
+      </section>
+    </van-popup>
   </section>
 </template>
 
@@ -324,7 +615,7 @@ function handleSearchSubmit() {
   width: calc(100% - 32px);
   margin: 0 16px;
   border-radius: 18px;
-  min-height: 146px;
+  min-height: 220px;
   background: linear-gradient(180deg, #5a4033 0%, #2b2521 100%);
 }
 
@@ -340,16 +631,53 @@ function handleSearchSubmit() {
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 18px 16px;
+  padding: 18px 16px 14px;
+}
+
+.store-meta-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0 16px 18px;
+}
+
+.store-meta-item {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.store-meta-item span {
+  color: rgba(255, 233, 214, 0.8);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.store-meta-item strong {
+  overflow: hidden;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .store-identity {
   display: flex;
   gap: 12px;
-  align-items: center;
+  align-items: flex-start;
   min-width: 0;
 }
 
@@ -423,6 +751,190 @@ function handleSearchSubmit() {
   gap: 16px;
 }
 
+.filter-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.sort-dropdown-shell {
+  flex: 1;
+  min-width: 0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.sort-dropdown :deep(.van-dropdown-menu) {
+  box-shadow: none;
+}
+
+.sort-dropdown :deep(.van-dropdown-menu__bar) {
+  height: 44px;
+  border-radius: 16px;
+  background: #faf8f5;
+  box-shadow: none;
+}
+
+.sort-dropdown :deep(.van-dropdown-menu__item) {
+  justify-content: flex-start;
+}
+
+.sort-dropdown :deep(.van-dropdown-menu__title) {
+  color: #40372f;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.filter-trigger-button,
+.filter-action-button,
+.filter-drawer-close {
+  border: 0;
+  background: transparent;
+}
+
+.filter-trigger-button {
+  flex: none;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  min-width: 84px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 16px;
+  background: #faf8f5;
+  color: #52483f;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.filter-trigger-button-active {
+  background: #fff1e5;
+  color: #c25b0a;
+}
+
+.price-field {
+  display: grid;
+  gap: 6px;
+}
+
+.price-field span {
+  color: #857f79;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.price-field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid #e7dfd6;
+  border-radius: 12px;
+  background: #fff;
+  color: #2f2a26;
+  font-size: 13px;
+}
+
+.filter-action-button {
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: #ece7e1;
+  color: #6c655f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.filter-action-button-primary {
+  background: #f08a3e;
+  color: #fff;
+}
+
+.filter-drawer {
+  width: min(82vw, 320px);
+  height: 100vh;
+  height: 100dvh;
+}
+
+.filter-drawer-panel {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+  background: #fff;
+}
+
+.filter-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 16px;
+  border-bottom: 1px solid #f0ebe5;
+}
+
+.filter-drawer-head strong {
+  color: #2f2a26;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.filter-drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  color: #867d75;
+}
+
+.filter-drawer-body {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 18px 16px;
+}
+
+.filter-section {
+  display: grid;
+  gap: 12px;
+}
+
+.filter-section-head strong {
+  color: #2f2a26;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.category-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.category-chip {
+  padding: 9px 14px;
+  border: 1px solid #ece3d8;
+  border-radius: 999px;
+  background: #faf8f5;
+  color: #62574d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.category-chip-active {
+  border-color: #f0b27b;
+  background: #fff1e5;
+  color: #c25b0a;
+}
+
+.filter-drawer-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid #f0ebe5;
+}
+
 .store-tabs-shell {
   overflow: hidden;
   padding-top: 6px;
@@ -444,6 +956,16 @@ function handleSearchSubmit() {
   align-items: center;
 }
 
+.section-head-spaced {
+  justify-content: space-between;
+}
+
+.section-title-wrap {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .section-accent {
   width: 3px;
   height: 20px;
@@ -455,6 +977,12 @@ function handleSearchSubmit() {
   color: #2f2a26;
   font-size: 24px;
   font-weight: 700;
+}
+
+.section-count {
+  color: #8a847f;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .status-card {
@@ -504,6 +1032,20 @@ function handleSearchSubmit() {
   width: 45%;
 }
 
+.load-more-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  color: #8a847f;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.load-more-trigger-finished {
+  color: #b1aba5;
+}
+
 .store-action-bar {
   position: sticky;
   bottom: 0;
@@ -544,6 +1086,10 @@ function handleSearchSubmit() {
 
   .follow-button {
     width: 100%;
+  }
+
+  .store-meta-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 </style>

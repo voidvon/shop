@@ -5,15 +5,17 @@ import {
 import { backendAProductRepository } from '@/entities/product'
 import type { BackendAProductDetailDto } from '@/entities/product/infrastructure/dto/backend-a-product.dto'
 
-import type { CategoryProductsQuery, StorefrontQuery } from '../../../domain/storefront-query'
+import type { CategoryProductsQuery, StoreProductsQuery, StorefrontQuery } from '../../../domain/storefront-query'
 import {
   type BackendAStorefrontCategoryDto,
   type BackendAStorefrontHomeDto,
+  type BackendAPlatformSettingsDto,
   type BackendAPartnerMerchantDto,
   type BackendAStorefrontProductDto,
   mapBackendACategoryProducts,
   mapBackendACategoryTree,
   mapBackendAHomePageData,
+  mapBackendAPlatformSettingsData,
   mapBackendAProductDetailPageData,
   mapBackendAStoreHomePageData,
 } from '../../mappers/backend-a-storefront-mapper'
@@ -95,6 +97,14 @@ export const backendAStorefrontQuery: StorefrontQuery = {
     return mappedHomePageData
   },
 
+  async getPlatformSettingsData() {
+    const platformSettings = await backendAHttpClient.get<BackendAPlatformSettingsDto>(
+      '/api/v1/platform/settings',
+    )
+
+    return mapBackendAPlatformSettingsData(platformSettings)
+  },
+
   async getProductDetailPageData(productId: string) {
     let product: BackendAProductDetailDto
 
@@ -121,6 +131,22 @@ export const backendAStorefrontQuery: StorefrontQuery = {
     return mapBackendAProductDetailPageData(product, recommendedProducts)
   },
 
+  async getStoreProducts(query: StoreProductsQuery) {
+    const page = await this.getStoreProductPage(query)
+    return page.items
+  },
+
+  async getStoreProductPage(query: StoreProductsQuery) {
+    return backendAProductRepository.getMerchantProductSummaryPage(query.merchantId, {
+      categoryId: query.categoryId,
+      maxPrice: query.maxPrice,
+      minPrice: query.minPrice,
+      perPage: query.perPage,
+      sortBy: query.sortBy,
+      sortDir: query.sortDir,
+    })
+  },
+
   async getStoreHomePageData(storeId: string) {
     const normalizedStoreId = storeId.trim()
 
@@ -130,7 +156,10 @@ export const backendAStorefrontQuery: StorefrontQuery = {
 
     const [merchantResult, productsResult] = await Promise.allSettled([
       fetchBackendAPartnerMerchantDto(normalizedStoreId),
-      backendAProductRepository.getMerchantProductSummaries(normalizedStoreId),
+      backendAProductRepository.getMerchantProductSummaries(normalizedStoreId, {
+        sortBy: 'sales_count',
+        sortDir: 'desc',
+      }),
     ])
 
     if (merchantResult.status === 'rejected' && productsResult.status === 'rejected') {

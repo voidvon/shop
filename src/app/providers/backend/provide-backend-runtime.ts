@@ -15,6 +15,7 @@ import { provideCartRepository } from '@/entities/cart'
 import { provideOrderRepository } from '@/entities/order'
 import { provideProductRepository } from '@/entities/product'
 import { provideCheckoutFlowPort } from '@/processes/checkout-flow'
+import { provideCustomerServiceQuery } from '@/processes/customer-service'
 import {
   provideMemberAssetsService,
   provideMemberCenterQuery,
@@ -40,6 +41,7 @@ export function provideBackendRuntime(app: App) {
   provideOrderRepository(app, runtime.repositories.order)
   provideProductRepository(app, runtime.repositories.product)
   provideCheckoutFlowPort(app, runtime.queries.checkoutFlow)
+  provideCustomerServiceQuery(app, runtime.queries.customerService)
   provideMemberAssetsService(app, runtime.services.memberAssets)
   provideMemberCenterQuery(app, runtime.queries.memberCenter)
   provideStorefrontQuery(app, runtime.queries.storefront)
