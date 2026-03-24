@@ -4,22 +4,17 @@ import {
   useCustomerServiceQuery,
   type CreateCustomerServiceConversationCommand,
   type CustomerServiceConversationSummary,
-  type CustomerServiceUnreadSummary,
+  useCustomerServiceUnreadStore,
 } from '@/processes/customer-service'
-
-const emptyUnreadSummary: CustomerServiceUnreadSummary = {
-  conversationCount: 0,
-  messageCount: 0,
-}
 
 export function useCustomerServiceConversationListPageModel() {
   const customerServiceQuery = useCustomerServiceQuery()
+  const customerServiceUnreadStore = useCustomerServiceUnreadStore()
 
   const conversations = ref<CustomerServiceConversationSummary[]>([])
   const errorMessage = ref<string | null>(null)
   const isLoading = ref(false)
   const isSubmitting = ref(false)
-  const unreadSummary = ref<CustomerServiceUnreadSummary>(emptyUnreadSummary)
 
   const hasConversations = computed(() => conversations.value.length > 0)
 
@@ -28,13 +23,12 @@ export function useCustomerServiceConversationListPageModel() {
     errorMessage.value = null
 
     try {
-      const [nextConversations, nextUnreadSummary] = await Promise.all([
+      const [nextConversations] = await Promise.all([
         customerServiceQuery.getConversationList({ perPage: 50 }),
-        customerServiceQuery.getUnreadSummary(),
+        customerServiceUnreadStore.refreshUnreadSummary({ silent: true }),
       ])
 
       conversations.value = nextConversations
-      unreadSummary.value = nextUnreadSummary
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '客服会话加载失败'
       throw error
@@ -67,6 +61,5 @@ export function useCustomerServiceConversationListPageModel() {
     isLoading,
     isSubmitting,
     loadConversationListPage,
-    unreadSummary,
   }
 }

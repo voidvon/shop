@@ -3,6 +3,7 @@ import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast, showToast } from 'vant'
 
+import { useCustomerServiceUnreadStore } from '@/processes/customer-service'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 
@@ -13,6 +14,7 @@ const router = useRouter()
 const composerVisible = ref(false)
 const draftContent = ref('')
 const draftSubject = ref('')
+const hasConversationListLoaded = ref(false)
 
 const {
   conversations,
@@ -22,8 +24,9 @@ const {
   isLoading,
   isSubmitting,
   loadConversationListPage,
-  unreadSummary,
 } = useCustomerServiceConversationListPageModel()
+const customerServiceUnreadStore = useCustomerServiceUnreadStore()
+const unreadSummary = computed(() => customerServiceUnreadStore.unreadSummary)
 
 const storeId = computed(() => (
   typeof route.query.storeId === 'string' ? route.query.storeId.trim() : ''
@@ -65,6 +68,9 @@ const unreadSummaryText = computed(() => {
 
   return '当前没有未读消息'
 })
+const hasActiveConversations = computed(() => (
+  conversations.value.some((conversation) => conversation.status !== 'closed')
+))
 
 function formatDateTime(value: string | null) {
   if (!value) {
@@ -85,7 +91,7 @@ function formatDateTime(value: string | null) {
   }).format(parsedValue)
 }
 
-function syncComposerFromRoute() {
+function syncComposerDraftFromRoute() {
   const nextSubject = preferredSubject.value
     || (storeName.value ? `店铺咨询 · ${storeName.value}` : '客服咨询')
   const nextContent = preferredContent.value
@@ -93,7 +99,25 @@ function syncComposerFromRoute() {
 
   draftSubject.value = nextSubject
   draftContent.value = nextContent
+}
+
+function syncComposerVisibility() {
+  if (!hasConversationListLoaded.value) {
+    composerVisible.value = false
+    return
+  }
+
+  if (hasActiveConversations.value) {
+    composerVisible.value = false
+    return
+  }
+
   composerVisible.value = shouldAutoOpenComposer.value
+}
+
+function syncComposerFromRoute() {
+  syncComposerDraftFromRoute()
+  syncComposerVisibility()
 }
 
 function goBack() {
@@ -161,10 +185,28 @@ function openConversation(conversationId: string) {
 }
 
 watch(
-  () => [route.query.composer, route.query.content, route.query.storeId, route.query.storeName, route.query.subject],
+  () => [
+    route.query.composer,
+    route.query.content,
+    route.query.storeId,
+    route.query.storeName,
+    route.query.subject,
+    hasActiveConversations.value,
+  ],
   () => {
+    if (!hasConversationListLoaded.value) {
+      composerVisible.value = false
+      return
+    }
+
+    if (hasActiveConversations.value) {
+      composerVisible.value = false
+      return
+    }
+
     if (!draftSubject.value.trim() && !draftContent.value.trim()) {
-      syncComposerFromRoute()
+      syncComposerDraftFromRoute()
+      syncComposerVisibility()
       return
     }
 
@@ -175,12 +217,23 @@ watch(
   { immediate: true },
 )
 
+async function refreshConversationList() {
+  hasConversationListLoaded.value = false
+
+  try {
+    await loadConversationListPage()
+  } finally {
+    hasConversationListLoaded.value = true
+    syncComposerFromRoute()
+  }
+}
+
 onMounted(() => {
-  void loadConversationListPage()
+  void refreshConversationList()
 })
 
 onActivated(() => {
-  void loadConversationListPage()
+  void refreshConversationList()
 })
 </script>
 
@@ -189,26 +242,92 @@ onActivated(() => {
     <PageTopBar title="联系客服" right-icon="plus" @back="goBack" @right="openComposer" />
 
     <div class="customer-service-scroll">
-      <section class="summary-card">
-        <div>
-          <strong>在线客服</strong>
+      <section class="service-entry-card">
+        <div class="service-entry-avatar">客</div>
+
+        <div class="service-entry-copy">
+          <strong>平台客服</strong>
           <p>{{ unreadSummaryText }}</p>
         </div>
 
-        <span class="summary-badge">{{ conversations.length }} 个会话</span>
+        <button type="button" class="service-entry-action" @click="openComposer">
+          发起咨询
+        </button>
       </section>
 
       <section v-if="sourceSummary" class="source-card">
-        <span class="source-label">{{ sourceSummary.label }}</span>
-        <strong>{{ sourceSummary.value }}</strong>
+        <div class="source-head">
+          <span class="source-label">{{ sourceSummary.label }}</span>
+          <strong>{{ sourceSummary.value }}</strong>
+        </div>
         <p>{{ sourceSummary.description }}</p>
       </section>
 
-      <section v-if="composerVisible" class="composer-card">
+      <section v-if="errorMessage" class="error-card">
+        <p>{{ errorMessage }}</p>
+      </section>
+
+      <section class="conversation-section">
+        <header class="conversation-section-head">
+          <strong>会话列表</strong>
+          <span class="conversation-count">{{ conversations.length }} 个会话</span>
+        </header>
+
+        <template v-if="hasConversations">
+          <button
+            v-for="conversation in conversations"
+            :key="conversation.id"
+            type="button"
+            class="conversation-card"
+            @click="openConversation(conversation.id)"
+          >
+            <div class="conversation-avatar">
+              {{ (conversation.sourceLabel || '客服').slice(0, 1) }}
+            </div>
+
+            <div class="conversation-main">
+              <div class="conversation-head">
+                <strong>{{ conversation.subject }}</strong>
+                <span class="conversation-time">{{ formatDateTime(conversation.lastMessageAt) }}</span>
+              </div>
+
+              <div class="conversation-foot">
+                <p class="conversation-preview">{{ conversation.previewText }}</p>
+                <span v-if="conversation.unreadCount > 0" class="conversation-unread">
+                  {{ conversation.unreadCount > 99 ? '99+' : conversation.unreadCount }}
+                </span>
+              </div>
+
+              <div class="conversation-meta">
+                <span class="conversation-status">{{ conversation.statusLabel }}</span>
+                <span v-if="conversation.sourceLabel" class="conversation-source">{{ conversation.sourceLabel }}</span>
+              </div>
+            </div>
+          </button>
+        </template>
+
+        <EmptyState
+          v-else-if="!isLoading"
+          class="empty-state"
+          icon="chat-o"
+          title="暂无客服会话"
+          description="发起一条咨询后，会话会显示在这里。"
+        />
+      </section>
+    </div>
+
+    <van-popup
+      v-model:show="composerVisible"
+      round
+      position="bottom"
+      class="composer-popup"
+      teleport="body"
+    >
+      <section class="composer-card">
         <header class="section-head">
           <strong>发起客服咨询</strong>
           <button type="button" class="text-button" @click="composerVisible = false">
-            收起
+            关闭
           </button>
         </header>
 
@@ -225,178 +344,165 @@ onActivated(() => {
           autosize
           label="内容"
           maxlength="500"
-          rows="4"
+          rows="5"
           type="textarea"
           placeholder="请输入你要咨询的问题"
         />
 
         <van-button
           block
-          color="linear-gradient(135deg, #1f8f74, #2fa78a)"
+          color="#07c160"
           :loading="isSubmitting"
           round
           type="primary"
           @click="submitConversation"
         >
-          提交留言
+          开始会话
         </van-button>
       </section>
-
-      <section v-if="errorMessage" class="error-card">
-        <p>{{ errorMessage }}</p>
-      </section>
-
-      <section v-if="hasConversations" class="conversation-list">
-        <button
-          v-for="conversation in conversations"
-          :key="conversation.id"
-          type="button"
-          class="conversation-card"
-          @click="openConversation(conversation.id)"
-        >
-          <div class="conversation-head">
-            <strong>{{ conversation.subject }}</strong>
-            <span class="conversation-time">{{ formatDateTime(conversation.lastMessageAt) }}</span>
-          </div>
-
-          <div class="conversation-meta">
-            <span class="conversation-status">{{ conversation.statusLabel }}</span>
-            <span v-if="conversation.sourceLabel" class="conversation-source">{{ conversation.sourceLabel }}</span>
-          </div>
-
-          <p class="conversation-preview">{{ conversation.previewText }}</p>
-
-          <div class="conversation-foot">
-            <span class="conversation-link">查看详情</span>
-            <span v-if="conversation.unreadCount > 0" class="conversation-unread">
-              {{ conversation.unreadCount }} 条未读
-            </span>
-          </div>
-        </button>
-      </section>
-
-      <EmptyState
-        v-else-if="!isLoading"
-        class="empty-state"
-        icon="chat-o"
-        title="暂无客服会话"
-        description="提交一条留言后，客服回复会显示在这里。"
-      />
-    </div>
+    </van-popup>
   </section>
 </template>
 
 <style scoped>
 .customer-service-page {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top, rgba(31, 143, 116, 0.14), transparent 36%),
-    linear-gradient(180deg, #f4fbf8 0%, #f7f4ef 32%, #f7f5f1 100%);
+  min-height: 100dvh;
+  background: #ededed;
 }
 
 .customer-service-scroll {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
+  gap: 12px;
+  padding: 12px 0 24px;
 }
 
-.summary-card,
+.service-entry-card,
 .source-card,
-.composer-card,
-.conversation-card,
+.conversation-section,
 .error-card {
-  border: 1px solid rgba(32, 57, 49, 0.08);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 18px 40px rgba(28, 55, 46, 0.08);
+  background: #fff;
 }
 
-.summary-card {
+.service-entry-card {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
 }
 
-.summary-card strong,
+.service-entry-avatar,
+.conversation-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7c8aa5, #5b677d);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.service-entry-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.service-entry-copy strong,
 .source-card strong,
 .section-head strong,
-.conversation-head strong {
-  color: #1c2a24;
+.conversation-head strong,
+.conversation-section-head strong {
+  color: #111;
   font-size: 16px;
   font-weight: 600;
 }
 
-.summary-card p,
+.service-entry-copy p,
 .source-card p,
-.conversation-preview,
 .error-card p {
-  margin: 8px 0 0;
-  color: #66756e;
+  margin: 4px 0 0;
+  color: #888;
   font-size: 13px;
-  line-height: 1.5;
 }
 
-.summary-badge,
-.conversation-status,
-.conversation-source,
-.conversation-unread {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 28px;
-  padding: 0 12px;
+.service-entry-action {
+  flex: none;
+  padding: 0 14px;
+  height: 32px;
+  border: 0;
   border-radius: 999px;
-  font-size: 12px;
+  background: rgba(7, 193, 96, 0.12);
+  color: #07c160;
+  font-size: 13px;
   font-weight: 600;
 }
 
-.summary-badge,
-.conversation-status {
-  background: rgba(31, 143, 116, 0.12);
-  color: #1f8f74;
+.conversation-status,
+.conversation-source,
+.conversation-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #999;
 }
 
 .source-card {
-  padding: 18px;
+  padding: 12px 16px;
+}
+
+.source-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .source-label {
-  color: #7e8a85;
+  color: #999;
   font-size: 12px;
 }
 
+.conversation-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.conversation-section-head,
 .section-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  padding: 12px 16px;
 }
 
 .composer-card {
-  padding: 18px;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
 }
 
 .composer-field {
   margin-bottom: 12px;
-  border-radius: 16px;
-  background: #f6faf8;
+  border-radius: 12px;
+  background: #f7f7f7;
 }
 
 .text-button {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #1f8f74;
+  color: #07c160;
   font-size: 13px;
 }
 
 .error-card {
-  padding: 14px 16px;
+  margin: 0 16px;
+  padding: 12px 16px;
   border-color: rgba(184, 72, 62, 0.14);
   background: #fff8f6;
+  border-radius: 12px;
 }
 
 .error-card p {
@@ -404,63 +510,85 @@ onActivated(() => {
   color: #b8483e;
 }
 
-.conversation-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .conversation-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   width: 100%;
-  padding: 18px;
+  padding: 12px 16px;
+  border: 0;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
   text-align: left;
 }
 
+.conversation-main {
+  min-width: 0;
+  flex: 1;
+}
+
 .conversation-head,
-.conversation-meta,
-.conversation-foot {
+.conversation-foot,
+.conversation-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.conversation-meta,
 .conversation-foot {
-  margin-top: 12px;
+  margin-top: 6px;
+}
+
+.conversation-meta {
+  margin-top: 8px;
 }
 
 .conversation-time {
-  color: #8a9791;
+  flex: none;
+  color: #999;
   font-size: 12px;
 }
 
-.conversation-source {
-  background: rgba(48, 95, 82, 0.08);
-  color: #305f52;
-}
-
 .conversation-preview {
-  display: -webkit-box;
-  margin-top: 12px;
+  flex: 1;
+  margin: 0;
   overflow: hidden;
-  color: #42514b;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  color: #7a7a7a;
+  font-size: 13px;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.conversation-link {
-  color: #1f8f74;
-  font-size: 13px;
-  font-weight: 600;
+.conversation-status {
+  color: #07c160;
+}
+
+.conversation-source {
+  color: #999;
 }
 
 .conversation-unread {
-  background: rgba(184, 72, 62, 0.12);
-  color: #b8483e;
+  flex: none;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #fa5151;
+  color: #fff;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
 }
 
 .empty-state {
-  margin-top: 48px;
+  margin: 48px 0;
+}
+
+.composer-popup {
+  overflow: hidden;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
 }
 </style>

@@ -16,3 +16,4 @@ export {
   provideCustomerServiceQuery,
   useCustomerServiceQuery,
 } from './infrastructure/customer-service-query-provider'
+export { useCustomerServiceUnreadStore } from './model/useCustomerServiceUnreadStore'

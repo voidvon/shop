@@ -146,21 +146,21 @@ function resolveConversationStatus(rawStatus: string | null, rawStatusCode: numb
   const normalizedStatus = rawStatus?.trim().toLowerCase() ?? null
 
   if (normalizedStatus) {
-    if (['closed', 'done', 'resolved', 'finished'].includes(normalizedStatus)) {
+    if (['closed', 'done', 'resolved', 'finished', '已关闭', '关闭'].includes(normalizedStatus)) {
       return {
         status: 'closed' as CustomerServiceConversationStatus,
         statusLabel: '已关闭',
       }
     }
 
-    if (['pending', 'waiting', 'todo'].includes(normalizedStatus)) {
+    if (['pending', 'waiting', 'todo', '待回复', '待处理'].includes(normalizedStatus)) {
       return {
         status: 'pending' as CustomerServiceConversationStatus,
         statusLabel: '待回复',
       }
     }
 
-    if (['open', 'active', 'processing', 'replying'].includes(normalizedStatus)) {
+    if (['open', 'active', 'processing', 'replying', '服务中', '处理中'].includes(normalizedStatus)) {
       return {
         status: 'open' as CustomerServiceConversationStatus,
         statusLabel: '服务中',
@@ -169,10 +169,24 @@ function resolveConversationStatus(rawStatus: string | null, rawStatusCode: numb
   }
 
   if (rawStatusCode !== null) {
-    if (rawStatusCode <= 0) {
+    if (rawStatusCode < 0) {
       return {
         status: 'closed' as CustomerServiceConversationStatus,
         statusLabel: '已关闭',
+      }
+    }
+
+    if (rawStatusCode === 0) {
+      return {
+        status: 'pending' as CustomerServiceConversationStatus,
+        statusLabel: '待回复',
+      }
+    }
+
+    if (rawStatusCode === 1) {
+      return {
+        status: 'open' as CustomerServiceConversationStatus,
+        statusLabel: '服务中',
       }
     }
 
@@ -244,8 +258,8 @@ export function mapBackendACustomerServiceConversationSummary(
   record: BackendACustomerServiceRecord,
 ): CustomerServiceConversationSummary {
   const sources = buildConversationSources(record)
-  const rawStatus = pickStringFromSources(sources, ['status_text', 'statusText', 'status'])
-  const rawStatusCode = pickNumberFromSources(sources, ['status_code', 'statusCode', 'status'])
+  const rawStatus = pickStringFromSources([record], ['status_name', 'statusName', 'status_text', 'statusText', 'status'])
+  const rawStatusCode = pickNumberFromSources([record], ['status_code', 'statusCode', 'status'])
   const statusInfo = resolveConversationStatus(rawStatus, rawStatusCode)
   const previewText = pickStringFromSources(
     sources,

@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 
 import {
   useCustomerServiceQuery,
+  useCustomerServiceUnreadStore,
   type CustomerServiceConversationDetail,
   type CustomerServiceMessage,
 } from '@/processes/customer-service'
@@ -41,6 +42,7 @@ function sortMessages(messages: CustomerServiceMessage[]) {
 
 export function useCustomerServiceConversationDetailPageModel() {
   const customerServiceQuery = useCustomerServiceQuery()
+  const customerServiceUnreadStore = useCustomerServiceUnreadStore()
 
   const conversation = ref<CustomerServiceConversationDetail | null>(null)
   const errorMessage = ref<string | null>(null)
@@ -63,6 +65,7 @@ export function useCustomerServiceConversationDetailPageModel() {
 
       conversation.value = nextConversation
       messages.value = sortMessages(dedupeMessages(nextMessages))
+      void customerServiceUnreadStore.refreshUnreadSummary({ silent: true })
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '客服会话详情加载失败'
       throw error
@@ -109,6 +112,8 @@ export function useCustomerServiceConversationDetailPageModel() {
       if (nextConversation) {
         conversation.value = nextConversation
       }
+
+      void customerServiceUnreadStore.refreshUnreadSummary({ silent: true })
     } catch {
       // Ignore polling errors to avoid interrupting the chat page.
     }
