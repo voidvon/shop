@@ -61,6 +61,15 @@ export const mockProductRepository: ProductRepository = {
     )
   },
 
+  async getMerchantProductSummaries(merchantId) {
+    return Promise.resolve(
+      mockProducts
+        .filter((product) => product.storeId === merchantId)
+        .map((product) => createProductSummary(product.productId))
+        .filter((product): product is ProductSummary => product !== null),
+    )
+  },
+
   async getProductDetail(productId) {
     return Promise.resolve(createProductDetail(productId))
   },

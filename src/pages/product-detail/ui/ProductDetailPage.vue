@@ -96,6 +96,7 @@ const reviewCountText = computed(() => `(${detailPageData.value?.review.count ??
 const recommendProducts = computed(() => detailPageData.value?.recommendations ?? [])
 
 const storeInfo = computed(() => detailPageData.value?.store ?? null)
+const canOpenStorePage = computed(() => Boolean(storeInfo.value?.storeId))
 const galleryItems = computed(() =>
   (product.value?.gallery.length ? product.value.gallery : [product.value?.coverImageUrl ?? null])
     .filter((imageUrl): imageUrl is string => Boolean(imageUrl))
@@ -114,6 +115,23 @@ function resolveProductImage(imageUrl: string | null | undefined) {
 
 function formatAmount(value: number) {
   return value.toFixed(2)
+}
+
+function openStorePage() {
+  if (!storeInfo.value?.storeId) {
+    showFailToast('当前商家信息暂不可用')
+    return
+  }
+
+  void router.push({
+    name: 'store-detail',
+    params: {
+      storeId: storeInfo.value.storeId,
+    },
+    query: {
+      name: storeInfo.value.storeName,
+    },
+  })
 }
 
 function goBack() {
@@ -415,15 +433,20 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
           </button>
 
           <section class="merchant-card">
-            <button class="merchant-head" type="button">
+            <button class="merchant-head" type="button" @click="openStorePage">
               <strong>商家信息</strong>
               <van-icon name="arrow" size="16" />
             </button>
 
-            <div class="merchant-store">
+            <button
+              class="merchant-store"
+              :disabled="!canOpenStorePage"
+              type="button"
+              @click="openStorePage"
+            >
               <van-icon name="shop-o" size="18" />
               <span>{{ storeInfo?.storeName ?? '品牌旗舰店' }}</span>
-            </div>
+            </button>
 
             <div class="metric-row">
               <div class="metric-item">
@@ -833,9 +856,14 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   display: flex;
   gap: 10px;
   align-items: center;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #1a1918;
   font-size: 15px;
   font-weight: 600;
+  text-align: left;
 }
 
 .merchant-store :deep(.van-icon) {
