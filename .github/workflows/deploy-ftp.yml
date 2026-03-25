@@ -1,4 +1,4 @@
-name: Build And Deploy To FTP
+name: Build And Deploy To Server
 
 on:
   push:
@@ -8,14 +8,14 @@ on:
 
 env:
   NODE_VERSION: '22'
-  FTP_SERVER: 123.207.4.226
-  FTP_PORT: 21
+  DEPLOY_HOST: 123.207.4.226
+  DEPLOY_PORT: 22
   LOCAL_DIR: dist/
-  REMOTE_DIR: /
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -33,17 +33,14 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy dist to FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: Deploy dist via SSH
+        uses: easingthemes/ssh-deploy@v5.1.0
         with:
-          server: ${{ env.FTP_SERVER }}
-          port: ${{ env.FTP_PORT }}
-          protocol: ftp
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ${{ env.LOCAL_DIR }}
-          server-dir: ${{ env.REMOTE_DIR }}
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST || env.DEPLOY_HOST }}
+          REMOTE_PORT: ${{ secrets.REMOTE_PORT || env.DEPLOY_PORT }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          SOURCE: ${{ env.LOCAL_DIR }}
+          TARGET: ${{ secrets.REMOTE_TARGET }}
+          ARGS: "-rlgoDzvc -i --delete"
+          EXCLUDE: "/.git*/, /node_modules/"
