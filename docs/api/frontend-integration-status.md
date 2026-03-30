@@ -154,7 +154,7 @@
 现状：
 
 - `backendAMemberAuthRepository` 已通过 `POST /api/v1/auth/wechat` 获取真实 Bearer token
-- 登录页支持在 URL 携带 `code` 时自动完成微信登录，也可通过 `VITE_BACKEND_A_WECHAT_OAUTH_URL` 跳到静默授权入口
+- 登录页支持在 URL 携带 `code` 时自动完成微信登录；后端会用该 `code` 换取 `openid` 并自动注册或登录用户，也可通过 `VITE_BACKEND_A_WECHAT_OAUTH_URL` 跳到静默授权入口
 - runtime 启动后如果本地已有 token，会后台调用 `GET /api/v1/auth/profile` 刷新资料；如果返回 `401`，则自动清空 session
 - `updateNickname` 已调用 `PATCH /api/v1/auth/profile`，并把资料同步回本地 session
 - 地址管理 runtime 已装配真实 `createBackendAMemberAddressRepository(...)`

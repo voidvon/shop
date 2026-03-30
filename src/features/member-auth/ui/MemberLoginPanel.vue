@@ -98,7 +98,10 @@ async function handleSubmit() {
     <section class="hero-card">
       <p class="eyebrow">MEMBER ACCESS</p>
       <h1>欢迎回来</h1>
-      <p class="hero-text">登录后可查看订单、卡券、收藏与会员资产，继续当前商城浏览流程。</p>
+      <p class="hero-text">
+        登录后可查看订单、卡券、收藏与会员资产；首次使用微信授权时，将按微信 openid
+        自动注册并直接进入商城。
+      </p>
     </section>
 
     <section class="form-card">
@@ -151,7 +154,7 @@ async function handleSubmit() {
         :disabled="props.isWechatAuthorizing"
         @click="useWechatLogin"
       >
-        {{ props.isWechatAuthorizing ? '微信登录中...' : '微信合作账号登录' }}
+        {{ props.isWechatAuthorizing ? '微信登录中...' : '微信授权登录 / 自动注册' }}
       </van-button>
 
       <div class="switch-row">

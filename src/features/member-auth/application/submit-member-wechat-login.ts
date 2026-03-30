@@ -28,6 +28,8 @@ export async function submitMemberWechatLogin(
   })
 
   return {
-    successMessage: `登录成功，欢迎回来 ${authResult.userInfo.nickname ?? authResult.userInfo.username}`,
+    successMessage: authResult.isNewUser
+      ? `微信授权成功，已自动注册并登录 ${authResult.userInfo.nickname ?? authResult.userInfo.username}`
+      : `登录成功，欢迎回来 ${authResult.userInfo.nickname ?? authResult.userInfo.username}`,
   }
 }

@@ -48,7 +48,7 @@
 
 ### 用户认证
 
-- `POST /api/v1/auth/wechat` 微信公众号静默授权登录
+- `POST /api/v1/auth/wechat` 微信公众号静默授权登录（后端按 `code -> openid` 自动登录或注册）
 - `GET /api/v1/auth/profile` 获取当前用户资料
 - `PATCH /api/v1/auth/profile` 更新当前用户资料
 - `GET /api/v1/user-addresses` 地址列表

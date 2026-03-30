@@ -50,6 +50,7 @@ export function mapBackendAUserProfileToAuthResult(
 ): AuthResult {
   return {
     capabilities: previousAuthResult?.capabilities ?? [...backendADefaultCapabilities],
+    isNewUser: previousAuthResult?.isNewUser ?? false,
     security: {
       ...backendADefaultSecurity,
       ...previousAuthResult?.security,
@@ -64,9 +65,12 @@ export function mapBackendAUserProfileToAuthResult(
 export function mapBackendAWechatLoginDataDto(
   input: BackendAWechatLoginDataDto,
 ): AuthResult {
-  return mapBackendAUserProfileToAuthResult(input.user, {
-    accessToken: input.token,
-    expiresAt: null,
-    refreshToken: null,
-  })
+  return {
+    ...mapBackendAUserProfileToAuthResult(input.user, {
+      accessToken: input.token,
+      expiresAt: null,
+      refreshToken: null,
+    }),
+    isNewUser: input.is_new_user,
+  }
 }

@@ -33,6 +33,7 @@ export interface AuthResult {
   session: AuthSession
   security: AccountSecurityState
   capabilities: AccountCapability[]
+  isNewUser?: boolean
 }
 
 export interface PasswordResetPageData {
