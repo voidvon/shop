@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
+import { useCustomerServiceUnreadStore } from '@/processes/customer-service'
 import { backendTarget } from '@/shared/config/backend'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
@@ -30,6 +31,7 @@ const {
   loadOrderListPage,
   orderListPageData,
 } = useOrderListPageModel()
+const customerServiceUnreadStore = useCustomerServiceUnreadStore()
 
 const keyword = ref('')
 
@@ -243,7 +245,12 @@ onBeforeUnmount(() => {
 
 <template>
   <section class="order-list-page">
-    <PageTopBar title="我的订单" right-icon="ellipsis" @back="goBack" />
+    <PageTopBar
+      title="我的订单"
+      right-icon="ellipsis"
+      :right-badge-count="customerServiceUnreadStore.totalUnreadCount"
+      @back="goBack"
+    />
 
     <div class="search-row">
       <SearchField

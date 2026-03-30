@@ -12,6 +12,7 @@ const props = withDefaults(defineProps<{
   backAriaLabel?: string
   backTone?: IconTone
   rightAriaLabel?: string
+  rightBadgeCount?: number
   rightIcon?: string
   rightMenuItems?: TopBarMenuItem[]
   rightMenuPreset?: RightMenuPreset
@@ -22,6 +23,7 @@ const props = withDefaults(defineProps<{
   backAriaLabel: '返回上一页',
   backTone: 'dark',
   rightAriaLabel: '更多操作',
+  rightBadgeCount: 0,
   rightIcon: undefined,
   rightMenuPreset: 'none',
   rightTone: 'default',
@@ -64,6 +66,7 @@ const usesRightMenu = computed(() => {
     <TopBarMoreMenuButton
       v-if="rightIcon && usesRightMenu"
       :aria-label="rightAriaLabel"
+      :badge-count="rightBadgeCount"
       :icon="rightIcon"
       :menu-items="rightMenuItems"
       :tone="rightTone"

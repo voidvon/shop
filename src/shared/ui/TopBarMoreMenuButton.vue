@@ -10,11 +10,13 @@ type TopBarPopoverAction = PopoverAction & TopBarMenuItem
 
 const props = withDefaults(defineProps<{
   ariaLabel?: string
+  badgeCount?: number
   icon?: string
   menuItems?: TopBarMenuItem[]
   tone?: IconTone
 }>(), {
   ariaLabel: '更多操作',
+  badgeCount: 0,
   icon: 'ellipsis',
   tone: 'default',
 })
@@ -40,6 +42,7 @@ const popoverActions = computed<TopBarPopoverAction[]>(() => {
     text: item.label,
   }))
 })
+const showBadge = computed(() => props.badgeCount > 0)
 
 async function handleSelect(action: TopBarPopoverAction) {
   emit('select', action)
@@ -65,7 +68,14 @@ async function handleSelect(action: TopBarPopoverAction) {
         type="button"
         :aria-label="ariaLabel"
       >
-        <van-icon :name="icon" size="20" />
+        <van-badge
+          :content="showBadge ? props.badgeCount : undefined"
+          :max="99"
+          :offset="[-2, 2]"
+          class="menu-icon-badge"
+        >
+          <van-icon :name="icon" size="20" />
+        </van-badge>
       </button>
     </template>
   </van-popover>
@@ -90,5 +100,17 @@ async function handleSelect(action: TopBarPopoverAction) {
 
 .icon-button-default {
   color: #6d6c6a;
+}
+
+.menu-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-icon-badge :deep(.van-badge__wrapper) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
