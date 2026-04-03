@@ -163,7 +163,7 @@ function handlePromoVideoVisibilityChange() {
 }
 
 function handlePromoVideoGesture() {
-  void ensurePromoVideoPlayback()
+  void ensurePromoVideoPlayback(true)
 }
 
 function tryLoadMoreOnScroll() {
