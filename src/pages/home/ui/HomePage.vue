@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import canAutoplay from 'can-autoplay'
-import videoCanvas from 'video-canvas'
 import { computed, nextTick, onActivated, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
@@ -39,7 +38,6 @@ const {
 } = useHomePageModel()
 const router = useRouter()
 const memberFavoriteStore = useMemberFavoriteStore()
-const promoVideoCanvasRef = ref<HTMLCanvasElement | null>(null)
 const promoVideoRef = ref<HTMLVideoElement | null>(null)
 const promoVideoUrl = computed(() => homePageData.value.promo_video)
 const carouselItems = computed(() =>
@@ -49,9 +47,6 @@ const carouselItems = computed(() =>
   })),
 )
 const promoVideoPosterUrl = computed(() => carouselItems.value[0]?.imageUrl || '/images/image-placeholder.svg')
-const promoVideoCardStyle = computed(() => ({
-  backgroundImage: `url(${promoVideoPosterUrl.value})`,
-}))
 const quickCategories = computed(() => homePageData.value.quickCategories)
 const loadMoreTriggerRef = ref<HTMLElement | null>(null)
 const isWechat = isWechatBrowser()
@@ -59,7 +54,6 @@ const isPromoVideoAutoplaySupported = ref<boolean | null>(null)
 const isPromoVideoAutoplayChecking = ref(false)
 const isPromoVideoManualPlayVisible = ref(false)
 let promoVideoAutoplayProbeToken = 0
-let promoVideoCanvasInstance: HTMLCanvasElement | null = null
 
 function isProductFavorited(productId: string) {
   return memberFavoriteStore.isProductFavorited(productId)
@@ -71,24 +65,6 @@ function syncFavoriteState(force = false) {
 
 function goToSearchPage() {
   void router.push({ name: 'search' })
-}
-
-function ensurePromoVideoCanvas() {
-  const video = promoVideoRef.value
-  const canvas = promoVideoCanvasRef.value
-
-  if (!video || !canvas) {
-    return
-  }
-
-  if (promoVideoCanvasInstance === canvas) {
-    return
-  }
-
-  videoCanvas(video, {
-    canvas,
-  })
-  promoVideoCanvasInstance = canvas
 }
 
 function configurePromoVideoElement(video: HTMLVideoElement) {
@@ -221,10 +197,7 @@ function tryLoadMoreOnScroll() {
 onMounted(() => {
   void loadHomePage()
   syncFavoriteState()
-  void nextTick().then(() => {
-    ensurePromoVideoCanvas()
-    return detectPromoVideoAutoplaySupport().then(() => ensurePromoVideoPlayback())
-  })
+  void detectPromoVideoAutoplaySupport().then(() => ensurePromoVideoPlayback())
 
   window.addEventListener('scroll', tryLoadMoreOnScroll, { passive: true })
   window.addEventListener('resize', tryLoadMoreOnScroll)
@@ -267,11 +240,7 @@ watch(
 watch(promoVideoUrl, () => {
   isPromoVideoAutoplaySupported.value = null
   isPromoVideoManualPlayVisible.value = false
-  promoVideoCanvasInstance = null
-  void nextTick().then(() => {
-    ensurePromoVideoCanvas()
-    return detectPromoVideoAutoplaySupport().then(() => ensurePromoVideoPlayback())
-  })
+  void detectPromoVideoAutoplaySupport().then(() => ensurePromoVideoPlayback())
 })
 </script>
 
@@ -286,14 +255,10 @@ watch(promoVideoUrl, () => {
     </van-sticky>
 
     <div class="content-wrapper">
-      <section v-if="promoVideoUrl" :style="promoVideoCardStyle" class="promo-video-card">
-        <canvas
-          ref="promoVideoCanvasRef"
-          class="promo-video-canvas"
-        />
+      <section v-if="promoVideoUrl" class="promo-video-card">
         <video
           ref="promoVideoRef"
-          class="promo-video-source"
+          class="promo-video-player"
           :poster="promoVideoPosterUrl"
           :src="promoVideoUrl"
           autoplay
@@ -403,27 +368,15 @@ watch(promoVideoUrl, () => {
   overflow: hidden;
   border-radius: 16px;
   background: #111;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
   box-shadow: 0 10px 24px rgba(17, 17, 17, 0.14);
 }
 
-.promo-video-canvas {
+.promo-video-player {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   background: #111;
   object-fit: cover;
-}
-
-.promo-video-source {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
   pointer-events: none;
 }
 
