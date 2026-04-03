@@ -5,6 +5,7 @@ import { showFailToast, showSuccessToast } from 'vant'
 
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
 import EmptyState from '@/shared/ui/EmptyState.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useOrderDetailPageModel } from '../model/useOrderDetailPageModel'
@@ -140,9 +141,7 @@ onMounted(() => {
         {{ errorMessage }}
       </p>
 
-      <p v-else-if="isLoading" class="status-text">
-        订单详情加载中...
-      </p>
+      <LoadingState v-else-if="isLoading" />
 
       <EmptyState
         v-else-if="!orderDetailPageData"

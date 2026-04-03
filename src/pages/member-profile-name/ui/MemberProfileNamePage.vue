@@ -78,7 +78,7 @@ onMounted(() => {
         <van-cell
           title="说明"
           :value="`${nickname.length}/${memberProfileNamePageData.maxLength}`"
-          :label="errorMessage ?? (isLoading ? '昵称信息加载中...' : '昵称会同步展示在“我的”和“用户设置”页面。')"
+          :label="errorMessage ?? (isLoading ? '加载中...' : '昵称会同步展示在“我的”和“用户设置”页面。')"
         />
       </van-cell-group>
 

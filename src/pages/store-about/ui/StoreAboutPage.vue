@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useStoreProfile } from '@/features/store-profile'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 const route = useRoute()
@@ -118,7 +119,7 @@ function goBack() {
       <p v-if="errorMessage" class="status-card">
         {{ errorMessage }}
       </p>
-      <p v-else-if="isLoading" class="status-card">店铺信息加载中...</p>
+      <LoadingState v-else-if="isLoading" class="status-card" />
 
       <section v-else class="store-about-section">
         <header class="section-head">

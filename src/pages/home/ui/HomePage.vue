@@ -7,6 +7,7 @@ import { useMemberFavoriteStore } from '@/entities/member-favorite'
 import { ProductCompactCard } from '@/entities/product'
 import { isWechatBrowser } from '@/shared/lib/wechat-browser'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
 import { useHomePageModel } from '../model/useHomePageModel'
@@ -327,9 +328,7 @@ watch(promoVideoUrl, () => {
           {{ errorMessage }}
         </p>
 
-        <p v-else-if="isLoading" class="status-text">
-          首页推荐加载中...
-        </p>
+        <LoadingState v-else-if="isLoading" />
 
         <div
           v-else-if="displayedHotProducts.length > 0"
@@ -353,7 +352,10 @@ watch(promoVideoUrl, () => {
             class="load-more-trigger"
             :class="{ 'load-more-trigger-finished': isHotProductsFinished }"
           >
-            <span v-if="isLoadingMoreHotProducts">加载更多推荐中...</span>
+            <span v-if="isLoadingMoreHotProducts" class="load-more-loading">
+              <van-loading size="14" type="spinner" />
+              <span>加载中...</span>
+            </span>
             <span v-else-if="isHotProductsFinished">已经到底了</span>
             <span v-else>继续下滑加载更多</span>
           </div>
@@ -531,6 +533,12 @@ watch(promoVideoUrl, () => {
   padding: 8px 0 4px;
   color: #9c9b99;
   font-size: 12px;
+}
+
+.load-more-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .load-more-trigger-finished {

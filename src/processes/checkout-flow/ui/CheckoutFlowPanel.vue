@@ -6,6 +6,7 @@ import { showFailToast, showSuccessToast } from 'vant'
 
 import { currentBackendLabel } from '@/shared/config/backend'
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 
 import { useCheckoutFlowStore } from '../model/useCheckoutFlowStore'
 
@@ -124,9 +125,7 @@ function formatAmount(value: number) {
       </p>
 
       <template v-else>
-        <p v-if="isLoading" class="state-card">
-          正在生成结算预览...
-        </p>
+        <LoadingState v-if="isLoading" class="state-card" />
         <p v-else-if="errorMessage" class="state-card state-card-error">
           {{ errorMessage }}
         </p>

@@ -4,6 +4,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import { showSuccessToast, showToast } from 'vant'
 
 import EmptyState from '@/shared/ui/EmptyState.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import ProductMediaRow from '@/shared/ui/ProductMediaRow.vue'
 
@@ -60,9 +61,7 @@ onMounted(() => {
         {{ errorMessage }}
       </p>
 
-      <p v-else-if="isLoading" class="status-text">
-        足迹内容加载中...
-      </p>
+      <LoadingState v-else-if="isLoading" />
 
       <EmptyState
         v-else-if="memberHistoryPageData.items.length === 0"

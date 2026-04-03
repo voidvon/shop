@@ -16,6 +16,7 @@ import {
   type MemberAddress,
   type SaveMemberAddressCommand,
 } from '@/entities/member-address'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useMemberAddressesPageModel } from '../model/useMemberAddressesPageModel'
@@ -421,9 +422,7 @@ onActivated(() => {
         {{ errorMessage }}
     </p>
 
-    <p v-else-if="isLoading" class="status-text">
-      地址信息加载中...
-    </p>
+    <LoadingState v-else-if="isLoading" />
 
     <AddressList
       v-else

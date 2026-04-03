@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 
 import { formatCurrency } from '@/shared/lib/currency'
 import EmptyState from '@/shared/ui/EmptyState.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
 import { useSearchResultsPageModel } from '../model/useSearchResultsPageModel'
@@ -61,9 +62,7 @@ function handleKeywordSelect(nextKeyword: string) {
         {{ errorMessage }}
       </p>
 
-      <p v-else-if="isLoading" class="status-text">
-        搜索结果加载中...
-      </p>
+      <LoadingState v-else-if="isLoading" />
 
       <template v-else-if="results.length > 0">
         <div class="summary-row">

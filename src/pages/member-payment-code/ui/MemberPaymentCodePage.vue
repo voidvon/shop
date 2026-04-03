@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, onActivated, onMounted } from 'vue'
+import QRCode from 'qrcode'
+import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import EmptyState from '@/shared/ui/EmptyState.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useMemberPaymentCodePageModel } from '../model/useMemberPaymentCodePageModel'
@@ -15,6 +17,10 @@ const {
   memberPaymentCodePageData,
 } = useMemberPaymentCodePageModel()
 const paymentCode = computed(() => memberPaymentCodePageData.value.paymentCode)
+const generatedCodeUrl = ref<string | null>(null)
+let generateCodeTaskId = 0
+
+const displayCodeUrl = computed(() => paymentCode.value?.codeUrl || generatedCodeUrl.value)
 
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
@@ -24,6 +30,39 @@ function goBack() {
 
   void router.push('/member')
 }
+
+watch(
+  paymentCode,
+  async (nextPaymentCode) => {
+    const taskId = ++generateCodeTaskId
+    generatedCodeUrl.value = null
+
+    if (!nextPaymentCode || nextPaymentCode.codeUrl || !nextPaymentCode.codeValue) {
+      return
+    }
+
+    try {
+      const nextCodeUrl = await QRCode.toDataURL(nextPaymentCode.codeValue, {
+        errorCorrectionLevel: 'M',
+        margin: 1,
+        width: 280,
+      })
+
+      if (taskId !== generateCodeTaskId) {
+        return
+      }
+
+      generatedCodeUrl.value = nextCodeUrl
+    } catch {
+      if (taskId !== generateCodeTaskId) {
+        return
+      }
+
+      generatedCodeUrl.value = null
+    }
+  },
+  { immediate: true },
+)
 
 onMounted(() => {
   void loadMemberPaymentCodePage()
@@ -46,11 +85,11 @@ onActivated(() => {
       </section>
 
       <p v-if="errorMessage" class="status-text">{{ errorMessage }}</p>
-      <p v-else-if="isLoading" class="status-text">付款码加载中...</p>
+      <LoadingState v-else-if="isLoading" />
 
       <section v-else-if="paymentCode" class="code-card">
-        <div v-if="paymentCode.codeUrl" class="code-frame">
-          <img class="code-image" :src="paymentCode.codeUrl" alt="付款码">
+        <div v-if="displayCodeUrl" class="code-frame">
+          <img class="code-image" :src="displayCodeUrl" alt="付款码">
         </div>
 
         <div class="code-copy">

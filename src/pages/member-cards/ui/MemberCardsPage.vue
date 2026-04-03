@@ -5,6 +5,7 @@ import { showFailToast, showSuccessToast } from 'vant'
 
 import { MemberCardBindPanel, useMemberCardBinding } from '@/features/member-card-binding'
 import EmptyState from '@/shared/ui/EmptyState.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useMemberCardsPageModel } from '../model/useMemberCardsPageModel'
@@ -174,7 +175,7 @@ onMounted(async () => {
         <button class="secondary-button" type="button" @click="goToBindCard">绑定新卡</button>
       </section>
 
-      <p v-if="isLoading" class="status-text">卡券记录加载中...</p>
+      <LoadingState v-if="isLoading" />
 
       <section v-else-if="memberCardsPageData.redemptionRecords.length > 0" class="records-card">
         <header class="records-header">

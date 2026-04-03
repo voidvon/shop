@@ -3,6 +3,7 @@ import { onActivated, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 import EmptyState from '@/shared/ui/EmptyState.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useMemberBalancePageModel } from '../model/useMemberBalancePageModel'
@@ -43,7 +44,7 @@ onActivated(() => {
       </section>
 
       <p v-if="errorMessage" class="status-text">{{ errorMessage }}</p>
-      <p v-else-if="isLoading" class="status-text">余额流水加载中...</p>
+      <LoadingState v-else-if="isLoading" />
 
       <section v-else-if="memberBalancePageData.balanceLogs.length > 0" class="log-card">
         <header class="card-head">

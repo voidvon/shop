@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { showConfirmDialog, showFailToast, showSuccessToast, showToast } from 'vant'
 
 import EmptyState from '@/shared/ui/EmptyState.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useRefundDetailPageModel } from '../model/useRefundDetailPageModel'
@@ -109,9 +110,7 @@ onMounted(() => {
         {{ errorMessage }}
       </p>
 
-      <p v-else-if="isLoading" class="status-text">
-        退款详情加载中...
-      </p>
+      <LoadingState v-else-if="isLoading" />
 
       <EmptyState
         v-else-if="!refundDetailPageData"

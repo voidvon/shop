@@ -4,6 +4,7 @@ import { onActivated, onMounted } from 'vue'
 import { useMemberFavoriteStore } from '@/entities/member-favorite'
 import { ProductCompactCard } from '@/entities/product'
 import EmptyState from '@/shared/ui/EmptyState.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
@@ -87,8 +88,8 @@ onActivated(() => {
       <div
         class="content-pane"
         :class="{
-          'content-pane-empty':
-            !errorMessage && !isLoading && (secondaryCategories.length === 0 || visibleProducts.length === 0),
+          'content-pane-fill-state':
+            isLoading || (!errorMessage && !isLoading && (secondaryCategories.length === 0 || visibleProducts.length === 0)),
         }"
       >
         <header class="content-header">
@@ -100,9 +101,7 @@ onActivated(() => {
           {{ errorMessage }}
         </p>
 
-        <p v-else-if="isLoading" class="status-text">
-          分类数据加载中...
-        </p>
+        <LoadingState v-else-if="isLoading" fill />
 
         <EmptyState
           v-else-if="secondaryCategories.length === 0"
@@ -253,7 +252,7 @@ onActivated(() => {
   scrollbar-width: none;
 }
 
-.content-pane-empty {
+.content-pane-fill-state {
   grid-template-rows: auto minmax(240px, 1fr);
 }
 

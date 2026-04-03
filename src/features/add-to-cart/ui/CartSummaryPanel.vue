@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia'
 import { currentBackendLabel } from '@/shared/config/backend'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import { formatCurrency } from '@/shared/lib/currency'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import SectionCard from '@/shared/ui/SectionCard.vue'
 
 import { useCartStore } from '../model/useCartStore'
@@ -41,7 +42,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <p v-if="isLoading" class="state">正在同步购物车...</p>
+    <LoadingState v-if="isLoading" class="state" />
     <p v-else-if="errorMessage" class="state error">{{ errorMessage }}</p>
     <p v-else-if="visibleLines.length === 0" class="state">购物车还是空的，先挑一件商品试试。</p>
 

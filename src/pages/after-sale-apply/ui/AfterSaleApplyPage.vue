@@ -6,6 +6,7 @@ import { showSuccessToast, showToast } from 'vant'
 import type { AfterSaleApplicationType } from '@/entities/after-sale'
 import ProductMediaRow from '@/shared/ui/ProductMediaRow.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useAfterSaleApplyPageModel } from '../model/useAfterSaleApplyPageModel'
@@ -167,9 +168,7 @@ onMounted(() => {
         {{ errorMessage }}
       </p>
 
-      <p v-else-if="isLoading" class="status-text">
-        售后申请信息加载中...
-      </p>
+      <LoadingState v-else-if="isLoading" />
 
       <EmptyState
         v-else-if="!orderDetailPageData || !activeItem"

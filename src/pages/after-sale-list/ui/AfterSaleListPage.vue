@@ -5,6 +5,7 @@ import { showToast } from 'vant'
 
 import ProductMediaRow from '@/shared/ui/ProductMediaRow.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useAfterSaleListPageModel } from '../model/useAfterSaleListPageModel'
@@ -78,9 +79,7 @@ onMounted(() => {
         {{ errorMessage }}
       </p>
 
-      <p v-else-if="isLoading" class="status-text">
-        售后记录加载中...
-      </p>
+      <LoadingState v-else-if="isLoading" />
 
       <EmptyState
         v-else-if="currentRecords.length === 0"

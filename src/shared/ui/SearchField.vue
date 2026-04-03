@@ -28,6 +28,7 @@ const emit = defineEmits<{
 }>()
 
 const internalValue = ref(props.modelValue)
+const inputRef = ref<HTMLInputElement | null>(null)
 
 watch(
   () => props.modelValue,
@@ -55,6 +56,14 @@ function handleClick() {
 function handleSubmit() {
   emit('submit', value.value)
 }
+
+function focus() {
+  inputRef.value?.focus()
+}
+
+defineExpose({
+  focus,
+})
 </script>
 
 <template>
@@ -66,6 +75,7 @@ function handleSubmit() {
   >
     <van-icon name="search" :size="iconSize" />
     <input
+      ref="inputRef"
       v-model="value"
       class="search-field-input"
       :readonly="readonly"

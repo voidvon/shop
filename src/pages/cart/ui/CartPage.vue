@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { useModuleAvailability } from '@/shared/lib/modules'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useCartPageModel } from '../model/useCartPageModel'
@@ -123,7 +124,7 @@ onActivated(() => {
       <PageTopBar title="购物车" :show-back="false" />
 
       <div class="cart-scroll">
-        <div v-if="isLoading" class="page-state">正在加载购物车...</div>
+        <LoadingState v-if="isLoading" class="page-state" />
         <div v-else-if="errorMessage" class="page-state page-state-error">{{ errorMessage }}</div>
         <div v-else-if="isCartEmpty" class="page-state">购物车还是空的，先去挑点商品吧。</div>
 

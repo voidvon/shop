@@ -5,6 +5,7 @@ import { showConfirmDialog, showFailToast, showSuccessToast, showToast } from 'v
 
 import ProductMediaRow from '@/shared/ui/ProductMediaRow.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useReturnDetailPageModel } from '../model/useReturnDetailPageModel'
@@ -131,9 +132,7 @@ onMounted(() => {
         {{ errorMessage }}
       </p>
 
-      <p v-else-if="isLoading" class="status-text">
-        退货详情加载中...
-      </p>
+      <LoadingState v-else-if="isLoading" />
 
       <EmptyState
         v-else-if="!returnDetailPageData"

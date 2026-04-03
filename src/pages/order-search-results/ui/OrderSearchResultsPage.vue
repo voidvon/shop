@@ -6,6 +6,7 @@ import { showFailToast, showSuccessToast } from 'vant'
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
 import { backendTarget } from '@/shared/config/backend'
 import EmptyState from '@/shared/ui/EmptyState.vue'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
 import { useOrderSearchResultsPageModel } from '../model/useOrderSearchResultsPageModel'
@@ -103,9 +104,7 @@ onActivated(() => {
         {{ errorMessage }}
       </p>
 
-      <p v-else-if="isLoading" class="status-text">
-        订单搜索结果加载中...
-      </p>
+      <LoadingState v-else-if="isLoading" />
 
       <template v-else-if="results.length > 0">
         <div class="summary-row">

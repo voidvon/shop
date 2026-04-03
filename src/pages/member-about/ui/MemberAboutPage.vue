@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 
 import { useMemberSettingsSubpageNavigation } from '@/pages/member-settings/model/useMemberSettingsSubpageNavigation'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import MemberSettingsSubpageLayout from '@/pages/member-settings/ui/MemberSettingsSubpageLayout.vue'
 
 import { useMemberAboutPageModel } from '../model/useMemberAboutPageModel'
@@ -20,12 +21,12 @@ onMounted(() => {
       <van-cell-group inset>
         <van-cell
           :title="memberAboutPageData.companyName || '平台信息'"
-          :label="memberAboutPageData.platformMission || '平台使命加载中...'"
+          :label="memberAboutPageData.platformMission || '加载中...'"
         />
       </van-cell-group>
 
       <p v-if="errorMessage" class="status-text">{{ errorMessage }}</p>
-      <p v-else-if="isLoading" class="status-text">关于我们加载中...</p>
+      <LoadingState v-else-if="isLoading" />
 
       <van-cell-group v-else inset>
         <van-cell title="主办单位" :value="memberAboutPageData.organizerName" />

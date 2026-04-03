@@ -2,6 +2,7 @@
 import { computed, onActivated, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
+import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useMemberSettingsPageModel } from '../model/useMemberSettingsPageModel'
@@ -63,7 +64,7 @@ onActivated(() => {
       </van-cell-group>
 
       <p v-if="errorMessage" class="status-text">{{ errorMessage }}</p>
-      <p v-else-if="isLoading" class="status-text">设置项加载中...</p>
+      <LoadingState v-else-if="isLoading" />
 
       <van-cell-group v-else inset>
         <van-cell

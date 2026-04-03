@@ -199,7 +199,7 @@ async function submitSpecAction(action: 'buy' | 'cart') {
     }
 
     if (!product.value) {
-      showFailToast('商品信息加载中')
+      showFailToast('商品信息加载中...')
       return
     }
 

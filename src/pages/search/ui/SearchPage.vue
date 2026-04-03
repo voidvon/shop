@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import SearchField from '@/shared/ui/SearchField.vue'
@@ -15,6 +16,8 @@ const {
   removeHistory,
   submitSearch,
 } = useSearchPageModel()
+
+const searchFieldRef = ref<{ focus: () => void } | null>(null)
 
 function goBack() {
   if (globalThis.window?.history.state?.back) {
@@ -33,6 +36,11 @@ function handleKeywordSelect(nextKeyword: string) {
   applyKeyword(nextKeyword)
   void submitSearch(nextKeyword)
 }
+
+onMounted(async () => {
+  await nextTick()
+  searchFieldRef.value?.focus()
+})
 </script>
 
 <template>
@@ -43,6 +51,7 @@ function handleKeywordSelect(nextKeyword: string) {
       </button>
 
       <SearchField
+        ref="searchFieldRef"
         v-model="keyword"
         class="search-input"
         aria-label="搜索商城商品"

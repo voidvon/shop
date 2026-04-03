@@ -444,7 +444,10 @@ watch(
             class="load-more-trigger"
             :class="{ 'load-more-trigger-finished': isProductsFinished }"
           >
-            <span v-if="isLoadingMoreProducts">加载更多商品中...</span>
+            <span v-if="isLoadingMoreProducts" class="load-more-loading">
+              <van-loading size="14" type="spinner" />
+              <span>加载中...</span>
+            </span>
             <span v-else-if="isProductsFinished">已经到底了</span>
             <span v-else>继续下滑加载更多</span>
           </div>
@@ -1055,6 +1058,12 @@ watch(
   color: #8a847f;
   font-size: 12px;
   font-weight: 600;
+}
+
+.load-more-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .load-more-trigger-finished {
