@@ -67,6 +67,36 @@ function goToSearchPage() {
   void router.push({ name: 'search' })
 }
 
+function configurePromoVideoElement(video: HTMLVideoElement) {
+  video.muted = true
+  video.defaultMuted = true
+  video.playsInline = true
+  video.setAttribute('muted', 'true')
+  video.setAttribute('playsinline', 'true')
+  video.setAttribute('webkit-playsinline', 'true')
+  video.setAttribute('x5-playsinline', 'true')
+  video.setAttribute('x5-video-player-type', 'h5')
+  video.setAttribute('x5-video-player-fullscreen', 'false')
+}
+
+async function playPromoVideoElement(video: HTMLVideoElement) {
+  if (!video.paused) {
+    isPromoVideoManualPlayVisible.value = false
+    return true
+  }
+
+  configurePromoVideoElement(video)
+
+  try {
+    await video.play()
+    isPromoVideoManualPlayVisible.value = false
+    return true
+  } catch {
+    isPromoVideoManualPlayVisible.value = true
+    return false
+  }
+}
+
 async function detectPromoVideoAutoplaySupport() {
   if (!promoVideoUrl.value || typeof window === 'undefined') {
     return
@@ -102,7 +132,7 @@ async function detectPromoVideoAutoplaySupport() {
   }
 }
 
-async function ensurePromoVideoPlayback(force = false) {
+async function ensurePromoVideoPlayback(force = false, direct = false) {
   if (!promoVideoUrl.value) {
     return false
   }
@@ -111,7 +141,9 @@ async function ensurePromoVideoPlayback(force = false) {
     return false
   }
 
-  await nextTick()
+  if (!direct) {
+    await nextTick()
+  }
 
   const video = promoVideoRef.value
 
@@ -124,34 +156,11 @@ async function ensurePromoVideoPlayback(force = false) {
     return false
   }
 
-  if (!video.paused) {
-    isPromoVideoManualPlayVisible.value = false
-    return true
-  }
-
-  video.muted = true
-  video.defaultMuted = true
-  video.playsInline = true
-  video.setAttribute('muted', 'true')
-  video.setAttribute('playsinline', 'true')
-  video.setAttribute('webkit-playsinline', 'true')
-  video.setAttribute('x5-playsinline', 'true')
-  video.setAttribute('x5-video-player-type', 'h5')
-  video.setAttribute('x5-video-player-fullscreen', 'false')
-
-  try {
-    await video.play()
-    isPromoVideoManualPlayVisible.value = false
-    return true
-  } catch {
-    // WeChat/iOS WebView may still defer autoplay until the page becomes active.
-    isPromoVideoManualPlayVisible.value = true
-    return false
-  }
+  return playPromoVideoElement(video)
 }
 
 async function handlePromoVideoManualPlay() {
-  await ensurePromoVideoPlayback(true)
+  await ensurePromoVideoPlayback(true, true)
 }
 
 function handlePromoVideoVisibilityChange() {
@@ -163,7 +172,7 @@ function handlePromoVideoVisibilityChange() {
 }
 
 function handlePromoVideoGesture() {
-  void ensurePromoVideoPlayback(true)
+  void ensurePromoVideoPlayback(true, true)
 }
 
 function tryLoadMoreOnScroll() {
@@ -198,6 +207,7 @@ onMounted(() => {
   if (isWechat) {
     document.addEventListener('WeixinJSBridgeReady', handlePromoVideoGesture)
     document.addEventListener('touchstart', handlePromoVideoGesture, { passive: true })
+    document.addEventListener('click', handlePromoVideoGesture, { passive: true })
   }
 })
 
@@ -215,6 +225,7 @@ onUnmounted(() => {
   if (isWechat) {
     document.removeEventListener('WeixinJSBridgeReady', handlePromoVideoGesture)
     document.removeEventListener('touchstart', handlePromoVideoGesture)
+    document.removeEventListener('click', handlePromoVideoGesture)
   }
 })
 
