@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { video as detectVideoAutoplay } from 'can-autoplay'
 import { computed, nextTick, onActivated, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
@@ -30,9 +31,14 @@ const carouselItems = computed(() =>
     imageUrl: banner.imageUrl || '/images/image-placeholder.svg',
   })),
 )
+const promoVideoPosterUrl = computed(() => carouselItems.value[0]?.imageUrl || '/images/image-placeholder.svg')
 const quickCategories = computed(() => homePageData.value.quickCategories)
 const loadMoreTriggerRef = ref<HTMLElement | null>(null)
 const isWechat = isWechatBrowser()
+const isPromoVideoAutoplaySupported = ref<boolean | null>(null)
+const isPromoVideoAutoplayChecking = ref(false)
+const isPromoVideoManualPlayVisible = ref(false)
+let promoVideoAutoplayProbeToken = 0
 
 function isProductFavorited(productId: string) {
   return memberFavoriteStore.isProductFavorited(productId)
@@ -46,13 +52,48 @@ function goToSearchPage() {
   void router.push({ name: 'search' })
 }
 
-async function ensurePromoVideoPlayback() {
-  if (!promoVideoUrl.value) {
+async function detectPromoVideoAutoplaySupport() {
+  if (!promoVideoUrl.value || typeof window === 'undefined') {
     return
   }
 
+  const currentProbeToken = ++promoVideoAutoplayProbeToken
+  isPromoVideoAutoplayChecking.value = true
+
+  try {
+    const { result } = await detectVideoAutoplay({
+      muted: true,
+      inline: true,
+      timeout: 1200,
+    })
+
+    if (currentProbeToken !== promoVideoAutoplayProbeToken) {
+      return
+    }
+
+    isPromoVideoAutoplaySupported.value = result
+    isPromoVideoManualPlayVisible.value = !result
+  } catch {
+    if (currentProbeToken !== promoVideoAutoplayProbeToken) {
+      return
+    }
+
+    isPromoVideoAutoplaySupported.value = false
+    isPromoVideoManualPlayVisible.value = true
+  } finally {
+    if (currentProbeToken === promoVideoAutoplayProbeToken) {
+      isPromoVideoAutoplayChecking.value = false
+    }
+  }
+}
+
+async function ensurePromoVideoPlayback(force = false) {
+  if (!promoVideoUrl.value) {
+    return false
+  }
+
   if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
-    return
+    return false
   }
 
   await nextTick()
@@ -60,7 +101,17 @@ async function ensurePromoVideoPlayback() {
   const video = promoVideoRef.value
 
   if (!video) {
-    return
+    return false
+  }
+
+  if (!force && isPromoVideoAutoplaySupported.value === false) {
+    isPromoVideoManualPlayVisible.value = true
+    return false
+  }
+
+  if (!video.paused) {
+    isPromoVideoManualPlayVisible.value = false
+    return true
   }
 
   video.muted = true
@@ -75,9 +126,17 @@ async function ensurePromoVideoPlayback() {
 
   try {
     await video.play()
+    isPromoVideoManualPlayVisible.value = false
+    return true
   } catch {
     // WeChat/iOS WebView may still defer autoplay until the page becomes active.
+    isPromoVideoManualPlayVisible.value = true
+    return false
   }
+}
+
+async function handlePromoVideoManualPlay() {
+  await ensurePromoVideoPlayback(true)
 }
 
 function handlePromoVideoVisibilityChange() {
@@ -114,7 +173,7 @@ function tryLoadMoreOnScroll() {
 onMounted(() => {
   void loadHomePage()
   syncFavoriteState()
-  void ensurePromoVideoPlayback()
+  void detectPromoVideoAutoplaySupport().then(() => ensurePromoVideoPlayback())
 
   window.addEventListener('scroll', tryLoadMoreOnScroll, { passive: true })
   window.addEventListener('resize', tryLoadMoreOnScroll)
@@ -153,7 +212,9 @@ watch(
 )
 
 watch(promoVideoUrl, () => {
-  void ensurePromoVideoPlayback()
+  isPromoVideoAutoplaySupported.value = null
+  isPromoVideoManualPlayVisible.value = false
+  void detectPromoVideoAutoplaySupport().then(() => ensurePromoVideoPlayback())
 })
 </script>
 
@@ -172,6 +233,7 @@ watch(promoVideoUrl, () => {
         <video
           ref="promoVideoRef"
           class="promo-video-player"
+          :poster="promoVideoPosterUrl"
           :src="promoVideoUrl"
           autoplay
           controlslist="nodownload nofullscreen noremoteplayback"
@@ -185,6 +247,14 @@ watch(promoVideoUrl, () => {
           x5-video-player-fullscreen="false"
           preload="metadata"
         />
+        <button
+          v-if="isPromoVideoManualPlayVisible && !isPromoVideoAutoplayChecking"
+          class="promo-video-play-button"
+          type="button"
+          @click="handlePromoVideoManualPlay"
+        >
+          点击播放视频
+        </button>
       </section>
 
       <ImageCarousel v-else :bleed-x="'48px'" :items="carouselItems" />
@@ -268,6 +338,7 @@ watch(promoVideoUrl, () => {
 }
 
 .promo-video-card {
+  position: relative;
   overflow: hidden;
   border-radius: 16px;
   background: #111;
@@ -281,6 +352,27 @@ watch(promoVideoUrl, () => {
   background: #111;
   object-fit: cover;
   pointer-events: none;
+}
+
+.promo-video-play-button {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 132px;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.72);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(8px);
 }
 
 .sticky-search {
