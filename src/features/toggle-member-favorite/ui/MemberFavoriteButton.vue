@@ -5,6 +5,7 @@ import { showSuccessToast, showToast } from 'vant'
 
 import { useMemberAuthSession } from '@/entities/member-auth'
 import { useMemberFavoriteStore } from '@/entities/member-favorite'
+import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
 import {
   clearPendingMemberFavoriteIntent,
   readPendingMemberFavoriteIntent,
@@ -48,6 +49,19 @@ async function goToLogin() {
     productId: props.productId,
     redirectPath: route.fullPath,
   })
+
+  if (isWechatBrowser()) {
+    const result = startWechatOauthLogin(route.fullPath)
+
+    if (result.started) {
+      return
+    }
+
+    if (result.message) {
+      showToast(result.message)
+      return
+    }
+  }
 
   showToast('登录后可收藏商品')
 

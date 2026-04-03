@@ -4,10 +4,7 @@ import { type RouteLocationRaw } from 'vue-router'
 import { showSuccessToast, showToast, type FieldRule, type FieldValidateError } from 'vant'
 
 import { useMemberAuthRepository, useMemberAuthSession } from '@/entities/member-auth'
-import {
-  resolveBackendAWechatOauthUrl,
-} from '@/shared/api/backend-a/backend-a-config'
-import { backendTarget } from '@/shared/config/backend'
+import { startWechatOauthLogin } from '@/shared/lib/wechat-browser'
 
 import { submitMemberLogin } from '../application/submit-member-login'
 import {
@@ -52,19 +49,11 @@ function openForgotPassword() {
 }
 
 function useWechatLogin() {
-  if (backendTarget !== 'backend-a') {
-    showToast('微信登录能力待接入')
-    return
+  const result = startWechatOauthLogin()
+
+  if (!result.started && result.message) {
+    showToast(result.message)
   }
-
-  const oauthUrl = resolveBackendAWechatOauthUrl()
-
-  if (oauthUrl) {
-    window.location.href = oauthUrl
-    return
-  }
-
-  showToast('请从微信静默授权回调页进入当前登录页，或配置 VITE_BACKEND_A_WECHAT_OAUTH_URL')
 }
 
 function handleSubmitFailed({ errors }: FormFailedInfo) {

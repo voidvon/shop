@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed, onActivated, onMounted } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
+import { useRouter } from 'vue-router'
+import { showToast } from 'vant'
 
 import { MemberLogoutButton } from '@/features/member-logout'
 import { useModuleAvailability } from '@/shared/lib/modules'
+import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
 
 import { useMemberCenterPageModel } from '../model/useMemberCenterPageModel'
 
+const router = useRouter()
 const { loadMemberCenterPage, memberCenterPageData } = useMemberCenterPageModel()
 const isCartEnabled = useModuleAvailability('cart')
 const loginEntryRoute = computed<RouteLocationRaw>(() => ({
@@ -121,6 +125,20 @@ function handleLoggedOut() {
   void loadMemberCenterPage()
 }
 
+async function handleLoginEntry() {
+  if (isWechatBrowser()) {
+    const result = startWechatOauthLogin('/member')
+
+    if (!result.started && result.message) {
+      showToast(result.message)
+    }
+
+    return
+  }
+
+  await router.push(loginEntryRoute.value)
+}
+
 onMounted(() => {
   void loadMemberCenterPage()
 })
@@ -135,10 +153,11 @@ onActivated(() => {
     <div class="member-scroll">
       <section class="top-section">
         <div class="top-background">
-          <RouterLink
+          <button
             v-if="!memberCenterPageData.profile.isLoggedIn"
             class="profile-area profile-link"
-            :to="loginEntryRoute"
+            type="button"
+            @click="handleLoginEntry"
           >
             <div class="avatar">
               <img
@@ -153,7 +172,7 @@ onActivated(() => {
               <strong>{{ memberCenterPageData.profile.username ?? '点击登录/注册' }}</strong>
               <span>{{ memberCenterPageData.profile.isLoggedIn ? '欢迎回来，查看完整账户信息' : '可查看更多信息' }}</span>
             </div>
-          </RouterLink>
+          </button>
 
           <div v-else class="profile-area">
             <div class="avatar">
@@ -314,8 +333,11 @@ onActivated(() => {
 .profile-link {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
+  border: 0;
+  background: transparent;
   color: inherit;
   text-decoration: none;
+  text-align: left;
 }
 
 .logout-action {

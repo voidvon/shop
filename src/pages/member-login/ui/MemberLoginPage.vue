@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { showFailToast, showSuccessToast } from 'vant'
+import { showFailToast, showSuccessToast, showToast } from 'vant'
 
 import {
   submitMemberWechatLogin,
   MemberLoginPanel,
 } from '@/features/member-auth'
 import { useMemberAuthRepository, useMemberAuthSession } from '@/entities/member-auth'
+import {
+  consumePendingWechatLoginRedirectPath,
+  isWechatBrowser,
+  startWechatOauthLogin,
+} from '@/shared/lib/wechat-browser'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 const route = useRoute()
@@ -21,6 +26,16 @@ const redirectPath = computed(() => {
   const redirect = route.query.redirect
   return typeof redirect === 'string' && redirect.startsWith('/') ? redirect : '/member'
 })
+
+function resolveWechatLoginRedirectPath() {
+  const redirect = route.query.redirect
+
+  if (typeof redirect === 'string' && redirect.startsWith('/')) {
+    return redirect
+  }
+
+  return consumePendingWechatLoginRedirectPath() ?? '/member'
+}
 
 const wechatCode = computed(() => {
   const code = route.query.code
@@ -49,6 +64,23 @@ async function handleSubmitted() {
   await router.replace(redirectPath.value)
 }
 
+function triggerWechatOauthIfNeeded() {
+  if (!isWechatBrowser() || wechatCode.value) {
+    return
+  }
+
+  const result = startWechatOauthLogin(redirectPath.value)
+
+  if (result.started) {
+    isWechatAuthorizing.value = true
+    return
+  }
+
+  if (result.message) {
+    showToast(result.message)
+  }
+}
+
 watch(wechatCode, async (code) => {
   if (!code || hasHandledWechatCode) {
     return
@@ -63,13 +95,17 @@ watch(wechatCode, async (code) => {
       session: memberAuthSession,
     })
     showSuccessToast(result.successMessage)
-    await router.replace(redirectPath.value)
+    await router.replace(resolveWechatLoginRedirectPath())
   } catch (error) {
     showFailToast(error instanceof Error ? error.message : '微信登录失败')
   } finally {
     isWechatAuthorizing.value = false
   }
 }, { immediate: true })
+
+onMounted(() => {
+  triggerWechatOauthIfNeeded()
+})
 </script>
 
 <template>

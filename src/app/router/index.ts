@@ -5,8 +5,10 @@ import {
   type RouterScrollBehavior,
 } from 'vue-router'
 import NProgress from 'nprogress'
+import { showToast } from 'vant'
 
 import { getBrowserMemberAuthSessionSnapshot } from '@/entities/member-auth'
+import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
 
 import { routes } from './routes'
 
@@ -81,6 +83,19 @@ router.beforeEach((to, from) => {
 
   if (authSnapshot.isAuthenticated) {
     return true
+  }
+
+  if (isWechatBrowser()) {
+    const result = startWechatOauthLogin(to.fullPath)
+
+    if (result.started) {
+      NProgress.done()
+      return false
+    }
+
+    if (result.message) {
+      showToast(result.message)
+    }
   }
 
   return {
