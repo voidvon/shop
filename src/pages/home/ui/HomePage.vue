@@ -4,6 +4,7 @@ import { RouterLink, useRouter } from 'vue-router'
 
 import { useMemberFavoriteStore } from '@/entities/member-favorite'
 import { ProductCompactCard } from '@/entities/product'
+import { isWechatBrowser } from '@/shared/lib/wechat-browser'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
@@ -31,6 +32,7 @@ const carouselItems = computed(() =>
 )
 const quickCategories = computed(() => homePageData.value.quickCategories)
 const loadMoreTriggerRef = ref<HTMLElement | null>(null)
+const isWechat = isWechatBrowser()
 
 function isProductFavorited(productId: string) {
   return memberFavoriteStore.isProductFavorited(productId)
@@ -49,6 +51,10 @@ async function ensurePromoVideoPlayback() {
     return
   }
 
+  if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+    return
+  }
+
   await nextTick()
 
   const video = promoVideoRef.value
@@ -60,12 +66,30 @@ async function ensurePromoVideoPlayback() {
   video.muted = true
   video.defaultMuted = true
   video.playsInline = true
+  video.setAttribute('muted', 'true')
+  video.setAttribute('playsinline', 'true')
+  video.setAttribute('webkit-playsinline', 'true')
+  video.setAttribute('x5-playsinline', 'true')
+  video.setAttribute('x5-video-player-type', 'h5')
+  video.setAttribute('x5-video-player-fullscreen', 'false')
 
   try {
     await video.play()
   } catch {
-    // iOS may still defer autoplay in some visibility states.
+    // WeChat/iOS WebView may still defer autoplay until the page becomes active.
   }
+}
+
+function handlePromoVideoVisibilityChange() {
+  if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+    return
+  }
+
+  void ensurePromoVideoPlayback()
+}
+
+function handlePromoVideoGesture() {
+  void ensurePromoVideoPlayback()
 }
 
 function tryLoadMoreOnScroll() {
@@ -94,6 +118,13 @@ onMounted(() => {
 
   window.addEventListener('scroll', tryLoadMoreOnScroll, { passive: true })
   window.addEventListener('resize', tryLoadMoreOnScroll)
+  window.addEventListener('pageshow', handlePromoVideoGesture)
+  document.addEventListener('visibilitychange', handlePromoVideoVisibilityChange)
+
+  if (isWechat) {
+    document.addEventListener('WeixinJSBridgeReady', handlePromoVideoGesture)
+    document.addEventListener('touchstart', handlePromoVideoGesture, { passive: true })
+  }
 })
 
 onActivated(() => {
@@ -104,6 +135,13 @@ onActivated(() => {
 onUnmounted(() => {
   window.removeEventListener('scroll', tryLoadMoreOnScroll)
   window.removeEventListener('resize', tryLoadMoreOnScroll)
+  window.removeEventListener('pageshow', handlePromoVideoGesture)
+  document.removeEventListener('visibilitychange', handlePromoVideoVisibilityChange)
+
+  if (isWechat) {
+    document.removeEventListener('WeixinJSBridgeReady', handlePromoVideoGesture)
+    document.removeEventListener('touchstart', handlePromoVideoGesture)
+  }
 })
 
 watch(
@@ -142,6 +180,9 @@ watch(promoVideoUrl, () => {
           muted
           playsinline
           webkit-playsinline="true"
+          x5-playsinline="true"
+          x5-video-player-type="h5"
+          x5-video-player-fullscreen="false"
           preload="metadata"
         />
       </section>
