@@ -47,12 +47,16 @@ const carouselItems = computed(() =>
   })),
 )
 const promoVideoPosterUrl = computed(() => carouselItems.value[0]?.imageUrl || '/images/image-placeholder.svg')
+const promoVideoCardStyle = computed(() => ({
+  '--promo-video-poster-url': `url("${promoVideoPosterUrl.value}")`,
+}))
 const quickCategories = computed(() => homePageData.value.quickCategories)
 const loadMoreTriggerRef = ref<HTMLElement | null>(null)
 const isWechat = isWechatBrowser()
 const isPromoVideoAutoplaySupported = ref<boolean | null>(null)
 const isPromoVideoAutoplayChecking = ref(false)
 const isPromoVideoManualPlayVisible = ref(false)
+const isPromoVideoPlaying = ref(false)
 let promoVideoAutoplayProbeToken = 0
 
 function isProductFavorited(productId: string) {
@@ -82,6 +86,7 @@ function configurePromoVideoElement(video: HTMLVideoElement) {
 async function playPromoVideoElement(video: HTMLVideoElement) {
   if (!video.paused) {
     isPromoVideoManualPlayVisible.value = false
+    isPromoVideoPlaying.value = true
     return true
   }
 
@@ -90,9 +95,11 @@ async function playPromoVideoElement(video: HTMLVideoElement) {
   try {
     await video.play()
     isPromoVideoManualPlayVisible.value = false
+    isPromoVideoPlaying.value = true
     return true
   } catch {
     isPromoVideoManualPlayVisible.value = true
+    isPromoVideoPlaying.value = false
     return false
   }
 }
@@ -153,6 +160,7 @@ async function ensurePromoVideoPlayback(force = false, direct = false) {
 
   if (!force && isPromoVideoAutoplaySupported.value === false) {
     isPromoVideoManualPlayVisible.value = true
+    isPromoVideoPlaying.value = false
     return false
   }
 
@@ -161,6 +169,14 @@ async function ensurePromoVideoPlayback(force = false, direct = false) {
 
 async function handlePromoVideoManualPlay() {
   await ensurePromoVideoPlayback(true, true)
+}
+
+function handlePromoVideoPlaying() {
+  isPromoVideoPlaying.value = true
+}
+
+function handlePromoVideoPaused() {
+  isPromoVideoPlaying.value = false
 }
 
 function handlePromoVideoVisibilityChange() {
@@ -240,6 +256,7 @@ watch(
 watch(promoVideoUrl, () => {
   isPromoVideoAutoplaySupported.value = null
   isPromoVideoManualPlayVisible.value = false
+  isPromoVideoPlaying.value = false
   void detectPromoVideoAutoplaySupport().then(() => ensurePromoVideoPlayback())
 })
 </script>
@@ -255,10 +272,10 @@ watch(promoVideoUrl, () => {
     </van-sticky>
 
     <div class="content-wrapper">
-      <section v-if="promoVideoUrl" class="promo-video-card">
+      <section v-if="promoVideoUrl" :style="promoVideoCardStyle" class="promo-video-card">
         <video
           ref="promoVideoRef"
-          class="promo-video-player"
+          :class="['promo-video-player', { 'promo-video-player-hidden': !isPromoVideoPlaying }]"
           :poster="promoVideoPosterUrl"
           :src="promoVideoUrl"
           autoplay
@@ -266,6 +283,9 @@ watch(promoVideoUrl, () => {
           disablepictureinpicture
           loop
           muted
+          @pause="handlePromoVideoPaused"
+          @playing="handlePromoVideoPlaying"
+          @waiting="handlePromoVideoPaused"
           playsinline
           webkit-playsinline="true"
           x5-playsinline="true"
@@ -276,10 +296,11 @@ watch(promoVideoUrl, () => {
         <button
           v-if="isPromoVideoManualPlayVisible && !isPromoVideoAutoplayChecking"
           class="promo-video-play-button"
+          aria-label="播放视频"
           type="button"
           @click="handlePromoVideoManualPlay"
         >
-          点击播放视频
+          <span aria-hidden="true" class="promo-video-play-icon" />
         </button>
       </section>
 
@@ -371,34 +392,70 @@ watch(promoVideoUrl, () => {
   box-shadow: 0 10px 24px rgba(17, 17, 17, 0.14);
 }
 
+.promo-video-card::before {
+  content: '';
+  position: absolute;
+  inset: -18px;
+  background-image: var(--promo-video-poster-url);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: blur(20px) saturate(1.08);
+  opacity: 0.95;
+  transform: scale(1.08);
+}
+
+.promo-video-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.06), transparent 42%),
+    linear-gradient(180deg, rgba(12, 12, 12, 0.18), rgba(12, 12, 12, 0.5));
+}
+
 .promo-video-player {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   background: #111;
   object-fit: cover;
   pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.promo-video-player-hidden {
+  opacity: 0;
 }
 
 .promo-video-play-button {
   position: absolute;
+  z-index: 2;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 132px;
-  min-height: 40px;
-  padding: 0 18px;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(17, 17, 17, 0.72);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  backdrop-filter: blur(8px);
+  width: 68px;
+  height: 68px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: rgba(17, 17, 17, 0.42);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(12px);
+}
+
+.promo-video-play-icon {
+  margin-left: 4px;
+  width: 0;
+  height: 0;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-left: 18px solid #fff;
 }
 
 .sticky-search {
