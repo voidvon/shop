@@ -98,6 +98,11 @@ onActivated(() => {
   overflow-y: auto;
 }
 
+.content-scroll :deep(.van-cell-group--inset) {
+  border: 1px solid #e7e0d7;
+  box-shadow: 0 1px 2px rgba(60, 59, 57, 0.04);
+}
+
 .page-summary {
   margin-bottom: 12px;
 }
