@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { video as detectVideoAutoplay } from 'can-autoplay'
+import canAutoplay from 'can-autoplay'
 import { computed, nextTick, onActivated, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
@@ -10,6 +10,21 @@ import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
 import { useHomePageModel } from '../model/useHomePageModel'
+
+type DetectVideoAutoplayOptions = {
+  inline?: boolean
+  muted?: boolean
+  timeout?: number
+}
+
+type DetectVideoAutoplayResult = {
+  error: Error | null
+  result: boolean
+}
+
+const detectVideoAutoplay = canAutoplay.video as (
+  options?: DetectVideoAutoplayOptions,
+) => Promise<DetectVideoAutoplayResult>
 
 const {
   displayedHotProducts,
