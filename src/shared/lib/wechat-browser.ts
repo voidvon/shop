@@ -1,11 +1,16 @@
-import { resolveBackendAWechatOauthUrl } from '@/shared/api/backend-a/backend-a-config'
+import {
+  resolveBackendAWechatAppId,
+  resolveBackendAWechatOauthScope,
+  resolveBackendAWechatOauthUrl,
+} from '@/shared/api/backend-a/backend-a-config'
 import { getBackendRuntime } from '@/app/providers/backend/backend-runtime-provider'
 import { backendTarget } from '@/shared/config/backend'
 
 const wechatBrowserPattern = /MicroMessenger/i
 const wechatLoginRedirectStorageKey = 'shop.member-auth.wechat-redirect'
+const wechatLoginStateStorageKey = 'shop.member-auth.wechat-state'
 const missingWechatOauthUrlMessage
-  = '请从微信静默授权回调页进入当前登录页，或配置 VITE_BACKEND_A_WECHAT_OAUTH_URL'
+  = '请配置 VITE_BACKEND_A_WECHAT_OAUTH_URL，或提供可用的微信公众号 AppID'
 
 export interface StartWechatOauthResult {
   message?: string
@@ -58,6 +63,74 @@ export function consumePendingWechatLoginRedirectPath() {
 
   window.sessionStorage.removeItem(wechatLoginRedirectStorageKey)
   return redirectPath
+}
+
+export function readPendingWechatLoginState() {
+  if (!canUseSessionStorage()) {
+    return null
+  }
+
+  return window.sessionStorage.getItem(wechatLoginStateStorageKey)
+}
+
+export function consumePendingWechatLoginState() {
+  const state = readPendingWechatLoginState()
+
+  if (!canUseSessionStorage()) {
+    return state
+  }
+
+  window.sessionStorage.removeItem(wechatLoginStateStorageKey)
+  return state
+}
+
+function savePendingWechatLoginState(state: string) {
+  if (!canUseSessionStorage()) {
+    return
+  }
+
+  window.sessionStorage.setItem(wechatLoginStateStorageKey, state)
+}
+
+function buildWechatOauthState() {
+  return `shop-wechat-${Date.now()}`
+}
+
+function buildWechatOauthCallbackUrl(redirectPath?: string) {
+  const callbackUrl = new URL('/member/login', window.location.origin)
+  const normalizedRedirectPath = normalizeRedirectPath(redirectPath)
+
+  if (normalizedRedirectPath) {
+    callbackUrl.searchParams.set('redirect', normalizedRedirectPath)
+  }
+
+  return callbackUrl.toString()
+}
+
+function buildWechatOauthUrl(redirectPath?: string) {
+  const oauthUrl = resolveBackendAWechatOauthUrl()
+
+  if (oauthUrl) {
+    return oauthUrl
+  }
+
+  const appId = resolveBackendAWechatAppId()
+
+  if (!appId) {
+    return null
+  }
+
+  const state = buildWechatOauthState()
+  const authorizeUrl = new URL('https://open.weixin.qq.com/connect/oauth2/authorize')
+
+  authorizeUrl.searchParams.set('appid', appId)
+  authorizeUrl.searchParams.set('redirect_uri', buildWechatOauthCallbackUrl(redirectPath))
+  authorizeUrl.searchParams.set('response_type', 'code')
+  authorizeUrl.searchParams.set('scope', resolveBackendAWechatOauthScope())
+  authorizeUrl.searchParams.set('state', state)
+
+  savePendingWechatLoginState(state)
+  return `${authorizeUrl.toString()}#wechat_redirect`
 }
 
 function resolveWechatLoginSuccessMessage(authResult: {
@@ -117,7 +190,7 @@ export async function startWechatOauthLogin(redirectPath?: string): Promise<Star
     }
   }
 
-  const oauthUrl = resolveBackendAWechatOauthUrl()
+  const oauthUrl = buildWechatOauthUrl(redirectPath)
 
   if (!oauthUrl) {
     return {

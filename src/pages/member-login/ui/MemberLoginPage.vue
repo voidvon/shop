@@ -10,6 +10,7 @@ import {
 import { useMemberAuthRepository, useMemberAuthSession } from '@/entities/member-auth'
 import {
   consumePendingWechatLoginRedirectPath,
+  consumePendingWechatLoginState,
   isWechatBrowser,
   startWechatOauthLogin,
 } from '@/shared/lib/wechat-browser'
@@ -40,6 +41,11 @@ function resolveWechatLoginRedirectPath() {
 const wechatCode = computed(() => {
   const code = route.query.code
   return typeof code === 'string' ? code : ''
+})
+
+const wechatState = computed(() => {
+  const state = route.query.state
+  return typeof state === 'string' ? state : ''
 })
 
 const registerRoute = computed(() => ({
@@ -92,6 +98,13 @@ async function triggerWechatOauthIfNeeded() {
 
 watch(wechatCode, async (code) => {
   if (!code || hasHandledWechatCode) {
+    return
+  }
+
+  const expectedState = consumePendingWechatLoginState()
+
+  if (expectedState && wechatState.value && expectedState !== wechatState.value) {
+    showFailToast('微信登录状态校验失败，请重试')
     return
   }
 

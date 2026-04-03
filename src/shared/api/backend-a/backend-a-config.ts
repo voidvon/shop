@@ -1,5 +1,7 @@
 const defaultBackendABaseUrl = 'http://123.207.4.226:8080'
 const defaultBackendATimeoutMs = 8000
+const defaultBackendAWechatAppId = 'wx057d684ef1e02d1c'
+const defaultBackendAWechatOauthScope = 'snsapi_base'
 
 function normalizeUrl(value: string | undefined) {
   const normalized = value?.trim()
@@ -41,6 +43,18 @@ export function resolveBackendAWechatOauthUrl(
   rawValue = import.meta.env.VITE_BACKEND_A_WECHAT_OAUTH_URL,
 ) {
   return normalizeOptionalUrl(rawValue)
+}
+
+export function resolveBackendAWechatAppId(
+  rawValue = import.meta.env.VITE_BACKEND_A_WECHAT_APP_ID,
+) {
+  return normalizeOptionalUrl(rawValue) ?? defaultBackendAWechatAppId
+}
+
+export function resolveBackendAWechatOauthScope(
+  rawValue = import.meta.env.VITE_BACKEND_A_WECHAT_OAUTH_SCOPE,
+) {
+  return normalizeOptionalUrl(rawValue) ?? defaultBackendAWechatOauthScope
 }
 
 export function resolveBackendAMediaUrl(
