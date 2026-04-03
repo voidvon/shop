@@ -206,7 +206,7 @@ onMounted(() => {
 
   if (isWechat) {
     document.addEventListener('WeixinJSBridgeReady', handlePromoVideoGesture)
-    document.addEventListener('touchstart', handlePromoVideoGesture, { passive: true })
+    document.addEventListener('touchend', handlePromoVideoGesture, { passive: true })
     document.addEventListener('click', handlePromoVideoGesture, { passive: true })
   }
 })
@@ -224,7 +224,7 @@ onUnmounted(() => {
 
   if (isWechat) {
     document.removeEventListener('WeixinJSBridgeReady', handlePromoVideoGesture)
-    document.removeEventListener('touchstart', handlePromoVideoGesture)
+    document.removeEventListener('touchend', handlePromoVideoGesture)
     document.removeEventListener('click', handlePromoVideoGesture)
   }
 })
