@@ -51,9 +51,9 @@ async function goToLogin() {
   })
 
   if (isWechatBrowser()) {
-    const result = startWechatOauthLogin(route.fullPath)
+    const result = await startWechatOauthLogin(route.fullPath)
 
-    if (result.started) {
+    if (result.succeeded || result.redirected) {
       return
     }
 

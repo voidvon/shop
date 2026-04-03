@@ -66,7 +66,7 @@ export const router = createRouter({
   scrollBehavior,
 })
 
-router.beforeEach((to, from) => {
+router.beforeEach(async (to, from) => {
   if (to.fullPath !== from.fullPath) {
     NProgress.start()
   }
@@ -86,11 +86,15 @@ router.beforeEach((to, from) => {
   }
 
   if (isWechatBrowser()) {
-    const result = startWechatOauthLogin(to.fullPath)
+    const result = await startWechatOauthLogin(to.fullPath)
 
-    if (result.started) {
+    if (result.redirected) {
       NProgress.done()
       return false
+    }
+
+    if (result.succeeded) {
+      return true
     }
 
     if (result.message) {

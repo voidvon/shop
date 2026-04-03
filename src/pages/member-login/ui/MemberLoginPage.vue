@@ -64,15 +64,24 @@ async function handleSubmitted() {
   await router.replace(redirectPath.value)
 }
 
-function triggerWechatOauthIfNeeded() {
+async function triggerWechatOauthIfNeeded() {
   if (!isWechatBrowser() || wechatCode.value) {
     return
   }
 
-  const result = startWechatOauthLogin(redirectPath.value)
+  const result = await startWechatOauthLogin(redirectPath.value)
 
-  if (result.started) {
+  if (result.redirected) {
     isWechatAuthorizing.value = true
+    return
+  }
+
+  if (result.succeeded) {
+    if (result.successMessage) {
+      showSuccessToast(result.successMessage)
+    }
+
+    await router.replace(redirectPath.value)
     return
   }
 
@@ -104,7 +113,7 @@ watch(wechatCode, async (code) => {
 }, { immediate: true })
 
 onMounted(() => {
-  triggerWechatOauthIfNeeded()
+  void triggerWechatOauthIfNeeded()
 })
 </script>
 

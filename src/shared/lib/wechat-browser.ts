@@ -1,4 +1,5 @@
 import { resolveBackendAWechatOauthUrl } from '@/shared/api/backend-a/backend-a-config'
+import { getBackendRuntime } from '@/app/providers/backend/backend-runtime-provider'
 import { backendTarget } from '@/shared/config/backend'
 
 const wechatBrowserPattern = /MicroMessenger/i
@@ -8,7 +9,9 @@ const missingWechatOauthUrlMessage
 
 export interface StartWechatOauthResult {
   message?: string
-  started: boolean
+  redirected: boolean
+  successMessage?: string
+  succeeded: boolean
 }
 
 function canUseSessionStorage() {
@@ -57,17 +60,59 @@ export function consumePendingWechatLoginRedirectPath() {
   return redirectPath
 }
 
-export function startWechatOauthLogin(redirectPath?: string): StartWechatOauthResult {
-  if (backendTarget !== 'backend-a') {
-    return {
-      started: false,
-      message: '微信登录能力待接入',
+function resolveWechatLoginSuccessMessage(authResult: {
+  isNewUser?: boolean
+  userInfo: {
+    nickname: string | null
+    username: string
+  }
+}) {
+  const displayName = authResult.userInfo.nickname ?? authResult.userInfo.username
+
+  return authResult.isNewUser
+    ? `微信授权成功，已自动注册并登录 ${displayName}`
+    : `登录成功，欢迎回来 ${displayName}`
+}
+
+export async function startWechatOauthLogin(redirectPath?: string): Promise<StartWechatOauthResult> {
+  if (backendTarget === 'mock') {
+    const runtime = getBackendRuntime()
+
+    if (!runtime) {
+      return {
+        redirected: false,
+        succeeded: false,
+        message: '当前运行时未初始化',
+      }
+    }
+
+    try {
+      const authResult = await runtime.auth.repository.loginByWechatCode({
+        code: `mock-wechat-${Date.now()}`,
+      })
+
+      runtime.auth.session.setAuthResult(authResult, {
+        persistence: 'local',
+      })
+
+      return {
+        redirected: false,
+        succeeded: true,
+        successMessage: resolveWechatLoginSuccessMessage(authResult),
+      }
+    } catch (error) {
+      return {
+        redirected: false,
+        succeeded: false,
+        message: error instanceof Error ? error.message : '微信登录失败',
+      }
     }
   }
 
   if (typeof window === 'undefined') {
     return {
-      started: false,
+      redirected: false,
+      succeeded: false,
       message: '当前环境不支持微信登录跳转',
     }
   }
@@ -76,7 +121,8 @@ export function startWechatOauthLogin(redirectPath?: string): StartWechatOauthRe
 
   if (!oauthUrl) {
     return {
-      started: false,
+      redirected: false,
+      succeeded: false,
       message: missingWechatOauthUrlMessage,
     }
   }
@@ -85,6 +131,7 @@ export function startWechatOauthLogin(redirectPath?: string): StartWechatOauthRe
   window.location.href = oauthUrl
 
   return {
-    started: true,
+    redirected: true,
+    succeeded: false,
   }
 }

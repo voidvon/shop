@@ -48,10 +48,19 @@ function openForgotPassword() {
   showToast('找回密码流程待接入')
 }
 
-function useWechatLogin() {
-  const result = startWechatOauthLogin()
+async function useWechatLogin() {
+  const result = await startWechatOauthLogin()
 
-  if (!result.started && result.message) {
+  if (result.succeeded) {
+    if (result.successMessage) {
+      showSuccessToast(result.successMessage)
+    }
+
+    emit('submitted')
+    return
+  }
+
+  if (result.message) {
     showToast(result.message)
   }
 }

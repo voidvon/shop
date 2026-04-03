@@ -127,9 +127,14 @@ function handleLoggedOut() {
 
 async function handleLoginEntry() {
   if (isWechatBrowser()) {
-    const result = startWechatOauthLogin('/member')
+    const result = await startWechatOauthLogin('/member')
 
-    if (!result.started && result.message) {
+    if (result.succeeded) {
+      await loadMemberCenterPage()
+      return
+    }
+
+    if (result.message) {
       showToast(result.message)
     }
 
