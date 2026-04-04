@@ -11,10 +11,16 @@ import {
   type BackendAStorefrontHomeDto,
   type BackendAPlatformSettingsDto,
   type BackendAPartnerMerchantDto,
+  type BackendAPartnerMerchantSummaryDto,
+  type BackendAPartnerRegionDto,
+  type BackendAPartnerStoreTypeDto,
   type BackendAStorefrontProductDto,
   mapBackendACategoryProducts,
   mapBackendACategoryTree,
   mapBackendAHomePageData,
+  mapBackendAPartnerMerchants,
+  mapBackendAPartnerRegions,
+  mapBackendAPartnerStoreTypes,
   mapBackendAPlatformSettingsData,
   mapBackendAProductDetailPageData,
   mapBackendAStoreHomePageData,
@@ -31,6 +37,10 @@ interface BackendAStorefrontProductsResponseDto {
   last_page: number
   per_page: number
   total: number
+}
+
+interface BackendAPartnerMerchantsResponseDto {
+  data: BackendAPartnerMerchantSummaryDto[]
 }
 
 async function fetchBackendACategoryTreeDto() {
@@ -67,6 +77,28 @@ async function fetchBackendAPartnerMerchantDto(storeId: string) {
   }
 }
 
+async function fetchBackendAPartnerStoreTypesDto() {
+  return backendAHttpClient.get<BackendAPartnerStoreTypeDto[]>('/api/v1/partner-store-types')
+}
+
+async function fetchBackendAPartnerRegionsDto() {
+  return backendAHttpClient.get<BackendAPartnerRegionDto[]>('/api/v1/partner-regions')
+}
+
+async function fetchBackendAPartnerMerchantsDto(query: {
+  keyword?: string
+  perPage?: number
+  regionId?: string
+  storeTypeId?: string
+} = {}) {
+  return backendAHttpClient.get<BackendAPartnerMerchantsResponseDto>('/api/v1/partner-merchants', {
+    ...(query.keyword ? { keyword: query.keyword } : {}),
+    ...(query.regionId ? { region_id: query.regionId } : {}),
+    ...(query.storeTypeId ? { store_type_id: query.storeTypeId } : {}),
+    per_page: query.perPage ?? 100,
+  })
+}
+
 async function fetchBackendACategoryProducts(query: CategoryProductsQuery = {}) {
   const response = await fetchBackendACategoryProductsDto(query)
   return mapBackendACategoryProducts(response.data.filter((product) => product.status === 1))
@@ -82,19 +114,60 @@ export const backendAStorefrontQuery: StorefrontQuery = {
   },
 
   async getHomePageData() {
-    const homeData = await backendAHttpClient.get<BackendAStorefrontHomeDto>('/api/v1/home', {
-      category_limit: 8,
-      product_limit: 50,
-    })
+    const [homeDataResult, partnerStoreTypesResult] = await Promise.allSettled([
+      backendAHttpClient.get<BackendAStorefrontHomeDto>('/api/v1/home', {
+        category_limit: 8,
+        product_limit: 50,
+      }),
+      fetchBackendAPartnerStoreTypesDto(),
+    ])
 
+    if (homeDataResult.status === 'rejected') {
+      throw homeDataResult.reason
+    }
+
+    const homeData = homeDataResult.value
     const mappedHomePageData = mapBackendAHomePageData(homeData)
+    const partnerStoreTypes =
+      partnerStoreTypesResult.status === 'fulfilled'
+        ? mapBackendAPartnerStoreTypes(partnerStoreTypesResult.value)
+        : mappedHomePageData.partnerStoreTypes
+
+    if (import.meta.env.DEV && partnerStoreTypesResult.status === 'rejected') {
+      console.warn('[storefront] /api/v1/partner-store-types failed', partnerStoreTypesResult.reason)
+    }
+
+    const mergedHomePageData = {
+      ...mappedHomePageData,
+      partnerStoreTypes,
+    }
 
     if (import.meta.env.DEV) {
       console.log('[storefront] /api/v1/home raw', homeData)
-      console.log('[storefront] /api/v1/home mapped', mappedHomePageData)
+      console.log('[storefront] /api/v1/home mapped', mergedHomePageData)
     }
 
-    return mappedHomePageData
+    return mergedHomePageData
+  },
+
+  async getPartnerMerchants(query) {
+    const response = await fetchBackendAPartnerMerchantsDto({
+      keyword: query?.keyword,
+      regionId: query?.regionId,
+      storeTypeId: query?.storeTypeId,
+    })
+
+    return mapBackendAPartnerMerchants(response.data)
+  },
+
+  async getPartnerRegions() {
+    const response = await fetchBackendAPartnerRegionsDto()
+    return mapBackendAPartnerRegions(response)
+  },
+
+  async getPartnerStoreTypes() {
+    const response = await fetchBackendAPartnerStoreTypesDto()
+    return mapBackendAPartnerStoreTypes(response)
   },
 
   async getPlatformSettingsData() {

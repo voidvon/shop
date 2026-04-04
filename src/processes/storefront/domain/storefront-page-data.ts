@@ -4,6 +4,7 @@ export interface PageProductCard {
   id: string
   imageUrl: string | null
   marketPrice: number | null
+  monthlySales: number
   name: string
   price: number
 }
@@ -26,6 +27,29 @@ export interface HomeQuickCategory {
   label: string
 }
 
+export interface HomePartnerStoreType {
+  id: string
+  imageUrl: string | null
+  label: string
+}
+
+export interface PartnerStoreRegion {
+  id: string
+  label: string
+}
+
+export interface PartnerStoreMerchant {
+  address: string
+  businessHours: string | null
+  id: string
+  imageUrl: string | null
+  name: string
+  phone: string | null
+  regionName: string | null
+  shortName: string | null
+  storeTypeLabels: string[]
+}
+
 export interface HomeBanner {
   description: string
   eyebrow: string
@@ -37,6 +61,7 @@ export interface HomeBanner {
 export interface HomePageData {
   banners: HomeBanner[]
   featuredProducts: PageProductCard[]
+  partnerStoreTypes: HomePartnerStoreType[]
   promo_video: string | null
   quickCategories: HomeQuickCategory[]
 }

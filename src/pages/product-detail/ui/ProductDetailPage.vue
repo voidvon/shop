@@ -23,6 +23,7 @@ const router = useRouter()
 const cartStore = useCartStore()
 const isCartEnabled = useModuleAvailability('cart')
 const isCheckoutEnabled = useModuleAvailability('checkout')
+const isReviewEnabled = useModuleAvailability('review')
 const { detailPage, errorMessage, isLoading, isNotFound, loadProductDetail, product } = useProductDetailPageModel(
   toRef(props, 'productId'),
 )
@@ -32,6 +33,7 @@ const tabs = [
   { key: 'detail', label: '详情' },
   { key: 'review', label: '评价' },
 ] as const
+const visibleTabs = computed(() => tabs.filter((tab) => isReviewEnabled.value || tab.key !== 'review'))
 const loadingRecommendItems = [1, 2, 3, 4] as const
 
 const activeTab = ref<(typeof tabs)[number]['key']>('goods')
@@ -62,6 +64,24 @@ watch(
   (value) => {
     selectedSkuId.value = value?.selectedSkuId ?? value?.defaultSkuId ?? value?.skuList[0]?.skuId ?? null
     purchaseQuantity.value = Math.max(value?.quantity ?? 1, 1)
+  },
+  { immediate: true },
+)
+
+watch(
+  isReviewEnabled,
+  (enabled) => {
+    if (enabled) {
+      return
+    }
+
+    if (reviewDrawerVisible.value) {
+      reviewDrawerVisible.value = false
+    }
+
+    if (activeTab.value === 'review') {
+      activeTab.value = lastContentTab.value
+    }
   },
   { immediate: true },
 )
@@ -154,6 +174,10 @@ function getTargetScrollTop(target: HTMLElement, container: HTMLElement) {
 }
 
 function openReviewDrawer() {
+  if (!isReviewEnabled.value) {
+    return
+  }
+
   activeTab.value = 'review'
   reviewDrawerVisible.value = true
 }
@@ -294,7 +318,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
       <div class="tab-wrap" role="tablist" aria-label="详情页内容切换">
         <button
-          v-for="tab in tabs"
+          v-for="tab in visibleTabs"
           :key="tab.key"
           class="tab-button"
           :class="{ 'tab-button-active': activeTab === tab.key }"
@@ -336,7 +360,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
             </div>
           </div>
 
-          <div class="info-row info-row-skeleton-wrap">
+          <div v-if="isReviewEnabled" class="info-row info-row-skeleton-wrap">
             <div class="review-left">
               <van-skeleton title :row="0" class="review-label-skeleton" />
               <van-skeleton title :row="0" class="review-rate-skeleton" />
@@ -446,7 +470,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
             <van-icon name="arrow" size="16" />
           </button>
 
-          <button class="info-row" type="button" @click="openReviewDrawer">
+          <button v-if="isReviewEnabled" class="info-row" type="button" @click="openReviewDrawer">
             <div class="review-left">
               <span class="review-label">商品评价</span>
               <strong>{{ reviewRateText }}</strong>
@@ -549,6 +573,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
       </footer>
 
       <van-popup
+        v-if="isReviewEnabled"
         v-model:show="reviewDrawerVisible"
         class="review-drawer"
         position="right"
@@ -565,7 +590,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
             <div class="tab-wrap" role="tablist" aria-label="评价抽屉内容切换">
               <button
-                v-for="tab in tabs"
+                v-for="tab in visibleTabs"
                 :key="`drawer-${tab.key}`"
                 class="tab-button"
                 :class="{ 'tab-button-active': activeTab === tab.key }"

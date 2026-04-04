@@ -6,6 +6,8 @@ import {
   mapMockCategoryProducts,
   mapMockCategoryTreeData,
   mapMockHomePageData,
+  mapMockPartnerMerchants,
+  mapMockPartnerRegions,
   mapMockProductDetailPageData,
   mapMockStoreHomePageData,
 } from '../../mappers/mock-storefront-mapper'
@@ -21,6 +23,18 @@ export const mockStorefrontQuery: StorefrontQuery = {
 
   async getHomePageData() {
     return Promise.resolve(mapMockHomePageData())
+  },
+
+  async getPartnerMerchants(query) {
+    return Promise.resolve(mapMockPartnerMerchants(query))
+  },
+
+  async getPartnerRegions() {
+    return Promise.resolve(mapMockPartnerRegions())
+  },
+
+  async getPartnerStoreTypes() {
+    return Promise.resolve(mapMockHomePageData().partnerStoreTypes)
   },
 
   async getPlatformSettingsData() {

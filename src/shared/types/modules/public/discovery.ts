@@ -15,11 +15,12 @@ export interface HomeCategoryEntry {
 }
 
 export interface PublicProductCard {
-  productId: string
-  productName: string
-  productImageUrl: string
-  price: number
   marketPrice: number | null
+  monthlySales: number
+  productId: string
+  productImageUrl: string
+  productName: string
+  price: number
 }
 
 export interface HomePageData {

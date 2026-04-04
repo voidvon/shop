@@ -28,6 +28,7 @@ import { MemberSettingsPage } from '@/pages/member-settings'
 import { OrderDetailPage } from '@/pages/order-detail'
 import { OrderListPage } from '@/pages/order-list'
 import { OrderSearchResultsPage } from '@/pages/order-search-results'
+import { PartnerStoreDirectoryPage } from '@/pages/partner-store-directory'
 import { ProductDetailPage } from '@/pages/product-detail'
 import { LogisticsDetailPage } from '@/pages/logistics-detail'
 import { PromotionHubPage } from '@/pages/promotion-hub'
@@ -154,6 +155,14 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: SearchResultsPage,
         meta: {
           title: '搜索结果',
+        },
+      }),
+      createModuleRoute({
+        path: '/partner-store-types/:storeTypeId',
+        name: 'partner-store-directory',
+        component: PartnerStoreDirectoryPage,
+        meta: {
+          title: '合作门店',
         },
       }),
     ],

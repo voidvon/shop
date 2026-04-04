@@ -1,4 +1,4 @@
-import { mockCatalogData, mockProducts, mockPublicData } from '@/shared/mocks'
+import { mockAreas, mockCatalogData, mockImageUrl, mockProducts, mockPublicData, mockStores } from '@/shared/mocks'
 import { getMockStore } from '@/shared/mocks'
 import type { ProductSummary } from '@/entities/product'
 
@@ -6,11 +6,13 @@ import type {
   CategoryPageCategory,
   CategoryPageProductCard,
   HomePageData,
+  PartnerStoreMerchant,
+  PartnerStoreRegion,
   PageProductCard,
   ProductDetailPageData,
   StoreHomePageData,
 } from '../../domain/storefront-page-data'
-import type { CategoryProductsQuery } from '../../domain/storefront-query'
+import type { CategoryProductsQuery, PartnerStoreMerchantsQuery } from '../../domain/storefront-query'
 
 type MockProductFeedItem = (typeof mockPublicData.homePageData.productFeed.list)[number]
 type MockRecommendationItem =
@@ -21,11 +23,13 @@ type MockDetailPageData =
 
 export function mapMockProductCard(input: MockProductFeedItem | MockRecommendationItem): PageProductCard {
   const marketPrice = 'marketPrice' in input ? input.marketPrice : null
+  const monthlySales = 'monthlySales' in input ? input.monthlySales : 0
 
   return {
     id: input.productId,
     imageUrl: input.productImageUrl ?? null,
     marketPrice,
+    monthlySales,
     name: input.productName,
     price: input.price,
   }
@@ -97,6 +101,7 @@ export function mapMockCategoryProducts(query: CategoryProductsQuery = {}): Cate
       id: product.productId,
       imageUrl: product.imageUrl,
       marketPrice: product.marketPrice,
+      monthlySales: product.monthlySales,
       name: product.productName,
       price: product.price,
     }))
@@ -112,6 +117,7 @@ export function mapMockHomePageData(): HomePageData {
       title: banner.title ?? '',
     })),
     featuredProducts: mockPublicData.homePageData.productFeed.list.map(mapMockProductCard),
+    partnerStoreTypes: [],
     promo_video: null,
     quickCategories: mockPublicData.homePageData.categoryEntries.map((category) => ({
       id: category.categoryId,
@@ -119,6 +125,43 @@ export function mapMockHomePageData(): HomePageData {
       label: category.categoryName,
     })),
   }
+}
+
+export function mapMockPartnerRegions(): PartnerStoreRegion[] {
+  return mockAreas.map((area) => ({
+    id: area.areaId,
+    label: area.areaName,
+  }))
+}
+
+export function mapMockPartnerMerchants(query: PartnerStoreMerchantsQuery = {}): PartnerStoreMerchant[] {
+  const normalizedRegionId = query.regionId?.trim() ?? ''
+  const normalizedKeyword = query.keyword?.trim().toLowerCase() ?? ''
+
+  return mockStores
+    .filter((store) => {
+      if (normalizedRegionId && store.areaId !== normalizedRegionId) {
+        return false
+      }
+
+      if (!normalizedKeyword) {
+        return true
+      }
+
+      const searchText = `${store.storeName} ${store.address}`.toLowerCase()
+      return searchText.includes(normalizedKeyword)
+    })
+    .map((store) => ({
+      address: store.address,
+      businessHours: store.businessHours,
+      id: store.storeId,
+      imageUrl: store.logoUrl || mockImageUrl,
+      name: store.storeName,
+      phone: store.phone,
+      regionName: mockAreas.find((area) => area.areaId === store.areaId)?.areaName ?? null,
+      shortName: store.storeName,
+      storeTypeLabels: ['合作门店'],
+    }))
 }
 
 export function mapMockStoreHomePageData(

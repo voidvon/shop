@@ -7,6 +7,7 @@ const frontendModules = [
   'member',
   'member-mobile-register',
   'promotion',
+  'review',
 ] as const
 
 const defaultEnabledFrontendModules = [
@@ -15,6 +16,7 @@ const defaultEnabledFrontendModules = [
   'checkout',
   'member',
   'promotion',
+  'review',
 ] as const satisfies readonly FrontendModule[]
 
 export type FrontendModule = (typeof frontendModules)[number]
@@ -72,6 +74,13 @@ export const frontendModuleManifests: Record<FrontendModule, FrontendModuleManif
     label: '营销活动',
     summary: '负责优惠券、促销标记和活动曝光能力。',
   },
+  review: {
+    dependsOn: [],
+    entry: 'feature',
+    id: 'review',
+    label: '商品评价',
+    summary: '负责商品详情评价展示，以及订单中的待评价入口与评价动作。',
+  },
 }
 
 export const supportedModulesByBackend: Record<BackendType, FrontendModuleMap> = {
@@ -82,6 +91,7 @@ export const supportedModulesByBackend: Record<BackendType, FrontendModuleMap> =
     member: true,
     'member-mobile-register': true,
     promotion: false,
+    review: true,
   },
   'backend-a': {
     catalog: true,
@@ -90,6 +100,7 @@ export const supportedModulesByBackend: Record<BackendType, FrontendModuleMap> =
     member: true,
     'member-mobile-register': false,
     promotion: true,
+    review: false,
   },
 }
 

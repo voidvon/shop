@@ -5,6 +5,7 @@ import { useStorefrontQuery, type HomePageData } from '@/processes/storefront'
 const emptyHomePageData: HomePageData = {
   banners: [],
   featuredProducts: [],
+  partnerStoreTypes: [],
   promo_video: null,
   quickCategories: [],
 }

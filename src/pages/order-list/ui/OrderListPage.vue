@@ -6,6 +6,7 @@ import { showFailToast, showSuccessToast } from 'vant'
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
 import { useCustomerServiceUnreadStore } from '@/processes/customer-service'
 import { backendTarget } from '@/shared/config/backend'
+import { useModuleAvailability } from '@/shared/lib/modules'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
@@ -32,22 +33,29 @@ const {
   orderListPageData,
 } = useOrderListPageModel()
 const customerServiceUnreadStore = useCustomerServiceUnreadStore()
+const isReviewEnabled = useModuleAvailability('review')
 
 const keyword = ref('')
 
-const tabs = [
-  { key: 'all', label: '全部' },
-  { key: 'pending-payment', label: '待付款' },
-  { key: 'pending-shipment', label: '待发货' },
-  { key: 'pending-receipt', label: '待收货' },
-  { key: 'pending-review', label: '待评价' },
-  { key: 'after-sale', label: '退款/退货' },
-] as const
+const tabs = ref<Array<{ key: OrderListFilterStatus; label: string }>>([])
 
-const validStatuses = new Set<OrderListFilterStatus>(tabs.map((tab) => tab.key))
+watch(
+  isReviewEnabled,
+  (enabled) => {
+    tabs.value = [
+      { key: 'all', label: '全部' },
+      { key: 'pending-payment', label: '待付款' },
+      { key: 'pending-shipment', label: '待发货' },
+      { key: 'pending-receipt', label: '待收货' },
+      ...(enabled ? [{ key: 'pending-review' as const, label: '待评价' }] : []),
+      { key: 'after-sale', label: '退款/退货' },
+    ]
+  },
+  { immediate: true },
+)
 
 function resolveRouteStatus(status: unknown): OrderListFilterStatus {
-  return typeof status === 'string' && validStatuses.has(status as OrderListFilterStatus)
+  return typeof status === 'string' && tabs.value.some((tab) => tab.key === status)
     ? (status as OrderListFilterStatus)
     : 'all'
 }

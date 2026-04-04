@@ -432,6 +432,7 @@ watch(
               :key="product.id"
               :image-url="product.coverImageUrl"
               :market-price="product.price + 10"
+              :monthly-sales="product.monthlySales"
               :name="product.name"
               :price="product.price"
               :to="{ name: 'product-detail', params: { productId: product.id } }"

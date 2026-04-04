@@ -6,6 +6,7 @@ import {
 } from '@/shared/api/backend-a/backend-a-http-client'
 import { mapBackendAOrderDto } from '@/entities/order/infrastructure/mappers/backend-a-order-mapper'
 import type {
+  BackendAOrderAddressDto,
   BackendAOrderCollectionDto,
   BackendAOrderDto,
 } from '@/entities/order/infrastructure/dto/backend-a-order.dto'
@@ -80,6 +81,88 @@ function createAmountDetails(goodsAmount: number, discountAmount: number) {
   ]
 }
 
+function normalizeText(value: unknown) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function buildAddressText(source: {
+  address?: unknown
+  city?: unknown
+  district?: unknown
+  full_address?: unknown
+  province?: unknown
+  street?: unknown
+}) {
+  const directAddress = normalizeText(source.address)
+  if (directAddress) {
+    return directAddress
+  }
+
+  const fullAddress = normalizeText(source.full_address)
+  if (fullAddress) {
+    return fullAddress
+  }
+
+  return [
+    normalizeText(source.province),
+    normalizeText(source.city),
+    normalizeText(source.district),
+    normalizeText(source.street),
+  ].filter(Boolean).join('')
+}
+
+function normalizeAddressObject(value: unknown): BackendAOrderAddressDto | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null
+  }
+
+  return value as BackendAOrderAddressDto
+}
+
+function resolveOrderAddress(dto: BackendAOrderDto) {
+  const candidateObjects = [
+    normalizeAddressObject(dto.user_address),
+    normalizeAddressObject(dto.address_info),
+    normalizeAddressObject(dto.address),
+  ].filter((item): item is BackendAOrderAddressDto => Boolean(item))
+
+  for (const candidate of candidateObjects) {
+    const address = buildAddressText(candidate)
+    const recipientName = normalizeText(
+      candidate.recipient_name ?? candidate.receiver_name ?? candidate.consignee_name,
+    )
+    const recipientPhone = normalizeText(
+      candidate.recipient_phone ?? candidate.receiver_phone ?? candidate.mobile ?? candidate.phone,
+    )
+
+    if (address || recipientName || recipientPhone) {
+      return {
+        address: address || '地址信息待补充',
+        recipientName: recipientName || '收货人',
+        recipientPhone: recipientPhone || '暂无',
+      }
+    }
+  }
+
+  const topLevelAddress = buildAddressText(dto)
+  const topLevelRecipientName = normalizeText(dto.consignee_name)
+  const topLevelRecipientPhone = normalizeText(dto.mobile ?? dto.phone)
+
+  if (topLevelAddress || topLevelRecipientName || topLevelRecipientPhone) {
+    return {
+      address: topLevelAddress || '地址信息待补充',
+      recipientName: topLevelRecipientName || '收货人',
+      recipientPhone: topLevelRecipientPhone || '暂无',
+    }
+  }
+
+  return {
+    address: '后端暂未返回收货地址',
+    recipientName: '待同步',
+    recipientPhone: '暂无',
+  }
+}
+
 function mapOrderListEntry(dto: BackendAOrderDto): OrderListEntry {
   const record = mapBackendAOrderDto(dto)
 
@@ -106,11 +189,7 @@ function mapOrderDetail(dto: BackendAOrderDto): OrderDetailPageData {
 
   return {
     actions: resolveOrderActions(record.status),
-    address: {
-      address: '后端暂未返回收货地址',
-      recipientName: '待同步',
-      recipientPhone: '暂无',
-    },
+    address: resolveOrderAddress(dto),
     amountDetails: createAmountDetails(Number.parseFloat(dto.total_amount) || record.totalAmount, discountAmount),
     buyerMessage: dto.remark,
     deliveryRemark: null,

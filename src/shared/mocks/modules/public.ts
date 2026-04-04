@@ -34,6 +34,7 @@ export const mockHomePageData: HomePageData = {
   productFeed: createCursorPageResult(
     mockProducts.map((product) => ({
       marketPrice: product.marketPrice,
+      monthlySales: product.monthlySales,
       price: product.price,
       productId: product.productId,
       productImageUrl: product.imageUrl,
@@ -81,6 +82,7 @@ export const mockStoreHomeData: StoreHomeData = {
   recommendedProducts: mockProducts
     .filter((product) => product.storeId === homeStore.storeId)
     .map((product) => ({
+      monthlySales: product.monthlySales,
       price: product.price,
       productId: product.productId,
       productImageUrl: product.imageUrl,

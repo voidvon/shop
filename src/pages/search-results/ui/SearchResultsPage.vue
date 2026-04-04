@@ -85,6 +85,7 @@ function handleKeywordSelect(nextKeyword: string) {
               <div class="price-row">
                 <em>{{ formatCurrency(product.price) }}</em>
                 <small v-if="product.marketPrice">{{ formatCurrency(product.marketPrice) }}</small>
+                <span class="sales-inline">销量 {{ product.monthlySales }}</span>
               </div>
             </div>
           </RouterLink>
@@ -218,6 +219,15 @@ function handleKeywordSelect(nextKeyword: string) {
   display: grid;
   align-content: start;
   gap: 8px;
+}
+
+.sales-inline {
+  margin-left: auto;
+  color: #8c8a87;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .result-copy strong {

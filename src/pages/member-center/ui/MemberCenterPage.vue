@@ -13,6 +13,7 @@ import { useMemberCenterPageModel } from '../model/useMemberCenterPageModel'
 const router = useRouter()
 const { loadMemberCenterPage, memberCenterPageData } = useMemberCenterPageModel()
 const isCartEnabled = useModuleAvailability('cart')
+const isReviewEnabled = useModuleAvailability('review')
 const loginEntryRoute = computed<RouteLocationRaw>(() => ({
   name: 'member-login',
   query: { redirect: '/member' },
@@ -79,13 +80,15 @@ const orderEntries = computed<OrderEntry[]>(() => [
     icon: 'send-gift-o',
     route: buildOrderRoute('pending-receipt'),
   },
-  {
-    count: memberCenterPageData.value.orderSummary.pendingReviewCount,
-    key: 'pendingReviewCount',
-    label: '待评价',
-    icon: 'chat-o',
-    route: buildOrderRoute('pending-review'),
-  },
+  ...(isReviewEnabled.value
+    ? [{
+        count: memberCenterPageData.value.orderSummary.pendingReviewCount,
+        key: 'pendingReviewCount',
+        label: '待评价',
+        icon: 'chat-o',
+        route: buildOrderRoute('pending-review'),
+      } satisfies OrderEntry]
+    : []),
   {
     count: memberCenterPageData.value.orderSummary.refundAndReturnCount,
     key: 'refundAndReturnCount',
@@ -466,14 +469,17 @@ onActivated(() => {
 }
 
 .order-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 8px;
   padding: 8px 12px 16px;
 }
 
 .order-entry {
   display: grid;
   gap: 6px;
+  flex: 0 1 72px;
   justify-items: center;
   padding: 10px 4px;
   border: 0;

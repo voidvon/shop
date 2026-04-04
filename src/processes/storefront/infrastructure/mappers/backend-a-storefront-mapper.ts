@@ -9,6 +9,9 @@ import type {
   CategoryPageCategory,
   CategoryPageProductCard,
   HomePageData,
+  HomePartnerStoreType,
+  PartnerStoreMerchant,
+  PartnerStoreRegion,
   PageProductCard,
   PlatformSettingsData,
   ProductDetailPageData,
@@ -30,6 +33,7 @@ export interface BackendAStorefrontProductDto {
   }
   id: number
   main_images?: string[] | null
+  sales_count: number
   skus: Array<{
     image: string | null
     price: string
@@ -47,8 +51,10 @@ export interface BackendAStorefrontHomeDto {
     banners?: string[] | null
     company_name: string | null
     promo_video?: string | null
+    [key: string]: unknown
   }
   products?: BackendAStorefrontProductDto[] | null
+  [key: string]: unknown
 }
 
 export interface BackendAPlatformSettingsDto {
@@ -63,6 +69,18 @@ export interface BackendAPlatformSettingsDto {
 }
 
 export interface BackendAPartnerMerchantDto {
+  [key: string]: unknown
+}
+
+export interface BackendAPartnerStoreTypeDto {
+  [key: string]: unknown
+}
+
+export interface BackendAPartnerRegionDto {
+  [key: string]: unknown
+}
+
+export interface BackendAPartnerMerchantSummaryDto {
   [key: string]: unknown
 }
 
@@ -103,6 +121,28 @@ function pickStringFromSources(sources: Array<Record<string, unknown> | null>, k
 
       if (typeof value === 'string' && value.trim()) {
         return value.trim()
+      }
+    }
+  }
+
+  return null
+}
+
+function pickStringLikeFromSources(sources: Array<Record<string, unknown> | null>, keys: string[]) {
+  for (const source of sources) {
+    if (!source) {
+      continue
+    }
+
+    for (const key of keys) {
+      const value = source[key]
+
+      if (typeof value === 'string' && value.trim()) {
+        return value.trim()
+      }
+
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        return String(value)
       }
     }
   }
@@ -205,6 +245,24 @@ function pickStringArrayFromSources(sources: Array<Record<string, unknown> | nul
   return []
 }
 
+function pickArrayFromSources(sources: Array<Record<string, unknown> | null>, keys: string[]) {
+  for (const source of sources) {
+    if (!source) {
+      continue
+    }
+
+    for (const key of keys) {
+      const value = source[key]
+
+      if (Array.isArray(value)) {
+        return value
+      }
+    }
+  }
+
+  return []
+}
+
 function resolveActiveSkus(product: Pick<BackendAProductDetailDto, 'skus'>) {
   const activeSkus = product.skus.filter((sku) => sku.status === 1)
   return activeSkus.length > 0 ? activeSkus : product.skus
@@ -235,6 +293,7 @@ function mapBackendAStorefrontProductCard(product: BackendAStorefrontProductDto)
     id: String(product.id),
     imageUrl: resolveProductImage(product),
     marketPrice: null,
+    monthlySales: product.sales_count,
     name: product.title,
     price: resolveProductPrice(product),
   }
@@ -266,6 +325,7 @@ export function mapBackendAProductCard(product: ProductSummary): PageProductCard
     id: product.id,
     imageUrl: product.coverImageUrl,
     marketPrice: null,
+    monthlySales: product.monthlySales,
     name: product.name,
     price: product.price,
   }
@@ -295,6 +355,7 @@ export function mapBackendACategoryProducts(
     id: String(product.id),
     imageUrl: resolveProductImage(product),
     marketPrice: null,
+    monthlySales: product.sales_count,
     name: product.title,
     price: resolveProductPrice(product),
   }))
@@ -314,6 +375,168 @@ export function mapBackendAHomeBanners(data: BackendAStorefrontHomeDto): HomePag
   }))
 }
 
+function mapHomePartnerStoreType(item: unknown, index: number): HomePartnerStoreType | null {
+  if (typeof item === 'string' && item.trim()) {
+    const label = item.trim()
+
+    return {
+      id: label,
+      imageUrl: null,
+      label,
+    }
+  }
+
+  if (!isRecord(item)) {
+    return null
+  }
+
+  const sources = [item]
+  const label = pickStringFromSources(sources, [
+    'name',
+    'label',
+    'title',
+    'type_name',
+    'typeName',
+    'store_type_name',
+    'storeTypeName',
+    'merchant_type_name',
+    'merchantTypeName',
+  ])
+
+  if (!label) {
+    return null
+  }
+
+  const id = pickStringLikeFromSources(sources, [
+    'id',
+    'code',
+    'value',
+    'slug',
+    'key',
+    'type_id',
+    'typeId',
+    'store_type_id',
+    'storeTypeId',
+    'merchant_type_id',
+    'merchantTypeId',
+  ]) ?? `${label}-${index}`
+  const imageUrl = resolveBackendAMediaUrl(
+    pickStringFromSources(sources, [
+      'banner_image',
+      'bannerImage',
+      'promo_image',
+      'promoImage',
+      'cover',
+      'cover_image',
+      'coverImage',
+      'image',
+      'logo',
+    ]),
+  )
+
+  return {
+    id,
+    imageUrl,
+    label,
+  }
+}
+
+function mapBackendAPartnerStoreTypeList(
+  items: unknown[],
+): HomePartnerStoreType[] {
+  return items
+    .map((item, index) => mapHomePartnerStoreType(item, index))
+    .filter((item): item is HomePartnerStoreType => item !== null)
+}
+
+export function mapBackendAPartnerStoreTypes(
+  data: BackendAStorefrontHomeDto | BackendAPartnerStoreTypeDto[],
+): HomePartnerStoreType[] {
+  if (Array.isArray(data)) {
+    return mapBackendAPartnerStoreTypeList(data)
+  }
+
+  const rootSource = isRecord(data) ? data : null
+  const platformSource = isRecord(data.platform) ? data.platform : null
+  const sources = [rootSource, platformSource]
+  const items = pickArrayFromSources(sources, [
+    'partner_merchant_types',
+    'partnerMerchantTypes',
+    'merchant_types',
+    'merchantTypes',
+    'store_types',
+    'storeTypes',
+    'cooperative_store_types',
+    'cooperativeStoreTypes',
+  ])
+
+  return mapBackendAPartnerStoreTypeList(items)
+}
+
+export function mapBackendAPartnerRegions(
+  items: BackendAPartnerRegionDto[],
+): PartnerStoreRegion[] {
+  return items
+    .map((item, index) => {
+      const sources = [item]
+      const label = pickStringFromSources(sources, ['name', 'label', 'title'])
+
+      if (!label) {
+        return null
+      }
+
+      const id = pickStringLikeFromSources(sources, ['id', 'code', 'value', 'key']) ?? `${label}-${index}`
+
+      return {
+        id,
+        label,
+      }
+    })
+    .filter((item): item is PartnerStoreRegion => item !== null)
+}
+
+export function mapBackendAPartnerMerchants(
+  items: BackendAPartnerMerchantSummaryDto[],
+): PartnerStoreMerchant[] {
+  return items
+    .map((item, index) => {
+      const rootSource = isRecord(item) ? item : null
+      const regionSource = rootSource ? pickRecord(rootSource, ['region', 'partner_region']) : null
+      const storeTypes = rootSource ? pickArrayFromSources([rootSource], ['store_types', 'storeTypes']) : []
+      const sources = [rootSource]
+      const name = pickStringFromSources(sources, ['name', 'title', 'merchant_name', 'merchantName'])
+
+      if (!name) {
+        return null
+      }
+
+      const imageUrl = resolveBackendAMediaUrl(
+        pickStringFromSources(
+          [rootSource, ...storeTypes.filter(isRecord)],
+          ['logo', 'logo_url', 'logoUrl', 'image', 'cover', 'banner_image', 'promo_image'],
+        ),
+      )
+
+      return {
+        address:
+          pickStringFromSources([rootSource, regionSource], ['detailed_address', 'detailedAddress', 'address'])
+          ?? '地址待补充',
+        businessHours: pickStringFromSources(sources, ['business_hours', 'businessHours']) ?? null,
+        id: pickStringLikeFromSources(sources, ['id', 'merchant_id', 'merchantId']) ?? `${name}-${index}`,
+        imageUrl,
+        name,
+        phone: pickStringFromSources(sources, ['contact_phone', 'contactPhone', 'phone', 'mobile']) ?? null,
+        regionName: pickStringFromSources([regionSource], ['name', 'label', 'title']) ?? null,
+        shortName: pickStringFromSources(sources, ['short_name', 'shortName']) ?? null,
+        storeTypeLabels: storeTypes
+          .filter(isRecord)
+          .map((storeType) => pickStringFromSources([storeType], ['name', 'label', 'title']))
+          .filter((label): label is string => Boolean(label)),
+      }
+    })
+    .filter((item): item is PartnerStoreMerchant => item !== null)
+}
+
 export function mapBackendAHomePageData(
   data: BackendAStorefrontHomeDto,
 ): HomePageData {
@@ -321,6 +544,7 @@ export function mapBackendAHomePageData(
   const banners = mapBackendAHomeBanners(data)
   const promoVideo = resolveBackendAMediaUrl(data.platform?.promo_video)
   const featuredProducts = ensureArray(data.products).map(mapBackendAStorefrontProductCard)
+  const partnerStoreTypes = mapBackendAPartnerStoreTypes(data)
 
   const quickCategories = categories.map((category) => ({
     id: String(category.id),
@@ -331,6 +555,7 @@ export function mapBackendAHomePageData(
   return {
     banners,
     featuredProducts,
+    partnerStoreTypes,
     promo_video: promoVideo,
     quickCategories,
   }

@@ -130,6 +130,7 @@ onActivated(() => {
             :image-url="product.imageUrl"
             :is-favorited="isProductFavorited(product.id)"
             :market-price="product.marketPrice"
+            :monthly-sales="product.monthlySales"
             :name="product.name"
             :price="product.price"
             :to="{ name: 'product-detail', params: { productId: product.id } }"

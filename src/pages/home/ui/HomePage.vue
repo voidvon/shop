@@ -52,6 +52,7 @@ const promoVideoCardStyle = computed(() => ({
   '--promo-video-poster-url': `url("${promoVideoPosterUrl.value}")`,
 }))
 const quickCategories = computed(() => homePageData.value.quickCategories)
+const partnerStoreTypes = computed(() => homePageData.value.partnerStoreTypes)
 const loadMoreTriggerRef = ref<HTMLElement | null>(null)
 const isWechat = isWechatBrowser()
 const isPromoVideoAutoplaySupported = ref<boolean | null>(null)
@@ -319,6 +320,35 @@ watch(promoVideoUrl, () => {
         </RouterLink>
       </section>
 
+      <section v-if="partnerStoreTypes.length > 0" class="partner-store-type-section">
+        <div class="partner-store-type-head">
+          <strong>合作门店类型</strong>
+        </div>
+
+        <div class="partner-store-type-list">
+          <RouterLink
+            v-for="storeType in partnerStoreTypes"
+            :key="storeType.id"
+            class="partner-store-type-card"
+            :class="{ 'partner-store-type-card-placeholder': !storeType.imageUrl }"
+            :to="{
+              name: 'partner-store-directory',
+              params: { storeTypeId: storeType.id },
+              query: { label: storeType.label },
+            }"
+          >
+            <img
+              class="partner-store-type-image"
+              :src="storeType.imageUrl || '/images/image-placeholder.svg'"
+              :alt="storeType.label"
+            >
+            <div class="partner-store-type-overlay">
+              <strong>{{ storeType.label }}</strong>
+            </div>
+          </RouterLink>
+        </div>
+      </section>
+
       <section class="product-section">
         <div class="section-head">
           <h2>热门推荐</h2>
@@ -341,6 +371,7 @@ watch(promoVideoUrl, () => {
               :image-url="product.imageUrl"
               :is-favorited="isProductFavorited(product.id)"
               :market-price="product.marketPrice"
+              :monthly-sales="product.monthlySales"
               :name="product.name"
               :price="product.price"
               :to="{ name: 'product-detail', params: { productId: product.id } }"
@@ -494,6 +525,90 @@ watch(promoVideoUrl, () => {
   color: #1a1918;
   font-size: 12px;
   font-weight: 500;
+}
+
+.partner-store-type-section {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fffaf2 0%, #f7f0e2 100%);
+  box-shadow: inset 0 0 0 1px rgba(164, 121, 53, 0.08);
+}
+
+.partner-store-type-head strong {
+  color: #6f4b1f;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.partner-store-type-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.partner-store-type-card {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 5 / 2;
+  border-radius: 10px;
+  background: #e8e0d2;
+  box-shadow: 0 10px 24px rgba(111, 75, 31, 0.12);
+  text-decoration: none;
+}
+
+.partner-store-type-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(28, 24, 18, 0.18), rgba(28, 24, 18, 0.58));
+}
+
+.partner-store-type-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.partner-store-type-card-placeholder .partner-store-type-image {
+  filter: blur(12px) saturate(0.88);
+  transform: scale(1.08);
+}
+
+.partner-store-type-overlay {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  padding: 14px 14px 12px;
+}
+
+.partner-store-type-overlay strong {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  backdrop-filter: blur(10px);
+}
+
+.partner-store-type-card-placeholder .partner-store-type-overlay {
+  align-items: center;
+  justify-content: center;
+}
+
+.partner-store-type-card-placeholder .partner-store-type-overlay strong {
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  backdrop-filter: none;
 }
 
 .product-section {
