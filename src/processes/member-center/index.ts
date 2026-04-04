@@ -18,6 +18,7 @@ export type {
   MemberPaymentCodePageData,
   MemberProfileNamePageData,
   MemberProductListItem,
+  MemberShortcut,
   MemberSettingsItem,
   MemberSettingsPageData,
 } from './domain/member-center-page-data'

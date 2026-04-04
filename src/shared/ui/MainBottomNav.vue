@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
+import { showLoadingToast, showToast } from 'vant'
 
+import { useMemberAuthSession } from '@/entities/member-auth'
 import {
   resolveMainNavigationItems,
   type MainNavigationKey,
 } from '@/shared/config/main-navigation'
+import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
 
 type BottomNavVariant = 'floating' | 'bar'
 
@@ -18,6 +21,7 @@ const props = withDefaults(defineProps<{
 })
 
 const router = useRouter()
+const memberAuthSession = useMemberAuthSession()
 
 const visibleItems = computed(() => {
   const availableItems = resolveMainNavigationItems(router.getRoutes())
@@ -29,20 +33,60 @@ const visibleItems = computed(() => {
   const enabledKeys = new Set(props.itemKeys)
   return availableItems.filter((item) => enabledKeys.has(item.key))
 })
+
+async function handleNavigation(item: (typeof visibleItems.value)[number]) {
+  if (item.key !== 'member') {
+    await router.push(item.to)
+    return
+  }
+
+  if (memberAuthSession.getSnapshot().authResult) {
+    await router.push(item.to)
+    return
+  }
+
+  if (isWechatBrowser()) {
+    const loadingToast = showLoadingToast({
+      duration: 0,
+      forbidClick: true,
+      message: '正在登录...',
+    })
+    const result = await startWechatOauthLogin(item.to)
+    loadingToast.close()
+
+    if (result.redirected || result.succeeded) {
+      return
+    }
+
+    if (result.message) {
+      showToast(result.message)
+    }
+
+    return
+  }
+
+  await router.push({
+    name: 'member-login',
+    query: {
+      redirect: item.to,
+    },
+  })
+}
 </script>
 
 <template>
   <nav class="main-bottom-nav" :class="`main-bottom-nav-${variant}`">
-    <RouterLink
+    <button
       v-for="item in visibleItems"
       :key="item.key"
-      :to="item.to"
       class="main-bottom-nav-item"
       :class="{ 'main-bottom-nav-item-active': item.key === activeKey }"
+      type="button"
+      @click="handleNavigation(item)"
     >
       <van-icon :name="item.icon" size="20" />
       <span>{{ item.label }}</span>
-    </RouterLink>
+    </button>
   </nav>
 </template>
 
@@ -58,6 +102,9 @@ const visibleItems = computed(() => {
   display: grid;
   gap: 4px;
   justify-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #a8a7a5;
   line-height: 1;
 }

@@ -16,6 +16,7 @@ const { loadMemberCenterPage, memberCenterPageData } = useMemberCenterPageModel(
 const isCartEnabled = useModuleAvailability('cart')
 const isReviewEnabled = useModuleAvailability('review')
 const appVersionText = `版本号：${readAppVersion()}`
+const isLoggedIn = computed(() => memberCenterPageData.value.profile.isLoggedIn)
 const loginEntryRoute = computed<RouteLocationRaw>(() => ({
   name: 'member-login',
   query: { redirect: '/member' },
@@ -203,7 +204,7 @@ onActivated(() => {
           </div>
         </div>
         
-        <div class="count-row">
+        <div v-if="isLoggedIn" class="count-row">
           <RouterLink v-for="card in countCards" :key="card.label" class="count-card" :to="card.route">
             <strong>{{ card.value }}</strong>
             <span>{{ card.label }}</span>
@@ -212,7 +213,7 @@ onActivated(() => {
       </section>
 
       <div class="content-wrapper">
-        <section class="order-card">
+        <section v-if="isLoggedIn" class="order-card">
           <header class="section-head">
             <strong>我的订单</strong>
             <RouterLink class="head-action" :to="buildOrderRoute()">
@@ -240,7 +241,7 @@ onActivated(() => {
           </div>
         </section>
 
-        <section class="shortcut-card">
+        <section v-if="isLoggedIn" class="shortcut-card">
           <div class="shortcut-row">
             <RouterLink
               v-for="shortcut in memberCenterPageData.shortcuts.slice(0, 2)"
@@ -266,7 +267,7 @@ onActivated(() => {
           </div>
         </section>
 
-        <section class="service-card">
+        <section v-if="isLoggedIn" class="service-card">
           <RouterLink class="service-entry" :to="{ name: 'member-addresses' }">
             <div class="service-copy">
               <div class="service-icon">

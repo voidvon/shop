@@ -7,7 +7,18 @@ import {
 } from '@/entities/member-history'
 import { useMemberFavoriteStore } from '@/entities/member-favorite'
 import { useCartStore } from '@/features/add-to-cart'
-import { useMemberCenterQuery, type MemberCenterPageData } from '@/processes/member-center'
+import {
+  useMemberCenterQuery,
+  type MemberCenterPageData,
+  type MemberShortcut,
+} from '@/processes/member-center'
+
+const defaultMemberShortcuts: MemberShortcut[] = [
+  { key: 'cards', label: '我的卡券', route: '/member/assets/cards' },
+  { key: 'payment-code', label: '付款码', route: '/member/assets/payment-code' },
+  { key: 'balance', label: '账户余额', route: '/member/assets/balance' },
+  { key: 'settings', label: '用户设置', route: '/member/settings' },
+]
 
 const emptyMemberCenterPageData: MemberCenterPageData = {
   counts: {
@@ -28,7 +39,7 @@ const emptyMemberCenterPageData: MemberCenterPageData = {
     username: null,
   },
   servicePhone: null,
-  shortcuts: [],
+  shortcuts: defaultMemberShortcuts.map((shortcut) => ({ ...shortcut })),
   tipText: '',
 }
 
@@ -69,6 +80,7 @@ export function useMemberCenterPageModel() {
           isLoggedIn: false,
           username: null,
         },
+        shortcuts: defaultMemberShortcuts.map((shortcut) => ({ ...shortcut })),
       }
     }
 
@@ -85,6 +97,7 @@ export function useMemberCenterPageModel() {
         isLoggedIn: true,
         username: authResult.userInfo.nickname ?? authResult.userInfo.username,
       },
+      shortcuts: defaultMemberShortcuts.map((shortcut) => ({ ...shortcut })),
     }
   })
 
