@@ -157,6 +157,28 @@ function openStorePage() {
   })
 }
 
+function openCustomerService() {
+  if (!product.value) {
+    showFailToast('商品信息加载中...')
+    return
+  }
+
+  const normalizedProductName = product.value.name.trim()
+  const normalizedStoreId = storeInfo.value?.storeId?.trim() ?? ''
+  const normalizedStoreName = storeInfo.value?.storeName?.trim() ?? ''
+
+  void router.push({
+    name: 'member-customer-service',
+    query: {
+      composer: 'create',
+      content: normalizedProductName ? `您好，我想咨询商品“${normalizedProductName}”相关问题。` : '您好，我想咨询商品相关问题。',
+      ...(normalizedStoreId ? { storeId: normalizedStoreId } : {}),
+      ...(normalizedStoreName ? { storeName: normalizedStoreName } : {}),
+      subject: normalizedProductName ? `商品咨询 · ${normalizedProductName}` : '商品咨询',
+    },
+  })
+}
+
 function goBack() {
   if (globalThis.window?.history.state?.back) {
     router.back()
@@ -551,7 +573,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
       </div>
 
       <footer class="action-bar">
-        <button class="tool-button" type="button">
+        <button class="tool-button" type="button" @click="openCustomerService">
           <van-icon name="service-o" size="18" />
           <span>客服</span>
         </button>
@@ -694,7 +716,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
           </section>
 
           <footer class="action-bar spec-action-bar">
-            <button class="tool-button" type="button">
+            <button class="tool-button" type="button" @click="openCustomerService">
               <van-icon name="service-o" size="18" />
               <span>客服</span>
             </button>
