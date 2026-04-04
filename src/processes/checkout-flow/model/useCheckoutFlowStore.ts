@@ -148,6 +148,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
           }
         : await checkoutFlowPort.submit({
             addressId: selectedAddress.value.id,
+            couponUsages: preview.value?.couponUsages ?? [],
             remark: remark?.trim() ? remark.trim() : null,
           })
 

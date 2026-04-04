@@ -155,6 +155,7 @@ export function createCheckoutFlowPort(options: CreateCheckoutFlowPortOptions): 
       const orderCommand: SubmitOrderCommand = {
         ...command,
         addressId: submitCommand?.addressId ?? null,
+        couponUsages: submitCommand?.couponUsages ?? [],
         remark: submitCommand?.remark ?? null,
       }
       const confirmation = await submitOrder(options.orderRepository, orderCommand)

@@ -27,6 +27,13 @@ const {
 } = storeToRefs(checkoutStore)
 
 const previewLines = computed(() => preview.value?.lines ?? [])
+const previewCouponGroups = computed(() =>
+  (preview.value?.groups ?? []).filter((group) =>
+    group.couponAmount > 0
+    || Boolean(group.couponName)
+    || Boolean(group.couponError),
+  ),
+)
 const payableAmountText = computed(() => formatAmount(preview.value?.payableAmount ?? 0))
 const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAmount ?? 0))
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
@@ -140,6 +147,30 @@ watch(
 function formatAmount(value: number) {
   return value.toFixed(2)
 }
+
+function formatCouponGroupLabel(merchantName: string) {
+  return merchantName ? `${merchantName}优惠券` : '优惠券'
+}
+
+function formatCouponGroupValue(couponName: string | null, couponAmount: number, couponError: string | null) {
+  if (couponError) {
+    return couponError
+  }
+
+  if (couponName && couponAmount > 0) {
+    return `${couponName} -¥${formatAmount(couponAmount)}`
+  }
+
+  if (couponName) {
+    return couponName
+  }
+
+  if (couponAmount > 0) {
+    return `已优惠 ¥${formatAmount(couponAmount)}`
+  }
+
+  return '未使用'
+}
 </script>
 
 <template>
@@ -193,6 +224,20 @@ function formatAmount(value: number) {
             <div class="merchant-row">
               <span class="merchant-row-label">物流配送</span>
               <span class="merchant-row-value">运费0.00</span>
+            </div>
+
+            <div
+              v-for="group in previewCouponGroups"
+              :key="`${group.merchantId}-${group.balanceTypeId}`"
+              class="merchant-row"
+            >
+              <span class="merchant-row-label">{{ formatCouponGroupLabel(group.merchantName) }}</span>
+              <span
+                class="merchant-row-value"
+                :class="{ 'merchant-row-value-error': Boolean(group.couponError) }"
+              >
+                {{ formatCouponGroupValue(group.couponName, group.couponAmount, group.couponError) }}
+              </span>
             </div>
 
             <van-field
@@ -348,6 +393,10 @@ function formatAmount(value: number) {
   color: #6d6c6a;
   font-size: 14px;
   font-weight: 500;
+}
+
+.merchant-row-value-error {
+  color: #c95a21;
 }
 
 .explain-amount {

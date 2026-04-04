@@ -1,6 +1,13 @@
-import { createCheckoutLine, type CreateCheckoutPreviewCommand, type OrderRecord } from '../../domain/order'
+import {
+  createCheckoutLine,
+  type CheckoutPreviewGroup,
+  type CheckoutCouponUsage,
+  type CreateCheckoutPreviewCommand,
+  type OrderRecord,
+} from '../../domain/order'
 import type {
   BackendACheckoutPreviewDto,
+  BackendACheckoutPreviewGroupDto,
   BackendAOrderDto,
 } from '../dto/backend-a-order.dto'
 import { resolveBackendAMediaUrl } from '@/shared/api/backend-a/backend-a-config'
@@ -48,6 +55,32 @@ function resolveOrderStatusText(status: TradeOrderStatus) {
   }
 }
 
+function mapCheckoutPreviewGroup(dto: BackendACheckoutPreviewGroupDto): CheckoutPreviewGroup {
+  return {
+    availableBalance: parseAmount(dto.available_balance),
+    balanceTypeId: dto.balance_type_id,
+    balanceTypeName: dto.balance_type_name,
+    couponAmount: parseAmount(dto.coupon_amount),
+    couponError: dto.coupon_error ?? null,
+    couponName: dto.coupon_name ?? null,
+    merchantId: dto.merchant_id,
+    merchantName: dto.merchant_name,
+    payableAmount: parseAmount(dto.payable_amount),
+    totalAmount: parseAmount(dto.total_amount),
+    userCouponId: dto.user_coupon_id,
+  }
+}
+
+function mapCheckoutCouponUsages(groups: CheckoutPreviewGroup[]): CheckoutCouponUsage[] {
+  return groups
+    .filter((group) => Number.isInteger(group.userCouponId) && (group.userCouponId ?? 0) > 0)
+    .map((group) => ({
+      balanceTypeId: group.balanceTypeId,
+      merchantId: group.merchantId,
+      userCouponId: group.userCouponId as number,
+    }))
+}
+
 export function mapBackendAOrderDto(dto: BackendAOrderDto): OrderRecord {
   const status = resolveOrderStatus(dto)
 
@@ -75,12 +108,15 @@ export function mapBackendACheckoutPreviewDto(
   command: CreateCheckoutPreviewCommand,
   dto: BackendACheckoutPreviewDto,
 ) {
+  const groups = dto.groups.map(mapCheckoutPreviewGroup)
   const subtotalAmount = parseAmount(dto.total_amount)
   const payableAmount = parseAmount(dto.payable_amount)
   const discountAmount = Math.max(subtotalAmount - payableAmount, 0)
 
   return {
+    couponUsages: mapCheckoutCouponUsages(groups),
     discountAmount,
+    groups,
     lines: command.lines.map((line) => createCheckoutLine(line)),
     payableAmount,
     source: command.source,

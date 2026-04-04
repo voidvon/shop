@@ -7,10 +7,12 @@ export {
 } from './application/transition-order-status'
 export { submitOrder } from './application/submit-order'
 export {
+  type CheckoutCouponUsage,
   createCheckoutLine,
   createCheckoutPreview,
   type CheckoutLine,
   type CheckoutPreview,
+  type CheckoutPreviewGroup,
   type CreateCheckoutPreviewCommand,
   type OrderAction,
   type OrderConfirmation,

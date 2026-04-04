@@ -17,8 +17,30 @@ export interface CreateCheckoutPreviewCommand {
   source: 'cart' | 'instant'
 }
 
+export interface CheckoutCouponUsage {
+  balanceTypeId: number
+  merchantId: number
+  userCouponId: number
+}
+
+export interface CheckoutPreviewGroup {
+  availableBalance: number
+  balanceTypeId: number
+  balanceTypeName: string
+  couponAmount: number
+  couponError: string | null
+  couponName: string | null
+  merchantId: number
+  merchantName: string
+  payableAmount: number
+  totalAmount: number
+  userCouponId: number | null
+}
+
 export interface CheckoutPreview {
+  couponUsages: CheckoutCouponUsage[]
   discountAmount: number
+  groups: CheckoutPreviewGroup[]
   lines: CheckoutLine[]
   payableAmount: number
   source: 'cart' | 'instant'
@@ -27,6 +49,7 @@ export interface CheckoutPreview {
 
 export interface SubmitOrderCommand extends CreateCheckoutPreviewCommand {
   addressId?: string | null
+  couponUsages?: CheckoutCouponUsage[]
   remark?: string | null
 }
 
@@ -100,7 +123,9 @@ export function createCheckoutPreview(
   const subtotalAmount = lines.reduce((sum, line) => sum + line.lineTotal, 0)
 
   return {
+    couponUsages: [],
     discountAmount,
+    groups: [],
     lines,
     payableAmount: Math.max(subtotalAmount - discountAmount, 0),
     source: command.source,

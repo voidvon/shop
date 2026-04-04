@@ -1,7 +1,8 @@
-import type { CheckoutPreview, OrderConfirmation } from '@/entities/order'
+import type { CheckoutCouponUsage, CheckoutPreview, OrderConfirmation } from '@/entities/order'
 
 export interface SubmitCheckoutOrderCommand {
   addressId?: string | null
+  couponUsages?: CheckoutCouponUsage[]
   remark?: string | null
 }
 
