@@ -519,6 +519,7 @@ watch(promoVideoUrl, () => {
   height: 60px;
   border-radius: 50%;
   background: #edecea;
+  object-fit: cover;
 }
 
 .category-card strong {
@@ -573,6 +574,7 @@ watch(promoVideoUrl, () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 .partner-store-type-card-placeholder .partner-store-type-image {
