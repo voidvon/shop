@@ -30,7 +30,7 @@ export interface MemberCenterPageData {
   counts: MemberCenterCountSummary
   orderSummary: MemberOrderSummary
   profile: MemberProfileInfo
-  servicePhone: string
+  servicePhone: string | null
   shortcuts: MemberShortcut[]
   tipText: string
 }

@@ -27,7 +27,7 @@ const emptyMemberCenterPageData: MemberCenterPageData = {
     isLoggedIn: false,
     username: null,
   },
-  servicePhone: '',
+  servicePhone: null,
   shortcuts: [],
   tipText: '',
 }

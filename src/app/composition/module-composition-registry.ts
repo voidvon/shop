@@ -40,6 +40,7 @@ import { SearchResultsPage } from '@/pages/search-results'
 import { StorePage } from '@/pages/store'
 import { StoreAboutPage } from '@/pages/store-about'
 import { StoreSearchResultsPage } from '@/pages/store-search-results'
+import { backendTarget } from '@/shared/config/backend'
 import type { MainNavigationKey, MainNavigationMeta } from '@/shared/config/main-navigation'
 import type { FrontendModule } from '@/shared/config/modules'
 
@@ -437,16 +438,18 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
           title: '用户设置',
         },
       }),
-      createModuleRoute({
-        path: '/member/password',
-        name: 'member-password',
-        component: MemberPasswordPage,
-        meta: {
-          activeMainNavigationKey: 'member',
-          requiresAuth: true,
-          title: '登录密码',
-        },
-      }),
+      ...(backendTarget === 'mock'
+        ? [createModuleRoute({
+          path: '/member/password',
+          name: 'member-password',
+          component: MemberPasswordPage,
+          meta: {
+            activeMainNavigationKey: 'member',
+            requiresAuth: true,
+            title: '登录密码',
+          },
+        })]
+        : []),
       createModuleRoute({
         path: '/member/profile-name',
         name: 'member-profile-name',
@@ -457,26 +460,30 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
           title: '用户昵称',
         },
       }),
-      createModuleRoute({
-        path: '/member/mobile',
-        name: 'member-mobile',
-        component: MemberMobilePage,
-        meta: {
-          activeMainNavigationKey: 'member',
-          requiresAuth: true,
-          title: '手机号码',
-        },
-      }),
-      createModuleRoute({
-        path: '/member/pay-password',
-        name: 'member-pay-password',
-        component: MemberPayPasswordPage,
-        meta: {
-          activeMainNavigationKey: 'member',
-          requiresAuth: true,
-          title: '支付密码',
-        },
-      }),
+      ...(backendTarget === 'mock'
+        ? [createModuleRoute({
+          path: '/member/mobile',
+          name: 'member-mobile',
+          component: MemberMobilePage,
+          meta: {
+            activeMainNavigationKey: 'member',
+            requiresAuth: true,
+            title: '手机号码',
+          },
+        })]
+        : []),
+      ...(backendTarget === 'mock'
+        ? [createModuleRoute({
+          path: '/member/pay-password',
+          name: 'member-pay-password',
+          component: MemberPayPasswordPage,
+          meta: {
+            activeMainNavigationKey: 'member',
+            requiresAuth: true,
+            title: '支付密码',
+          },
+        })]
+        : []),
       createModuleRoute({
         path: '/member/about',
         name: 'member-about',

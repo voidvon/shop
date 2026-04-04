@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
 
 import { MemberLogoutButton } from '@/features/member-logout'
+import { readAppVersion } from '@/shared/lib/app-version'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
 
@@ -14,6 +15,7 @@ const router = useRouter()
 const { loadMemberCenterPage, memberCenterPageData } = useMemberCenterPageModel()
 const isCartEnabled = useModuleAvailability('cart')
 const isReviewEnabled = useModuleAvailability('review')
+const appVersionText = `版本号：${readAppVersion()}`
 const loginEntryRoute = computed<RouteLocationRaw>(() => ({
   name: 'member-login',
   query: { redirect: '/member' },
@@ -282,8 +284,10 @@ onActivated(() => {
         </section>
 
         <section class="tip-block">
-          <p class="tip-text">{{ memberCenterPageData.tipText }}</p>
-          <p class="service-phone">客服电话：{{ memberCenterPageData.servicePhone }}</p>
+          <p class="tip-text">{{ appVersionText }}</p>
+          <p v-if="memberCenterPageData.servicePhone" class="service-phone">
+            客服电话：{{ memberCenterPageData.servicePhone }}
+          </p>
         </section>
       </div>
     </div>

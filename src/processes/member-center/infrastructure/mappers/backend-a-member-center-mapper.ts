@@ -74,28 +74,10 @@ export function mapBackendAMemberSettingsPageData(authResult: AuthResult | null)
     : '未绑定'
   const settings: MemberSettingsPageData['settings'] = [
     {
-      key: 'login-password',
-      label: '登录密码',
-      route: '/member/password',
-      value: security.canResetPassword ? '可修改' : '暂不支持修改',
-    },
-    {
       key: 'profile-name',
       label: '用户昵称',
       route: '/member/profile-name',
       value: authResult?.userInfo.nickname ?? 'Backend A 用户',
-    },
-    {
-      key: 'mobile',
-      label: '手机号码',
-      route: '/member/mobile',
-      value: mobile,
-    },
-    {
-      key: 'payment-password',
-      label: '支付密码',
-      route: '/member/pay-password',
-      value: security.hasPaymentPassword ? '已设置' : '未设置',
     },
     {
       key: 'about',
@@ -178,14 +160,14 @@ export function mapBackendAMemberCenterPageData(
     servicePhone:
       platformSettings?.customer_service_phone?.trim()
       || platformSettings?.business_phone?.trim()
-      || '400-900-2026',
+      || null,
     shortcuts: [
       { key: 'cards', label: '我的卡券', route: '/member/assets/cards' },
       { key: 'payment-code', label: '付款码', route: '/member/assets/payment-code' },
       { key: 'balance', label: '账户余额', route: '/member/assets/balance' },
       { key: 'settings', label: '用户设置', route: '/member/settings' },
     ],
-    tipText: `当前页面数据经 Backend A 适配层统一转换。当前账户余额 ${balanceAmount.toFixed(2)}。${platformSettings?.company_name ? ` 平台：${platformSettings.company_name}。` : ''}`,
+    tipText: '',
   }
 }
 

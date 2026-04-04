@@ -149,9 +149,9 @@ export function mapMockMemberCenterPageData(
       isLoggedIn: authResult !== null,
       username: displayName,
     },
-    servicePhone: mockAccountData.memberCenterPageData.servicePhone ?? '',
+    servicePhone: mockAccountData.memberCenterPageData.servicePhone ?? null,
     shortcuts: mockAccountData.memberCenterPageData.shortcuts.map((shortcut) => ({ ...shortcut })),
-    tipText: `文惠卡充值、余额消费与订单能力均可先走 mock 流程联调。当前账户余额 ${balanceAmount.toFixed(2)}。`,
+    tipText: '',
   }
 }
 

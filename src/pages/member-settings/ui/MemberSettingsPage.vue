@@ -23,13 +23,23 @@ const pageDescription = computed(() => {
     return '当前没有可配置项。'
   }
 
+  const visibleSettingKeys = new Set(memberSettingsPageData.value.settings.map((item) => item.key))
   const { canResetPassword, hasBoundMobile, hasPaymentPassword } = memberSettingsPageData.value.security
+  const summaryParts: string[] = []
 
-  return [
-    hasBoundMobile ? '已绑定手机号' : '未绑定手机号',
-    hasPaymentPassword ? '已设置支付密码' : '未设置支付密码',
-    canResetPassword ? '支持修改登录密码' : '暂不支持修改登录密码',
-  ].join('，')
+  if (visibleSettingKeys.has('mobile')) {
+    summaryParts.push(hasBoundMobile ? '已绑定手机号' : '未绑定手机号')
+  }
+
+  if (visibleSettingKeys.has('payment-password')) {
+    summaryParts.push(hasPaymentPassword ? '已设置支付密码' : '未设置支付密码')
+  }
+
+  if (visibleSettingKeys.has('login-password')) {
+    summaryParts.push(canResetPassword ? '支持修改登录密码' : '暂不支持修改登录密码')
+  }
+
+  return summaryParts.join('，') || '当前仅提供已接入的账户设置能力。'
 })
 
 function resolveSettingIcon(settingKey: string) {
