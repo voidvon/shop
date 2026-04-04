@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import {
+  memberCardNumberLengthRange,
+  memberCardSecretLengthRange,
+  normalizeMemberCardNumber,
+  normalizeMemberCardSecret,
+} from '@/processes/member-center/domain/member-card-bind-rules'
+
 const props = defineProps<{
   cardNumber: string
   cardSecret: string
@@ -16,12 +23,12 @@ const emit = defineEmits<{
 
 const cardNumberModel = computed({
   get: () => props.cardNumber,
-  set: (value: string) => emit('update:cardNumber', value.replace(/\D/g, '').slice(0, 16)),
+  set: (value: string) => emit('update:cardNumber', normalizeMemberCardNumber(value)),
 })
 
 const cardSecretModel = computed({
   get: () => props.cardSecret,
-  set: (value: string) => emit('update:cardSecret', value.trim().slice(0, 32)),
+  set: (value: string) => emit('update:cardSecret', normalizeMemberCardSecret(value)),
 })
 </script>
 
@@ -32,9 +39,9 @@ const cardSecretModel = computed({
       <input
         v-model="cardNumberModel"
         type="text"
-        inputmode="numeric"
-        maxlength="16"
-        placeholder="扫码后自动回填16位卡券编号"
+        autocapitalize="characters"
+        :maxlength="memberCardNumberLengthRange.max"
+        placeholder="请输入12-14位卡券编号，如 DG2026000001"
       >
     </label>
 
@@ -43,8 +50,8 @@ const cardSecretModel = computed({
       <input
         v-model="cardSecretModel"
         type="text"
-        maxlength="32"
-        placeholder="请输入卡券卡密"
+        :maxlength="memberCardSecretLengthRange.max"
+        placeholder="请输入6-8位卡券卡密，如 pkoz87"
       >
     </label>
 

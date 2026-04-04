@@ -3,12 +3,14 @@ import { computed, ref, toRef, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
+import { createCheckoutLine } from '@/entities/order'
 import { useCartStore } from '@/features/add-to-cart'
 import { MemberFavoriteButton } from '@/features/toggle-member-favorite'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import TopBarMoreMenuButton from '@/shared/ui/TopBarMoreMenuButton.vue'
+import { writeInstantCheckoutDraft } from '@/processes/checkout-flow/model/instant-checkout-draft'
 
 import { useProductDetailPageModel } from '../model/useProductDetailPageModel'
 import detailHeroImage from '../../../../design-ui/images/generated-1773915971397.png'
@@ -20,6 +22,7 @@ const props = defineProps<{
 const router = useRouter()
 const cartStore = useCartStore()
 const isCartEnabled = useModuleAvailability('cart')
+const isCheckoutEnabled = useModuleAvailability('checkout')
 const { detailPage, errorMessage, isLoading, isNotFound, loadProductDetail, product } = useProductDetailPageModel(
   toRef(props, 'productId'),
 )
@@ -190,42 +193,65 @@ function changePurchaseQuantity(delta: number) {
 }
 
 async function submitSpecAction(action: 'buy' | 'cart') {
-  const actionText = action === 'buy' ? '立即购买' : '加入购物车'
+  if (!product.value) {
+    showFailToast('商品信息加载中...')
+    return
+  }
 
-  if (action === 'cart') {
+  if (isCurrentSelectionSoldOut.value) {
+    showFailToast('当前规格暂时无货')
+    return
+  }
+
+  try {
+    if (action === 'buy') {
+      if (!isCheckoutEnabled.value) {
+        showFailToast('立即购买暂未启用')
+        return
+      }
+
+      writeInstantCheckoutDraft({
+        lines: [
+          createCheckoutLine({
+            lineId: currentSku.value?.skuId ?? product.value.id,
+            productId: product.value.id,
+            productImageUrl: product.value.coverImageUrl,
+            productName: product.value.name,
+            quantity: purchaseQuantity.value,
+            skuId: currentSku.value?.skuId ?? null,
+            specText: currentSku.value?.specText ?? null,
+            unitPrice: currentUnitPrice.value,
+          }),
+        ],
+        source: 'instant',
+      })
+      closeSpecPopup()
+      await router.push({ name: 'checkout' })
+      return
+    }
+
     if (!isCartEnabled.value) {
       showFailToast('购物车功能暂未启用')
       return
     }
 
-    if (!product.value) {
-      showFailToast('商品信息加载中...')
-      return
-    }
+    const snapshot = await cartStore.addProduct(product.value, {
+      quantity: purchaseQuantity.value,
+      skuId: currentSku.value?.skuId ?? null,
+      specText: currentSku.value?.specText ?? null,
+      unitPrice: currentUnitPrice.value,
+    })
 
-    if (isCurrentSelectionSoldOut.value) {
-      showFailToast('当前规格暂时无货')
-      return
-    }
-
-    try {
-      const snapshot = await cartStore.addProduct(product.value, {
-        quantity: purchaseQuantity.value,
-        skuId: currentSku.value?.skuId ?? null,
-        specText: currentSku.value?.specText ?? null,
-        unitPrice: currentUnitPrice.value,
-      })
+    if (action === 'cart') {
       showSuccessToast(`已加入购物车，共 ${snapshot.itemCount} 件`)
       closeSpecPopup()
       return
-    } catch {
-      showFailToast(cartStore.errorMessage ?? '加入购物车失败')
-      return
     }
+  } catch {
+    showFailToast(action === 'buy'
+      ? (cartStore.errorMessage ?? '立即购买跳转结算失败')
+      : (cartStore.errorMessage ?? '加入购物车失败'))
   }
-
-  showSuccessToast(`${actionText}：${selectedText.value} x${purchaseQuantity.value}`)
-  closeSpecPopup()
 }
 
 function scrollToTab(tabKey: (typeof tabs)[number]['key']) {

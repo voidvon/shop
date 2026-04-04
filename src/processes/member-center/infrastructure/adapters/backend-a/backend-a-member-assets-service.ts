@@ -8,6 +8,12 @@ import type {
   MemberAssetsSnapshot,
   SpendMemberBalanceCommand,
 } from '../../../domain/member-assets-service'
+import {
+  normalizeMemberCardNumber,
+  normalizeMemberCardSecret,
+  validateMemberCardNumber,
+  validateMemberCardSecret,
+} from '../../../domain/member-card-bind-rules'
 import { createBrowserMemberAssetsRepository } from '../../create-browser-member-assets-repository'
 import {
   backendAMemberAssetsNamespace,
@@ -47,10 +53,6 @@ interface BackendABalanceLogDto {
 function parseAmount(value: number | string | null | undefined) {
   const parsedValue = typeof value === 'number' ? value : Number.parseFloat(value ?? '')
   return Number.isFinite(parsedValue) ? parsedValue : 0
-}
-
-function normalizeDigits(value: string) {
-  return value.replace(/\D/g, '').slice(0, 16)
 }
 
 function createBindRequestNo() {
@@ -199,15 +201,17 @@ export function createBackendAMemberAssetsService(memberAuthSession: MemberAuthS
 
   return {
     async bindMemberCard(command): Promise<BindMemberCardResult> {
-      const cardNumber = normalizeDigits(command.cardNumber)
-      const cardSecret = command.cardSecret.trim()
+      const cardNumber = normalizeMemberCardNumber(command.cardNumber)
+      const cardSecret = normalizeMemberCardSecret(command.cardSecret)
+      const cardNumberError = validateMemberCardNumber(cardNumber)
+      const cardSecretError = validateMemberCardSecret(cardSecret)
 
-      if (cardNumber.length !== 16) {
-        throw new Error('请输入16位卡券编号')
+      if (cardNumberError) {
+        throw new Error(cardNumberError)
       }
 
-      if (!cardSecret) {
-        throw new Error('请输入卡券卡密')
+      if (cardSecretError) {
+        throw new Error(cardSecretError)
       }
 
       const previousBalance = await readCurrentBalanceAmount()

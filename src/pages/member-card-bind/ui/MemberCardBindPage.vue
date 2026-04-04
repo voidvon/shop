@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { MemberCardBindPanel, useMemberCardBinding } from '@/features/member-card-binding'
+import { memberCardNumberLengthRange } from '@/processes/member-center/domain/member-card-bind-rules'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useMemberCardBindPageModel } from '../model/useMemberCardBindPageModel'
@@ -16,7 +17,7 @@ const cardSecret = ref('')
 const isSubmitting = ref(false)
 
 function buildMockCardNumber() {
-  return `${Date.now()}`.slice(-16).padStart(16, '8')
+  return `DG${`${Date.now()}`.slice(-10)}`.slice(0, memberCardNumberLengthRange.max)
 }
 
 function goBack() {
@@ -70,7 +71,7 @@ onMounted(() => {
 
     <section class="bind-intro">
       <strong>扫码读取卡券编号并提交后端充值</strong>
-      <p>当前页面用于单独演示绑卡充值链路，充值成功后会同步到账户余额和卡券兑换记录。</p>
+      <p>当前页面用于单独演示绑卡充值链路。卡号支持 12-14 位字母数字组合，卡密支持 6-8 位。</p>
     </section>
 
     <MemberCardBindPanel

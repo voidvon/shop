@@ -2,6 +2,10 @@ import type {
   BindMemberCardCommand,
   SpendMemberBalanceCommand,
 } from '../../../domain/member-assets-service'
+import {
+  normalizeMemberCardNumber,
+  normalizeMemberCardSecret,
+} from '../../../domain/member-card-bind-rules'
 import type { AccountBalanceLog } from '@/shared/types/modules'
 import type { MemberAssetsRepository } from '../../member-assets-repository'
 
@@ -55,32 +59,38 @@ export interface BackendAMemberAssetsGateway {
   spendBalance(dto: BackendASpendBalanceRequestDto): Promise<BackendASpendBalanceResponseDto>
 }
 
-function normalizeDigits(value: string) {
-  return value.replace(/\D/g, '').slice(0, 16)
+function resolveCardNumberSeed(cardNumber: string) {
+  const digits = cardNumber.replace(/\D/g, '')
+
+  if (digits) {
+    return Number.parseInt(digits.slice(-2), 10) || 0
+  }
+
+  return Array.from(cardNumber).reduce((sum, char) => sum + char.charCodeAt(0), 0) % 100
 }
 
 function resolveRechargeAmount(cardNumber: string) {
-  const normalized = normalizeDigits(cardNumber)
-  const suffix = Number.parseInt(normalized.slice(-2) || '0', 10)
+  const normalized = normalizeMemberCardNumber(cardNumber)
+  const suffix = resolveCardNumberSeed(normalized)
   return 80 + suffix
 }
 
 function resolveRedeemCode(cardNumber: string) {
-  const normalized = normalizeDigits(cardNumber)
+  const normalized = normalizeMemberCardNumber(cardNumber)
   const suffix = normalized.slice(-8).padStart(8, '0')
   return `BA-${suffix}`
 }
 
 function resolveCardTitle(cardNumber: string) {
-  const normalized = normalizeDigits(cardNumber)
+  const normalized = normalizeMemberCardNumber(cardNumber)
   const suffix = normalized.slice(-4).padStart(4, '0')
   return `Backend A 储值卡 ${suffix}`
 }
 
 function mapBindMemberCardCommand(command: BindMemberCardCommand): BackendABindMemberCardRequestDto {
   return {
-    cardNo: normalizeDigits(command.cardNumber),
-    cardSecret: command.cardSecret.trim(),
+    cardNo: normalizeMemberCardNumber(command.cardNumber),
+    cardSecret: normalizeMemberCardSecret(command.cardSecret),
   }
 }
 

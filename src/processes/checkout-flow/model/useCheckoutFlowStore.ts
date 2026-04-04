@@ -9,6 +9,8 @@ import { useCheckoutFlowPort } from '@/processes/checkout-flow'
 import { useTradeStore } from '@/processes/trade'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import {
+  createBrowserOrderRepository,
+  createCheckoutPreview,
   type CheckoutPreview,
   type OrderConfirmation,
 } from '@/entities/order'
@@ -18,6 +20,11 @@ import {
   useMemberAssetsService,
   type SpendMemberBalanceCommand,
 } from '@/processes/member-center'
+import {
+  clearInstantCheckoutDraft,
+  readInstantCheckoutDraft,
+  simulatedInstantOrderNamespace,
+} from './instant-checkout-draft'
 
 export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const checkoutFlowPort = useCheckoutFlowPort()
@@ -26,6 +33,12 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const memberAuthSession = useMemberAuthSession()
   const tradeStore = useTradeStore()
   const isCheckoutEnabled = useModuleAvailability('checkout')
+  const simulatedInstantOrderRepository = createBrowserOrderRepository({
+    defaultStoreName: '立即购买',
+    getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+    getSeedRecords: () => [],
+    namespace: simulatedInstantOrderNamespace,
+  })
 
   const confirmation = ref<OrderConfirmation | null>(null)
   const errorMessage = ref<string | null>(null)
@@ -76,7 +89,14 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     errorMessage.value = null
 
     try {
-      preview.value = await checkoutFlowPort.getPreview()
+      const instantCheckoutDraft = readInstantCheckoutDraft()
+
+      if (instantCheckoutDraft) {
+        preview.value = createCheckoutPreview(instantCheckoutDraft)
+      } else {
+        preview.value = await checkoutFlowPort.getPreview()
+      }
+
       const assetsSnapshot = await getMemberAssetsSnapshot(memberAssetsService)
       availableBalance.value = assetsSnapshot.balanceAmount
       await syncSelectedAddress()
@@ -106,6 +126,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     errorMessage.value = null
 
     try {
+      const instantCheckoutDraft = readInstantCheckoutDraft()
       const payableAmount = preview.value?.payableAmount ?? 0
 
       if (payableAmount > availableBalance.value) {
@@ -113,10 +134,23 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
         throw new Error(errorMessage.value)
       }
 
-      const result = await checkoutFlowPort.submit({
-        addressId: selectedAddress.value.id,
-        remark: remark?.trim() ? remark.trim() : null,
-      })
+      const result = instantCheckoutDraft
+        ? {
+            confirmation: await simulatedInstantOrderRepository.submit({
+              ...instantCheckoutDraft,
+              addressId: selectedAddress.value.id,
+              remark: remark?.trim() ? remark.trim() : null,
+            }),
+            preview: createCheckoutPreview({
+              lines: [],
+              source: 'instant',
+            }),
+          }
+        : await checkoutFlowPort.submit({
+            addressId: selectedAddress.value.id,
+            remark: remark?.trim() ? remark.trim() : null,
+          })
+
       const spendCommand: SpendMemberBalanceCommand = {
         amount: result.confirmation.payableAmount,
         description: `商城订单 ${result.confirmation.orderId} 余额支付`,
@@ -126,6 +160,11 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
       submissionMessage.value = `订单 ${result.confirmation.orderId} 已提交，已使用账户余额支付 ${result.confirmation.payableAmount}`
       preview.value = result.preview
       await tradeStore.recordSubmittedOrder(result.confirmation, result.preview)
+
+      if (instantCheckoutDraft) {
+        clearInstantCheckoutDraft()
+      }
+
       return result.confirmation
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '提交订单失败'
@@ -137,6 +176,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
 
   memberAuthSession.subscribe(() => {
     selectedAddressId.value = null
+    clearInstantCheckoutDraft()
   })
 
   return {

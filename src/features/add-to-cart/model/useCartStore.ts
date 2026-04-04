@@ -154,6 +154,17 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
+  async function selectOnlyLine(lineId: string) {
+    const existingLineIds = snapshot.value.lines.map((line) => line.lineId)
+
+    if (!existingLineIds.includes(lineId)) {
+      throw new Error('待结算商品不存在')
+    }
+
+    await setLinesSelected(existingLineIds, false)
+    return setLinesSelected([lineId], true)
+  }
+
   const stopAuthSubscription = memberAuthSession.subscribe((nextSnapshot) => {
     const nextScopeKey = nextSnapshot.authResult?.userInfo.userId ?? 'guest'
 
@@ -189,6 +200,7 @@ export const useCartStore = defineStore('cart', () => {
     selectedLineIds,
     selectedSnapshot,
     selectedSubtotal,
+    selectOnlyLine,
     setProductQuantity,
     setLinesSelected,
     snapshot,

@@ -1,4 +1,5 @@
 import type { MemberAuthSession } from '@/entities/member-auth'
+import { readBrowserOrderRecords } from '@/entities/order/infrastructure/browser-order-storage'
 import {
   BackendAHttpError,
   createBackendAHttpClient,
@@ -14,6 +15,9 @@ import type {
   TradeOrderAction,
   TradeOrderStatus,
 } from '@/shared/types/modules'
+import { createBrowserOrderDetailPageDataReader } from '../../create-browser-order-detail-page-data-reader'
+import { createBrowserOrderListPageDataReader } from '../../create-browser-order-list-page-data-reader'
+import { simulatedInstantOrderNamespace } from '@/processes/checkout-flow/model/instant-checkout-draft'
 
 import type { OrderListEntry, OrderListPageData } from '../../../domain/trade-page-data'
 
@@ -156,23 +160,51 @@ function mapOrderDetail(dto: BackendAOrderDto): OrderDetailPageData {
 
 export function createBackendAOrderListPageDataReader(memberAuthSession: MemberAuthSession) {
   const httpClient = createBackendATradeHttpClient(memberAuthSession)
+  const localOrderListReader = createBrowserOrderListPageDataReader({
+    readOrders: () => readBrowserOrderRecords(
+      simulatedInstantOrderNamespace,
+      memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+      () => [],
+    ),
+  })
 
   return async function getOrderListPageData(): Promise<OrderListPageData> {
     const response = await httpClient.get<BackendAOrderCollectionDto>('/api/v1/orders', {
       per_page: 100,
     })
+    const localOrders = localOrderListReader().orders
+    const localOrderIds = new Set(localOrders.map((order) => order.orderId))
 
     return {
       keyword: '',
-      orders: response.data.map(mapOrderListEntry),
+      orders: [
+        ...localOrders,
+        ...response.data
+          .map(mapOrderListEntry)
+          .filter((order) => !localOrderIds.has(order.orderId)),
+      ],
     }
   }
 }
 
 export function createBackendAOrderDetailPageDataReader(memberAuthSession: MemberAuthSession) {
   const httpClient = createBackendATradeHttpClient(memberAuthSession)
+  const localOrderDetailReader = createBrowserOrderDetailPageDataReader({
+    defaultStoreId: 'backend-a-store',
+    readOrders: () => readBrowserOrderRecords(
+      simulatedInstantOrderNamespace,
+      memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
+      () => [],
+    ),
+  })
 
   return async function getOrderDetailPageData(orderId: string): Promise<OrderDetailPageData | null> {
+    const localDetail = await localOrderDetailReader(orderId)
+
+    if (localDetail) {
+      return localDetail
+    }
+
     let order: BackendAOrderDto
 
     try {

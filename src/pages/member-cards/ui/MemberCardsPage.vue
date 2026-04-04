@@ -26,7 +26,11 @@ function formatAmount(amount: number) {
 }
 
 function maskCardNumber(cardNumberValue: string) {
-  return cardNumberValue.replace(/(\d{4})\d+(\d{4})/, '$1 **** **** $2')
+  if (cardNumberValue.length <= 8) {
+    return cardNumberValue
+  }
+
+  return `${cardNumberValue.slice(0, 4)} **** ${cardNumberValue.slice(-4)}`
 }
 
 function resolveSimulatedCardNumber() {
