@@ -2,13 +2,21 @@ import {
   createRouter,
   createWebHistory,
   type RouteLocationNormalized,
+  type RouteLocationRaw,
   type RouterScrollBehavior,
 } from 'vue-router'
 import NProgress from 'nprogress'
-import { showToast } from 'vant'
+import { showLoadingToast, showToast } from 'vant'
 
 import { getBrowserMemberAuthSessionSnapshot } from '@/entities/member-auth'
-import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
+import { submitMemberWechatLogin } from '@/features/member-auth'
+import { getBackendRuntime } from '@/app/providers/backend/backend-runtime-provider'
+import {
+  consumePendingWechatLoginRedirectPath,
+  consumePendingWechatLoginState,
+  isWechatBrowser,
+  startWechatOauthLogin,
+} from '@/shared/lib/wechat-browser'
 
 import { routes } from './routes'
 
@@ -60,6 +68,79 @@ const scrollBehavior: RouterScrollBehavior = (to, _, savedPosition) => {
   return { top: 0 }
 }
 
+function normalizeRouteRedirect(value: unknown) {
+  return typeof value === 'string' && value.startsWith('/') ? value : null
+}
+
+function buildRouteWithoutWechatAuthQuery(to: RouteLocationNormalized): RouteLocationRaw {
+  const nextQuery = { ...to.query }
+
+  delete nextQuery.code
+  delete nextQuery.state
+
+  return {
+    hash: to.hash,
+    path: to.path,
+    query: Object.keys(nextQuery).length > 0 ? nextQuery : undefined,
+    replace: true,
+  }
+}
+
+async function tryHandleWechatOauthCallback(to: RouteLocationNormalized) {
+  const code = typeof to.query.code === 'string' ? to.query.code.trim() : ''
+
+  if (!code) {
+    return null
+  }
+
+  const expectedState = consumePendingWechatLoginState()
+  const state = typeof to.query.state === 'string' ? to.query.state.trim() : ''
+
+  if (expectedState && state && expectedState !== state) {
+    showToast('微信登录状态校验失败，请重试')
+    return buildRouteWithoutWechatAuthQuery(to)
+  }
+
+  const runtime = getBackendRuntime()
+
+  if (!runtime) {
+    showToast('当前运行时未初始化')
+    return buildRouteWithoutWechatAuthQuery(to)
+  }
+
+  const loadingToast = showLoadingToast({
+    duration: 0,
+    forbidClick: true,
+    message: '正在登录...',
+  })
+
+  try {
+    const result = await submitMemberWechatLogin(code, {
+      repository: runtime.auth.repository,
+      session: runtime.auth.session,
+    })
+    showToast(result.successMessage)
+
+    const pendingRedirectPath = consumePendingWechatLoginRedirectPath()
+    return pendingRedirectPath && pendingRedirectPath !== '/member/login'
+      ? pendingRedirectPath
+      : buildRouteWithoutWechatAuthQuery(to)
+  } catch (error) {
+    showToast(error instanceof Error ? error.message : '微信登录失败')
+
+    const pendingRedirectPath = consumePendingWechatLoginRedirectPath()
+    return {
+      name: 'member-login',
+      query: {
+        ...(pendingRedirectPath ? { redirect: pendingRedirectPath } : {}),
+      },
+      replace: true,
+    }
+  } finally {
+    loadingToast.close()
+  }
+}
+
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
@@ -72,6 +153,12 @@ router.beforeEach(async (to, from) => {
   }
 
   saveRouteScrollPosition(from)
+
+  const wechatCallbackRedirect = await tryHandleWechatOauthCallback(to)
+
+  if (wechatCallbackRedirect) {
+    return wechatCallbackRedirect
+  }
 
   const requiresAuth = to.matched.some((record) => record.meta?.requiresAuth === true)
 
@@ -105,7 +192,7 @@ router.beforeEach(async (to, from) => {
   return {
     name: 'member-login',
     query: {
-      redirect: to.fullPath,
+      redirect: normalizeRouteRedirect(to.fullPath) ?? '/member',
     },
   }
 })

@@ -97,14 +97,7 @@ function buildWechatOauthState() {
 }
 
 function buildWechatOauthCallbackUrl(redirectPath?: string) {
-  const callbackUrl = new URL('/member/login', window.location.origin)
-  const normalizedRedirectPath = normalizeRedirectPath(redirectPath)
-
-  if (normalizedRedirectPath) {
-    callbackUrl.searchParams.set('redirect', normalizedRedirectPath)
-  }
-
-  return callbackUrl.toString()
+  return new URL(normalizeRedirectPath(redirectPath) ?? '/member', window.location.origin).toString()
 }
 
 function buildWechatOauthUrl(redirectPath?: string) {
