@@ -117,6 +117,7 @@ async function handleNavigation(item: (typeof visibleItems.value)[number]) {
   position: fixed;
   left: 50%;
   bottom: calc(var(--app-bottom-nav-gap) + env(safe-area-inset-bottom, 0px));
+  z-index: 20;
   transform: translateX(-50%);
   width: min(360px, calc(100vw - 40px));
   padding: 4px;
