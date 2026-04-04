@@ -115,11 +115,10 @@ async function tryHandleWechatOauthCallback(to: RouteLocationNormalized) {
   })
 
   try {
-    const result = await submitMemberWechatLogin(code, {
+    await submitMemberWechatLogin(code, {
       repository: runtime.auth.repository,
       session: runtime.auth.session,
     })
-    showToast(result.successMessage)
 
     const pendingRedirectPath = consumePendingWechatLoginRedirectPath()
     return pendingRedirectPath && pendingRedirectPath !== '/member/login'
