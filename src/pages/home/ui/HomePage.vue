@@ -342,7 +342,7 @@ watch(promoVideoUrl, () => {
               :src="storeType.imageUrl || '/images/image-placeholder.svg'"
               :alt="storeType.label"
             >
-            <div class="partner-store-type-overlay">
+            <div v-if="!storeType.imageUrl" class="partner-store-type-overlay">
               <strong>{{ storeType.label }}</strong>
             </div>
           </RouterLink>
@@ -553,12 +553,15 @@ watch(promoVideoUrl, () => {
   overflow: hidden;
   aspect-ratio: 5 / 2;
   border-radius: 10px;
-  background: #e8e0d2;
-  box-shadow: 0 10px 24px rgba(111, 75, 31, 0.12);
   text-decoration: none;
 }
 
-.partner-store-type-card::after {
+.partner-store-type-card-placeholder {
+  background: #e8e0d2;
+  box-shadow: 0 10px 24px rgba(111, 75, 31, 0.12);
+}
+
+.partner-store-type-card-placeholder::after {
   content: '';
   position: absolute;
   inset: 0;
