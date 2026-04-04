@@ -306,23 +306,11 @@ function mapBackendAStorefrontProductCard(product: BackendAStorefrontProductDto)
 
 function mapCategoryNode(category: BackendAStorefrontCategoryDto): CategoryPageCategory {
   return {
-    children: [],
+    children: ensureArray(category.children).map(mapCategoryNode),
     id: String(category.id),
     imageUrl: resolveBackendAMediaUrl(category.logo),
     label: category.name,
   }
-}
-
-function collectLeafCategories(categories: BackendAStorefrontCategoryDto[]): CategoryPageCategory[] {
-  return categories.flatMap((category) => {
-    const children = ensureArray(category.children)
-
-    if (children.length === 0) {
-      return [mapCategoryNode(category)]
-    }
-
-    return collectLeafCategories(children)
-  })
 }
 
 export function mapBackendAProductCard(product: ProductSummary): PageProductCard {
@@ -339,16 +327,7 @@ export function mapBackendAProductCard(product: ProductSummary): PageProductCard
 export function mapBackendACategoryTree(
   categories: BackendAStorefrontCategoryDto[],
 ): CategoryPageCategory[] {
-  return categories.map((category) => {
-    const secondaryCategories = collectLeafCategories(ensureArray(category.children))
-
-    return {
-      children: secondaryCategories.length > 0 ? secondaryCategories : [mapCategoryNode(category)],
-      id: String(category.id),
-      imageUrl: resolveBackendAMediaUrl(category.logo),
-      label: category.name,
-    }
-  })
+  return categories.map(mapCategoryNode)
 }
 
 export function mapBackendACategoryProducts(
