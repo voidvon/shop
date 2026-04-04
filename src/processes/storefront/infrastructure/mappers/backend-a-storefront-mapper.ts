@@ -545,7 +545,7 @@ export function mapBackendAPartnerMerchants(
 export function mapBackendAMerchantCoupons(
   items: BackendAMerchantCouponDto[],
 ): MerchantCoupon[] {
-  return items
+  return ensureArray(items)
     .map((item) => {
       const sources = [isRecord(item) ? item : null]
       const id = pickStringLikeFromSources(sources, ['id'])

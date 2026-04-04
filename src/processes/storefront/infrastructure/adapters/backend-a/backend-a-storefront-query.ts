@@ -110,9 +110,26 @@ export function createBackendAStorefrontQuery(memberAuthSession: MemberAuthSessi
   async function fetchBackendAMerchantCouponsDto(merchantId: string, useAuth: boolean) {
     const httpClient = useAuth ? authedHttpClient : publicHttpClient
 
-    return httpClient.get<BackendAMerchantCouponsResponseDto>('/api/v1/merchant-coupons', {
+    return httpClient.get<BackendAMerchantCouponsResponseDto | BackendAMerchantCouponDto[]>(
+      '/api/v1/merchant-coupons',
+      {
       merchant_id: merchantId,
-    })
+      },
+    )
+  }
+
+  function normalizeMerchantCouponItems(
+    response: BackendAMerchantCouponsResponseDto | BackendAMerchantCouponDto[],
+  ) {
+    if (Array.isArray(response)) {
+      return response
+    }
+
+    if (Array.isArray(response.data)) {
+      return response.data
+    }
+
+    return []
   }
 
   return {
@@ -176,11 +193,11 @@ export function createBackendAStorefrontQuery(memberAuthSession: MemberAuthSessi
 
       try {
         const response = await fetchBackendAMerchantCouponsDto(normalizedMerchantId, true)
-        return mapBackendAMerchantCoupons(response.data)
+        return mapBackendAMerchantCoupons(normalizeMerchantCouponItems(response))
       } catch (error) {
         if (error instanceof BackendAHttpError && error.status === 401) {
           const response = await fetchBackendAMerchantCouponsDto(normalizedMerchantId, false)
-          return mapBackendAMerchantCoupons(response.data)
+          return mapBackendAMerchantCoupons(normalizeMerchantCouponItems(response))
         }
 
         if (error instanceof BackendAHttpError && error.status === 404) {

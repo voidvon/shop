@@ -88,7 +88,6 @@ export function useStorePageModel(
     await Promise.all([
       storeProfile.loadStoreProfile(),
       storeProductBrowser.loadStoreBrowser(),
-      loadMerchantCoupons(),
     ])
     storeFavorite.syncStoreFavorite()
   }
@@ -97,9 +96,10 @@ export function useStorePageModel(
     () => toValue(storeId),
     () => {
       keyword.value = ''
-      void loadMerchantCoupons()
+      couponErrorMessage.value = null
+      isCouponLoading.value = false
+      merchantCoupons.value = []
     },
-    { immediate: true },
   )
 
   return {
@@ -119,6 +119,7 @@ export function useStorePageModel(
     isProductsFinished: storeProductBrowser.isProductsFinished,
     isStoreFavorited: storeFavorite.isStoreFavorited,
     keyword,
+    loadMerchantCoupons,
     loadMoreProducts: storeProductBrowser.loadMoreProducts,
     loadStorePage,
     maxPriceInput: storeProductBrowser.maxPriceInput,

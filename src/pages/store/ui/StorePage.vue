@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import {
   showFailToast,
+  showLoadingToast,
   showSuccessToast,
   showToast,
   type DropdownItemOption,
@@ -28,7 +29,7 @@ const topActions: PopoverAction[] = [
 ]
 const footerActions = [
   { key: 'products', icon: 'apps-o', label: '全部商品' },
-  { key: 'coupon', icon: 'coupon-o', label: '奖励领券' },
+  { key: 'coupon', icon: 'coupon-o', label: '优惠券' },
   { key: 'service', icon: 'service-o', label: '联系客服' },
   { key: 'about', icon: 'info-o', label: '关于我们' },
 ] as const
@@ -55,6 +56,7 @@ const {
   isProductsFinished,
   isStoreFavorited,
   keyword,
+  loadMerchantCoupons,
   loadMoreProducts,
   loadStorePage,
   maxPriceInput,
@@ -191,7 +193,28 @@ function handleTopAction(action: PopoverAction) {
   void router.push('/')
 }
 
-function openCouponPopup() {
+async function openCouponPopup() {
+  if (isCouponLoading.value) {
+    return
+  }
+
+  const loadingToast = showLoadingToast({
+    duration: 0,
+    forbidClick: true,
+    message: '正在加载优惠券...',
+  })
+
+  try {
+    await loadMerchantCoupons()
+  } finally {
+    loadingToast.close()
+  }
+
+  if (couponErrorMessage.value) {
+    showFailToast(couponErrorMessage.value)
+    return
+  }
+
   couponPopupVisible.value = true
 }
 
@@ -389,7 +412,7 @@ function handleFooterAction(actionKey: (typeof footerActions)[number]['key']) {
     return
   }
 
-  openCouponPopup()
+  void openCouponPopup()
 }
 
 function handleSortChange(field: 'sales' | 'price', nextValue: string) {
