@@ -4,6 +4,7 @@ export type {
   HomePageData,
   HomePartnerStoreType,
   HomeQuickCategory,
+  MerchantCoupon,
   PartnerStoreMerchant,
   PartnerStoreRegion,
   PageProductCard,
@@ -20,7 +21,7 @@ export type {
   StoreProductsQuery,
   StorefrontQuery,
 } from './domain/storefront-query'
-export { backendAStorefrontQuery } from './infrastructure/adapters/backend-a/backend-a-storefront-query'
+export { createBackendAStorefrontQuery } from './infrastructure/adapters/backend-a/backend-a-storefront-query'
 export { mockStorefrontQuery } from './infrastructure/adapters/mock/mock-storefront-query'
 export {
   provideStorefrontQuery,

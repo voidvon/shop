@@ -13,6 +13,10 @@ import {
 } from '../../mappers/mock-storefront-mapper'
 
 export const mockStorefrontQuery: StorefrontQuery = {
+  async claimMerchantCoupon() {
+    return Promise.resolve()
+  },
+
   async getCategoryProducts(query) {
     return Promise.resolve(mapMockCategoryProducts(query))
   },
@@ -23,6 +27,10 @@ export const mockStorefrontQuery: StorefrontQuery = {
 
   async getHomePageData() {
     return Promise.resolve(mapMockHomePageData())
+  },
+
+  async getMerchantCoupons() {
+    return Promise.resolve([])
   },
 
   async getPartnerMerchants(query) {

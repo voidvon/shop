@@ -1,10 +1,19 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { showToast, type DropdownItemOption, type PopoverAction } from 'vant'
+import {
+  showFailToast,
+  showSuccessToast,
+  showToast,
+  type DropdownItemOption,
+  type PopoverAction,
+} from 'vant'
 import { useRoute, useRouter } from 'vue-router'
 
+import { useMemberAuthSession } from '@/entities/member-auth'
 import { ProductCompactCard } from '@/entities/product'
+import type { MerchantCoupon } from '@/processes/storefront'
 import { normalizeSearchKeyword } from '@/shared/lib/search-history'
+import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
@@ -12,6 +21,7 @@ import { useStorePageModel } from '../model/useStorePageModel'
 
 const route = useRoute()
 const router = useRouter()
+const memberAuthSession = useMemberAuthSession()
 const topActions: PopoverAction[] = [
   { text: '刷新店铺', value: 'refresh' },
   { text: '返回首页', value: 'home' },
@@ -32,9 +42,13 @@ const {
   activeTab,
   applyPriceFilter,
   categoryOptions,
+  claimMerchantCoupon,
+  claimingCouponId,
+  couponErrorMessage,
   errorMessage,
   hasActiveProductFilters,
   heroImageUrl,
+  isCouponLoading,
   isEmpty,
   isLoading,
   isLoadingMoreProducts,
@@ -44,6 +58,7 @@ const {
   loadMoreProducts,
   loadStorePage,
   maxPriceInput,
+  merchantCoupons,
   minPriceInput,
   selectedCategoryId,
   setSelectedCategory,
@@ -67,8 +82,10 @@ const {
 
 const primaryBenefit = computed(() => storeBenefits.value[0] ?? '支持售后无忧')
 const storeLogoDisplayUrl = computed(() => heroImageUrl.value ?? storeLogoUrl.value)
+const couponPopupVisible = ref(false)
 const filterDrawerVisible = ref(false)
 const loadMoreTriggerRef = ref<HTMLElement | null>(null)
+const hasMerchantCoupons = computed(() => merchantCoupons.value.length > 0)
 const isAllProductsTab = computed(() => activeTab.value === 'all-products')
 const comprehensiveSortOptions: DropdownItemOption[] = [
   { text: '综合排序', value: 'default' },
@@ -174,6 +191,168 @@ function handleTopAction(action: PopoverAction) {
   void router.push('/')
 }
 
+function openCouponPopup() {
+  couponPopupVisible.value = true
+}
+
+function closeCouponPopup() {
+  couponPopupVisible.value = false
+}
+
+function formatMoney(value: number) {
+  const fixed = value.toFixed(2)
+  return fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed.replace(/0$/, '')
+}
+
+function formatCouponHeadline(coupon: MerchantCoupon) {
+  if (coupon.type === 'discount' && coupon.discountRate !== null) {
+    return `${formatMoney(coupon.discountRate)} 折`
+  }
+
+  if (coupon.discountAmount !== null) {
+    return `减 ${formatMoney(coupon.discountAmount)} 元`
+  }
+
+  return coupon.name
+}
+
+function formatCouponCondition(coupon: MerchantCoupon) {
+  if (coupon.minimumAmount <= 0) {
+    return '无门槛可用'
+  }
+
+  return `满 ${formatMoney(coupon.minimumAmount)} 元可用`
+}
+
+function formatCouponScope(coupon: MerchantCoupon) {
+  if (coupon.scopeType === 'product') {
+    return '指定商品可用'
+  }
+
+  if (coupon.scopeType === 'category') {
+    return '指定分类可用'
+  }
+
+  return '全场可用'
+}
+
+function formatCouponDate(value: string | null) {
+  if (!value) {
+    return null
+  }
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function formatCouponWindow(coupon: MerchantCoupon) {
+  const start = formatCouponDate(coupon.startsAt)
+  const end = formatCouponDate(coupon.endsAt)
+
+  if (start && end) {
+    return `${start} 至 ${end}`
+  }
+
+  if (end) {
+    return `领取截止 ${end}`
+  }
+
+  if (start) {
+    return `${start} 起可领取`
+  }
+
+  return '长期有效'
+}
+
+function isCouponExpired(coupon: MerchantCoupon) {
+  if (!coupon.endsAt) {
+    return false
+  }
+
+  const endTimestamp = new Date(coupon.endsAt).getTime()
+  return Number.isFinite(endTimestamp) && endTimestamp < Date.now()
+}
+
+function isCouponClaimLimitReached(coupon: MerchantCoupon) {
+  return coupon.perUserLimit > 0 && coupon.userCouponsCount >= coupon.perUserLimit
+}
+
+function isCouponClaimDisabled(coupon: MerchantCoupon) {
+  return claimingCouponId.value === coupon.id
+    || isCouponExpired(coupon)
+    || isCouponClaimLimitReached(coupon)
+}
+
+function getCouponClaimButtonText(coupon: MerchantCoupon) {
+  if (claimingCouponId.value === coupon.id) {
+    return '领取中...'
+  }
+
+  if (isCouponExpired(coupon)) {
+    return '已结束'
+  }
+
+  if (isCouponClaimLimitReached(coupon)) {
+    return '已领取'
+  }
+
+  return '立即领取'
+}
+
+async function redirectToCouponLogin() {
+  if (isWechatBrowser()) {
+    const result = await startWechatOauthLogin(route.fullPath)
+
+    if (result.succeeded || result.redirected) {
+      return true
+    }
+
+    if (result.message) {
+      showToast(result.message)
+      return false
+    }
+  }
+
+  showToast('登录后可领取优惠券')
+
+  await router.push({
+    name: 'member-login',
+    query: {
+      redirect: route.fullPath,
+    },
+  })
+
+  return false
+}
+
+async function handleClaimCoupon(couponId: string) {
+  if (claimingCouponId.value) {
+    return
+  }
+
+  const userId = memberAuthSession.getSnapshot().authResult?.userInfo.userId
+
+  if (!userId) {
+    await redirectToCouponLogin()
+    return
+  }
+
+  try {
+    await claimMerchantCoupon(couponId)
+    showSuccessToast('优惠券已领取')
+  } catch (error) {
+    showFailToast(error instanceof Error ? error.message : '优惠券领取失败')
+  }
+}
+
 function handleFooterAction(actionKey: (typeof footerActions)[number]['key']) {
   if (actionKey === 'products') {
     selectTab('all-products')
@@ -210,7 +389,7 @@ function handleFooterAction(actionKey: (typeof footerActions)[number]['key']) {
     return
   }
 
-  showToast('领券功能暂未开放')
+  openCouponPopup()
 }
 
 function handleSortChange(field: 'sales' | 'price', nextValue: string) {
@@ -468,6 +647,82 @@ watch(
         {{ action.label }}
       </button>
     </footer>
+
+    <van-popup
+      v-model:show="couponPopupVisible"
+      class="coupon-popup"
+      position="bottom"
+      round
+      teleport="body"
+    >
+      <section class="coupon-sheet">
+        <header class="coupon-sheet-head">
+          <div>
+            <strong>商家优惠券</strong>
+            <p>实时读取当前商家可领取优惠券</p>
+          </div>
+
+          <button class="coupon-sheet-close" type="button" aria-label="关闭优惠券面板" @click="closeCouponPopup">
+            <van-icon name="cross" size="18" />
+          </button>
+        </header>
+
+        <div class="coupon-sheet-body">
+          <p v-if="couponErrorMessage" class="status-card status-card-inline">
+            {{ couponErrorMessage }}
+          </p>
+
+          <div v-else-if="isCouponLoading" class="coupon-list">
+            <article v-for="index in 3" :key="index" class="coupon-card coupon-card-skeleton">
+              <div class="coupon-card-main">
+                <div class="coupon-skeleton-line coupon-skeleton-line-title" />
+                <div class="coupon-skeleton-line coupon-skeleton-line-copy" />
+                <div class="coupon-skeleton-line coupon-skeleton-line-copy" />
+              </div>
+              <div class="coupon-skeleton-button" />
+            </article>
+          </div>
+
+          <EmptyState
+            v-else-if="!hasMerchantCoupons"
+            class="coupon-empty"
+            description="当前商家暂未发布可领取优惠券。"
+            description-width="220px"
+            icon="coupon-o"
+            title="暂无可领优惠券"
+          />
+
+          <div v-else class="coupon-list">
+            <article v-for="coupon in merchantCoupons" :key="coupon.id" class="coupon-card">
+              <div class="coupon-card-main">
+                <span class="coupon-card-type">
+                  {{ coupon.type === 'discount' ? '折扣券' : '满减券' }}
+                </span>
+                <strong>{{ formatCouponHeadline(coupon) }}</strong>
+                <p>{{ coupon.name }}</p>
+
+                <div class="coupon-card-meta">
+                  <span>{{ formatCouponCondition(coupon) }}</span>
+                  <span>{{ formatCouponScope(coupon) }}</span>
+                  <span>{{ formatCouponWindow(coupon) }}</span>
+                  <span>每人限领 {{ coupon.perUserLimit }} 张，已领 {{ coupon.userCouponsCount }} 张</span>
+                </div>
+              </div>
+
+              <button
+                class="coupon-claim-button"
+                :class="{ 'coupon-claim-button-disabled': isCouponClaimDisabled(coupon) }"
+                :disabled="isCouponClaimDisabled(coupon)"
+                type="button"
+                @click="handleClaimCoupon(coupon.id)"
+              >
+                {{ getCouponClaimButtonText(coupon) }}
+              </button>
+            </article>
+          </div>
+        </div>
+      </section>
+    </van-popup>
 
     <van-popup
       v-model:show="filterDrawerVisible"
@@ -1013,6 +1268,10 @@ watch(
   line-height: 1.6;
 }
 
+.status-card-inline {
+  padding-top: 0;
+}
+
 .store-empty {
   min-height: 240px;
   border-radius: 18px;
@@ -1083,6 +1342,165 @@ watch(
   border-top: 1px solid #eeeae5;
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(12px);
+}
+
+.coupon-popup {
+  overflow: hidden;
+}
+
+.coupon-sheet {
+  display: grid;
+  gap: 16px;
+  min-height: 260px;
+  max-height: min(72vh, 620px);
+  padding: 20px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  background:
+    radial-gradient(circle at top left, rgba(240, 138, 62, 0.12), transparent 42%),
+    linear-gradient(180deg, #fffaf3 0%, #fff 42%);
+}
+
+.coupon-sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.coupon-sheet-head strong {
+  display: block;
+  font-size: 18px;
+  color: #2f2924;
+}
+
+.coupon-sheet-head p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #8d7868;
+}
+
+.coupon-sheet-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #8d7868;
+}
+
+.coupon-sheet-body {
+  overflow-y: auto;
+}
+
+.coupon-list {
+  display: grid;
+  gap: 12px;
+}
+
+.coupon-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid rgba(240, 138, 62, 0.16);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 238, 0.98));
+  box-shadow: 0 10px 24px rgba(188, 119, 60, 0.08);
+}
+
+.coupon-card-main {
+  min-width: 0;
+}
+
+.coupon-card-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(240, 138, 62, 0.12);
+  font-size: 11px;
+  color: #ba5f15;
+}
+
+.coupon-card-main strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 24px;
+  line-height: 1.1;
+  color: #c25b0a;
+}
+
+.coupon-card-main p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #47362c;
+}
+
+.coupon-card-meta {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #8a6f5b;
+}
+
+.coupon-claim-button {
+  min-width: 92px;
+  height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f08a3e, #cf6111);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.coupon-claim-button-disabled {
+  background: #efe4db;
+  color: #9f8877;
+}
+
+.coupon-card-skeleton {
+  border-color: rgba(222, 214, 205, 0.7);
+  background: #fff;
+  box-shadow: none;
+}
+
+.coupon-skeleton-line,
+.coupon-skeleton-button {
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(233, 227, 220, 0.72), rgba(244, 240, 235, 0.92));
+}
+
+.coupon-skeleton-line {
+  height: 12px;
+}
+
+.coupon-skeleton-line-title {
+  width: 44%;
+  height: 22px;
+  margin-top: 10px;
+}
+
+.coupon-skeleton-line-copy {
+  width: 82%;
+  margin-top: 10px;
+}
+
+.coupon-skeleton-button {
+  width: 92px;
+  height: 36px;
+}
+
+.coupon-empty {
+  padding-top: 24px;
 }
 
 .store-action-item {

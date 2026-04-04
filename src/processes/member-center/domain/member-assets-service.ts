@@ -16,9 +16,17 @@ export interface BindMemberCardCommand {
   cardSecret: string
 }
 
+export interface LookupMemberCardResult {
+  balanceTypeName: string | null
+  canBind: boolean
+  cardNumber: string
+  currentAmount: number
+  faceValue: number
+  statusText: string
+}
+
 export interface BindMemberCardResult {
   balanceAmount: number
-  redemption: MemberCardRedemptionRecord
 }
 
 export interface SpendMemberBalanceCommand {
@@ -29,5 +37,6 @@ export interface SpendMemberBalanceCommand {
 export interface MemberAssetsService {
   bindMemberCard(command: BindMemberCardCommand): Promise<BindMemberCardResult>
   getSnapshot(): Promise<MemberAssetsSnapshot>
+  lookupMemberCard(command: BindMemberCardCommand): Promise<LookupMemberCardResult>
   spendBalance(command: SpendMemberBalanceCommand): Promise<number>
 }

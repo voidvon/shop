@@ -50,6 +50,22 @@ export interface PartnerStoreMerchant {
   storeTypeLabels: string[]
 }
 
+export interface MerchantCoupon {
+  discountAmount: number | null
+  discountRate: number | null
+  endsAt: string | null
+  id: string
+  merchantId: string
+  minimumAmount: number
+  name: string
+  perUserLimit: number
+  scopeType: string
+  startsAt: string | null
+  totalQuantity: number | null
+  type: string
+  userCouponsCount: number
+}
+
 export interface HomeBanner {
   description: string
   eyebrow: string

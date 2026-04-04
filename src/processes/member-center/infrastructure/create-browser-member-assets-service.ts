@@ -1,5 +1,6 @@
 import type {
   BindMemberCardCommand,
+  LookupMemberCardResult,
   MemberAssetsService,
 } from '../domain/member-assets-service'
 import {
@@ -42,6 +43,34 @@ export function createBrowserMemberAssetsService(
   repository: MemberAssetsRepository,
 ): MemberAssetsService {
   return {
+    async lookupMemberCard(command: BindMemberCardCommand): Promise<LookupMemberCardResult> {
+      const cardNumber = normalizeMemberCardNumber(command.cardNumber)
+      const cardSecret = normalizeMemberCardSecret(command.cardSecret)
+      const cardNumberError = validateMemberCardNumber(cardNumber)
+      const cardSecretError = validateMemberCardSecret(cardSecret)
+
+      if (cardNumberError) {
+        throw new Error(cardNumberError)
+      }
+
+      if (cardSecretError) {
+        throw new Error(cardSecretError)
+      }
+
+      const amount = resolveRechargeAmount(cardNumber)
+      const redemptionRecords = await repository.readRedemptionRecords()
+      const hasBoundRecord = redemptionRecords.some((record) => record.cardNumber === cardNumber)
+
+      return {
+        balanceTypeName: '文惠储值卡',
+        canBind: !hasBoundRecord,
+        cardNumber,
+        currentAmount: amount,
+        faceValue: amount,
+        statusText: hasBoundRecord ? '已绑定' : '未绑定',
+      }
+    },
+
     async bindMemberCard(command: BindMemberCardCommand) {
       const cardNumber = normalizeMemberCardNumber(command.cardNumber)
       const cardSecret = normalizeMemberCardSecret(command.cardSecret)
@@ -60,7 +89,7 @@ export function createBrowserMemberAssetsService(
       const cardTitle = resolveCardTitle(cardNumber)
       const redeemedCode = resolveRedeemCode(cardNumber)
 
-      const redemption = await repository.redeemMemberCard({
+      await repository.redeemMemberCard({
         amount,
         cardNumber,
         cardTitle,
@@ -73,7 +102,6 @@ export function createBrowserMemberAssetsService(
 
       return {
         balanceAmount,
-        redemption,
       }
     },
 

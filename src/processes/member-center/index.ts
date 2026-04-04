@@ -1,6 +1,7 @@
 export type {
   BindMemberCardCommand,
   BindMemberCardResult,
+  LookupMemberCardResult,
   MemberAssetsService,
   MemberAssetsSnapshot,
   SpendMemberBalanceCommand,
@@ -24,6 +25,7 @@ export type {
 } from './domain/member-center-page-data'
 export type { MemberCenterQuery } from './domain/member-center-query'
 export { bindMemberCard } from './application/bind-member-card'
+export { lookupMemberCard } from './application/lookup-member-card'
 export {
   canBindMemberMobileByWechat,
   filterVisibleMemberSettings,

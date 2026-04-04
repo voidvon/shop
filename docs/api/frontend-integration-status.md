@@ -6,7 +6,7 @@
 - 当前运行时装配：[`src/app/providers/backend/create-backend-runtime.ts`](/root/shop/src/app/providers/backend/create-backend-runtime.ts)
 - 现有 `backend-a` 适配层与浏览器仓储实现
 
-更新时间：`2026-03-24`
+更新时间：`2026-04-04`
 
 ## 1. 先看结论
 
@@ -14,7 +14,7 @@
 
 现状更准确地说是：
 
-- `backend-a` 已经开始接入真实 Swagger，目前已打通“公开商品域 + 登录资料地址域 + 交易主链路 + 会员资产主入口”
+- `backend-a` 已经开始接入真实 Swagger，目前已打通“公开商品域 + 登录资料地址域 + 交易主链路 + 会员资产主入口 + 商家页优惠券”
 - 首页、分类、商品列表、商品详情已经改为真实 HTTP 读取
 - 会员登录、资料刷新、昵称更新、地址 CRUD 已改为真实 HTTP
 - 购物车、预结算、提交订单、订单列表、订单详情已改为真实 HTTP
@@ -84,7 +84,7 @@
 - `POST /api/v1/stored-value-cards/recharge`
 - `GET /api/v1/offline-payments/payment-code`
 
-这说明当前仓库里的会员中心主入口已经改为直接消费 Swagger，剩余未接的主要是优惠券、储值卡二维码和商户端线下核销链路。
+这说明当前仓库里的会员中心主入口与商家页优惠券都已经改为直接消费 Swagger，剩余未接的主要是储值卡二维码和商户端线下核销链路。
 
 ## 3. Swagger 能力 vs 当前前端现状
 
@@ -98,8 +98,8 @@
 | 订单 | 是 | 是 | 已直连 | 订单列表、详情与提交结果均改为真实 HTTP |
 | 用户资料 | 是 | 是 | 部分直连 | 微信登录、资料刷新、昵称更新已直连，密码/手机号绑定仍未接 Swagger |
 | 地址管理 | 是 | 是 | 已直连 | runtime 已装配真实 `backend-a` 地址仓储 |
-| 余额/储值卡 | 是 | 是 | 部分直连 | 已接 `/api/v1/balance-accounts`、`/api/v1/balance-accounts/logs`、`/api/v1/stored-value-cards/recharge`，储值卡二维码仍未落页面 |
-| 优惠券 | 是 | 页面能力弱 | 未直连 | 有类型与展示概念，但没有明确仓储 / query 对接 Swagger |
+| 余额/储值卡 | 是 | 是 | 部分直连 | 已接 `/api/v1/balance-accounts`、`/api/v1/balance-accounts/logs`、`/api/v1/stored-value-cards/recharge`、`/api/v1/stored-value-cards/recharge-logs`、`/api/v1/stored-value-cards/lookup`；二维码仍未接 |
+| 优惠券 | 是 | 页面能力弱 | 部分直连 | 商家页已接 `/api/v1/merchant-coupons` 与 `/api/v1/coupons/{couponTemplate}/claim`；“我的优惠券”仍未直连 |
 | 合作商家 | 是 | 否 | 未接入 | 当前没有对应页面或 query |
 | 客服 | 是 | 否 | 未接入 | 当前没有客服会话页面和消息数据层 |
 | 线下付款 | 是 | 部分有 | 部分直连 | 用户付款码页已接 `/api/v1/offline-payments/payment-code`，商户扫码/核销仍未接入 |
@@ -178,8 +178,10 @@
 - 余额、余额流水与储值卡充值已经切到 Swagger 真实接口
 - 会员卡绑定页现在会提交 `card_no + card_secret + request_no` 到 `POST /api/v1/stored-value-cards/recharge`
 - 余额页读取 `GET /api/v1/balance-accounts` 与 `GET /api/v1/balance-accounts/logs`
+- “我的卡券”页已接 `GET /api/v1/stored-value-cards/recharge-logs`
+- 绑卡提交流程会先调用 `POST /api/v1/stored-value-cards/lookup` 做真实校验，再调用充值接口
 - 付款码页面已落地到 `/member/assets/payment-code`，读取 `GET /api/v1/offline-payments/payment-code`
-- 兑换记录仍保留在浏览器本地，用于承接当前前端已有的“充值历史”展示
+- 充值记录现在直接展示后端返回的真实历史，不再使用前端本地生成记录
 - 真实订单扣减余额后，页面刷新会再次读取远端余额，不再伪造本地扣款
 
 与 Swagger 的关系：
@@ -188,6 +190,8 @@
   - `GET /api/v1/balance-accounts`
   - `GET /api/v1/balance-accounts/logs`
   - `POST /api/v1/stored-value-cards/recharge`
+  - `GET /api/v1/stored-value-cards/recharge-logs`
+  - `POST /api/v1/stored-value-cards/lookup`
   - `GET /api/v1/offline-payments/payment-code`
   - `GET /api/v1/platform/settings`
 - 仍未落位的 Swagger 资产相关路径：

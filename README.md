@@ -157,8 +157,10 @@ npm run dev
 
 当前 Swagger 里仍未接完、或前端还没有完整页面承接的能力：
 
+- 储值卡查询 `POST /api/v1/stored-value-cards/lookup`
+- 储值卡充值历史 `GET /api/v1/stored-value-cards/recharge-logs`
 - 储值卡二维码 `GET /api/v1/stored-value-cards/{storedValueCard}/qr`
-- 优惠券列表与领取
+- 优惠券列表与领取 `GET /api/v1/coupons` / `GET /api/v1/merchant-coupons` / `POST /api/v1/coupons/{couponTemplate}/claim`
 - 商户端线下扫码识别 / 核销支付
 - 图片上传
 - 员工邀请

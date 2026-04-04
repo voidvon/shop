@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { MemberCardBindPanel, useMemberCardBinding } from '@/features/member-card-binding'
+import type { LookupMemberCardResult } from '@/processes/member-center'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
@@ -12,10 +13,12 @@ import { useMemberCardsPageModel } from '../model/useMemberCardsPageModel'
 
 const route = useRoute()
 const router = useRouter()
+const isLookingUp = ref(false)
 const isSubmitting = ref(false)
 const cardNumber = ref('')
 const cardSecret = ref('')
-const { bindMemberCard } = useMemberCardBinding()
+const lookupResult = ref<LookupMemberCardResult | null>(null)
+const { bindMemberCard, lookupMemberCard } = useMemberCardBinding()
 const { errorMessage, isLoading, loadMemberCardsPage, memberCardsPageData } = useMemberCardsPageModel()
 const bindDrawerVisible = computed(() => route.query.drawer === 'bind')
 const devCardNumber = import.meta.env.VITE_DEV_MEMBER_CARD_NO?.trim() ?? ''
@@ -104,17 +107,34 @@ async function submitBindCard() {
   isSubmitting.value = true
 
   try {
-    const result = await bindMemberCard({
+    await bindMemberCard({
       cardNumber: cardNumber.value,
       cardSecret: cardSecret.value,
     })
-    showSuccessToast(`充值成功，到账 ¥${formatAmount(result.redemption.amount)}`)
+    showSuccessToast('充值成功')
     await closeBindDrawer()
     await loadMemberCardsPage()
   } catch (error) {
     showFailToast(error instanceof Error ? error.message : '卡券充值失败')
   } finally {
     isSubmitting.value = false
+  }
+}
+
+async function runLookupCard() {
+  isLookingUp.value = true
+
+  try {
+    lookupResult.value = await lookupMemberCard({
+      cardNumber: cardNumber.value,
+      cardSecret: cardSecret.value,
+    })
+    showSuccessToast('卡信息已更新')
+  } catch (error) {
+    lookupResult.value = null
+    showFailToast(error instanceof Error ? error.message : '卡信息查询失败')
+  } finally {
+    isLookingUp.value = false
   }
 }
 
@@ -135,8 +155,8 @@ async function simulateScan() {
     return
   }
 
-  showSuccessToast('已读取卡券信息，正在提交绑定')
-  await submitBindCard()
+  showSuccessToast('已读取卡券信息')
+  await runLookupCard()
 }
 
 watch(bindDrawerVisible, (visible, previousVisible) => {
@@ -146,6 +166,11 @@ watch(bindDrawerVisible, (visible, previousVisible) => {
 
   cardNumber.value = ''
   cardSecret.value = ''
+  lookupResult.value = null
+})
+
+watch([cardNumber, cardSecret], () => {
+  lookupResult.value = null
 })
 
 onMounted(async () => {
@@ -174,7 +199,7 @@ onMounted(async () => {
       <section class="intro-card">
         <div>
           <strong>扫码绑定卡券并充值</strong>
-          <p>绑定动作会读取卡券编号，提交后端充值，成功后在下方生成兑换记录。</p>
+          <p>绑定动作会读取卡券编号并提交后端充值；如后端返回兑换历史，下方会展示真实记录。</p>
         </div>
         <button class="secondary-button" type="button" @click="goToBindCard">绑定新卡</button>
       </section>
@@ -183,7 +208,7 @@ onMounted(async () => {
 
       <section v-else-if="memberCardsPageData.redemptionRecords.length > 0" class="records-card">
         <header class="records-header">
-          <strong>兑换记录</strong>
+          <strong>充值记录</strong>
           <span>共 {{ memberCardsPageData.redemptionRecords.length }} 笔</span>
         </header>
 
@@ -196,7 +221,7 @@ onMounted(async () => {
             <span class="record-amount">+¥{{ formatAmount(record.amount) }}</span>
           </div>
           <div class="record-meta">
-            <span>兑换码 {{ record.redeemedCode }}</span>
+            <span>记录号 {{ record.redeemedCode }}</span>
             <time :datetime="record.occurredAt">{{ record.occurredAt }}</time>
           </div>
         </article>
@@ -206,11 +231,11 @@ onMounted(async () => {
         v-else
         boxed
         class="empty-state"
-        description="绑定充值后，这里会展示你的卡券兑换记录。"
+        description="当前没有可展示的充值记录。"
         description-width="248px"
         icon="coupon-o"
         :icon-size="40"
-        title="暂无兑换记录"
+        title="暂无充值记录"
       />
     </div>
 
@@ -228,7 +253,10 @@ onMounted(async () => {
         <MemberCardBindPanel
           v-model:card-number="cardNumber"
           v-model:card-secret="cardSecret"
+          :is-looking-up="isLookingUp"
           :is-submitting="isSubmitting"
+          :lookup-result="lookupResult"
+          @lookup="runLookupCard"
           @simulate-scan="simulateScan"
           @submit="submitBindCard"
         />

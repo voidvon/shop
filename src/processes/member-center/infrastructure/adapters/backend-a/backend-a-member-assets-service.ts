@@ -3,25 +3,27 @@ import { createBackendAHttpClient } from '@/shared/api/backend-a/backend-a-http-
 import type { AccountBalanceLog } from '@/shared/types/modules'
 
 import type {
-  BindMemberCardResult,
   MemberAssetsService,
   MemberAssetsSnapshot,
+  LookupMemberCardResult,
   SpendMemberBalanceCommand,
 } from '../../../domain/member-assets-service'
+import type { MemberCardRedemptionRecord } from '../../../domain/member-center-page-data'
 import {
   normalizeMemberCardNumber,
   normalizeMemberCardSecret,
   validateMemberCardNumber,
   validateMemberCardSecret,
 } from '../../../domain/member-card-bind-rules'
-import { createBrowserMemberAssetsRepository } from '../../create-browser-member-assets-repository'
 import {
-  backendAMemberAssetsNamespace,
-  resolveBackendAMemberBalanceLogSeed,
-  resolveBackendAMemberBalanceSeed,
   resolveBackendAMemberCardBindSeed,
-  resolveBackendAMemberCardRedemptionSeed,
 } from './backend-a-member-assets-seeds'
+import { createBackendAMemberAssetsGatewayFromEnv } from './backend-a-member-assets-http-gateway'
+import type { BackendABindMemberCardRequestDto } from './backend-a-member-assets-gateway'
+import {
+  mapBackendABindMemberCardResult,
+  mapBackendAMemberAssetsSnapshot,
+} from './backend-a-member-assets-mapper'
 
 interface BackendABalanceTypeDto {
   code: string
@@ -50,6 +52,31 @@ interface BackendABalanceLogDto {
   type?: string | null
 }
 
+interface BackendAStoredValueCardSummaryDto {
+  card_no?: string | null
+  id?: number | string | null
+}
+
+interface BackendARechargeRecordDto {
+  amount?: number | string | null
+  balance_type?: BackendABalanceTypeDto | null
+  id?: number | string | null
+  recharged_at?: string | null
+  request_no?: string | null
+  status?: number | null
+  stored_value_card?: BackendAStoredValueCardSummaryDto | null
+}
+
+interface BackendAStoredValueCardLookupDto {
+  balance_type?: BackendABalanceTypeDto | null
+  can_bind?: boolean | null
+  card_no?: string | null
+  current_amount?: number | string | null
+  face_value?: number | string | null
+  status?: number | null
+  status_text?: string | null
+}
+
 function parseAmount(value: number | string | null | undefined) {
   const parsedValue = typeof value === 'number' ? value : Number.parseFloat(value ?? '')
   return Number.isFinite(parsedValue) ? parsedValue : 0
@@ -57,15 +84,6 @@ function parseAmount(value: number | string | null | undefined) {
 
 function createBindRequestNo() {
   return `bind_${Date.now()}`
-}
-
-function resolveCardTitle(cardNumber: string) {
-  const suffix = cardNumber.slice(-4).padStart(4, '0')
-  return `Backend A 储值卡 ${suffix}`
-}
-
-function resolveRedeemCode() {
-  return `SV-${Date.now()}`
 }
 
 function resolvePrimaryBalanceAmount(accounts: BackendABalanceAccountDto[]) {
@@ -139,29 +157,89 @@ function normalizeBalanceLogs(input: unknown): AccountBalanceLog[] {
     })
 }
 
+function normalizeRechargeRecordOccurredAt(value: string | null | undefined) {
+  const occurredAt = value?.trim()
+
+  if (!occurredAt) {
+    return new Date().toISOString().slice(0, 19).replace('T', ' ')
+  }
+
+  return occurredAt.replace('T', ' ').replace(/\+\d{2}:\d{2}$/, '')
+}
+
+function normalizeRechargeRecords(input: unknown): MemberCardRedemptionRecord[] {
+  const rawList = Array.isArray(input)
+    ? input
+    : input && typeof input === 'object'
+      ? (
+          input && typeof input === 'object' && Array.isArray((input as { data?: unknown[] }).data)
+            ? (input as { data: unknown[] }).data
+            : input && typeof input === 'object'
+              && (input as { data?: { data?: unknown[] } }).data
+              && Array.isArray((input as { data: { data: unknown[] } }).data.data)
+              ? (input as { data: { data: unknown[] } }).data.data
+              : []
+        )
+      : []
+
+  return rawList
+    .filter((item): item is BackendARechargeRecordDto => Boolean(item) && typeof item === 'object')
+    .filter((item) => item.status === undefined || item.status === null || item.status === 1)
+    .map((item, index) => {
+      const cardNumber = item.stored_value_card?.card_no?.trim() || '-'
+      const recordId = String(item.id ?? item.request_no ?? `backend-a-recharge-log-${index + 1}`)
+      const requestNo = item.request_no?.trim() || recordId
+      const balanceTypeName = item.balance_type?.name?.trim()
+
+      return {
+        amount: Math.abs(parseAmount(item.amount)),
+        cardNumber,
+        cardTitle: balanceTypeName || '储值卡充值',
+        id: recordId,
+        occurredAt: normalizeRechargeRecordOccurredAt(item.recharged_at),
+        redeemedCode: requestNo,
+      }
+    })
+}
+
+function normalizeLookupErrorMessage(record: BackendAStoredValueCardLookupDto) {
+  const statusText = record.status_text?.trim()
+
+  if (statusText) {
+    return `当前卡券状态为${statusText}，无法绑定充值`
+  }
+
+  return '当前卡券不可绑定充值'
+}
+
+function normalizeLookupResult(record: BackendAStoredValueCardLookupDto): LookupMemberCardResult {
+  const cardNumber = record.card_no?.trim()
+
+  return {
+    balanceTypeName: record.balance_type?.name?.trim() || null,
+    canBind: record.can_bind !== false,
+    cardNumber: cardNumber || '',
+    currentAmount: Math.max(parseAmount(record.current_amount), 0),
+    faceValue: Math.max(parseAmount(record.face_value), 0),
+    statusText: record.status_text?.trim() || (record.can_bind === false ? '不可绑定' : '未绑定'),
+  }
+}
+
 function mapRemoteSnapshotToMemberAssetsSnapshot(input: {
   accounts: BackendABalanceAccountDto[]
-  bindPage: Awaited<ReturnType<ReturnType<typeof createBrowserMemberAssetsRepository>['getBindPageData']>>
   logs: AccountBalanceLog[]
-  redemptionRecords: Awaited<ReturnType<ReturnType<typeof createBrowserMemberAssetsRepository>['readRedemptionRecords']>>
+  redemptionRecords: MemberCardRedemptionRecord[]
 }): MemberAssetsSnapshot {
   return {
     balanceAmount: resolvePrimaryBalanceAmount(input.accounts),
     balanceLogs: input.logs,
-    bindPage: input.bindPage,
+    bindPage: resolveBackendAMemberCardBindSeed(),
     redemptionRecords: input.redemptionRecords,
   }
 }
 
 export function createBackendAMemberAssetsService(memberAuthSession: MemberAuthSession): MemberAssetsService {
-  const repository = createBrowserMemberAssetsRepository({
-    getBindPageData: resolveBackendAMemberCardBindSeed,
-    getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
-    getSeedBalance: resolveBackendAMemberBalanceSeed,
-    getSeedBalanceLogs: resolveBackendAMemberBalanceLogSeed,
-    getSeedRedemptionRecords: resolveBackendAMemberCardRedemptionSeed,
-    namespace: backendAMemberAssetsNamespace,
-  })
+  const gateway = createBackendAMemberAssetsGatewayFromEnv(memberAuthSession)
   const httpClient = createBackendAHttpClient({
     getAccessToken: () => memberAuthSession.getSnapshot().authResult?.session.accessToken ?? null,
   })
@@ -178,17 +256,30 @@ export function createBackendAMemberAssetsService(memberAuthSession: MemberAuthS
     return normalizeBalanceLogs(response)
   }
 
-  async function readRemoteSnapshot() {
-    const [accounts, logs, bindPage, redemptionRecords] = await Promise.all([
+  async function fetchRechargeLogs() {
+    const response = await httpClient.get<unknown>('/api/v1/stored-value-cards/recharge-logs', {
+      per_page: 20,
+    })
+
+    return normalizeRechargeRecords(response)
+  }
+
+  async function lookupStoredValueCard(cardNumber: string, cardSecret: string) {
+    return httpClient.post<BackendAStoredValueCardLookupDto>('/api/v1/stored-value-cards/lookup', {
+      card_no: cardNumber,
+      card_secret: cardSecret,
+    })
+  }
+
+  async function readSwaggerSnapshot() {
+    const [accounts, logs, redemptionRecords] = await Promise.all([
       fetchBalanceAccounts(),
       fetchBalanceLogs(),
-      repository.getBindPageData(),
-      repository.readRedemptionRecords(),
+      fetchRechargeLogs(),
     ])
 
     return mapRemoteSnapshotToMemberAssetsSnapshot({
       accounts,
-      bindPage,
       logs,
       redemptionRecords,
     })
@@ -200,7 +291,7 @@ export function createBackendAMemberAssetsService(memberAuthSession: MemberAuthS
   }
 
   return {
-    async bindMemberCard(command): Promise<BindMemberCardResult> {
+    async lookupMemberCard(command): Promise<LookupMemberCardResult> {
       const cardNumber = normalizeMemberCardNumber(command.cardNumber)
       const cardSecret = normalizeMemberCardSecret(command.cardSecret)
       const cardNumberError = validateMemberCardNumber(cardNumber)
@@ -214,31 +305,56 @@ export function createBackendAMemberAssetsService(memberAuthSession: MemberAuthS
         throw new Error(cardSecretError)
       }
 
-      const previousBalance = await readCurrentBalanceAmount()
+      return normalizeLookupResult(await lookupStoredValueCard(cardNumber, cardSecret))
+    },
+
+    async bindMemberCard(command) {
+      const cardNumber = normalizeMemberCardNumber(command.cardNumber)
+      const cardSecret = normalizeMemberCardSecret(command.cardSecret)
+      const cardNumberError = validateMemberCardNumber(cardNumber)
+      const cardSecretError = validateMemberCardSecret(cardSecret)
+
+      if (cardNumberError) {
+        throw new Error(cardNumberError)
+      }
+
+      if (cardSecretError) {
+        throw new Error(cardSecretError)
+      }
+
+      const lookupRecord = await lookupStoredValueCard(cardNumber, cardSecret)
+
+      if (lookupRecord.can_bind === false) {
+        throw new Error(normalizeLookupErrorMessage(lookupRecord))
+      }
+
+      if (gateway) {
+        const gatewayCommand: BackendABindMemberCardRequestDto = {
+          cardNo: cardNumber,
+          cardSecret,
+        }
+
+        return mapBackendABindMemberCardResult(await gateway.bindMemberCard(gatewayCommand))
+      }
 
       await httpClient.post<unknown>('/api/v1/stored-value-cards/recharge', {
         card_no: cardNumber,
         card_secret: cardSecret,
         request_no: createBindRequestNo(),
       })
-
-      const snapshot = await readRemoteSnapshot()
-      const creditedAmount = Math.max(snapshot.balanceAmount - previousBalance, 0)
-      const redemption = await repository.redeemMemberCard({
-        amount: creditedAmount,
-        cardNumber,
-        cardTitle: resolveCardTitle(cardNumber),
-        redeemedCode: resolveRedeemCode(),
-      })
+      const balanceAmount = await readCurrentBalanceAmount()
 
       return {
-        balanceAmount: snapshot.balanceAmount,
-        redemption,
+        balanceAmount,
       }
     },
 
     async getSnapshot() {
-      return readRemoteSnapshot()
+      if (gateway) {
+        return mapBackendAMemberAssetsSnapshot(await gateway.getSnapshot())
+      }
+
+      return readSwaggerSnapshot()
     },
 
     async spendBalance(_command: SpendMemberBalanceCommand) {

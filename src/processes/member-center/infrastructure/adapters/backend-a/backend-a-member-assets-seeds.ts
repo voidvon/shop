@@ -30,16 +30,7 @@ export function resolveBackendAMemberBalanceLogSeed(): AccountBalanceLog[] {
 }
 
 export function resolveBackendAMemberCardRedemptionSeed(): MemberCardRedemptionRecord[] {
-  return [
-    {
-      amount: 128,
-      cardNumber: '9922000011113344',
-      cardTitle: 'Backend A 联名储值卡',
-      id: 'backend-a-redemption-1',
-      occurredAt: '2026-03-08 10:20:00',
-      redeemedCode: 'BA-20260308-3344',
-    },
-  ]
+  return []
 }
 
 export function resolveBackendAMemberCardBindSeed(): MemberCardBindPageData {

@@ -4,16 +4,19 @@ import { useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { MemberCardBindPanel, useMemberCardBinding } from '@/features/member-card-binding'
+import type { LookupMemberCardResult } from '@/processes/member-center'
 import { memberCardNumberLengthRange } from '@/processes/member-center/domain/member-card-bind-rules'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 import { useMemberCardBindPageModel } from '../model/useMemberCardBindPageModel'
 
 const router = useRouter()
-const { bindMemberCard } = useMemberCardBinding()
+const { bindMemberCard, lookupMemberCard } = useMemberCardBinding()
 const { loadMemberCardBindPage, memberCardBindPageData } = useMemberCardBindPageModel()
 const cardNumber = ref('')
 const cardSecret = ref('')
+const lookupResult = ref<LookupMemberCardResult | null>(null)
+const isLookingUp = ref(false)
 const isSubmitting = ref(false)
 
 function buildMockCardNumber() {
@@ -29,19 +32,43 @@ function goBack() {
   void router.push({ name: 'member-cards' })
 }
 
-function simulateScan() {
+async function runLookupCard() {
+  isLookingUp.value = true
+
+  try {
+    lookupResult.value = await lookupMemberCard({
+      cardNumber: cardNumber.value,
+      cardSecret: cardSecret.value,
+    })
+    showSuccessToast('卡信息已更新')
+  } catch (error) {
+    lookupResult.value = null
+    showFailToast(error instanceof Error ? error.message : '卡信息查询失败')
+  } finally {
+    isLookingUp.value = false
+  }
+}
+
+async function simulateScan() {
   cardNumber.value = memberCardBindPageData.value.cardNumber ?? buildMockCardNumber()
+
+  if (!cardSecret.value) {
+    return
+  }
+
+  showSuccessToast('已读取卡券信息')
+  await runLookupCard()
 }
 
 async function submitBind() {
   isSubmitting.value = true
 
   try {
-    const result = await bindMemberCard({
+    await bindMemberCard({
       cardNumber: cardNumber.value,
       cardSecret: cardSecret.value,
     })
-    showSuccessToast(`充值成功，到账 ¥${result.redemption.amount.toFixed(2)}`)
+    showSuccessToast('充值成功')
     void router.push({ name: 'member-cards' })
   } catch (error) {
     showFailToast(error instanceof Error ? error.message : '卡券充值失败')
@@ -60,6 +87,10 @@ watch(
   { immediate: true },
 )
 
+watch([cardNumber, cardSecret], () => {
+  lookupResult.value = null
+})
+
 onMounted(() => {
   void loadMemberCardBindPage()
 })
@@ -77,7 +108,10 @@ onMounted(() => {
     <MemberCardBindPanel
       v-model:card-number="cardNumber"
       v-model:card-secret="cardSecret"
+      :is-looking-up="isLookingUp"
       :is-submitting="isSubmitting"
+      :lookup-result="lookupResult"
+      @lookup="runLookupCard"
       @simulate-scan="simulateScan"
       @submit="submitBind"
     />

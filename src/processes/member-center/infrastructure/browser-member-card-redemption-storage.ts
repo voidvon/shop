@@ -1,6 +1,9 @@
 import type { MemberCardRedemptionRecord } from '../domain/member-center-page-data'
 
 const storageVersion = 'v1'
+const legacySeedRecordIdsByNamespace: Record<string, string[]> = {
+  'backend-a': ['backend-a-redemption-1'],
+}
 
 interface BrowserMemberCardRedemptionRecord extends MemberCardRedemptionRecord {}
 
@@ -47,6 +50,19 @@ function normalizeRedemptionRecords(value: unknown): BrowserMemberCardRedemption
   })
 }
 
+function stripLegacySeedRecords(
+  namespace: string,
+  records: BrowserMemberCardRedemptionRecord[],
+) {
+  const legacySeedRecordIds = legacySeedRecordIdsByNamespace[namespace]
+
+  if (!legacySeedRecordIds?.length) {
+    return records
+  }
+
+  return records.filter((record) => !legacySeedRecordIds.includes(record.id))
+}
+
 export function readBrowserMemberCardRedemptions(
   namespace: string,
   scopeKey: string,
@@ -70,7 +86,13 @@ export function readBrowserMemberCardRedemptions(
     const records = normalizeRedemptionRecords(parsedValue)
 
     if (records) {
-      return records
+      const normalizedRecords = stripLegacySeedRecords(namespace, records)
+
+      if (normalizedRecords.length !== records.length) {
+        writeBrowserMemberCardRedemptions(namespace, scopeKey, normalizedRecords)
+      }
+
+      return normalizedRecords
     }
   } catch {
   }

@@ -65,7 +65,7 @@ import {
   type CustomerServiceQuery,
 } from '@/processes/customer-service'
 import {
-  backendAStorefrontQuery,
+  createBackendAStorefrontQuery,
   mockStorefrontQuery,
   type StorefrontQuery,
 } from '@/processes/storefront'
@@ -238,10 +238,10 @@ function resolveOrderRepository(type: BackendType, memberAuthSession: MemberAuth
   }
 }
 
-function resolveStorefrontQuery(type: BackendType) {
+function resolveStorefrontQuery(type: BackendType, memberAuthSession: MemberAuthSession) {
   switch (type) {
     case 'backend-a':
-      return backendAStorefrontQuery
+      return createBackendAStorefrontQuery(memberAuthSession)
     case 'mock':
     default:
       return mockStorefrontQuery
@@ -773,7 +773,7 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
       }),
       customerService: resolveCustomerServiceQuery(type, memberAuthSession),
       memberCenter: resolveMemberCenterQuery(type, memberAuthSession, memberAssetsService),
-      storefront: resolveStorefrontQuery(type),
+      storefront: resolveStorefrontQuery(type, memberAuthSession),
       trade: resolveTradeQuery(type, afterSaleRepository, cartRepository, memberAuthSession),
     },
     services: {

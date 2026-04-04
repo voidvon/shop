@@ -1,7 +1,7 @@
 # API 接口明细索引
 
 来源：[`openapi.json`](/root/shop/docs/api/openapi.json)  
-抓取时间：`2026-03-24`
+抓取时间：`2026-04-04`
 
 说明：
 
@@ -15,6 +15,8 @@
 | 方法 | 路径 | 鉴权 | 参数 | 请求体 | 成功响应 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | POST | /api/v1/stored-value-cards/recharge | Bearer | - | object | ApiResponse | 绑定储值卡并转入线上余额 |
+| POST | /api/v1/stored-value-cards/lookup | Bearer | - | object | object | 根据储值卡号和卡密查询储值卡信息 |
+| GET | /api/v1/stored-value-cards/recharge-logs | Bearer | query:per_page | - | object | 获取当前用户历史储值记录 |
 | GET | /api/v1/stored-value-cards/{storedValueCard}/qr | Bearer | path:storedValueCard | - | object | 获取储值卡二维码文本内容 |
 
 ## 订单
@@ -117,6 +119,7 @@
 | 方法 | 路径 | 鉴权 | 参数 | 请求体 | 成功响应 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | GET | /api/v1/coupons | Bearer | query:per_page | - | object | 我的优惠券 |
+| GET | /api/v1/merchant-coupons | 公开 | query:merchant_id | - | object | 商家可领取优惠券列表 |
 | POST | /api/v1/coupons/{couponTemplate}/claim | Bearer | path:couponTemplate | - | ApiResponse | 领取优惠券 |
 
 ## 余额

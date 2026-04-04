@@ -30,14 +30,6 @@ export function mapBackendAMemberAssetsSnapshot(dto: BackendAMemberAssetsSnapsho
 export function mapBackendABindMemberCardResult(dto: BackendABindMemberCardResponseDto): BindMemberCardResult {
   return {
     balanceAmount: dto.currentBalanceAmount,
-    redemption: {
-      amount: dto.redemption.creditedAmount,
-      cardNumber: dto.redemption.cardNo,
-      cardTitle: dto.redemption.cardTitle,
-      id: dto.redemption.recordId,
-      occurredAt: dto.redemption.exchangedAt,
-      redeemedCode: dto.redemption.exchangedCode,
-    },
   }
 }
 

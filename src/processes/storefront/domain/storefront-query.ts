@@ -5,6 +5,7 @@ import type {
   CategoryPageProductCard,
   HomePageData,
   HomePartnerStoreType,
+  MerchantCoupon,
   PartnerStoreMerchant,
   PartnerStoreRegion,
   PlatformSettingsData,
@@ -35,9 +36,11 @@ export interface PartnerStoreMerchantsQuery {
 }
 
 export interface StorefrontQuery {
+  claimMerchantCoupon(couponTemplateId: string): Promise<void>
   getCategoryProducts(query?: CategoryProductsQuery): Promise<CategoryPageProductCard[]>
   getCategoryTree(): Promise<CategoryPageCategory[]>
   getHomePageData(): Promise<HomePageData>
+  getMerchantCoupons(merchantId: string): Promise<MerchantCoupon[]>
   getPartnerMerchants(query?: PartnerStoreMerchantsQuery): Promise<PartnerStoreMerchant[]>
   getPartnerRegions(): Promise<PartnerStoreRegion[]>
   getPartnerStoreTypes(): Promise<HomePartnerStoreType[]>

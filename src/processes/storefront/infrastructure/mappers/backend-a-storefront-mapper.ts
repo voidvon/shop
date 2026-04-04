@@ -10,6 +10,7 @@ import type {
   CategoryPageProductCard,
   HomePageData,
   HomePartnerStoreType,
+  MerchantCoupon,
   PartnerStoreMerchant,
   PartnerStoreRegion,
   PageProductCard,
@@ -81,6 +82,10 @@ export interface BackendAPartnerRegionDto {
 }
 
 export interface BackendAPartnerMerchantSummaryDto {
+  [key: string]: unknown
+}
+
+export interface BackendAMerchantCouponDto {
   [key: string]: unknown
 }
 
@@ -535,6 +540,44 @@ export function mapBackendAPartnerMerchants(
       }
     })
     .filter((item): item is PartnerStoreMerchant => item !== null)
+}
+
+export function mapBackendAMerchantCoupons(
+  items: BackendAMerchantCouponDto[],
+): MerchantCoupon[] {
+  return items
+    .map((item) => {
+      const sources = [isRecord(item) ? item : null]
+      const id = pickStringLikeFromSources(sources, ['id'])
+      const name = pickStringFromSources(sources, ['name'])
+
+      if (!id || !name) {
+        return null
+      }
+
+      return {
+        discountAmount: pickNumberFromSources(sources, ['discount_amount', 'discountAmount']),
+        discountRate: pickNumberFromSources(sources, ['discount_rate', 'discountRate']),
+        endsAt: pickStringFromSources(sources, ['ends_at', 'endsAt']),
+        id,
+        merchantId: pickStringLikeFromSources(sources, ['merchant_id', 'merchantId']) ?? '',
+        minimumAmount: pickNumberFromSources(sources, ['minimum_amount', 'minimumAmount']) ?? 0,
+        name,
+        perUserLimit: Math.max(
+          pickNumberFromSources(sources, ['per_user_limit', 'perUserLimit']) ?? 1,
+          0,
+        ),
+        scopeType: pickStringFromSources(sources, ['scope_type', 'scopeType']) ?? 'all',
+        startsAt: pickStringFromSources(sources, ['starts_at', 'startsAt']),
+        totalQuantity: pickNumberFromSources(sources, ['total_quantity', 'totalQuantity']),
+        type: pickStringFromSources(sources, ['type']) ?? 'full_reduction',
+        userCouponsCount: Math.max(
+          pickNumberFromSources(sources, ['user_coupons_count', 'userCouponsCount']) ?? 0,
+          0,
+        ),
+      }
+    })
+    .filter((item): item is MerchantCoupon => item !== null)
 }
 
 export function mapBackendAHomePageData(

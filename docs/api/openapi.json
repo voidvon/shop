@@ -555,12 +555,13 @@
                     {
                         "name": "sort_by",
                         "in": "query",
-                        "description": "排序字段：sales_count 或 price",
+                        "description": "排序字段：sales_count、price 或 id",
                         "schema": {
                             "type": "string",
                             "enum": [
                                 "sales_count",
-                                "price"
+                                "price",
+                                "id"
                             ]
                         }
                     },
@@ -1356,26 +1357,42 @@
                 ]
             }
         },
-        "/api/v1/stored-value-cards/{storedValueCard}/qr": {
-            "get": {
+        "/api/v1/stored-value-cards/lookup": {
+            "post": {
                 "tags": [
                     "储值卡"
                 ],
-                "summary": "获取储值卡二维码文本内容",
-                "operationId": "c96ac7e454e74f94d2387b9fc1905a44",
-                "parameters": [
-                    {
-                        "name": "storedValueCard",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
+                "summary": "根据储值卡号和卡密查询储值卡信息",
+                "operationId": "402a2c26fe395272255f818560e6ba00",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "card_no",
+                                    "card_secret"
+                                ],
+                                "properties": {
+                                    "card_no": {
+                                        "description": "储值卡卡号",
+                                        "type": "string",
+                                        "example": "DG2026000001"
+                                    },
+                                    "card_secret": {
+                                        "description": "储值卡卡密",
+                                        "type": "string",
+                                        "example": "ab12cd"
+                                    }
+                                },
+                                "type": "object"
+                            }
                         }
                     }
-                ],
+                },
                 "responses": {
                     "200": {
-                        "description": "成功",
+                        "description": "查询成功",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1389,7 +1406,81 @@
                                             "example": "ok"
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/StoredValueCardQrPayload"
+                                            "$ref": "#/components/schemas/StoredValueCardLookupPayload"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/stored-value-cards/recharge-logs": {
+            "get": {
+                "tags": [
+                    "储值卡"
+                ],
+                "summary": "获取当前用户历史储值记录",
+                "operationId": "93e5ae4859d0c330cadf2124a55f3b67",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "分页大小",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 20
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/StoredValueCardRechargeRecordPayload"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -1455,6 +1546,76 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/v1/merchant-coupons": {
+            "get": {
+                "tags": [
+                    "优惠券"
+                ],
+                "summary": "商家可领取优惠券列表",
+                "description": "未登录也可访问，用于商家店铺首页展示当前可领取、未过期、未领完的优惠券列表。",
+                "operationId": "0398e84208082ab62d15a32b89d81144",
+                "parameters": [
+                    {
+                        "name": "merchant_id",
+                        "in": "query",
+                        "description": "商家ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/MerchantCouponPayload"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "商家不存在",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "参数错误",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/v1/coupons/{couponTemplate}/claim": {
@@ -2052,7 +2213,7 @@
                 "tags": [
                     "线下付款"
                 ],
-                "summary": "获取用户付款码",
+                "summary": "获取用户付款码,生成payment_token,前端通过这个payment_token生成二维码供商户核销员扫码识别；",
                 "operationId": "2561689048384acb424312b6e895eb59",
                 "responses": {
                     "200": {
@@ -2078,7 +2239,7 @@
                 "tags": [
                     "线下付款"
                 ],
-                "summary": "商户核销员扫码识别用户付款码或储值卡二维码",
+                "summary": "商户核销员扫码识别用户公众号生成的付款码(payment_token)或纸质储值卡二维码(card_qr_content),只需要传一种即可",
                 "operationId": "1e910c9f454354f9eb527ddea97b0a10",
                 "requestBody": {
                     "content": {
@@ -2718,6 +2879,83 @@
                 },
                 "type": "object"
             },
+            "MerchantCouponPayload": {
+                "properties": {
+                    "id": {
+                        "description": "优惠券模板ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "merchant_id": {
+                        "description": "所属商家ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "优惠券名称",
+                        "type": "string",
+                        "example": "满50减10"
+                    },
+                    "type": {
+                        "description": "优惠券类型：full_reduction 满减，discount 折扣",
+                        "type": "string",
+                        "example": "full_reduction"
+                    },
+                    "minimum_amount": {
+                        "description": "使用门槛金额",
+                        "type": "string",
+                        "example": "50.00"
+                    },
+                    "discount_amount": {
+                        "description": "满减金额，折扣券时可能为空",
+                        "type": "string",
+                        "example": "10.00",
+                        "nullable": true
+                    },
+                    "discount_rate": {
+                        "description": "折扣率，折扣券时返回",
+                        "type": "string",
+                        "example": "8.50",
+                        "nullable": true
+                    },
+                    "scope_type": {
+                        "description": "适用范围：all 全场，product 指定商品，category 指定分类",
+                        "type": "string",
+                        "example": "all"
+                    },
+                    "total_quantity": {
+                        "description": "总发放数量，空表示不限量",
+                        "type": "integer",
+                        "example": 100,
+                        "nullable": true
+                    },
+                    "per_user_limit": {
+                        "description": "每人可领取上限",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "starts_at": {
+                        "description": "开始领取时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-04-04T00:00:00+08:00",
+                        "nullable": true
+                    },
+                    "ends_at": {
+                        "description": "结束领取时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-04-10T23:59:59+08:00",
+                        "nullable": true
+                    },
+                    "user_coupons_count": {
+                        "description": "当前已领取数量",
+                        "type": "integer",
+                        "example": 23
+                    }
+                },
+                "type": "object"
+            },
             "UserAddressPayload": {
                 "properties": {
                     "id": {
@@ -2965,6 +3203,50 @@
                 },
                 "type": "object"
             },
+            "OrderShippingAddressPayload": {
+                "properties": {
+                    "consignee_name": {
+                        "description": "收货人姓名",
+                        "type": "string",
+                        "example": "张三"
+                    },
+                    "mobile": {
+                        "description": "收货手机号",
+                        "type": "string",
+                        "example": "13800000000"
+                    },
+                    "province": {
+                        "description": "省份",
+                        "type": "string",
+                        "example": "福建省",
+                        "nullable": true
+                    },
+                    "city": {
+                        "description": "城市",
+                        "type": "string",
+                        "example": "泉州市",
+                        "nullable": true
+                    },
+                    "district": {
+                        "description": "区县",
+                        "type": "string",
+                        "example": "晋江市",
+                        "nullable": true
+                    },
+                    "street": {
+                        "description": "详细街道地址",
+                        "type": "string",
+                        "example": "世纪大道 100 号",
+                        "nullable": true
+                    },
+                    "full_address": {
+                        "description": "完整收货地址",
+                        "type": "string",
+                        "example": "福建省 泉州市 晋江市 世纪大道 100 号"
+                    }
+                },
+                "type": "object"
+            },
             "OrderItemPayload": {
                 "properties": {
                     "id": {
@@ -3090,6 +3372,11 @@
                         "type": "integer",
                         "example": 0
                     },
+                    "delivery_status_text": {
+                        "description": "发货状态文案",
+                        "type": "string",
+                        "example": "待发货"
+                    },
                     "payment_status": {
                         "description": "支付状态：1已支付",
                         "type": "integer",
@@ -3107,6 +3394,9 @@
                         "type": "string",
                         "example": "请尽快发货",
                         "nullable": true
+                    },
+                    "shipping_address": {
+                        "$ref": "#/components/schemas/OrderShippingAddressPayload"
                     },
                     "merchant": {
                         "$ref": "#/components/schemas/MerchantSimple"
@@ -3149,6 +3439,203 @@
                         "description": "冻结金额",
                         "type": "string",
                         "example": "0.00"
+                    },
+                    "balance_type": {
+                        "$ref": "#/components/schemas/BalanceTypeSimple"
+                    }
+                },
+                "type": "object"
+            },
+            "StoredValueCardLookupPayload": {
+                "properties": {
+                    "id": {
+                        "description": "储值卡ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "card_no": {
+                        "description": "储值卡卡号",
+                        "type": "string",
+                        "example": "DG2026000001"
+                    },
+                    "face_value": {
+                        "description": "面值",
+                        "type": "string",
+                        "example": "100.00"
+                    },
+                    "initial_amount": {
+                        "description": "初始金额",
+                        "type": "string",
+                        "example": "100.00"
+                    },
+                    "current_amount": {
+                        "description": "当前余额",
+                        "type": "string",
+                        "example": "88.00"
+                    },
+                    "status": {
+                        "description": "状态值：0未绑定，1已绑定，2已失效，3已禁用",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "status_text": {
+                        "description": "状态文案",
+                        "type": "string",
+                        "example": "未绑定"
+                    },
+                    "balance_type_id": {
+                        "description": "余额类型ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "balance_type": {
+                        "$ref": "#/components/schemas/BalanceTypeSimple"
+                    },
+                    "bound_user_id": {
+                        "description": "绑定用户ID",
+                        "type": "integer",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "bound_user": {
+                        "description": "已绑定用户信息，未绑定时为null",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "nickname": {
+                                "type": "string",
+                                "example": "小王",
+                                "nullable": true
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "王小明",
+                                "nullable": true
+                            },
+                            "mobile": {
+                                "type": "string",
+                                "example": "13800138000",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "valid_from": {
+                        "description": "生效时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "valid_until": {
+                        "description": "失效时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "activated_at": {
+                        "description": "首次激活时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "bound_at": {
+                        "description": "绑定时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "disabled_at": {
+                        "description": "禁用时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "used_at": {
+                        "description": "最近使用时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "can_bind": {
+                        "description": "当前是否可绑定到线上平台",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "can_offline_pay": {
+                        "description": "当前是否可线下消费",
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "StoredValueCardRechargeRecordPayload": {
+                "properties": {
+                    "id": {
+                        "description": "充值记录ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "request_no": {
+                        "description": "绑定请求号",
+                        "type": "string",
+                        "example": "bind_001",
+                        "nullable": true
+                    },
+                    "user_id": {
+                        "description": "用户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "stored_value_card_id": {
+                        "description": "储值卡ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "balance_type_id": {
+                        "description": "余额类型ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_balance_account_id": {
+                        "description": "用户余额账户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "amount": {
+                        "description": "充值金额",
+                        "type": "string",
+                        "example": "100.00"
+                    },
+                    "status": {
+                        "description": "状态：1成功",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "recharged_at": {
+                        "description": "充值时间",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-04-04T10:00:00+08:00",
+                        "nullable": true
+                    },
+                    "stored_value_card": {
+                        "description": "储值卡信息",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "card_no": {
+                                "type": "string",
+                                "example": "DG2026000001"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
                     },
                     "balance_type": {
                         "$ref": "#/components/schemas/BalanceTypeSimple"

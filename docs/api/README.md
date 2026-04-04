@@ -110,11 +110,14 @@
 ### 储值卡
 
 - `POST /api/v1/stored-value-cards/recharge` 绑定储值卡并转入线上余额
+- `POST /api/v1/stored-value-cards/lookup` 根据储值卡号和卡密查询储值卡信息
+- `GET /api/v1/stored-value-cards/recharge-logs` 获取当前用户历史储值记录
 - `GET /api/v1/stored-value-cards/{storedValueCard}/qr` 获取储值卡二维码文本内容
 
 ### 优惠券
 
 - `GET /api/v1/coupons` 我的优惠券
+- `GET /api/v1/merchant-coupons` 商家可领取优惠券列表
 - `POST /api/v1/coupons/{couponTemplate}/claim` 领取优惠券
 
 ### 客服
@@ -145,6 +148,7 @@
 - 以 [`frontend-integration-status.md`](/root/shop/docs/api/frontend-integration-status.md) 作为“当前代码已经接了什么、哪些还没接、哪些与 Swagger 不一致”的对照清单
 - 后续如果后端 Swagger 变更，优先重新抓取 `openapi.json`，再同步更新本文件中的统计与分组
 - `GET /api/v1/home` 已在本次抓取中更新为 `query:product_limit, category_limit`，响应商品字段改为 `products`
+- `2026-04-04` 已补入 `POST /api/v1/stored-value-cards/lookup`、`GET /api/v1/stored-value-cards/recharge-logs`、`GET /api/v1/merchant-coupons`
 
 ## 5.1 当前项目范围内不接入的接口
 
