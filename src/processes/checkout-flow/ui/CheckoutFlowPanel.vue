@@ -84,14 +84,39 @@ async function consumeSelectedAddressQuery(addressId: string) {
 
 async function handleSubmit() {
   try {
+    const submitSource = preview.value?.source ?? null
+    const submitProductId = previewLines.value[0]?.productId ?? null
     const result = await checkoutStore.submitCurrentOrder(buyerMessage.value)
 
     if (result) {
-      showSuccessToast(`订单已提交：${result.orderId}`)
+      await navigateAfterSubmit(submitSource, submitProductId)
+      showSuccessToast('支付成功')
     }
   } catch {
     showFailToast(errorMessage.value ?? '提交订单失败')
   }
+}
+
+async function navigateAfterSubmit(
+  submitSource: 'cart' | 'instant' | null,
+  submitProductId: string | null,
+) {
+  if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
+    router.back()
+    return
+  }
+
+  if (submitSource === 'instant' && submitProductId) {
+    await router.push({
+      name: 'product-detail',
+      params: {
+        productId: submitProductId,
+      },
+    })
+    return
+  }
+
+  await router.push('/cart')
 }
 
 onMounted(() => {
@@ -222,7 +247,7 @@ function formatAmount(value: number) {
     <van-submit-bar
       class="checkout-submit-bar"
       :price="Math.round((preview?.payableAmount ?? 0) * 100)"
-      button-text="余额支付并提交"
+      button-text="提交订单"
       :loading="isSubmitting"
       :disabled="!preview || !isCheckoutEnabled || isLoading || availableBalance < (preview?.payableAmount ?? 0)"
       @submit="handleSubmit"
