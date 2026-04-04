@@ -1,6 +1,6 @@
 export const memberCardNumberLengthRange = {
   min: 12,
-  max: 14,
+  max: 17,
 } as const
 
 export const memberCardSecretLengthRange = {

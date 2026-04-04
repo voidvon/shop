@@ -102,7 +102,7 @@ onMounted(() => {
 
     <section class="bind-intro">
       <strong>扫码读取卡券编号并提交后端充值</strong>
-      <p>当前页面用于单独演示绑卡充值链路。卡号支持 12-14 位字母数字组合，卡密支持 6-8 位。</p>
+      <p>当前页面用于单独演示绑卡充值链路。卡号支持 12-17 位字母数字组合，卡密支持 6-8 位。</p>
     </section>
 
     <MemberCardBindPanel

@@ -52,7 +52,7 @@ function formatAmount(amount: number) {
         type="text"
         autocapitalize="characters"
         :maxlength="memberCardNumberLengthRange.max"
-        placeholder="请输入12-14位卡券编号，如 DG2026000001"
+        placeholder="请输入12-17位卡券编号，如 GENERAL2026000001"
       >
     </label>
 
