@@ -7,6 +7,7 @@ import { createCheckoutLine } from '@/entities/order'
 import { useCartStore } from '@/features/add-to-cart'
 import { MemberFavoriteButton } from '@/features/toggle-member-favorite'
 import { useModuleAvailability } from '@/shared/lib/modules'
+import { sanitizeRichTextHtml } from '@/shared/lib/safe-rich-text'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import TopBarMoreMenuButton from '@/shared/ui/TopBarMoreMenuButton.vue'
@@ -127,6 +128,7 @@ const galleryItems = computed(() =>
       imageUrl: resolveProductImage(imageUrl),
     })),
 )
+const detailDescriptionHtml = computed(() => sanitizeRichTextHtml(product.value?.detailDescription))
 
 function resolveProductImage(imageUrl: string | null | undefined) {
   if (!imageUrl) {
@@ -555,14 +557,12 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
           <section ref="detailSectionRef" class="detail-panel">
             <button class="detail-trigger" type="button" @click="scrollToTab('detail')">
-              点击查看商品详情
+              商品详情
             </button>
 
-            <div class="detail-copy">
-              <p>{{ product.detailDescription }}</p>
-            </div>
+            <div class="detail-copy" v-html="detailDescriptionHtml" />
 
-            <dl class="attribute-list">
+            <dl v-if="product.attributes.length > 0" class="attribute-list">
               <template v-for="attribute in product.attributes" :key="attribute.label">
                 <dt>{{ attribute.label }}</dt>
                 <dd>{{ attribute.value }}</dd>
@@ -848,13 +848,96 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   line-height: 1.2;
 }
 
-.subtitle,
-.detail-copy p {
+.subtitle {
   margin: 0;
   color: #78716c;
   font-size: 14px;
   font-weight: 500;
   line-height: 1.6;
+}
+
+.detail-copy {
+  color: #78716c;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.7;
+}
+
+.detail-copy :deep(*) {
+  max-width: 100%;
+}
+
+.detail-copy :deep(p),
+.detail-copy :deep(blockquote),
+.detail-copy :deep(pre),
+.detail-copy :deep(ul),
+.detail-copy :deep(ol),
+.detail-copy :deep(table) {
+  margin: 0;
+}
+
+.detail-copy :deep(p + p),
+.detail-copy :deep(p + ul),
+.detail-copy :deep(p + ol),
+.detail-copy :deep(ul + p),
+.detail-copy :deep(ol + p),
+.detail-copy :deep(blockquote + p),
+.detail-copy :deep(p + blockquote),
+.detail-copy :deep(pre + p),
+.detail-copy :deep(p + pre),
+.detail-copy :deep(table + p),
+.detail-copy :deep(p + table) {
+  margin-top: 12px;
+}
+
+.detail-copy :deep(ul),
+.detail-copy :deep(ol) {
+  padding-left: 18px;
+}
+
+.detail-copy :deep(li + li) {
+  margin-top: 6px;
+}
+
+.detail-copy :deep(a) {
+  color: #c2410c;
+  word-break: break-all;
+}
+
+.detail-copy :deep(img) {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 12px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.detail-copy :deep(pre) {
+  overflow-x: auto;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f5f5f4;
+  font-size: 12px;
+}
+
+.detail-copy :deep(blockquote) {
+  padding-left: 12px;
+  border-left: 3px solid #fed7aa;
+  color: #57534e;
+}
+
+.detail-copy :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.detail-copy :deep(th),
+.detail-copy :deep(td) {
+  padding: 8px 10px;
+  border: 1px solid #eee7da;
+  text-align: left;
+  vertical-align: top;
 }
 
 .price-row {

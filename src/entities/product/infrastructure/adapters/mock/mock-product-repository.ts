@@ -48,7 +48,7 @@ function createProductDetail(productId: string): ProductDetail | null {
       ...product.attributes.map((attribute) => ({ ...attribute })),
       { label: '店铺', value: store.storeName },
     ],
-    detailDescription: product.htmlContent.replace(/<[^>]+>/g, ''),
+    detailDescription: product.htmlContent,
     gallery: [...product.gallery],
     sellingPoints: [...product.sellingPoints],
     serviceLabels: [...product.serviceLabels],
