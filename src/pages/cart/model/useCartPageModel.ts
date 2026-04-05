@@ -10,26 +10,49 @@ const emptyCartPageData: CartPageData = {
   totalAmount: 0,
 }
 
+function resolveCartLineStore(line: CartSnapshot['lines'][number]) {
+  const normalizedStoreId = line.storeId?.trim() ?? ''
+  const normalizedStoreName = line.storeName?.trim() ?? ''
+
+  return {
+    storeId: normalizedStoreId || `cart-store-${line.lineId}`,
+    storeName: normalizedStoreName || '商家',
+  }
+}
+
 function mapCartSnapshotToPageData(snapshot: CartSnapshot): CartPageData {
   if (snapshot.lines.length === 0) {
     return emptyCartPageData
   }
 
+  const groupsByStoreId = new Map<string, CartPageData['groups'][number]>()
+
+  snapshot.lines.forEach((line) => {
+    const store = resolveCartLineStore(line)
+    const existingGroup = groupsByStoreId.get(store.storeId)
+    const item = {
+      lineId: line.lineId,
+      productId: line.productId,
+      productImageUrl: line.productImageUrl ?? null,
+      productName: line.productName,
+      quantity: line.quantity,
+      unitPrice: line.unitPrice,
+    }
+
+    if (existingGroup) {
+      existingGroup.items.push(item)
+      return
+    }
+
+    groupsByStoreId.set(store.storeId, {
+      items: [item],
+      storeId: store.storeId,
+      storeName: store.storeName,
+    })
+  })
+
   return {
-    groups: [
-      {
-        items: snapshot.lines.map((line) => ({
-          lineId: line.lineId,
-          productId: line.productId,
-          productImageUrl: line.productImageUrl ?? null,
-          productName: line.productName,
-          quantity: line.quantity,
-          unitPrice: line.unitPrice,
-        })),
-        storeId: 'backend-a-store',
-        storeName: 'Backend A 选品馆',
-      },
-    ],
+    groups: Array.from(groupsByStoreId.values()),
     totalAmount: snapshot.subtotal,
   }
 }

@@ -1,7 +1,7 @@
 import { createCartLine, createCartSnapshot, createEmptyCartSnapshot } from '../../../domain/cart'
 import type { CartRepository } from '../../../domain/cart-repository'
 
-import { mockProducts } from '@/shared/mocks/modules'
+import { getMockStore, mockProducts } from '@/shared/mocks/modules'
 
 const initialProducts = mockProducts.slice(0, 2)
 
@@ -11,6 +11,8 @@ let cartLines = initialProducts.map((product, index) =>
     productImageUrl: product.imageUrl,
     productName: product.productName,
     quantity: index === 0 ? 1 : 2,
+    storeId: product.storeId,
+    storeName: getMockStore(product.storeId)?.storeName ?? null,
     unitPrice: product.price,
   }),
 )
@@ -75,6 +77,8 @@ export const mockCartRepository: CartRepository = {
             quantity,
             skuId: line.skuId,
             specText: line.specText,
+            storeId: line.storeId,
+            storeName: line.storeName,
             unitPrice: line.unitPrice,
           })
         : line,

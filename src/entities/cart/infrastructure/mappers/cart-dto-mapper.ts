@@ -18,6 +18,8 @@ function mapSkuSpecText(dto: BackendACartItemDto) {
 }
 
 export function mapBackendACartItemDto(dto: BackendACartItemDto) {
+  const merchantName = dto.merchant?.short_name?.trim() || dto.merchant?.name?.trim() || null
+
   return createCartLine({
     productId: String(dto.product_id),
     productImageUrl: resolveCartImageUrl(dto),
@@ -26,6 +28,8 @@ export function mapBackendACartItemDto(dto: BackendACartItemDto) {
     selected: dto.selected === 1,
     skuId: String(dto.product_sku_id),
     specText: mapSkuSpecText(dto),
+    storeId: dto.merchant_id ? String(dto.merchant_id) : null,
+    storeName: merchantName,
     unitPrice: parseAmount(dto.sku?.price),
   })
 }

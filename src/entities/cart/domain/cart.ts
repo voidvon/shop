@@ -8,6 +8,8 @@ export interface CartLine {
   selected: boolean
   skuId: string | null
   specText: string | null
+  storeId: string | null
+  storeName: string | null
   unitPrice: number
 }
 
@@ -26,6 +28,8 @@ export interface AddCartItemCommand {
   selected?: boolean
   skuId?: string | null
   specText?: string | null
+  storeId?: string | null
+  storeName?: string | null
   unitPrice: number
 }
 
@@ -56,6 +60,8 @@ export function createCartLine(input: AddCartItemCommand): CartLine {
     selected: input.selected ?? true,
     skuId: input.skuId ?? null,
     specText: input.specText ?? null,
+    storeId: input.storeId ?? null,
+    storeName: input.storeName ?? null,
     unitPrice: input.unitPrice,
   }
 }
