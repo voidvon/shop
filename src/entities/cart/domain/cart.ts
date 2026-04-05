@@ -18,6 +18,7 @@ export interface CartSnapshot {
 }
 
 export interface AddCartItemCommand {
+  lineId?: string
   productId: string
   productImageUrl?: string | null
   productName: string
@@ -47,7 +48,7 @@ export function createCartLine(input: AddCartItemCommand): CartLine {
 
   return {
     lineTotal: input.unitPrice * quantity,
-    lineId: input.skuId ?? input.productId,
+    lineId: input.lineId ?? input.skuId ?? input.productId,
     productId: input.productId,
     productImageUrl: input.productImageUrl ?? null,
     productName: input.productName,
