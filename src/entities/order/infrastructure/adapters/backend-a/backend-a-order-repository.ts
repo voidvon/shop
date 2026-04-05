@@ -277,11 +277,11 @@ function resolveAvailableCouponsForGroup(
       coupon.merchantId === group.merchantId
       && group.totalAmount >= coupon.minimumAmount,
     )
+    .sort((left, right) => estimateCouponDiscount(group.totalAmount, right) - estimateCouponDiscount(group.totalAmount, left))
     .map((coupon): CheckoutAvailableCoupon => ({
       discountAmount: coupon.discountAmount,
       discountRate: coupon.discountRate,
       endsAt: coupon.endsAt,
-      estimatedDiscount: estimateCouponDiscount(group.totalAmount, coupon),
       merchantId: coupon.merchantId,
       minimumAmount: coupon.minimumAmount,
       name: coupon.name,
@@ -289,7 +289,6 @@ function resolveAvailableCouponsForGroup(
       type: coupon.type,
       userCouponId: coupon.userCouponId,
     }))
-    .sort((left, right) => right.estimatedDiscount - left.estimatedDiscount)
 }
 
 function attachAvailableCoupons(

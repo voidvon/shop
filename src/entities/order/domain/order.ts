@@ -27,7 +27,6 @@ export interface CheckoutAvailableCoupon {
   discountAmount: number
   discountRate: number | null
   endsAt: string | null
-  estimatedDiscount: number
   merchantId: number | null
   minimumAmount: number
   name: string

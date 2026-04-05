@@ -148,7 +148,6 @@ onMounted(async () => {
               <p>{{ coupon.name }}</p>
               <div class="coupon-card-meta">
                 <span>{{ formatCouponCondition(coupon.minimumAmount) }}</span>
-                <span>预计优惠 ¥{{ formatAmount(coupon.estimatedDiscount) }}</span>
                 <span>{{ formatCouponWindow(coupon.startsAt, coupon.endsAt) }}</span>
               </div>
             </div>
