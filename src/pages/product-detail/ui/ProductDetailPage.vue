@@ -41,6 +41,7 @@ const lastContentTab = ref<'goods' | 'detail'>('goods')
 const reviewDrawerVisible = ref(false)
 const specPopupVisible = ref(false)
 const specPopupSource = ref<'buy' | 'cart' | 'spec'>('spec')
+const pendingSpecAction = ref<'buy' | 'cart' | null>(null)
 const scrollAreaRef = ref<HTMLElement | null>(null)
 const goodsSectionRef = ref<HTMLElement | null>(null)
 const detailSectionRef = ref<HTMLElement | null>(null)
@@ -58,6 +59,9 @@ const reviewFilters = [
 const activeReviewFilter = ref<(typeof reviewFilters)[number]['key']>('all')
 
 const detailPageData = computed(() => detailPage.value)
+const isSpecActionPending = computed(() => pendingSpecAction.value !== null)
+const buyNowButtonText = computed(() => pendingSpecAction.value === 'buy' ? '正在前往结算...' : '立即购买')
+const addToCartButtonText = computed(() => pendingSpecAction.value === 'cart' ? '正在加入购物车...' : '加入购物车')
 
 watch(
   detailPageData,
@@ -216,6 +220,10 @@ function openSpecPopup(source: 'buy' | 'cart' | 'spec') {
 }
 
 function closeSpecPopup() {
+  if (isSpecActionPending.value) {
+    return
+  }
+
   specPopupVisible.value = false
 }
 
@@ -240,6 +248,10 @@ function changePurchaseQuantity(delta: number) {
 }
 
 async function submitSpecAction(action: 'buy' | 'cart') {
+  if (pendingSpecAction.value) {
+    return
+  }
+
   const currentProduct = product.value
 
   if (!currentProduct) {
@@ -251,6 +263,8 @@ async function submitSpecAction(action: 'buy' | 'cart') {
     showFailToast('当前规格暂时无货')
     return
   }
+
+  pendingSpecAction.value = action
 
   try {
     if (action === 'buy') {
@@ -304,6 +318,8 @@ async function submitSpecAction(action: 'buy' | 'cart') {
     showFailToast(action === 'buy'
       ? (cartStore.errorMessage ?? '立即购买跳转结算失败')
       : (cartStore.errorMessage ?? '加入购物车失败'))
+  } finally {
+    pendingSpecAction.value = null
   }
 }
 
@@ -670,7 +686,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
       >
         <div class="spec-popup-content">
           <section class="spec-sheet">
-            <button class="spec-close-button" type="button" aria-label="关闭规格弹窗" @click="closeSpecPopup">
+            <button class="spec-close-button" type="button" aria-label="关闭规格弹窗" :disabled="isSpecActionPending" @click="closeSpecPopup">
               <van-icon name="cross" size="18" />
             </button>
 
@@ -698,6 +714,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
                   class="spec-tag"
                   :class="{ 'spec-tag-active': currentSku?.skuId === sku.skuId }"
                   type="button"
+                  :disabled="isSpecActionPending"
                   @click="selectSku(sku.skuId)"
                 >
                   {{ sku.specText }}
@@ -709,15 +726,20 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
               <span class="qty-label">购买数量</span>
 
               <div class="qty-stepper">
-                <button class="qty-button" type="button" aria-label="减少购买数量" @click="changePurchaseQuantity(-1)">
+                <button class="qty-button" type="button" aria-label="减少购买数量" :disabled="isSpecActionPending" @click="changePurchaseQuantity(-1)">
                   -
                 </button>
                 <span class="qty-value">{{ purchaseQuantity }}</span>
-                <button class="qty-button qty-button-plus" type="button" aria-label="增加购买数量" @click="changePurchaseQuantity(1)">
+                <button class="qty-button qty-button-plus" type="button" aria-label="增加购买数量" :disabled="isSpecActionPending" @click="changePurchaseQuantity(1)">
                   +
                 </button>
               </div>
             </div>
+
+            <p v-if="isSpecActionPending" class="spec-pending-tip">
+              <van-loading size="14" />
+              <span>{{ pendingSpecAction === 'buy' ? '正在准备结算，请稍候...' : '正在加入购物车，请稍候...' }}</span>
+            </p>
           </section>
 
           <footer class="action-bar spec-action-bar">
@@ -731,14 +753,23 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
               <span>购物车</span>
             </RouterLink>
 
-            <button class="action-button action-button-light" type="button" @click="submitSpecAction('buy')">立即购买</button>
+            <button
+              class="action-button action-button-light"
+              :class="{ 'action-button-pending': pendingSpecAction === 'buy' }"
+              type="button"
+              :disabled="isSpecActionPending"
+              @click="submitSpecAction('buy')"
+            >
+              {{ buyNowButtonText }}
+            </button>
             <button
               class="action-button action-button-primary"
               type="button"
-              :disabled="!isCartEnabled || isCartPending || isCurrentSelectionSoldOut"
+              :class="{ 'action-button-pending': pendingSpecAction === 'cart' }"
+              :disabled="!isCartEnabled || isCartPending || isCurrentSelectionSoldOut || isSpecActionPending"
               @click="submitSpecAction('cart')"
             >
-              加入购物车
+              {{ addToCartButtonText }}
             </button>
           </footer>
         </div>
@@ -1660,12 +1691,30 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   font-weight: 700;
 }
 
+.action-button:disabled {
+  opacity: 0.72;
+}
+
+.action-button-pending {
+  position: relative;
+}
+
 .action-button-light {
   background: #fb923c;
 }
 
 .action-button-primary {
   background: #ea580c;
+}
+
+.spec-pending-tip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  color: #7c6753;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .state-card {
