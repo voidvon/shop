@@ -149,7 +149,6 @@ onMounted(async () => {
             ]"
             :selected="couponGroup.userCouponId === coupon.userCouponId"
             :title="coupon.name"
-            :type-label="coupon.type === 'discount' ? '折扣券' : '满减券'"
             @click="handleSelectCoupon(coupon.userCouponId)"
           >
             <template #side>

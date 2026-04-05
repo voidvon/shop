@@ -16,7 +16,6 @@ const props = withDefaults(defineProps<{
   surface?: CouponCardSurface
   tag?: string
   title?: string | null
-  typeLabel?: string | null
 }>(), {
   highlighted: false,
   metaItems: () => [],
@@ -25,12 +24,14 @@ const props = withDefaults(defineProps<{
   surface: 'warm',
   tag: 'article',
   title: null,
-  typeLabel: null,
 })
 
 const normalizedMetaItems = computed(() =>
   props.metaItems.filter((item) => item.trim().length > 0),
 )
+
+const displayTitle = computed(() => props.title ?? props.headline)
+const displayValue = computed(() => (props.title ? props.headline : null))
 </script>
 
 <template>
@@ -48,9 +49,10 @@ const normalizedMetaItems = computed(() =>
     v-bind="$attrs"
   >
     <div class="coupon-card-main">
-      <span v-if="typeLabel" class="coupon-card-type">{{ typeLabel }}</span>
-      <strong>{{ headline }}</strong>
-      <p v-if="title">{{ title }}</p>
+      <div class="coupon-card-summary">
+        <p class="coupon-card-title">{{ displayTitle }}</p>
+        <strong v-if="displayValue">{{ displayValue }}</strong>
+      </div>
 
       <div v-if="normalizedMetaItems.length > 0" class="coupon-card-meta">
         <span v-for="item in normalizedMetaItems" :key="item">{{ item }}</span>
@@ -108,24 +110,34 @@ const normalizedMetaItems = computed(() =>
   min-width: 0;
 }
 
-.coupon-card-type {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 64px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(240, 138, 62, 0.12);
-  color: #ba5f15;
-  font-size: 11px;
+.coupon-card-summary {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.coupon-card-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  color: #47362c;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .coupon-card-main strong {
-  display: block;
-  margin-top: 8px;
+  flex: none;
   color: #c25b0a;
   font-size: 24px;
   line-height: 1.1;
+  text-align: right;
+}
+
+.coupon-card-neutral .coupon-card-title {
+  color: #2f2a24;
+  font-weight: 700;
 }
 
 .coupon-card-neutral .coupon-card-main strong {
@@ -133,21 +145,10 @@ const normalizedMetaItems = computed(() =>
   font-size: 22px;
 }
 
-.coupon-card-main p {
-  margin: 6px 0 0;
-  color: #47362c;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.coupon-card-neutral .coupon-card-main p {
-  color: #5f574e;
-}
-
 .coupon-card-meta {
   display: grid;
   gap: 4px;
-  margin-top: 10px;
+  margin-top: 8px;
   color: #8a6f5b;
   font-size: 12px;
   line-height: 1.5;

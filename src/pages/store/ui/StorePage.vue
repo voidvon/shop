@@ -729,7 +729,6 @@ watch(
                 `每人限领 ${coupon.perUserLimit} 张，已领 ${coupon.userCouponsCount} 张`,
               ]"
               :title="coupon.name"
-              :type-label="coupon.type === 'discount' ? '折扣券' : '满减券'"
             >
               <template #side>
                 <button

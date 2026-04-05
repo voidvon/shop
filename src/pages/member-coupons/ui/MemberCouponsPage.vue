@@ -43,10 +43,6 @@ function shouldDisplayCouponName(coupon: MemberCouponListItem) {
   return formatCouponValue(coupon) !== coupon.name
 }
 
-function formatCouponType(coupon: MemberCouponListItem) {
-  return coupon.type === 'discount' ? '折扣券' : '满减券'
-}
-
 function formatCouponCondition(coupon: MemberCouponListItem) {
   if (coupon.minimumAmount <= 0) {
     return '无门槛可用'
@@ -161,7 +157,6 @@ onActivated(() => {
           ]"
           :muted="resolveCouponStatus(coupon) !== 'available'"
           :title="shouldDisplayCouponName(coupon) ? coupon.name : null"
-          :type-label="formatCouponType(coupon)"
         >
           <template #side>
             <span
