@@ -3,7 +3,6 @@ import { computed, ref, toRef, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
-import { createCheckoutLine } from '@/entities/order'
 import { useCartStore } from '@/features/add-to-cart'
 import { MemberFavoriteButton } from '@/features/toggle-member-favorite'
 import { useModuleAvailability } from '@/shared/lib/modules'
@@ -11,7 +10,7 @@ import { sanitizeRichTextHtml } from '@/shared/lib/safe-rich-text'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import TopBarMoreMenuButton from '@/shared/ui/TopBarMoreMenuButton.vue'
-import { writeInstantCheckoutDraft } from '@/processes/checkout-flow/model/instant-checkout-draft'
+import { writeInstantCheckoutBridge } from '@/processes/checkout-flow/model/instant-checkout-bridge'
 
 import { useProductDetailPageModel } from '../model/useProductDetailPageModel'
 import detailHeroImage from '../../../../design-ui/images/generated-1773915971397.png'
@@ -118,6 +117,55 @@ const reviewRateText = computed(() => {
 const reviewCountText = computed(() => `(${detailPageData.value?.review.count ?? 0}人评价)`)
 
 const recommendProducts = computed(() => detailPageData.value?.recommendations ?? [])
+
+function resolveInstantCheckoutLineId(input: {
+  nextLines: Array<{
+    lineId: string
+    productId: string
+    quantity: number
+    skuId: string | null
+  }>
+  previousLines: Array<{
+    lineId: string
+    productId: string
+    quantity: number
+    skuId: string | null
+  }>
+  productId: string
+  skuId: string | null
+}) {
+  const matchingLines = input.nextLines.filter((line) =>
+    line.productId === input.productId
+    && line.skuId === input.skuId,
+  )
+
+  if (matchingLines.length === 0) {
+    return null
+  }
+
+  const previousLineMap = new Map(
+    input.previousLines.map((line) => [line.lineId, line]),
+  )
+  const nextNewLine = matchingLines.find((line) => !previousLineMap.has(line.lineId))
+
+  if (nextNewLine) {
+    return nextNewLine.lineId
+  }
+
+  const expandedLine = matchingLines
+    .map((line) => ({
+      delta: line.quantity - (previousLineMap.get(line.lineId)?.quantity ?? 0),
+      lineId: line.lineId,
+    }))
+    .sort((left, right) => right.delta - left.delta)
+    .find((line) => line.delta > 0)
+
+  if (expandedLine) {
+    return expandedLine.lineId
+  }
+
+  return matchingLines[0]?.lineId ?? null
+}
 
 const storeInfo = computed(() => detailPageData.value?.store ?? null)
 const canOpenStorePage = computed(() => Boolean(storeInfo.value?.storeId))
@@ -258,21 +306,43 @@ async function submitSpecAction(action: 'buy' | 'cart') {
         return
       }
 
-      writeInstantCheckoutDraft({
-        lines: [
-          createCheckoutLine({
-            lineId: currentSku.value?.skuId ?? product.value.id,
-            productId: product.value.id,
-            productImageUrl: product.value.coverImageUrl,
-            productName: product.value.name,
-            quantity: purchaseQuantity.value,
-            skuId: currentSku.value?.skuId ?? null,
-            specText: currentSku.value?.specText ?? null,
-            unitPrice: currentUnitPrice.value,
-          }),
-        ],
+      if (!isCartEnabled.value) {
+        showFailToast('立即购买需要先启用购物车')
+        return
+      }
+
+      await cartStore.loadSnapshot()
+
+      const previousLines = [...cartStore.snapshot.lines]
+      const previousSelectedLineIds = [...cartStore.selectedLineIds]
+      const nextSnapshot = await cartStore.addProduct(product.value, {
+        quantity: purchaseQuantity.value,
+        skuId: currentSku.value?.skuId ?? null,
+        specText: currentSku.value?.specText ?? null,
+        unitPrice: currentUnitPrice.value,
+      })
+      const targetLineId = resolveInstantCheckoutLineId({
+        nextLines: nextSnapshot.lines,
+        previousLines,
+        productId: product.value.id,
+        skuId: currentSku.value?.skuId ?? null,
+      })
+
+      if (!targetLineId) {
+        throw new Error('未找到立即购买对应的购物车商品')
+      }
+
+      const previousLine = previousLines.find((line) => line.lineId === targetLineId) ?? null
+      const previousQuantity = previousLine?.quantity ?? null
+
+      writeInstantCheckoutBridge({
+        lineId: targetLineId,
+        previousLine,
+        previousQuantity,
+        previousSelectedLineIds,
         source: 'instant',
       })
+      await cartStore.selectOnlyLine(targetLineId)
       closeSpecPopup()
       await router.push({ name: 'checkout' })
       return

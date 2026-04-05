@@ -23,6 +23,7 @@ const {
   preview,
   selectedAddress,
   sourceLabel,
+  sourceType,
   submissionMessage,
 } = storeToRefs(checkoutStore)
 
@@ -38,7 +39,7 @@ const payableAmountText = computed(() => formatAmount(preview.value?.payableAmou
 const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAmount ?? 0))
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
 const availableBalanceText = computed(() => formatAmount(availableBalance.value))
-const merchantTitle = computed(() => preview.value?.source === 'cart' ? '购物车商品' : '立即购买商品')
+const merchantTitle = computed(() => sourceType.value === 'instant' ? '立即购买商品' : '购物车商品')
 const buyerMessage = ref('')
 const selectedAddressQueryId = computed(() =>
   typeof route.query.selectedAddressId === 'string'

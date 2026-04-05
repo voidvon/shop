@@ -1,4 +1,5 @@
 export { default as CheckoutFlowPanel } from './ui/CheckoutFlowPanel.vue'
+export { useCheckoutFlowStore } from './model/useCheckoutFlowStore'
 export type {
   CheckoutFlowPort,
   SubmitCheckoutOrderCommand,

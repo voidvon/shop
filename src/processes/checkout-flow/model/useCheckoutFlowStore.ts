@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
+import { useCartStore } from '@/features/add-to-cart'
 import { useMemberAuthSession } from '@/entities/member-auth'
 import {
   useMemberAddressStore,
@@ -9,8 +10,6 @@ import { useCheckoutFlowPort } from '@/processes/checkout-flow'
 import { useTradeStore } from '@/processes/trade'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import {
-  createBrowserOrderRepository,
-  createCheckoutPreview,
   type CheckoutPreview,
   type OrderConfirmation,
 } from '@/entities/order'
@@ -21,24 +20,18 @@ import {
   type SpendMemberBalanceCommand,
 } from '@/processes/member-center'
 import {
-  clearInstantCheckoutDraft,
-  readInstantCheckoutDraft,
-  simulatedInstantOrderNamespace,
-} from './instant-checkout-draft'
+  clearInstantCheckoutBridge,
+  readInstantCheckoutBridge,
+} from './instant-checkout-bridge'
 
 export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
+  const cartStore = useCartStore()
   const checkoutFlowPort = useCheckoutFlowPort()
   const memberAddressStore = useMemberAddressStore()
   const memberAssetsService = useMemberAssetsService()
   const memberAuthSession = useMemberAuthSession()
   const tradeStore = useTradeStore()
   const isCheckoutEnabled = useModuleAvailability('checkout')
-  const simulatedInstantOrderRepository = createBrowserOrderRepository({
-    defaultStoreName: '立即购买',
-    getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
-    getSeedRecords: () => [],
-    namespace: simulatedInstantOrderNamespace,
-  })
 
   const confirmation = ref<OrderConfirmation | null>(null)
   const errorMessage = ref<string | null>(null)
@@ -46,6 +39,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const isLoading = ref(false)
   const isSubmitting = ref(false)
   const preview = ref<CheckoutPreview | null>(null)
+  const sourceType = ref<'cart' | 'instant'>('cart')
   const selectedAddressId = ref<string | null>(null)
   const selectedAddress = computed(() =>
     memberAddressStore.resolveSelectedAddress(selectedAddressId.value ?? undefined),
@@ -53,8 +47,12 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const availableBalance = ref(0)
   const submissionMessage = ref<string | null>(null)
   const sourceLabel = computed(() =>
-    preview.value?.source === 'cart' ? '从购物车进入' : '从立即购买进入',
+    sourceType.value === 'instant' ? '从立即购买进入' : '从购物车进入',
   )
+
+  function syncSourceType() {
+    sourceType.value = readInstantCheckoutBridge() ? 'instant' : (preview.value?.source ?? 'cart')
+  }
 
   async function syncSelectedAddress(options?: { preferredAddressId?: string }) {
     await memberAddressStore.syncCurrentUserAddresses()
@@ -89,14 +87,8 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     errorMessage.value = null
 
     try {
-      const instantCheckoutDraft = readInstantCheckoutDraft()
-
-      if (instantCheckoutDraft) {
-        preview.value = createCheckoutPreview(instantCheckoutDraft)
-      } else {
-        preview.value = await checkoutFlowPort.getPreview()
-      }
-
+      preview.value = await checkoutFlowPort.getPreview()
+      syncSourceType()
       const assetsSnapshot = await getMemberAssetsSnapshot(memberAssetsService)
       availableBalance.value = assetsSnapshot.balanceAmount
       await syncSelectedAddress()
@@ -126,7 +118,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     errorMessage.value = null
 
     try {
-      const instantCheckoutDraft = readInstantCheckoutDraft()
+      const instantCheckoutBridge = readInstantCheckoutBridge()
       const payableAmount = preview.value?.payableAmount ?? 0
 
       if (payableAmount > availableBalance.value) {
@@ -134,23 +126,11 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
         throw new Error(errorMessage.value)
       }
 
-      const result = instantCheckoutDraft
-        ? {
-            confirmation: await simulatedInstantOrderRepository.submit({
-              ...instantCheckoutDraft,
-              addressId: selectedAddress.value.id,
-              remark: remark?.trim() ? remark.trim() : null,
-            }),
-            preview: createCheckoutPreview({
-              lines: [],
-              source: 'instant',
-            }),
-          }
-        : await checkoutFlowPort.submit({
-            addressId: selectedAddress.value.id,
-            couponUsages: preview.value?.couponUsages ?? [],
-            remark: remark?.trim() ? remark.trim() : null,
-          })
+      const result = await checkoutFlowPort.submit({
+        addressId: selectedAddress.value.id,
+        couponUsages: preview.value?.couponUsages ?? [],
+        remark: remark?.trim() ? remark.trim() : null,
+      })
 
       const spendCommand: SpendMemberBalanceCommand = {
         amount: result.confirmation.payableAmount,
@@ -162,9 +142,11 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
       preview.value = result.preview
       await tradeStore.recordSubmittedOrder(result.confirmation, result.preview)
 
-      if (instantCheckoutDraft) {
-        clearInstantCheckoutDraft()
+      if (instantCheckoutBridge) {
+        await restoreInstantCheckoutCartState()
       }
+
+      syncSourceType()
 
       return result.confirmation
     } catch (error) {
@@ -175,9 +157,70 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     }
   }
 
+  async function restoreInstantCheckoutCartState() {
+    const instantCheckoutBridge = readInstantCheckoutBridge()
+
+    if (!instantCheckoutBridge) {
+      return
+    }
+
+    try {
+      await cartStore.loadSnapshot()
+
+      const targetLine = cartStore.snapshot.lines.find((line) => line.lineId === instantCheckoutBridge.lineId)
+
+      if (targetLine) {
+        if (instantCheckoutBridge.previousQuantity === null) {
+          await cartStore.removeProduct(targetLine.lineId)
+        } else if (targetLine.quantity !== instantCheckoutBridge.previousQuantity) {
+          await cartStore.setProductQuantity(targetLine.lineId, instantCheckoutBridge.previousQuantity)
+        }
+      } else if (instantCheckoutBridge.previousLine) {
+        await cartStore.addProduct(
+          {
+            category: '',
+            categoryId: '',
+            coverImageUrl: instantCheckoutBridge.previousLine.productImageUrl ?? null,
+            id: instantCheckoutBridge.previousLine.productId,
+            inventory: Math.max(instantCheckoutBridge.previousLine.quantity, 1),
+            monthlySales: 0,
+            name: instantCheckoutBridge.previousLine.productName,
+            price: instantCheckoutBridge.previousLine.unitPrice,
+            summary: '',
+            tags: [],
+          },
+          {
+            quantity: instantCheckoutBridge.previousLine.quantity,
+            skuId: instantCheckoutBridge.previousLine.skuId,
+            specText: instantCheckoutBridge.previousLine.specText,
+            unitPrice: instantCheckoutBridge.previousLine.unitPrice,
+          },
+        )
+      }
+
+      await cartStore.loadSnapshot()
+
+      const existingLineIds = cartStore.snapshot.lines.map((line) => line.lineId)
+
+      if (existingLineIds.length > 0) {
+        await cartStore.setLinesSelected(existingLineIds, false)
+      }
+
+      const restoreSelectedLineIds = instantCheckoutBridge.previousSelectedLineIds.filter((lineId) =>
+        existingLineIds.includes(lineId),
+      )
+
+      if (restoreSelectedLineIds.length > 0) {
+        await cartStore.setLinesSelected(restoreSelectedLineIds, true)
+      }
+    } finally {
+      clearInstantCheckoutBridge()
+    }
+  }
+
   memberAuthSession.subscribe(() => {
     selectedAddressId.value = null
-    clearInstantCheckoutDraft()
+    clearInstantCheckoutBridge()
   })
 
   return {
@@ -190,9 +233,11 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     isSubmitting,
     loadPreview,
     preview,
+    restoreInstantCheckoutCartState,
     selectAddress,
     selectedAddress,
     sourceLabel,
+    sourceType,
     submissionMessage,
     submitCurrentOrder,
     syncSelectedAddress,

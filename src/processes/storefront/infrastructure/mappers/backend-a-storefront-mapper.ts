@@ -485,10 +485,26 @@ export function mapBackendAPartnerMerchants(
   return items
     .map((item, index) => {
       const rootSource = isRecord(item) ? item : null
-      const regionSource = rootSource ? pickRecord(rootSource, ['region', 'partner_region']) : null
-      const storeTypes = rootSource ? pickArrayFromSources([rootSource], ['store_types', 'storeTypes']) : []
-      const sources = [rootSource]
-      const name = pickStringFromSources(sources, ['name', 'title', 'merchant_name', 'merchantName'])
+      const nestedMerchantSource = rootSource ? pickRecord(rootSource, ['merchant', 'partnerMerchant', 'store', 'detail']) : null
+      const regionSource = rootSource
+        ? pickRecord(rootSource, ['region', 'partner_region'])
+          ?? (nestedMerchantSource ? pickRecord(nestedMerchantSource, ['region', 'partner_region']) : null)
+        : null
+      const sources = [nestedMerchantSource, rootSource]
+      const storeTypes = pickArrayFromSources(sources, [
+        'partner_merchant_types',
+        'partnerMerchantTypes',
+        'merchant_types',
+        'merchantTypes',
+        'store_types',
+        'storeTypes',
+        'cooperative_store_types',
+        'cooperativeStoreTypes',
+      ])
+      const name = pickStringFromSources(
+        sources,
+        ['name', 'title', 'merchant_name', 'merchantName', 'store_name', 'storeName'],
+      )
 
       if (!name) {
         return null
@@ -496,20 +512,29 @@ export function mapBackendAPartnerMerchants(
 
       const imageUrl = resolveBackendAMediaUrl(
         pickStringFromSources(
-          [rootSource, ...storeTypes.filter(isRecord)],
-          ['logo', 'logo_url', 'logoUrl', 'image', 'cover', 'banner_image', 'promo_image'],
+          sources,
+          ['logo', 'logo_url', 'logoUrl', 'image', 'cover', 'avatar'],
         ),
       )
 
       return {
         address:
-          pickStringFromSources([rootSource, regionSource], ['detailed_address', 'detailedAddress', 'address'])
+          pickStringFromSources(
+            [nestedMerchantSource, rootSource, regionSource],
+            ['detailed_address', 'detailedAddress', 'address', 'detail_address', 'detailAddress', 'location'],
+          )
           ?? '地址待补充',
-        businessHours: pickStringFromSources(sources, ['business_hours', 'businessHours']) ?? null,
-        id: pickStringLikeFromSources(sources, ['id', 'merchant_id', 'merchantId']) ?? `${name}-${index}`,
+        businessHours: pickStringFromSources(
+          sources,
+          ['business_hours', 'businessHours', 'opening_hours', 'openingHours'],
+        ) ?? null,
+        id: pickStringLikeFromSources(sources, ['id', 'merchant_id', 'merchantId', 'store_id', 'storeId']) ?? `${name}-${index}`,
         imageUrl,
         name,
-        phone: pickStringFromSources(sources, ['contact_phone', 'contactPhone', 'phone', 'mobile']) ?? null,
+        phone: pickStringFromSources(
+          sources,
+          ['contact_phone', 'contactPhone', 'phone', 'mobile', 'tel', 'telephone'],
+        ) ?? null,
         regionName: pickStringFromSources([regionSource], ['name', 'label', 'title']) ?? null,
         shortName: pickStringFromSources(sources, ['short_name', 'shortName']) ?? null,
         storeTypeLabels: storeTypes
