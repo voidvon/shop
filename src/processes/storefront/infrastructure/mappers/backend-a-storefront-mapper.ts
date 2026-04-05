@@ -497,7 +497,7 @@ export function mapBackendAPartnerMerchants(
       const imageUrl = resolveBackendAMediaUrl(
         pickStringFromSources(
           [rootSource, ...storeTypes.filter(isRecord)],
-          ['logo', 'logo_url', 'logoUrl', 'image', 'cover', 'banner_image', 'promo_image'],
+          ['logo', 'logo_url', 'logoUrl', 'avatar'],
         ),
       )
 
