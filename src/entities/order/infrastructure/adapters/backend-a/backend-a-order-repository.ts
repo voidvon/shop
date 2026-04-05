@@ -333,11 +333,11 @@ export function createBackendAOrderRepository(
   const httpClient = createBackendAOrderHttpClient(memberAuthSession)
 
   async function requestCheckoutPreview(
-    cartItemIds: number[],
+    cartItemIds?: number[],
     couponUsages?: CheckoutCouponUsage[],
   ) {
     return httpClient.post<BackendACheckoutPreviewDto>('/api/v1/checkout/preview', {
-      cart_item_ids: cartItemIds,
+      ...(cartItemIds && cartItemIds.length > 0 ? { cart_item_ids: cartItemIds } : {}),
       ...(couponUsages && couponUsages.length > 0
         ? { coupon_usages: normalizeCouponUsages(couponUsages) }
         : {}),
@@ -350,8 +350,7 @@ export function createBackendAOrderRepository(
         throw new Error('当前后端仅支持从购物车发起结算')
       }
 
-      const cartItemIds = normalizeCartLineIds(command.lines.map((line) => line.lineId ?? ''))
-      const basePreview = await requestCheckoutPreview(cartItemIds)
+      const basePreview = await requestCheckoutPreview()
       let preview = basePreview
 
       try {
@@ -369,7 +368,7 @@ export function createBackendAOrderRepository(
         )
 
         if (autoCouponUsages.length > 0) {
-          preview = await requestCheckoutPreview(cartItemIds, autoCouponUsages)
+          preview = await requestCheckoutPreview(undefined, autoCouponUsages)
         }
       } catch (error) {
         if (import.meta.env.DEV) {
