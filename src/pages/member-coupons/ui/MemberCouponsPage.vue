@@ -72,6 +72,10 @@ function resolveCouponStatus(coupon: MemberCouponListItem) {
   return 'available'
 }
 
+function shouldDisplayCoupon(coupon: MemberCouponListItem) {
+  return resolveCouponStatus(coupon) !== 'used'
+}
+
 function resolveCouponStatusText(coupon: MemberCouponListItem) {
   switch (resolveCouponStatus(coupon)) {
     case 'used':
@@ -86,7 +90,9 @@ function resolveCouponStatusText(coupon: MemberCouponListItem) {
 }
 
 const couponItems = computed(() =>
-  [...memberCouponsPageData.value.items].sort((left, right) => {
+  memberCouponsPageData.value.items
+    .filter(shouldDisplayCoupon)
+    .sort((left, right) => {
     const statusOrder = {
       available: 0,
       upcoming: 1,
@@ -102,7 +108,7 @@ const couponItems = computed(() =>
     }
 
     return right.userCouponId - left.userCouponId
-  }),
+    }),
 )
 
 onMounted(() => {
@@ -140,7 +146,6 @@ onActivated(() => {
           :class="`coupon-card-${resolveCouponStatus(coupon)}`"
         >
           <div class="coupon-card-main">
-            <span class="coupon-card-type">{{ coupon.type === 'discount' ? '折扣券' : '满减券' }}</span>
             <strong>{{ formatCouponHeadline(coupon) }}</strong>
             <p>{{ coupon.name }}</p>
 
@@ -216,12 +221,6 @@ onActivated(() => {
 .coupon-card-main {
   display: grid;
   gap: 8px;
-}
-
-.coupon-card-type {
-  color: #c2410c;
-  font-size: 12px;
-  font-weight: 600;
 }
 
 .coupon-card-main strong {

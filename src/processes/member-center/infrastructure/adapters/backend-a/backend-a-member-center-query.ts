@@ -151,6 +151,10 @@ function mapUserCouponItem(item: BackendAUserCouponDto): MemberCouponListItem | 
   }
 }
 
+function isUsedCoupon(item: MemberCouponListItem) {
+  return Boolean(item.usedAt)
+}
+
 function normalizeCandidateString(value: unknown) {
   if (typeof value !== 'string') {
     return null
@@ -333,7 +337,7 @@ export function createBackendAMemberCenterQuery(
           products,
           memberAuthSession.getSnapshot().authResult,
           snapshot.balanceAmount,
-          coupons.length,
+          coupons.filter((coupon) => !isUsedCoupon(coupon)).length,
           memberOrderSummary,
           platformSettings,
         ),
