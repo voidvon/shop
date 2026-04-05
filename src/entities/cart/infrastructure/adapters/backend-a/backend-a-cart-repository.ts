@@ -113,7 +113,7 @@ export function createBackendACartRepository(
     },
 
     async setItemQuantity({ lineId, quantity }) {
-      await httpClient.patch<BackendACartItemDto>(
+      await httpClient.post<BackendACartItemDto>(
         `/api/v1/cart-items/${encodeURIComponent(lineId)}`,
         createUpdateCartPayload({ quantity }),
       )
@@ -123,7 +123,7 @@ export function createBackendACartRepository(
 
     async setItemsSelected({ lineIds, selected }) {
       await Promise.all(lineIds.map((lineId) =>
-        httpClient.patch<BackendACartItemDto>(
+        httpClient.post<BackendACartItemDto>(
           `/api/v1/cart-items/${encodeURIComponent(lineId)}`,
           createUpdateCartPayload({ selected }),
         )))
