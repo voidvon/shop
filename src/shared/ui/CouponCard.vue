@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-
 defineOptions({
   inheritAttrs: false,
 })
@@ -8,30 +6,27 @@ defineOptions({
 type CouponCardSurface = 'warm' | 'neutral'
 
 const props = withDefaults(defineProps<{
-  headline: string
   highlighted?: boolean
-  metaItems?: string[]
   muted?: boolean
   selected?: boolean
+  smallValueSuffix?: boolean
+  subtitle?: string | null
   surface?: CouponCardSurface
   tag?: string
-  title?: string | null
+  title: string
+  value?: string | null
+  valueSuffix?: string | null
 }>(), {
   highlighted: false,
-  metaItems: () => [],
   muted: false,
   selected: false,
+  smallValueSuffix: false,
+  subtitle: null,
   surface: 'warm',
   tag: 'article',
-  title: null,
+  value: null,
+  valueSuffix: null,
 })
-
-const normalizedMetaItems = computed(() =>
-  props.metaItems.filter((item) => item.trim().length > 0),
-)
-
-const displayTitle = computed(() => props.title ?? props.headline)
-const displayValue = computed(() => (props.title ? props.headline : null))
 </script>
 
 <template>
@@ -49,18 +44,26 @@ const displayValue = computed(() => (props.title ? props.headline : null))
     v-bind="$attrs"
   >
     <div class="coupon-card-main">
-      <div class="coupon-card-summary">
-        <p class="coupon-card-title">{{ displayTitle }}</p>
-        <strong v-if="displayValue">{{ displayValue }}</strong>
-      </div>
+      <p class="coupon-card-title">{{ title }}</p>
 
-      <div v-if="normalizedMetaItems.length > 0" class="coupon-card-meta">
-        <span v-for="item in normalizedMetaItems" :key="item">{{ item }}</span>
-      </div>
+      <p v-if="subtitle" class="coupon-card-subtitle">{{ subtitle }}</p>
     </div>
 
-    <div v-if="$slots.side" class="coupon-card-side">
-      <slot name="side" />
+    <div v-if="value || valueSuffix || $slots.side" class="coupon-card-side">
+      <div class="coupon-card-side-content">
+        <div v-if="value || valueSuffix" class="coupon-card-value">
+          <strong v-if="value">{{ value }}</strong>
+          <span
+            v-if="valueSuffix"
+            class="coupon-card-value-suffix"
+            :class="{ 'coupon-card-value-suffix-small': smallValueSuffix }"
+          >
+            {{ valueSuffix }}
+          </span>
+        </div>
+
+        <slot name="side" />
+      </div>
     </div>
   </component>
 </template>
@@ -110,16 +113,7 @@ const displayValue = computed(() => (props.title ? props.headline : null))
   min-width: 0;
 }
 
-.coupon-card-summary {
-  display: flex;
-  gap: 12px;
-  align-items: baseline;
-  justify-content: space-between;
-}
-
 .coupon-card-title {
-  flex: 1 1 auto;
-  min-width: 0;
   margin: 0;
   color: #47362c;
   font-size: 15px;
@@ -127,12 +121,11 @@ const displayValue = computed(() => (props.title ? props.headline : null))
   line-height: 1.4;
 }
 
-.coupon-card-main strong {
-  flex: none;
-  color: #c25b0a;
-  font-size: 24px;
-  line-height: 1.1;
-  text-align: right;
+.coupon-card-subtitle {
+  margin: 6px 0 0;
+  color: #8a6f5b;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .coupon-card-neutral .coupon-card-title {
@@ -140,21 +133,7 @@ const displayValue = computed(() => (props.title ? props.headline : null))
   font-weight: 700;
 }
 
-.coupon-card-neutral .coupon-card-main strong {
-  color: #2f2a24;
-  font-size: 22px;
-}
-
-.coupon-card-meta {
-  display: grid;
-  gap: 4px;
-  margin-top: 8px;
-  color: #8a6f5b;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.coupon-card-neutral .coupon-card-meta {
+.coupon-card-neutral .coupon-card-subtitle {
   color: #887d70;
 }
 
@@ -162,5 +141,42 @@ const displayValue = computed(() => (props.title ? props.headline : null))
   display: flex;
   flex: none;
   align-items: center;
+  justify-content: center;
+}
+
+.coupon-card-side-content {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.coupon-card-value {
+  display: inline-flex;
+  gap: 2px;
+  align-items: baseline;
+  justify-content: center;
+  color: #c25b0a;
+}
+
+.coupon-card-neutral .coupon-card-value {
+  color: #2f2a24;
+}
+
+.coupon-card-value strong {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.coupon-card-neutral .coupon-card-value strong {
+  font-size: 22px;
+}
+
+.coupon-card-value-suffix {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.coupon-card-value-suffix-small {
+  font-size: 11px;
 }
 </style>

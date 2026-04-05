@@ -229,72 +229,35 @@ function formatMoney(value: number) {
   return fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed.replace(/0$/, '')
 }
 
-function formatCouponHeadline(coupon: MerchantCoupon) {
+function resolveCouponValue(coupon: MerchantCoupon) {
   if (coupon.type === 'discount' && coupon.discountRate !== null) {
-    return `${formatMoney(coupon.discountRate)} 折`
+    return {
+      suffix: '折',
+      value: formatMoney(coupon.discountRate),
+    }
   }
 
   if (coupon.discountAmount !== null) {
-    return `减 ${formatMoney(coupon.discountAmount)} 元`
+    return {
+      smallSuffix: true,
+      suffix: '元',
+      value: formatMoney(coupon.discountAmount),
+    }
   }
 
-  return coupon.name
+  return {
+    smallSuffix: false,
+    suffix: null,
+    value: null,
+  }
 }
 
 function formatCouponCondition(coupon: MerchantCoupon) {
   if (coupon.minimumAmount <= 0) {
-    return '无门槛可用'
+    return '无门槛'
   }
 
-  return `满 ${formatMoney(coupon.minimumAmount)} 元可用`
-}
-
-function formatCouponScope(coupon: MerchantCoupon) {
-  if (coupon.scopeType === 'product') {
-    return '指定商品可用'
-  }
-
-  if (coupon.scopeType === 'category') {
-    return '指定分类可用'
-  }
-
-  return '全场可用'
-}
-
-function formatCouponDate(value: string | null) {
-  if (!value) {
-    return null
-  }
-
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-
-  const year = date.getFullYear()
-  const month = `${date.getMonth() + 1}`.padStart(2, '0')
-  const day = `${date.getDate()}`.padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-function formatCouponWindow(coupon: MerchantCoupon) {
-  const start = formatCouponDate(coupon.startsAt)
-  const end = formatCouponDate(coupon.endsAt)
-
-  if (start && end) {
-    return `${start} 至 ${end}`
-  }
-
-  if (end) {
-    return `领取截止 ${end}`
-  }
-
-  if (start) {
-    return `${start} 起可领取`
-  }
-
-  return '长期有效'
+  return `满${formatMoney(coupon.minimumAmount)}可用`
 }
 
 function isCouponExpired(coupon: MerchantCoupon) {
@@ -721,14 +684,11 @@ watch(
             <CouponCard
               v-for="coupon in merchantCoupons"
               :key="coupon.id"
-              :headline="formatCouponHeadline(coupon)"
-              :meta-items="[
-                formatCouponCondition(coupon),
-                formatCouponScope(coupon),
-                formatCouponWindow(coupon),
-                `每人限领 ${coupon.perUserLimit} 张，已领 ${coupon.userCouponsCount} 张`,
-              ]"
+              :small-value-suffix="resolveCouponValue(coupon).smallSuffix"
+              :subtitle="formatCouponCondition(coupon)"
               :title="coupon.name"
+              :value="resolveCouponValue(coupon).value"
+              :value-suffix="resolveCouponValue(coupon).suffix"
             >
               <template #side>
                 <button

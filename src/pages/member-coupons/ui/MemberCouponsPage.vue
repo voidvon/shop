@@ -27,34 +27,35 @@ function formatAmount(value: number) {
   return fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed.replace(/0$/, '')
 }
 
-function formatCouponValue(coupon: MemberCouponListItem) {
+function resolveCouponValue(coupon: MemberCouponListItem) {
   if (coupon.type === 'discount' && coupon.discountRate !== null) {
-    return `${formatAmount(coupon.discountRate)} 折`
+    return {
+      suffix: '折',
+      value: formatAmount(coupon.discountRate),
+    }
   }
 
   if (coupon.discountAmount > 0) {
-    return `减 ${formatAmount(coupon.discountAmount)} 元`
+    return {
+      smallSuffix: true,
+      suffix: '元',
+      value: formatAmount(coupon.discountAmount),
+    }
   }
 
-  return coupon.name
-}
-
-function shouldDisplayCouponName(coupon: MemberCouponListItem) {
-  return formatCouponValue(coupon) !== coupon.name
+  return {
+    smallSuffix: false,
+    suffix: null,
+    value: null,
+  }
 }
 
 function formatCouponCondition(coupon: MemberCouponListItem) {
   if (coupon.minimumAmount <= 0) {
-    return '无门槛可用'
+    return '无门槛'
   }
 
-  return `满 ${formatAmount(coupon.minimumAmount)} 元可用`
-}
-
-function formatCouponWindow(coupon: MemberCouponListItem) {
-  const start = coupon.startsAt ? coupon.startsAt.slice(0, 10) : '领取后生效'
-  const end = coupon.endsAt ? coupon.endsAt.slice(0, 10) : '长期有效'
-  return `${start} 至 ${end}`
+  return `满${formatAmount(coupon.minimumAmount)}可用`
 }
 
 function resolveCouponStatus(coupon: MemberCouponListItem) {
@@ -148,15 +149,13 @@ onActivated(() => {
         <CouponCard
           v-for="coupon in couponItems"
           :key="coupon.userCouponId"
-          :headline="formatCouponValue(coupon)"
           :highlighted="resolveCouponStatus(coupon) === 'available'"
-          :meta-items="[
-            formatCouponCondition(coupon),
-            coupon.merchantName || '指定商家可用',
-            formatCouponWindow(coupon),
-          ]"
           :muted="resolveCouponStatus(coupon) !== 'available'"
-          :title="shouldDisplayCouponName(coupon) ? coupon.name : null"
+          :small-value-suffix="resolveCouponValue(coupon).smallSuffix"
+          :subtitle="formatCouponCondition(coupon)"
+          :title="coupon.name"
+          :value="resolveCouponValue(coupon).value"
+          :value-suffix="resolveCouponValue(coupon).suffix"
         >
           <template #side>
             <span

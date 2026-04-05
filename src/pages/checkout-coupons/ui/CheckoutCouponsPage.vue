@@ -49,32 +49,35 @@ function formatAmount(value: number) {
   return fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed.replace(/0$/, '')
 }
 
-function formatCouponHeadline(discountAmount: number, discountRate: number | null, type: string | null) {
+function resolveCouponValue(discountAmount: number, discountRate: number | null, type: string | null) {
   if (type === 'discount' && discountRate !== null) {
-    return `${formatAmount(discountRate)} 折`
+    return {
+      suffix: '折',
+      value: formatAmount(discountRate),
+    }
   }
 
   if (discountAmount > 0) {
-    return `减 ${formatAmount(discountAmount)} 元`
+    return {
+      smallSuffix: true,
+      suffix: '元',
+      value: formatAmount(discountAmount),
+    }
   }
 
-  return '优惠券'
+  return {
+    smallSuffix: false,
+    suffix: null,
+    value: null,
+  }
 }
 
 function formatCouponCondition(minimumAmount: number) {
   if (minimumAmount <= 0) {
-    return '无门槛可用'
+    return '无门槛'
   }
 
-  return `满 ${formatAmount(minimumAmount)} 元可用`
-}
-
-function formatCouponWindow(startsAt: string | null, endsAt: string | null) {
-  if (!startsAt && !endsAt) {
-    return '长期有效'
-  }
-
-  return `${startsAt ?? '即时'} 至 ${endsAt ?? '长期'}`
+  return `满${formatAmount(minimumAmount)}可用`
 }
 
 async function handleSelectCoupon(userCouponId: number | null) {
@@ -126,9 +129,9 @@ onMounted(async () => {
           tag="button"
           type="button"
           surface="neutral"
-          headline="不使用优惠券"
-          title="返回确认订单页后重新计算应付金额"
+          :subtitle="'返回确认订单页后重新计算应付金额'"
           :selected="couponGroup.userCouponId === null"
+          title="不使用优惠券"
           @click="handleSelectCoupon(null)"
         >
           <template #side>
@@ -142,13 +145,12 @@ onMounted(async () => {
             :key="coupon.userCouponId"
             tag="button"
             type="button"
-            :headline="formatCouponHeadline(coupon.discountAmount, coupon.discountRate, coupon.type)"
-            :meta-items="[
-              formatCouponCondition(coupon.minimumAmount),
-              formatCouponWindow(coupon.startsAt, coupon.endsAt),
-            ]"
             :selected="couponGroup.userCouponId === coupon.userCouponId"
+            :small-value-suffix="resolveCouponValue(coupon.discountAmount, coupon.discountRate, coupon.type).smallSuffix"
+            :subtitle="formatCouponCondition(coupon.minimumAmount)"
             :title="coupon.name"
+            :value="resolveCouponValue(coupon.discountAmount, coupon.discountRate, coupon.type).value"
+            :value-suffix="resolveCouponValue(coupon.discountAmount, coupon.discountRate, coupon.type).suffix"
             @click="handleSelectCoupon(coupon.userCouponId)"
           >
             <template #side>
