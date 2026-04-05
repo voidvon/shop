@@ -609,7 +609,7 @@ export function mapBackendAStoreHomePageData(
     ?? input.products[0]?.tags.find((tag) => !tag.includes('推荐'))
     ?? `店铺 ${input.storeId}`
   const storeLogoUrl = resolveBackendAMediaUrl(
-    pickStringFromSources(sources, ['logo', 'logo_url', 'logoUrl', 'image', 'cover', 'avatar']),
+    pickStringFromSources(sources, ['logo', 'logo_url', 'logoUrl', 'avatar']),
   )
   const followerCount = pickNumberFromSources(
     sources,

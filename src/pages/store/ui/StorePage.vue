@@ -33,6 +33,7 @@ const footerActions = [
   { key: 'service', icon: 'service-o', label: '联系客服' },
   { key: 'about', icon: 'info-o', label: '关于我们' },
 ] as const
+const defaultStoreLogoUrl = '/images/image-placeholder.svg'
 
 const storeId = computed(() => String(route.params.storeId ?? ''))
 const preferredStoreName = computed(() =>
@@ -83,7 +84,7 @@ const {
 } = useStorePageModel(storeId, preferredStoreName)
 
 const primaryBenefit = computed(() => storeBenefits.value[0] ?? '支持售后无忧')
-const storeLogoDisplayUrl = computed(() => heroImageUrl.value ?? storeLogoUrl.value)
+const storeLogoDisplayUrl = computed(() => storeLogoUrl.value || defaultStoreLogoUrl)
 const couponPopupVisible = ref(false)
 const filterDrawerVisible = ref(false)
 const loadMoreTriggerRef = ref<HTMLElement | null>(null)

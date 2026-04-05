@@ -181,7 +181,7 @@ onActivated(() => {
 
             <div class="text-area">
               <strong>{{ memberCenterPageData.profile.username ?? '点击登录/注册' }}</strong>
-              <span>{{ memberCenterPageData.profile.isLoggedIn ? '欢迎回来，查看完整账户信息' : '可查看更多信息' }}</span>
+              <span>{{ memberCenterPageData.profile.isLoggedIn ? '欢迎回来' : '可查看更多信息' }}</span>
             </div>
           </button>
 
@@ -197,7 +197,7 @@ onActivated(() => {
 
             <div class="text-area">
               <strong>{{ memberCenterPageData.profile.username ?? '点击登录/注册' }}</strong>
-              <span>{{ memberCenterPageData.profile.isLoggedIn ? '欢迎回来，查看完整账户信息' : '可查看更多信息' }}</span>
+              <span>{{ memberCenterPageData.profile.isLoggedIn ? '欢迎回来' : '可查看更多信息' }}</span>
             </div>
 
             <MemberLogoutButton class="logout-action" @logged-out="handleLoggedOut" />
