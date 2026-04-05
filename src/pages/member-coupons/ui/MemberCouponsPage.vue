@@ -3,6 +3,7 @@ import { computed, onActivated, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 import type { MemberCouponListItem } from '@/processes/member-center'
+import CouponCard from '@/shared/ui/CouponCard.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
@@ -22,10 +23,11 @@ function goBack() {
 }
 
 function formatAmount(value: number) {
-  return value.toFixed(2)
+  const fixed = value.toFixed(2)
+  return fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed.replace(/0$/, '')
 }
 
-function formatCouponHeadline(coupon: MemberCouponListItem) {
+function formatCouponValue(coupon: MemberCouponListItem) {
   if (coupon.type === 'discount' && coupon.discountRate !== null) {
     return `${formatAmount(coupon.discountRate)} 折`
   }
@@ -35,6 +37,14 @@ function formatCouponHeadline(coupon: MemberCouponListItem) {
   }
 
   return coupon.name
+}
+
+function shouldDisplayCouponName(coupon: MemberCouponListItem) {
+  return formatCouponValue(coupon) !== coupon.name
+}
+
+function formatCouponType(coupon: MemberCouponListItem) {
+  return coupon.type === 'discount' ? '折扣券' : '满减券'
 }
 
 function formatCouponCondition(coupon: MemberCouponListItem) {
@@ -48,7 +58,7 @@ function formatCouponCondition(coupon: MemberCouponListItem) {
 function formatCouponWindow(coupon: MemberCouponListItem) {
   const start = coupon.startsAt ? coupon.startsAt.slice(0, 10) : '领取后生效'
   const end = coupon.endsAt ? coupon.endsAt.slice(0, 10) : '长期有效'
-  return `${start} - ${end}`
+  return `${start} 至 ${end}`
 }
 
 function resolveCouponStatus(coupon: MemberCouponListItem) {
@@ -93,21 +103,21 @@ const couponItems = computed(() =>
   memberCouponsPageData.value.items
     .filter(shouldDisplayCoupon)
     .sort((left, right) => {
-    const statusOrder = {
-      available: 0,
-      upcoming: 1,
-      expired: 2,
-      used: 3,
-    } as const
+      const statusOrder = {
+        available: 0,
+        upcoming: 1,
+        expired: 2,
+        used: 3,
+      } as const
 
-    const leftStatus = statusOrder[resolveCouponStatus(left)]
-    const rightStatus = statusOrder[resolveCouponStatus(right)]
+      const leftStatus = statusOrder[resolveCouponStatus(left)]
+      const rightStatus = statusOrder[resolveCouponStatus(right)]
 
-    if (leftStatus !== rightStatus) {
-      return leftStatus - rightStatus
-    }
+      if (leftStatus !== rightStatus) {
+        return leftStatus - rightStatus
+      }
 
-    return right.userCouponId - left.userCouponId
+      return right.userCouponId - left.userCouponId
     }),
 )
 
@@ -139,25 +149,29 @@ onActivated(() => {
       />
 
       <div v-else class="coupon-list">
-        <article
+        <CouponCard
           v-for="coupon in couponItems"
           :key="coupon.userCouponId"
-          class="coupon-card"
-          :class="`coupon-card-${resolveCouponStatus(coupon)}`"
+          :headline="formatCouponValue(coupon)"
+          :highlighted="resolveCouponStatus(coupon) === 'available'"
+          :meta-items="[
+            formatCouponCondition(coupon),
+            coupon.merchantName || '指定商家可用',
+            formatCouponWindow(coupon),
+          ]"
+          :muted="resolveCouponStatus(coupon) !== 'available'"
+          :title="shouldDisplayCouponName(coupon) ? coupon.name : null"
+          :type-label="formatCouponType(coupon)"
         >
-          <div class="coupon-card-main">
-            <strong>{{ formatCouponHeadline(coupon) }}</strong>
-            <p>{{ coupon.name }}</p>
-
-            <div class="coupon-card-meta">
-              <span>{{ coupon.merchantName || '指定商家可用' }}</span>
-              <span>{{ formatCouponCondition(coupon) }}</span>
-              <span>{{ formatCouponWindow(coupon) }}</span>
-            </div>
-          </div>
-
-          <span class="coupon-card-status">{{ resolveCouponStatusText(coupon) }}</span>
-        </article>
+          <template #side>
+            <span
+              class="coupon-card-status"
+              :class="{ 'coupon-card-status-muted': resolveCouponStatus(coupon) !== 'available' }"
+            >
+              {{ resolveCouponStatusText(coupon) }}
+            </span>
+          </template>
+        </CouponCard>
       </div>
     </div>
   </section>
@@ -197,52 +211,6 @@ onActivated(() => {
   gap: 12px;
 }
 
-.coupon-card {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px;
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 12px 28px rgba(26, 25, 24, 0.06);
-}
-
-.coupon-card-available {
-  border: 1px solid rgba(234, 88, 12, 0.12);
-}
-
-.coupon-card-upcoming,
-.coupon-card-expired,
-.coupon-card-used {
-  opacity: 0.72;
-}
-
-.coupon-card-main {
-  display: grid;
-  gap: 8px;
-}
-
-.coupon-card-main strong {
-  color: #1f1d1a;
-  font-size: 24px;
-  line-height: 1;
-}
-
-.coupon-card-main p {
-  margin: 0;
-  color: #2f2c28;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.coupon-card-meta {
-  display: grid;
-  gap: 4px;
-  color: #8c8a86;
-  font-size: 12px;
-}
-
 .coupon-card-status {
   flex: 0 0 auto;
   min-width: 64px;
@@ -255,9 +223,7 @@ onActivated(() => {
   text-align: center;
 }
 
-.coupon-card-used .coupon-card-status,
-.coupon-card-expired .coupon-card-status,
-.coupon-card-upcoming .coupon-card-status {
+.coupon-card-status-muted {
   background: #f3f0eb;
   color: #8c8a86;
 }

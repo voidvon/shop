@@ -15,6 +15,7 @@ import { ProductCompactCard } from '@/entities/product'
 import type { MerchantCoupon } from '@/processes/storefront'
 import { normalizeSearchKeyword } from '@/shared/lib/search-history'
 import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
+import CouponCard from '@/shared/ui/CouponCard.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
 
@@ -697,8 +698,8 @@ watch(
           </p>
 
           <div v-else-if="isCouponLoading" class="coupon-list">
-            <article v-for="index in 3" :key="index" class="coupon-card coupon-card-skeleton">
-              <div class="coupon-card-main">
+            <article v-for="index in 3" :key="index" class="coupon-card-skeleton-shell">
+              <div class="coupon-card-skeleton-main">
                 <div class="coupon-skeleton-line coupon-skeleton-line-title" />
                 <div class="coupon-skeleton-line coupon-skeleton-line-copy" />
                 <div class="coupon-skeleton-line coupon-skeleton-line-copy" />
@@ -717,32 +718,31 @@ watch(
           />
 
           <div v-else class="coupon-list">
-            <article v-for="coupon in merchantCoupons" :key="coupon.id" class="coupon-card">
-              <div class="coupon-card-main">
-                <span class="coupon-card-type">
-                  {{ coupon.type === 'discount' ? '折扣券' : '满减券' }}
-                </span>
-                <strong>{{ formatCouponHeadline(coupon) }}</strong>
-                <p>{{ coupon.name }}</p>
-
-                <div class="coupon-card-meta">
-                  <span>{{ formatCouponCondition(coupon) }}</span>
-                  <span>{{ formatCouponScope(coupon) }}</span>
-                  <span>{{ formatCouponWindow(coupon) }}</span>
-                  <span>每人限领 {{ coupon.perUserLimit }} 张，已领 {{ coupon.userCouponsCount }} 张</span>
-                </div>
-              </div>
-
-              <button
-                class="coupon-claim-button"
-                :class="{ 'coupon-claim-button-disabled': isCouponClaimDisabled(coupon) }"
-                :disabled="isCouponClaimDisabled(coupon)"
-                type="button"
-                @click="handleClaimCoupon(coupon.id)"
-              >
-                {{ getCouponClaimButtonText(coupon) }}
-              </button>
-            </article>
+            <CouponCard
+              v-for="coupon in merchantCoupons"
+              :key="coupon.id"
+              :headline="formatCouponHeadline(coupon)"
+              :meta-items="[
+                formatCouponCondition(coupon),
+                formatCouponScope(coupon),
+                formatCouponWindow(coupon),
+                `每人限领 ${coupon.perUserLimit} 张，已领 ${coupon.userCouponsCount} 张`,
+              ]"
+              :title="coupon.name"
+              :type-label="coupon.type === 'discount' ? '折扣券' : '满减券'"
+            >
+              <template #side>
+                <button
+                  class="coupon-claim-button"
+                  :class="{ 'coupon-claim-button-disabled': isCouponClaimDisabled(coupon) }"
+                  :disabled="isCouponClaimDisabled(coupon)"
+                  type="button"
+                  @click="handleClaimCoupon(coupon.id)"
+                >
+                  {{ getCouponClaimButtonText(coupon) }}
+                </button>
+              </template>
+            </CouponCard>
           </div>
         </div>
       </section>
@@ -1424,7 +1424,7 @@ watch(
   gap: 12px;
 }
 
-.coupon-card {
+.coupon-card-skeleton-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
@@ -1436,42 +1436,8 @@ watch(
   box-shadow: 0 10px 24px rgba(188, 119, 60, 0.08);
 }
 
-.coupon-card-main {
+.coupon-card-skeleton-main {
   min-width: 0;
-}
-
-.coupon-card-type {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 64px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(240, 138, 62, 0.12);
-  font-size: 11px;
-  color: #ba5f15;
-}
-
-.coupon-card-main strong {
-  display: block;
-  margin-top: 8px;
-  font-size: 24px;
-  line-height: 1.1;
-  color: #c25b0a;
-}
-
-.coupon-card-main p {
-  margin: 6px 0 0;
-  font-size: 14px;
-  color: #47362c;
-}
-
-.coupon-card-meta {
-  display: grid;
-  gap: 4px;
-  margin-top: 10px;
-  font-size: 12px;
-  color: #8a6f5b;
 }
 
 .coupon-claim-button {
@@ -1491,7 +1457,7 @@ watch(
   color: #9f8877;
 }
 
-.coupon-card-skeleton {
+.coupon-card-skeleton-shell {
   border-color: rgba(222, 214, 205, 0.7);
   background: #fff;
   box-shadow: none;

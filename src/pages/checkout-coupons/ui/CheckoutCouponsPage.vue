@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
+import CouponCard from '@/shared/ui/CouponCard.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
@@ -44,7 +45,8 @@ function goBack() {
 }
 
 function formatAmount(value: number) {
-  return value.toFixed(2)
+  const fixed = value.toFixed(2)
+  return fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed.replace(/0$/, '')
 }
 
 function formatCouponHeadline(discountAmount: number, discountRate: number | null, type: string | null) {
@@ -72,7 +74,7 @@ function formatCouponWindow(startsAt: string | null, endsAt: string | null) {
     return '长期有效'
   }
 
-  return `${startsAt ?? '即时'} - ${endsAt ?? '长期'}`
+  return `${startsAt ?? '即时'} 至 ${endsAt ?? '长期'}`
 }
 
 async function handleSelectCoupon(userCouponId: number | null) {
@@ -120,41 +122,42 @@ onMounted(async () => {
           <p>订单金额 ¥{{ formatAmount(couponGroup.totalAmount) }}，当前最多可选 1 张券</p>
         </section>
 
-        <button
-          class="coupon-card coupon-card-neutral"
+        <CouponCard
+          tag="button"
           type="button"
-          :class="{ 'coupon-card-selected': couponGroup.userCouponId === null }"
+          surface="neutral"
+          headline="不使用优惠券"
+          title="返回确认订单页后重新计算应付金额"
+          :selected="couponGroup.userCouponId === null"
           @click="handleSelectCoupon(null)"
         >
-          <div class="coupon-card-main">
-            <strong>不使用优惠券</strong>
-            <p>返回确认订单页后重新计算应付金额</p>
-          </div>
-          <span class="coupon-card-action">{{ couponGroup.userCouponId === null ? '已选' : '选择' }}</span>
-        </button>
+          <template #side>
+            <span class="coupon-card-action">{{ couponGroup.userCouponId === null ? '已选' : '选择' }}</span>
+          </template>
+        </CouponCard>
 
         <div v-if="availableCoupons.length > 0" class="coupon-list">
-          <button
+          <CouponCard
             v-for="coupon in availableCoupons"
             :key="coupon.userCouponId"
-            class="coupon-card"
+            tag="button"
             type="button"
-            :class="{ 'coupon-card-selected': couponGroup.userCouponId === coupon.userCouponId }"
+            :headline="formatCouponHeadline(coupon.discountAmount, coupon.discountRate, coupon.type)"
+            :meta-items="[
+              formatCouponCondition(coupon.minimumAmount),
+              formatCouponWindow(coupon.startsAt, coupon.endsAt),
+            ]"
+            :selected="couponGroup.userCouponId === coupon.userCouponId"
+            :title="coupon.name"
+            :type-label="coupon.type === 'discount' ? '折扣券' : '满减券'"
             @click="handleSelectCoupon(coupon.userCouponId)"
           >
-            <div class="coupon-card-main">
-              <span class="coupon-card-type">{{ coupon.type === 'discount' ? '折扣券' : '满减券' }}</span>
-              <strong>{{ formatCouponHeadline(coupon.discountAmount, coupon.discountRate, coupon.type) }}</strong>
-              <p>{{ coupon.name }}</p>
-              <div class="coupon-card-meta">
-                <span>{{ formatCouponCondition(coupon.minimumAmount) }}</span>
-                <span>{{ formatCouponWindow(coupon.startsAt, coupon.endsAt) }}</span>
-              </div>
-            </div>
-            <span class="coupon-card-action">
-              {{ couponGroup.userCouponId === coupon.userCouponId ? '已选' : '选择' }}
-            </span>
-          </button>
+            <template #side>
+              <span class="coupon-card-action">
+                {{ couponGroup.userCouponId === coupon.userCouponId ? '已选' : '选择' }}
+              </span>
+            </template>
+          </CouponCard>
         </div>
 
         <EmptyState
@@ -201,8 +204,7 @@ onMounted(async () => {
 }
 
 .state-card,
-.group-summary,
-.coupon-card {
+.group-summary {
   border: 0;
   border-radius: 18px;
   background: #fff;
@@ -241,65 +243,6 @@ onMounted(async () => {
 .coupon-list {
   display: grid;
   gap: 12px;
-}
-
-.coupon-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  padding: 16px;
-  text-align: left;
-  box-shadow: 0 10px 24px rgba(102, 73, 38, 0.08);
-}
-
-.coupon-card-neutral {
-  border: 1px solid #efe3d6;
-  box-shadow: none;
-}
-
-.coupon-card-selected {
-  outline: 2px solid #f97316;
-  outline-offset: -2px;
-}
-
-.coupon-card-main {
-  display: grid;
-  gap: 6px;
-}
-
-.coupon-card-type {
-  display: inline-flex;
-  width: fit-content;
-  padding: 4px 9px;
-  border-radius: 999px;
-  background: #fff0e3;
-  color: #cc5d16;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.coupon-card-main strong {
-  color: #2f2a24;
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1.1;
-}
-
-.coupon-card-main p {
-  margin: 0;
-  color: #5f574e;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.coupon-card-meta {
-  display: grid;
-  gap: 4px;
-  color: #887d70;
-  font-size: 12px;
-  line-height: 1.5;
 }
 
 .coupon-card-action {
