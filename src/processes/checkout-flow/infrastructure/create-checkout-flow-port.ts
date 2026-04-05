@@ -7,6 +7,7 @@ import {
   createCheckoutPreview,
   createCheckoutPreviewUseCase,
   createCheckoutLine,
+  type CheckoutCouponUsage,
   submitOrder,
   type CheckoutLine,
   type CreateCheckoutPreviewCommand,
@@ -145,9 +146,9 @@ async function resolveCheckoutCommand(
 
 export function createCheckoutFlowPort(options: CreateCheckoutFlowPortOptions): CheckoutFlowPort {
   return {
-    async getPreview() {
+    async getPreview(couponUsages?: CheckoutCouponUsage[]) {
       const command = await resolveCheckoutCommand(options)
-      return createCheckoutPreviewUseCase(options.orderRepository, command)
+      return createCheckoutPreviewUseCase(options.orderRepository, command, couponUsages)
     },
 
     async submit(submitCommand?: SubmitCheckoutOrderCommand): Promise<SubmitCheckoutOrderResult> {

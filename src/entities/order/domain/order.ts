@@ -23,7 +23,21 @@ export interface CheckoutCouponUsage {
   userCouponId: number
 }
 
+export interface CheckoutAvailableCoupon {
+  discountAmount: number
+  discountRate: number | null
+  endsAt: string | null
+  estimatedDiscount: number
+  merchantId: number | null
+  minimumAmount: number
+  name: string
+  startsAt: string | null
+  type: string | null
+  userCouponId: number
+}
+
 export interface CheckoutPreviewGroup {
+  availableCoupons: CheckoutAvailableCoupon[]
   availableBalance: number
   balanceTypeId: number
   balanceTypeName: string

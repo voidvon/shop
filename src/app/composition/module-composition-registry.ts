@@ -5,6 +5,7 @@ import type { RouteRecordRaw } from 'vue-router'
 import { CartPage } from '@/pages/cart'
 import { CategoryPage } from '@/pages/category'
 import { CheckoutPage } from '@/pages/checkout'
+import { CheckoutCouponsPage } from '@/pages/checkout-coupons'
 import { CustomerServiceConversationDetailPage } from '@/pages/customer-service-conversation-detail'
 import { CustomerServiceConversationListPage } from '@/pages/customer-service-conversation-list'
 import { HomePage } from '@/pages/home'
@@ -199,6 +200,14 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: CheckoutPage,
         meta: {
           title: '确认订单',
+        },
+      }),
+      createModuleRoute({
+        path: '/checkout/coupons',
+        name: 'checkout-coupons',
+        component: CheckoutCouponsPage,
+        meta: {
+          title: '选择优惠券',
         },
       }),
     ],

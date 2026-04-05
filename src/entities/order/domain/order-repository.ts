@@ -1,4 +1,5 @@
 import type {
+  CheckoutCouponUsage,
   CheckoutPreview,
   CreateCheckoutPreviewCommand,
   OrderConfirmation,
@@ -8,7 +9,7 @@ import type {
 } from './order'
 
 export interface OrderRepository {
-  createPreview(command: CreateCheckoutPreviewCommand): Promise<CheckoutPreview>
+  createPreview(command: CreateCheckoutPreviewCommand, couponUsages?: CheckoutCouponUsage[]): Promise<CheckoutPreview>
   submit(command: SubmitOrderCommand): Promise<OrderConfirmation>
   transitionStatus(command: TransitionOrderStatusCommand): Promise<OrderStatusUpdate>
 }

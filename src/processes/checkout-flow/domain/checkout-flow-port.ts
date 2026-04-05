@@ -12,6 +12,6 @@ export interface SubmitCheckoutOrderResult {
 }
 
 export interface CheckoutFlowPort {
-  getPreview(): Promise<CheckoutPreview>
+  getPreview(couponUsages?: CheckoutCouponUsage[]): Promise<CheckoutPreview>
   submit(command?: SubmitCheckoutOrderCommand): Promise<SubmitCheckoutOrderResult>
 }

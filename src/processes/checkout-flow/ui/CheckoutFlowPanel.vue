@@ -27,13 +27,7 @@ const {
 } = storeToRefs(checkoutStore)
 
 const previewLines = computed(() => preview.value?.lines ?? [])
-const previewCouponGroups = computed(() =>
-  (preview.value?.groups ?? []).filter((group) =>
-    group.couponAmount > 0
-    || Boolean(group.couponName)
-    || Boolean(group.couponError),
-  ),
-)
+const previewCouponGroups = computed(() => preview.value?.groups ?? [])
 const payableAmountText = computed(() => formatAmount(preview.value?.payableAmount ?? 0))
 const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAmount ?? 0))
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
@@ -69,6 +63,16 @@ function openAddressSelector() {
       mode: 'select',
       returnTo: 'checkout',
       selectedAddressId: selectedAddress.value?.id,
+    },
+  })
+}
+
+function openCouponSelector(merchantId: number, balanceTypeId: number) {
+  void router.push({
+    name: 'checkout-coupons',
+    query: {
+      balanceTypeId: String(balanceTypeId),
+      merchantId: String(merchantId),
     },
   })
 }
@@ -152,7 +156,12 @@ function formatCouponGroupLabel(merchantName: string) {
   return merchantName ? `${merchantName}优惠券` : '优惠券'
 }
 
-function formatCouponGroupValue(couponName: string | null, couponAmount: number, couponError: string | null) {
+function formatCouponGroupValue(
+  couponName: string | null,
+  couponAmount: number,
+  couponError: string | null,
+  availableCouponCount: number,
+) {
   if (couponError) {
     return couponError
   }
@@ -169,7 +178,11 @@ function formatCouponGroupValue(couponName: string | null, couponAmount: number,
     return `已优惠 ¥${formatAmount(couponAmount)}`
   }
 
-  return '未使用'
+  if (availableCouponCount > 0) {
+    return `${availableCouponCount} 张可用`
+  }
+
+  return '无可用优惠券'
 }
 </script>
 
@@ -226,19 +239,24 @@ function formatCouponGroupValue(couponName: string | null, couponAmount: number,
               <span class="merchant-row-value">运费0.00</span>
             </div>
 
-            <div
+            <button
               v-for="group in previewCouponGroups"
               :key="`${group.merchantId}-${group.balanceTypeId}`"
-              class="merchant-row"
+              class="merchant-row merchant-row-button"
+              type="button"
+              @click="openCouponSelector(group.merchantId, group.balanceTypeId)"
             >
               <span class="merchant-row-label">{{ formatCouponGroupLabel(group.merchantName) }}</span>
-              <span
-                class="merchant-row-value"
-                :class="{ 'merchant-row-value-error': Boolean(group.couponError) }"
-              >
-                {{ formatCouponGroupValue(group.couponName, group.couponAmount, group.couponError) }}
+              <span class="merchant-row-main">
+                <span
+                  class="merchant-row-value"
+                  :class="{ 'merchant-row-value-error': Boolean(group.couponError) }"
+                >
+                  {{ formatCouponGroupValue(group.couponName, group.couponAmount, group.couponError, group.availableCoupons.length) }}
+                </span>
+                <van-icon class="merchant-row-arrow" name="arrow" />
               </span>
-            </div>
+            </button>
 
             <van-field
               v-model="buyerMessage"
@@ -383,6 +401,21 @@ function formatCouponGroupValue(couponName: string | null, couponAmount: number,
   border-top: 1px solid #f1eeea;
 }
 
+.merchant-row-button {
+  width: 100%;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.merchant-row-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .merchant-row-label {
   color: #3c3b39;
   font-size: 14px;
@@ -397,6 +430,11 @@ function formatCouponGroupValue(couponName: string | null, couponAmount: number,
 
 .merchant-row-value-error {
   color: #c95a21;
+}
+
+.merchant-row-arrow {
+  color: #b9b2a8;
+  font-size: 14px;
 }
 
 .explain-amount {

@@ -57,6 +57,7 @@ function resolveOrderStatusText(status: TradeOrderStatus) {
 
 function mapCheckoutPreviewGroup(dto: BackendACheckoutPreviewGroupDto): CheckoutPreviewGroup {
   return {
+    availableCoupons: [],
     availableBalance: parseAmount(dto.available_balance),
     balanceTypeId: dto.balance_type_id,
     balanceTypeName: dto.balance_type_name,

@@ -11,6 +11,8 @@ import { useModuleAvailability } from '@/shared/lib/modules'
 import {
   createBrowserOrderRepository,
   createCheckoutPreview,
+  type CheckoutCouponUsage,
+  type CheckoutPreviewGroup,
   type CheckoutPreview,
   type OrderConfirmation,
 } from '@/entities/order'
@@ -46,6 +48,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const isLoading = ref(false)
   const isSubmitting = ref(false)
   const preview = ref<CheckoutPreview | null>(null)
+  const selectedCouponUsages = ref<CheckoutCouponUsage[]>([])
   const selectedAddressId = ref<string | null>(null)
   const selectedAddress = computed(() =>
     memberAddressStore.resolveSelectedAddress(selectedAddressId.value ?? undefined),
@@ -78,9 +81,23 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     return nextSelectedAddress
   }
 
-  async function loadPreview() {
+  function isSameCouponGroup(
+    left: Pick<CheckoutCouponUsage, 'balanceTypeId' | 'merchantId'>,
+    right: Pick<CheckoutCouponUsage, 'balanceTypeId' | 'merchantId'>,
+  ) {
+    return left.balanceTypeId === right.balanceTypeId && left.merchantId === right.merchantId
+  }
+
+  function findCouponGroup(merchantId: number, balanceTypeId: number) {
+    return preview.value?.groups.find((group) =>
+      group.merchantId === merchantId && group.balanceTypeId === balanceTypeId,
+    ) ?? null
+  }
+
+  async function loadPreview(options?: { couponUsages?: CheckoutCouponUsage[] }) {
     if (!isCheckoutEnabled.value) {
       preview.value = null
+      selectedCouponUsages.value = []
       hasLoaded.value = true
       return
     }
@@ -90,11 +107,14 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
 
     try {
       const instantCheckoutDraft = readInstantCheckoutDraft()
+      const nextCouponUsages = options?.couponUsages ?? selectedCouponUsages.value
 
       if (instantCheckoutDraft) {
         preview.value = createCheckoutPreview(instantCheckoutDraft)
+        selectedCouponUsages.value = []
       } else {
-        preview.value = await checkoutFlowPort.getPreview()
+        preview.value = await checkoutFlowPort.getPreview(nextCouponUsages)
+        selectedCouponUsages.value = preview.value.couponUsages
       }
 
       const assetsSnapshot = await getMemberAssetsSnapshot(memberAssetsService)
@@ -108,6 +128,24 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     } finally {
       isLoading.value = false
     }
+  }
+
+  async function applyCouponSelection(group: CheckoutPreviewGroup, userCouponId: number | null) {
+    const nextCouponUsages = selectedCouponUsages.value.filter((couponUsage) =>
+      !isSameCouponGroup(couponUsage, group),
+    )
+
+    if (userCouponId !== null) {
+      nextCouponUsages.push({
+        balanceTypeId: group.balanceTypeId,
+        merchantId: group.merchantId,
+        userCouponId,
+      })
+    }
+
+    await loadPreview({
+      couponUsages: nextCouponUsages,
+    })
   }
 
   async function submitCurrentOrder(remark?: string) {
@@ -176,6 +214,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   }
 
   memberAuthSession.subscribe(() => {
+    selectedCouponUsages.value = []
     selectedAddressId.value = null
     clearInstantCheckoutDraft()
   })
@@ -184,10 +223,12 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     availableBalance,
     confirmation,
     errorMessage,
+    findCouponGroup,
     hasLoaded,
     isCheckoutEnabled,
     isLoading,
     isSubmitting,
+    applyCouponSelection,
     loadPreview,
     preview,
     selectAddress,

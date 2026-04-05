@@ -2,14 +2,16 @@ import { createBackendAHttpClient } from '@/shared/api/backend-a/backend-a-http-
 import type { MemberAuthSession } from '@/entities/member-auth'
 
 import type {
+  CheckoutAvailableCoupon,
   CheckoutCouponUsage,
+  CheckoutPreview,
+  CheckoutPreviewGroup,
   OrderConfirmation,
   OrderRecord,
 } from '../../../domain/order'
 import type { OrderRepository } from '../../../domain/order-repository'
 import type {
   BackendACheckoutPreviewDto,
-  BackendACheckoutPreviewGroupDto,
   BackendAOrderDto,
 } from '../../dto/backend-a-order.dto'
 import {
@@ -173,6 +175,7 @@ interface BackendAUserCouponItem {
   endsAt: string | null
   merchantId: number | null
   minimumAmount: number
+  name: string
   startsAt: string | null
   type: string | null
   usedAt: string | null
@@ -228,6 +231,7 @@ function mapUserCouponItem(item: BackendAUserCouponDto): BackendAUserCouponItem 
       pickInteger([rootSource, templateSource], ['merchant_id', 'merchantId'])
       ?? pickInteger([merchantSource], ['merchant_id', 'merchantId', 'id']),
     minimumAmount: pickNumber(sources, ['minimum_amount', 'minimumAmount']) ?? 0,
+    name: pickString(sources, ['name', 'coupon_name', 'couponName']) ?? `优惠券${userCouponId}`,
     startsAt: pickString(sources, ['starts_at', 'startsAt']),
     type: pickString(sources, ['type']),
     usedAt: pickString(sources, ['used_at', 'usedAt']),
@@ -253,55 +257,67 @@ function isCouponCurrentlyAvailable(coupon: BackendAUserCouponItem, now: Date) {
   return true
 }
 
-function estimateCouponDiscount(group: BackendACheckoutPreviewGroupDto, coupon: BackendAUserCouponItem) {
+function estimateCouponDiscount(totalAmount: number, coupon: BackendAUserCouponItem) {
   if (coupon.type === 'discount' && coupon.discountRate && coupon.discountRate > 0) {
     const normalizedRate = Math.min(coupon.discountRate, 10) / 10
-    return Math.max(parseFloat(group.total_amount) * (1 - normalizedRate), 0)
+    return Math.max(totalAmount * (1 - normalizedRate), 0)
   }
 
   return Math.max(coupon.discountAmount, 0)
 }
 
-function resolveAutoCouponUsages(
-  groups: BackendACheckoutPreviewGroupDto[],
+function resolveAvailableCouponsForGroup(
+  group: CheckoutPreviewGroup,
   coupons: BackendAUserCouponItem[],
 ) {
   const now = new Date()
-  const remainingCoupons = coupons.filter((coupon) => isCouponCurrentlyAvailable(coupon, now))
-  const couponUsages: CheckoutCouponUsage[] = []
-
-  for (const group of groups) {
-    const eligibleCoupons = remainingCoupons
-      .filter((coupon) =>
-        coupon.merchantId === group.merchant_id
-        && parseFloat(group.total_amount) >= coupon.minimumAmount,
-      )
-      .sort((left, right) =>
-        estimateCouponDiscount(group, right) - estimateCouponDiscount(group, left),
-      )
-
-    const selectedCoupon = eligibleCoupons[0]
-
-    if (!selectedCoupon) {
-      continue
-    }
-
-    couponUsages.push({
-      balanceTypeId: group.balance_type_id,
-      merchantId: group.merchant_id,
-      userCouponId: selectedCoupon.userCouponId,
-    })
-
-    const selectedCouponIndex = remainingCoupons.findIndex((coupon) =>
-      coupon.userCouponId === selectedCoupon.userCouponId,
+  return coupons
+    .filter((coupon) => isCouponCurrentlyAvailable(coupon, now))
+    .filter((coupon) =>
+      coupon.merchantId === group.merchantId
+      && group.totalAmount >= coupon.minimumAmount,
     )
+    .map((coupon): CheckoutAvailableCoupon => ({
+      discountAmount: coupon.discountAmount,
+      discountRate: coupon.discountRate,
+      endsAt: coupon.endsAt,
+      estimatedDiscount: estimateCouponDiscount(group.totalAmount, coupon),
+      merchantId: coupon.merchantId,
+      minimumAmount: coupon.minimumAmount,
+      name: coupon.name,
+      startsAt: coupon.startsAt,
+      type: coupon.type,
+      userCouponId: coupon.userCouponId,
+    }))
+    .sort((left, right) => right.estimatedDiscount - left.estimatedDiscount)
+}
 
-    if (selectedCouponIndex >= 0) {
-      remainingCoupons.splice(selectedCouponIndex, 1)
-    }
+function attachAvailableCoupons(
+  preview: CheckoutPreview,
+  coupons: BackendAUserCouponItem[],
+): CheckoutPreview {
+  return {
+    ...preview,
+    groups: preview.groups.map((group) => ({
+      ...group,
+      availableCoupons: resolveAvailableCouponsForGroup(group, coupons),
+    })),
   }
+}
 
-  return couponUsages
+async function requestUserCoupons(
+  httpClient: ReturnType<typeof createBackendAOrderHttpClient>,
+) {
+  const response = await httpClient.get<BackendAUserCouponDto[] | { data?: BackendAUserCouponDto[] | { data?: BackendAUserCouponDto[] } }>(
+    '/api/v1/coupons',
+    {
+      per_page: 100,
+    },
+  )
+
+  return normalizeUserCouponItems(response)
+    .map(mapUserCouponItem)
+    .filter((item): item is BackendAUserCouponItem => item !== null)
 }
 
 function mapOrderConfirmation(
@@ -345,38 +361,26 @@ export function createBackendAOrderRepository(
   }
 
   return {
-    async createPreview(command) {
+    async createPreview(command, couponUsages) {
       if (command.source !== 'cart') {
         throw new Error('当前后端仅支持从购物车发起结算')
       }
 
-      const basePreview = await requestCheckoutPreview()
-      let preview = basePreview
+      const preview = await requestCheckoutPreview(undefined, couponUsages)
+      let userCoupons: BackendAUserCouponItem[] = []
 
       try {
-        const userCouponsResponse = await httpClient.get<BackendAUserCouponDto[] | { data?: BackendAUserCouponDto[] | { data?: BackendAUserCouponDto[] } }>(
-          '/api/v1/coupons',
-          {
-            per_page: 100,
-          },
-        )
-        const autoCouponUsages = resolveAutoCouponUsages(
-          basePreview.groups,
-          normalizeUserCouponItems(userCouponsResponse)
-            .map(mapUserCouponItem)
-            .filter((item): item is BackendAUserCouponItem => item !== null),
-        )
-
-        if (autoCouponUsages.length > 0) {
-          preview = await requestCheckoutPreview(undefined, autoCouponUsages)
-        }
+        userCoupons = await requestUserCoupons(httpClient)
       } catch (error) {
         if (import.meta.env.DEV) {
-          console.warn('[checkout] auto coupon resolution failed', error)
+          console.warn('[checkout] coupon list resolution failed', error)
         }
       }
 
-      return mapBackendACheckoutPreviewDto(command, preview)
+      return attachAvailableCoupons(
+        mapBackendACheckoutPreviewDto(command, preview),
+        userCoupons,
+      )
     },
 
     async submit(command) {
