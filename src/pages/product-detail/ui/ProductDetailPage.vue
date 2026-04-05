@@ -10,6 +10,7 @@ import { sanitizeRichTextHtml } from '@/shared/lib/safe-rich-text'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import TopBarMoreMenuButton from '@/shared/ui/TopBarMoreMenuButton.vue'
+import { clearInstantCheckoutDraft } from '@/processes/checkout-flow/model/instant-checkout-draft'
 
 import { useProductDetailPageModel } from '../model/useProductDetailPageModel'
 import detailHeroImage from '../../../../design-ui/images/generated-1773915971397.png'
@@ -257,6 +258,8 @@ async function submitSpecAction(action: 'buy' | 'cart') {
         showFailToast('立即购买暂未启用')
         return
       }
+
+      clearInstantCheckoutDraft()
 
       const snapshot = await cartStore.addProduct(currentProduct, {
         quantity: purchaseQuantity.value,
