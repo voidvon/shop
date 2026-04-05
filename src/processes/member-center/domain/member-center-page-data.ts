@@ -3,6 +3,7 @@ import type { AccountBalanceLog } from '@/shared/types/modules'
 export interface MemberCenterCountSummary {
   browsingCount: number
   cartCount: number
+  couponCount: number
   favoritesCount: number
 }
 
@@ -113,4 +114,21 @@ export interface MemberFavoritesPageData {
 
 export interface MemberHistoryPageData {
   items: MemberProductListItem[]
+}
+
+export interface MemberCouponListItem {
+  discountAmount: number
+  discountRate: number | null
+  endsAt: string | null
+  merchantName: string | null
+  minimumAmount: number
+  name: string
+  startsAt: string | null
+  type: string | null
+  usedAt: string | null
+  userCouponId: number
+}
+
+export interface MemberCouponsPageData {
+  items: MemberCouponListItem[]
 }

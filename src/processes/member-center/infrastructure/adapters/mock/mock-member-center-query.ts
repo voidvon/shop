@@ -10,6 +10,7 @@ import {
   mapMockMemberCardBindPageData,
   mapMockMemberCardsPageData,
   mapMockMemberCenterPageData,
+  mapMockMemberCouponsPageData,
   mapMockMemberFavoritesPageData,
   mapMockMemberHistoryPageData,
   mapMockMemberPaymentCodePageData,
@@ -54,6 +55,10 @@ export function createMockMemberCenterQuery(
           getMemberOrderSummary(),
         ),
       )
+    },
+
+    async getMemberCouponsPageData() {
+      return Promise.resolve(mapMockMemberCouponsPageData())
     },
 
     async getMemberFavoritesPageData() {

@@ -24,6 +24,7 @@ const emptyMemberCenterPageData: MemberCenterPageData = {
   counts: {
     browsingCount: 0,
     cartCount: 0,
+    couponCount: 0,
     favoritesCount: 0,
   },
   orderSummary: {
@@ -73,6 +74,7 @@ export function useMemberCenterPageModel() {
         counts: {
           browsingCount: browsingCount.value,
           cartCount: 0,
+          couponCount: 0,
           favoritesCount: 0,
         },
         profile: {

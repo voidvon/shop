@@ -12,6 +12,8 @@ import type {
   MemberCardBindPageData,
   MemberCardsPageData,
   MemberCenterPageData,
+  MemberCouponListItem,
+  MemberCouponsPageData,
   MemberFavoritesPageData,
   MemberHistoryPageData,
   MemberOrderSummary,
@@ -23,6 +25,45 @@ import type {
 
 type MockMemberProductListItem =
   (typeof mockAccountData.memberCollectionsPageData.favoriteProducts)[number]
+
+const mockMemberCoupons: MemberCouponListItem[] = [
+  {
+    discountAmount: 20,
+    discountRate: null,
+    endsAt: '2026-04-30T23:59:59+08:00',
+    merchantName: '艺境生活馆',
+    minimumAmount: 199,
+    name: '店铺满减券',
+    startsAt: '2026-04-01T00:00:00+08:00',
+    type: 'full_reduction',
+    usedAt: null,
+    userCouponId: 1001,
+  },
+  {
+    discountAmount: 0,
+    discountRate: 8.5,
+    endsAt: '2026-04-18T23:59:59+08:00',
+    merchantName: 'HomeLab 生活选物',
+    minimumAmount: 299,
+    name: '春季折扣券',
+    startsAt: '2026-04-02T00:00:00+08:00',
+    type: 'discount',
+    usedAt: null,
+    userCouponId: 1002,
+  },
+  {
+    discountAmount: 15,
+    discountRate: null,
+    endsAt: '2026-03-28T23:59:59+08:00',
+    merchantName: '楚食记',
+    minimumAmount: 99,
+    name: '门店回馈券',
+    startsAt: '2026-03-01T00:00:00+08:00',
+    type: 'full_reduction',
+    usedAt: null,
+    userCouponId: 1003,
+  },
+]
 
 function mapMockMemberProductListItem(input: MockMemberProductListItem): MemberProductListItem {
   const product = getMockProduct(input.productId)
@@ -139,6 +180,7 @@ export function mapMockMemberCenterPageData(
     counts: {
       ...mockAccountData.memberCenterPageData.counts,
       browsingCount: mockAccountData.memberCollectionsPageData.browsingHistory.length,
+      couponCount: mockMemberCoupons.length,
       favoritesCount: mockAccountData.memberCollectionsPageData.favoriteProducts.length,
     },
     orderSummary: orderSummary
@@ -164,5 +206,11 @@ export function mapMockMemberFavoritesPageData(): MemberFavoritesPageData {
 export function mapMockMemberHistoryPageData(): MemberHistoryPageData {
   return {
     items: mockAccountData.memberCollectionsPageData.browsingHistory.map(mapMockMemberProductListItem),
+  }
+}
+
+export function mapMockMemberCouponsPageData(): MemberCouponsPageData {
+  return {
+    items: mockMemberCoupons.map((item) => ({ ...item })),
   }
 }

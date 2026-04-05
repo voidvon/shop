@@ -14,6 +14,7 @@ import {
   mapBackendAMemberCardBindPageData,
   mapBackendAMemberCardsPageData,
   mapBackendAMemberCenterPageData,
+  mapBackendAMemberCouponsPageData,
   mapBackendAMemberFavoritesPageData,
   mapBackendAMemberHistoryPageData,
   mapBackendAMemberPaymentCodePageData,
@@ -21,7 +22,7 @@ import {
   mapBackendAMemberSettingsPageData,
   type BackendAPlatformSettingsDto,
 } from '../../mappers/backend-a-member-center-mapper'
-import type { MemberOrderSummary } from '../../../domain/member-center-page-data'
+import type { MemberCouponListItem, MemberOrderSummary } from '../../../domain/member-center-page-data'
 
 const emptyMemberOrderSummary: MemberOrderSummary = {
   pendingPaymentCount: 0,
@@ -29,6 +30,125 @@ const emptyMemberOrderSummary: MemberOrderSummary = {
   pendingReviewCount: 0,
   pendingShipmentCount: 0,
   refundAndReturnCount: 0,
+}
+
+interface BackendAUserCouponDto {
+  [key: string]: unknown
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function pickNumber(sources: Array<Record<string, unknown> | null>, keys: string[]) {
+  for (const source of sources) {
+    if (!source) {
+      continue
+    }
+
+    for (const key of keys) {
+      const value = source[key]
+      const parsedValue = typeof value === 'number' ? value : Number.parseFloat(String(value ?? ''))
+
+      if (Number.isFinite(parsedValue)) {
+        return parsedValue
+      }
+    }
+  }
+
+  return null
+}
+
+function pickInteger(sources: Array<Record<string, unknown> | null>, keys: string[]) {
+  const value = pickNumber(sources, keys)
+
+  if (value === null) {
+    return null
+  }
+
+  return Number.isInteger(value) ? value : Math.trunc(value)
+}
+
+function pickString(sources: Array<Record<string, unknown> | null>, keys: string[]) {
+  for (const source of sources) {
+    if (!source) {
+      continue
+    }
+
+    for (const key of keys) {
+      const value = source[key]
+
+      if (typeof value === 'string' && value.trim()) {
+        return value.trim()
+      }
+    }
+  }
+
+  return null
+}
+
+function normalizeUserCouponItems(
+  response: BackendAUserCouponDto[] | { data?: BackendAUserCouponDto[] | { data?: BackendAUserCouponDto[] } },
+) {
+  if (Array.isArray(response)) {
+    return response
+  }
+
+  if (Array.isArray(response.data)) {
+    return response.data
+  }
+
+  if (isRecord(response.data) && Array.isArray(response.data.data)) {
+    return response.data.data
+  }
+
+  return []
+}
+
+function mapUserCouponItem(item: BackendAUserCouponDto): MemberCouponListItem | null {
+  const rootSource = isRecord(item) ? item : null
+
+  if (!rootSource) {
+    return null
+  }
+
+  const templateSource = isRecord(rootSource.template)
+    ? rootSource.template
+    : isRecord(rootSource.coupon_template)
+      ? rootSource.coupon_template
+      : isRecord(rootSource.couponTemplate)
+        ? rootSource.couponTemplate
+        : isRecord(rootSource.merchant_coupon)
+          ? rootSource.merchant_coupon
+          : isRecord(rootSource.merchantCoupon)
+            ? rootSource.merchantCoupon
+            : isRecord(rootSource.coupon)
+              ? rootSource.coupon
+              : null
+  const merchantSource = isRecord(rootSource.merchant)
+    ? rootSource.merchant
+    : isRecord(templateSource?.merchant)
+      ? templateSource.merchant
+      : null
+  const sources = [rootSource, templateSource, merchantSource]
+  const userCouponId = pickInteger([rootSource], ['user_coupon_id', 'userCouponId', 'id'])
+
+  if (!userCouponId) {
+    return null
+  }
+
+  return {
+    discountAmount: pickNumber(sources, ['discount_amount', 'discountAmount']) ?? 0,
+    discountRate: pickNumber(sources, ['discount_rate', 'discountRate']),
+    endsAt: pickString(sources, ['ends_at', 'endsAt', 'expired_at', 'expiredAt']),
+    merchantName: pickString([merchantSource, templateSource, rootSource], ['short_name', 'shortName', 'name', 'merchant_name', 'merchantName']),
+    minimumAmount: pickNumber(sources, ['minimum_amount', 'minimumAmount']) ?? 0,
+    name: pickString(sources, ['name', 'coupon_name', 'couponName']) ?? `优惠券${userCouponId}`,
+    startsAt: pickString(sources, ['starts_at', 'startsAt']),
+    type: pickString(sources, ['type']),
+    usedAt: pickString(sources, ['used_at', 'usedAt']),
+    userCouponId,
+  }
 }
 
 function normalizeCandidateString(value: unknown) {
@@ -171,6 +291,19 @@ export function createBackendAMemberCenterQuery(
     }, { ...emptyMemberOrderSummary })
   }
 
+  async function getMemberCoupons() {
+    const response = await authHttpClient.get<BackendAUserCouponDto[] | { data?: BackendAUserCouponDto[] | { data?: BackendAUserCouponDto[] } }>(
+      '/api/v1/coupons',
+      {
+        per_page: 100,
+      },
+    )
+
+    return normalizeUserCouponItems(response)
+      .map(mapUserCouponItem)
+      .filter((item): item is MemberCouponListItem => item !== null)
+  }
+
   return {
     async getMemberAboutPageData() {
       const platformSettings = await getPlatformSettings()
@@ -188,9 +321,10 @@ export function createBackendAMemberCenterQuery(
     },
 
     async getMemberCenterPageData() {
-      const [products, snapshot, memberOrderSummary, platformSettings] = await Promise.all([
+      const [products, snapshot, coupons, memberOrderSummary, platformSettings] = await Promise.all([
         backendAProductRepository.getFeaturedProductSummaries(),
         memberAssetsService.getSnapshot(),
+        getMemberCoupons(),
         getMemberOrderSummary(),
         getPlatformSettings(),
       ])
@@ -199,10 +333,15 @@ export function createBackendAMemberCenterQuery(
           products,
           memberAuthSession.getSnapshot().authResult,
           snapshot.balanceAmount,
+          coupons.length,
           memberOrderSummary,
           platformSettings,
         ),
       )
+    },
+
+    async getMemberCouponsPageData() {
+      return Promise.resolve(mapBackendAMemberCouponsPageData(await getMemberCoupons()))
     },
 
     async getMemberFavoritesPageData() {

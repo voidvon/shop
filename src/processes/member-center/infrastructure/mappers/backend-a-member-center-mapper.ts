@@ -8,6 +8,8 @@ import type {
   MemberCardBindPageData,
   MemberCardsPageData,
   MemberCenterPageData,
+  MemberCouponListItem,
+  MemberCouponsPageData,
   MemberFavoritesPageData,
   MemberHistoryPageData,
   MemberOrderSummary,
@@ -130,6 +132,7 @@ export function mapBackendAMemberCenterPageData(
   products: ProductSummary[],
   authResult: AuthResult | null,
   balanceAmount: number,
+  couponCount: number,
   orderSummary?: MemberOrderSummary,
   platformSettings?: BackendAPlatformSettingsDto | null,
 ): MemberCenterPageData {
@@ -141,6 +144,7 @@ export function mapBackendAMemberCenterPageData(
     counts: {
       browsingCount: historyItems.length,
       cartCount: 1,
+      couponCount,
       favoritesCount: favoriteItems.length,
     },
     orderSummary: orderSummary
@@ -180,5 +184,11 @@ export function mapBackendAMemberFavoritesPageData(products: ProductSummary[]): 
 export function mapBackendAMemberHistoryPageData(products: ProductSummary[]): MemberHistoryPageData {
   return {
     items: products.slice(0, 3).map(mapBackendAMemberProductListItem),
+  }
+}
+
+export function mapBackendAMemberCouponsPageData(items: MemberCouponListItem[]): MemberCouponsPageData {
+  return {
+    items: items.map((item) => ({ ...item })),
   }
 }

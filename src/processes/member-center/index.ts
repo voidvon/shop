@@ -12,6 +12,8 @@ export type {
   MemberCardRedemptionRecord,
   MemberCardsPageData,
   MemberCenterPageData,
+  MemberCouponListItem,
+  MemberCouponsPageData,
   MemberFavoritesPageData,
   MemberHistoryPageData,
   MemberOrderSummary,

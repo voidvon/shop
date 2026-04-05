@@ -46,12 +46,13 @@ interface OrderEntry {
 
 const countCards = computed<CountCard[]>(() => {
   const cards: CountCard[] = [
+    { label: '优惠券', route: { name: 'member-coupons' }, value: memberCenterPageData.value.counts.couponCount },
     { label: '收藏夹', route: { name: 'member-favorites' }, value: memberCenterPageData.value.counts.favoritesCount },
     { label: '足迹', route: { name: 'member-history' }, value: memberCenterPageData.value.counts.browsingCount },
   ]
 
   if (isCartEnabled.value) {
-    cards.splice(1, 0, {
+    cards.splice(2, 0, {
       label: '购物车',
       route: { name: 'cart' },
       value: memberCenterPageData.value.counts.cartCount,
@@ -204,8 +205,17 @@ onActivated(() => {
           </div>
         </div>
         
-        <div v-if="isLoggedIn" class="count-row">
-          <RouterLink v-for="card in countCards" :key="card.label" class="count-card" :to="card.route">
+        <div
+          v-if="isLoggedIn"
+          class="count-row"
+          :style="{ gridTemplateColumns: `repeat(${countCards.length}, minmax(0, 1fr))` }"
+        >
+          <RouterLink
+            v-for="card in countCards"
+            :key="card.label"
+            class="count-card"
+            :to="card.route"
+          >
             <strong>{{ card.value }}</strong>
             <span>{{ card.label }}</span>
           </RouterLink>
@@ -397,7 +407,6 @@ onActivated(() => {
 
 .count-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   width: min(calc(100% - 32px), 362px);
   margin: 0 auto;

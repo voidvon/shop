@@ -16,6 +16,7 @@ import { MemberPaymentCodePage } from '@/pages/member-payment-code'
 import { MemberAboutPage } from '@/pages/member-about'
 import { MemberAddressesPage } from '@/pages/member-addresses'
 import { MemberCenterPage } from '@/pages/member-center'
+import { MemberCouponsPage } from '@/pages/member-coupons'
 import { MemberFavoritesPage } from '@/pages/member-favorites'
 import { MemberHistoryPage } from '@/pages/member-history'
 import { MemberLoginPage } from '@/pages/member-login'
@@ -364,6 +365,16 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
           activeMainNavigationKey: 'member',
           requiresAuth: true,
           title: '填写回寄物流',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/coupons',
+        name: 'member-coupons',
+        component: MemberCouponsPage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '我的优惠券',
         },
       }),
       createModuleRoute({
