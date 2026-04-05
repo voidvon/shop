@@ -151,19 +151,29 @@ onActivated(() => {
           :key="coupon.userCouponId"
           :highlighted="resolveCouponStatus(coupon) === 'available'"
           :muted="resolveCouponStatus(coupon) !== 'available'"
-          :small-value-suffix="resolveCouponValue(coupon).smallSuffix"
           :subtitle="formatCouponCondition(coupon)"
           :title="coupon.name"
-          :value="resolveCouponValue(coupon).value"
-          :value-suffix="resolveCouponValue(coupon).suffix"
         >
           <template #side>
-            <span
-              class="coupon-card-status"
-              :class="{ 'coupon-card-status-muted': resolveCouponStatus(coupon) !== 'available' }"
-            >
-              {{ resolveCouponStatusText(coupon) }}
-            </span>
+            <div class="coupon-card-side-stack">
+              <div v-if="resolveCouponValue(coupon).value || resolveCouponValue(coupon).suffix" class="coupon-card-amount">
+                <strong v-if="resolveCouponValue(coupon).value">{{ resolveCouponValue(coupon).value }}</strong>
+                <span
+                  v-if="resolveCouponValue(coupon).suffix"
+                  class="coupon-card-amount-suffix"
+                  :class="{ 'coupon-card-amount-suffix-small': resolveCouponValue(coupon).smallSuffix }"
+                >
+                  {{ resolveCouponValue(coupon).suffix }}
+                </span>
+              </div>
+
+              <span
+                class="coupon-card-status"
+                :class="{ 'coupon-card-status-muted': resolveCouponStatus(coupon) !== 'available' }"
+              >
+                {{ resolveCouponStatusText(coupon) }}
+              </span>
+            </div>
           </template>
         </CouponCard>
       </div>
@@ -203,6 +213,34 @@ onActivated(() => {
 .coupon-list {
   display: grid;
   gap: 12px;
+}
+
+.coupon-card-side-stack {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.coupon-card-amount {
+  display: inline-flex;
+  gap: 2px;
+  align-items: baseline;
+  justify-content: center;
+  color: #c25b0a;
+}
+
+.coupon-card-amount strong {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.coupon-card-amount-suffix {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.coupon-card-amount-suffix-small {
+  font-size: 11px;
 }
 
 .coupon-card-status {
