@@ -16,12 +16,20 @@ let cartLines = initialProducts.map((product, index) =>
 )
 const selectedLineIds = new Set(cartLines.map((line) => line.lineId))
 
+function withSelection(lines = cartLines) {
+  return lines.map((line) => ({
+    ...line,
+    selected: selectedLineIds.has(line.lineId),
+  }))
+}
+
 function createCurrentSnapshot() {
-  return cartLines.length > 0 ? createCartSnapshot(cartLines) : createEmptyCartSnapshot()
+  const lines = withSelection()
+  return lines.length > 0 ? createCartSnapshot(lines) : createEmptyCartSnapshot()
 }
 
 function createSelectedSnapshot() {
-  const selectedLines = cartLines.filter((line) => selectedLineIds.has(line.lineId))
+  const selectedLines = withSelection(cartLines.filter((line) => selectedLineIds.has(line.lineId)))
   return selectedLines.length > 0 ? createCartSnapshot(selectedLines) : createEmptyCartSnapshot()
 }
 
@@ -91,6 +99,6 @@ export const mockCartRepository: CartRepository = {
       selectedLineIds.delete(lineId)
     })
 
-    return Promise.resolve(createSelectedSnapshot())
+    return Promise.resolve(createCurrentSnapshot())
   },
 }

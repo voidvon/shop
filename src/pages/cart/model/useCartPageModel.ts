@@ -1,7 +1,8 @@
 import { computed, ref } from 'vue'
 
+import { type CartSnapshot } from '@/entities/cart'
 import { useCartStore } from '@/features/add-to-cart'
-import { useTradeQuery, type CartPageData } from '@/processes/trade'
+import { type CartPageData } from '@/processes/trade'
 import type { CartPageGroup } from '@/processes/trade/domain/trade-page-data'
 
 const emptyCartPageData: CartPageData = {
@@ -9,16 +10,39 @@ const emptyCartPageData: CartPageData = {
   totalAmount: 0,
 }
 
+function mapCartSnapshotToPageData(snapshot: CartSnapshot): CartPageData {
+  if (snapshot.lines.length === 0) {
+    return emptyCartPageData
+  }
+
+  return {
+    groups: [
+      {
+        items: snapshot.lines.map((line) => ({
+          lineId: line.lineId,
+          productId: line.productId,
+          productImageUrl: line.productImageUrl ?? null,
+          productName: line.productName,
+          quantity: line.quantity,
+          unitPrice: line.unitPrice,
+        })),
+        storeId: 'backend-a-store',
+        storeName: 'Backend A 选品馆',
+      },
+    ],
+    totalAmount: snapshot.subtotal,
+  }
+}
+
 export function useCartPageModel() {
   const cartStore = useCartStore()
-  const tradeQuery = useTradeQuery()
 
   const cartPageData = ref<CartPageData>(emptyCartPageData)
   const errorMessage = ref<string | null>(null)
   const isLoading = ref(false)
 
   async function refreshCartPage() {
-    cartPageData.value = await tradeQuery.getCartPageData()
+    cartPageData.value = mapCartSnapshotToPageData(cartStore.snapshot)
   }
 
   async function loadCartPage() {

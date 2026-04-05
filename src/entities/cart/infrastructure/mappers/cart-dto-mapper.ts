@@ -23,6 +23,7 @@ export function mapBackendACartItemDto(dto: BackendACartItemDto) {
     productImageUrl: resolveCartImageUrl(dto),
     productName: dto.product?.title ?? `商品#${dto.product_id}`,
     quantity: dto.quantity,
+    selected: dto.selected === 1,
     skuId: String(dto.product_sku_id),
     specText: mapSkuSpecText(dto),
     unitPrice: parseAmount(dto.sku?.price),

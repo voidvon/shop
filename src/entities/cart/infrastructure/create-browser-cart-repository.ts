@@ -136,14 +136,29 @@ function writeStoredCartState(scopeKey: string, state: StoredCartState) {
   window.localStorage.setItem(createCartStorageKey(scopeKey), JSON.stringify(state))
 }
 
-function createSnapshot(lines: CartLine[]) {
+function applySelectionState(lines: CartLine[], selectedLineIds: string[]) {
+  const selectedLineIdSet = new Set(selectedLineIds)
+  return lines.map((line) => ({
+    ...line,
+    selected: selectedLineIdSet.has(line.lineId),
+  }))
+}
+
+function createSnapshot(state: StoredCartState) {
+  const lines = applySelectionState(state.lines, state.selectedLineIds)
   return lines.length > 0 ? createCartSnapshot(lines) : createEmptyCartSnapshot()
 }
 
 function createSelectedSnapshot(state: StoredCartState) {
   const selectedLineIds = new Set(state.selectedLineIds)
-  const selectedLines = state.lines.filter((line) => selectedLineIds.has(line.lineId))
-  return createSnapshot(selectedLines)
+  const selectedLines = state.lines
+    .filter((line) => selectedLineIds.has(line.lineId))
+    .map((line) => ({
+      ...line,
+      selected: true,
+    }))
+
+  return selectedLines.length > 0 ? createCartSnapshot(selectedLines) : createEmptyCartSnapshot()
 }
 
 export function createBrowserCartRepository(options: CreateBrowserCartRepositoryOptions = {}): CartRepository {
@@ -171,12 +186,12 @@ export function createBrowserCartRepository(options: CreateBrowserCartRepository
 
       writeStoredCartState(scopeKey, state)
 
-      return createSnapshot(state.lines)
+      return createSnapshot(state)
     },
 
     async getSnapshot() {
       const state = readStoredCartState(resolveScopeKey())
-      return createSnapshot(state.lines)
+      return createSnapshot(state)
     },
 
     async getSelectedSnapshot() {
@@ -194,7 +209,7 @@ export function createBrowserCartRepository(options: CreateBrowserCartRepository
 
       writeStoredCartState(scopeKey, nextState)
 
-      return createSnapshot(nextState.lines)
+      return createSnapshot(nextState)
     },
 
     async setItemQuantity({ lineId, quantity }) {
@@ -219,7 +234,7 @@ export function createBrowserCartRepository(options: CreateBrowserCartRepository
 
       writeStoredCartState(scopeKey, nextState)
 
-      return createSnapshot(nextState.lines)
+      return createSnapshot(nextState)
     },
 
     async setItemsSelected({ lineIds, selected }) {
@@ -248,7 +263,7 @@ export function createBrowserCartRepository(options: CreateBrowserCartRepository
 
       writeStoredCartState(scopeKey, nextState)
 
-      return createSelectedSnapshot(nextState)
+      return createSnapshot(nextState)
     },
   }
 }

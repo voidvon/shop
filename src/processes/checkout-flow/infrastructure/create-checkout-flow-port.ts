@@ -1,6 +1,6 @@
 import {
+  createCartSnapshot,
   getCartSnapshot,
-  getSelectedCartSnapshot,
   type CartRepository,
 } from '@/entities/cart'
 import {
@@ -53,9 +53,9 @@ async function rebuildPostSubmitPreview(
   command: CreateCheckoutPreviewCommand,
 ) {
   if (options.clearCartAfterSubmit === false) {
-    const selectedSnapshot = await getSelectedCartSnapshot(options.cartRepository)
+    const selectedLines = (await getCartSnapshot(options.cartRepository)).lines.filter((line) => line.selected)
 
-    if (selectedSnapshot.itemCount === 0) {
+    if (selectedLines.length === 0) {
       return createCheckoutPreview({
         lines: [],
         source: command.source,
@@ -63,7 +63,7 @@ async function rebuildPostSubmitPreview(
     }
 
     return createCheckoutPreviewUseCase(options.orderRepository, {
-      lines: await mapCartToCheckoutLines(selectedSnapshot, options.productRepository),
+      lines: await mapCartToCheckoutLines(createCartSnapshot(selectedLines), options.productRepository),
       source: 'cart',
     })
   }
@@ -113,14 +113,14 @@ async function resolveCheckoutCommand(
     const cartSnapshot = await getCartSnapshot(options.cartRepository)
 
     if (cartSnapshot.itemCount > 0) {
-      const selectedCartSnapshot = await getSelectedCartSnapshot(options.cartRepository)
+      const selectedLines = cartSnapshot.lines.filter((line) => line.selected)
 
-      if (selectedCartSnapshot.itemCount === 0) {
+      if (selectedLines.length === 0) {
         throw new Error('请先选择要结算的商品')
       }
 
       return {
-        lines: await mapCartToCheckoutLines(selectedCartSnapshot, options.productRepository),
+        lines: await mapCartToCheckoutLines(createCartSnapshot(selectedLines), options.productRepository),
         source: 'cart',
       }
     }

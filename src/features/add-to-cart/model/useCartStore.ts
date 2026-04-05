@@ -5,7 +5,6 @@ import {
   addCartItem,
   createEmptyCartSnapshot,
   getCartSnapshot,
-  getSelectedCartSnapshot,
   removeCartItem,
   setCartItemsSelected,
   setCartItemQuantity,
@@ -46,8 +45,18 @@ export const useCartStore = defineStore('cart', () => {
     return selectedLineIds.value.includes(lineId)
   }
 
-  async function syncSelectedSnapshot() {
-    selectedSnapshot.value = await getSelectedCartSnapshot(cartRepository)
+  function syncSelectedSnapshot(nextSnapshot = snapshot.value) {
+    selectedSnapshot.value = nextSnapshot.lines.length > 0
+      ? {
+          itemCount: nextSnapshot.lines
+            .filter((line) => line.selected)
+            .reduce((sum, line) => sum + line.quantity, 0),
+          lines: nextSnapshot.lines.filter((line) => line.selected),
+          subtotal: nextSnapshot.lines
+            .filter((line) => line.selected)
+            .reduce((sum, line) => sum + line.lineTotal, 0),
+        }
+      : createEmptyCartSnapshot()
   }
 
   async function loadSnapshot() {
@@ -56,7 +65,7 @@ export const useCartStore = defineStore('cart', () => {
 
     try {
       snapshot.value = await getCartSnapshot(cartRepository)
-      await syncSelectedSnapshot()
+      syncSelectedSnapshot(snapshot.value)
       hasLoaded.value = true
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '购物车加载失败'
@@ -87,7 +96,7 @@ export const useCartStore = defineStore('cart', () => {
         specText: options?.specText ?? null,
         unitPrice: options?.unitPrice ?? product.price,
       })
-      await syncSelectedSnapshot()
+      syncSelectedSnapshot(snapshot.value)
       hasLoaded.value = true
       return snapshot.value
     } catch (error) {
@@ -104,7 +113,7 @@ export const useCartStore = defineStore('cart', () => {
 
     try {
       snapshot.value = await removeCartItem(cartRepository, lineId)
-      await syncSelectedSnapshot()
+      syncSelectedSnapshot(snapshot.value)
       hasLoaded.value = true
       return snapshot.value
     } catch (error) {
@@ -124,7 +133,7 @@ export const useCartStore = defineStore('cart', () => {
         lineId,
         quantity,
       })
-      await syncSelectedSnapshot()
+      syncSelectedSnapshot(snapshot.value)
       hasLoaded.value = true
       return snapshot.value
     } catch (error) {
@@ -140,10 +149,11 @@ export const useCartStore = defineStore('cart', () => {
     errorMessage.value = null
 
     try {
-      selectedSnapshot.value = await setCartItemsSelected(cartRepository, {
+      snapshot.value = await setCartItemsSelected(cartRepository, {
         lineIds,
         selected,
       })
+      syncSelectedSnapshot(snapshot.value)
       hasLoaded.value = true
       return selectedSnapshot.value
     } catch (error) {

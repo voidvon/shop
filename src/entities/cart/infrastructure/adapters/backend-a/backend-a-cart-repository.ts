@@ -129,7 +129,7 @@ export function createBackendACartRepository(
         )))
 
       const items = await getSnapshotItems()
-      return mapBackendACartSnapshotDto(items.filter((item) => item.selected === 1))
+      return mapBackendACartSnapshotDto(items)
     },
   }
 }

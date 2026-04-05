@@ -5,6 +5,7 @@ export interface CartLine {
   productImageUrl?: string | null
   productName: string
   quantity: number
+  selected: boolean
   skuId: string | null
   specText: string | null
   unitPrice: number
@@ -21,6 +22,7 @@ export interface AddCartItemCommand {
   productImageUrl?: string | null
   productName: string
   quantity: number
+  selected?: boolean
   skuId?: string | null
   specText?: string | null
   unitPrice: number
@@ -50,6 +52,7 @@ export function createCartLine(input: AddCartItemCommand): CartLine {
     productImageUrl: input.productImageUrl ?? null,
     productName: input.productName,
     quantity,
+    selected: input.selected ?? true,
     skuId: input.skuId ?? null,
     specText: input.specText ?? null,
     unitPrice: input.unitPrice,
