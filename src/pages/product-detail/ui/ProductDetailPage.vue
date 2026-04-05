@@ -3,7 +3,6 @@ import { computed, ref, toRef, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
-import { createCheckoutLine } from '@/entities/order'
 import { useCartStore } from '@/features/add-to-cart'
 import { MemberFavoriteButton } from '@/features/toggle-member-favorite'
 import { useModuleAvailability } from '@/shared/lib/modules'
@@ -11,7 +10,6 @@ import { sanitizeRichTextHtml } from '@/shared/lib/safe-rich-text'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import TopBarMoreMenuButton from '@/shared/ui/TopBarMoreMenuButton.vue'
-import { writeInstantCheckoutDraft } from '@/processes/checkout-flow/model/instant-checkout-draft'
 
 import { useProductDetailPageModel } from '../model/useProductDetailPageModel'
 import detailHeroImage from '../../../../design-ui/images/generated-1773915971397.png'
@@ -241,7 +239,9 @@ function changePurchaseQuantity(delta: number) {
 }
 
 async function submitSpecAction(action: 'buy' | 'cart') {
-  if (!product.value) {
+  const currentProduct = product.value
+
+  if (!currentProduct) {
     showFailToast('商品信息加载中...')
     return
   }
@@ -253,26 +253,28 @@ async function submitSpecAction(action: 'buy' | 'cart') {
 
   try {
     if (action === 'buy') {
-      if (!isCheckoutEnabled.value) {
+      if (!isCheckoutEnabled.value || !isCartEnabled.value) {
         showFailToast('立即购买暂未启用')
         return
       }
 
-      writeInstantCheckoutDraft({
-        lines: [
-          createCheckoutLine({
-            lineId: currentSku.value?.skuId ?? product.value.id,
-            productId: product.value.id,
-            productImageUrl: product.value.coverImageUrl,
-            productName: product.value.name,
-            quantity: purchaseQuantity.value,
-            skuId: currentSku.value?.skuId ?? null,
-            specText: currentSku.value?.specText ?? null,
-            unitPrice: currentUnitPrice.value,
-          }),
-        ],
-        source: 'instant',
+      const snapshot = await cartStore.addProduct(currentProduct, {
+        quantity: purchaseQuantity.value,
+        skuId: currentSku.value?.skuId ?? null,
+        specText: currentSku.value?.specText ?? null,
+        unitPrice: currentUnitPrice.value,
       })
+
+      const targetLine = snapshot.lines.find((line) =>
+        line.productId === currentProduct.id
+        && line.skuId === (currentSku.value?.skuId ?? null),
+      ) ?? snapshot.lines.find((line) => line.productId === currentProduct.id)
+
+      if (!targetLine) {
+        throw new Error('未找到可结算的商品')
+      }
+
+      await cartStore.selectOnlyLine(targetLine.lineId)
       closeSpecPopup()
       await router.push({ name: 'checkout' })
       return
@@ -283,7 +285,7 @@ async function submitSpecAction(action: 'buy' | 'cart') {
       return
     }
 
-    const snapshot = await cartStore.addProduct(product.value, {
+    const snapshot = await cartStore.addProduct(currentProduct, {
       quantity: purchaseQuantity.value,
       skuId: currentSku.value?.skuId ?? null,
       specText: currentSku.value?.specText ?? null,
