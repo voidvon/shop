@@ -43,4 +43,4 @@ jobs:
           SOURCE: ${{ env.LOCAL_DIR }}
           TARGET: ${{ secrets.REMOTE_TARGET }}
           ARGS: "-rlgoDzvc -i --delete"
-          EXCLUDE: "/.git*/, /node_modules/, .user.ini, .htaccess"
+          EXCLUDE: "/.git*/, /node_modules/, .user.ini, .htaccess, .well-known/"
