@@ -1,4 +1,4 @@
-const defaultBackendABaseUrl = 'http://123.207.4.226:8080'
+const defaultBackendABaseUrl = 'https://api.qzxys.com'
 const defaultBackendATimeoutMs = 8000
 const defaultBackendAWechatAppId = 'wx057d684ef1e02d1c'
 const defaultBackendAWechatOauthScope = 'snsapi_base'
