@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { onBeforeRouteLeave, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 import { CheckoutFlowPanel } from '@/processes/checkout-flow'
-import { useCheckoutFlowStore } from '@/processes/checkout-flow'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 const router = useRouter()
-const checkoutStore = useCheckoutFlowStore()
 
 function goBack() {
   if (globalThis.window?.history.state?.back) {
@@ -16,14 +14,6 @@ function goBack() {
 
   void router.push('/cart')
 }
-
-onBeforeRouteLeave(async (to) => {
-  if (to.name === 'member-addresses') {
-    return
-  }
-
-  await checkoutStore.restoreInstantCheckoutCartState()
-})
 </script>
 
 <template>
