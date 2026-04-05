@@ -11,7 +11,7 @@ import 'vant/es/skeleton/style'
 import 'vant/es/toast/style'
 
 async function enableVConsole() {
-  if (!import.meta.env.DEV || typeof window === 'undefined') {
+  if (typeof window === 'undefined') {
     return
   }
 
