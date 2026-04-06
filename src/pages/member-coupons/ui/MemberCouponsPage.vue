@@ -58,6 +58,16 @@ function formatCouponCondition(coupon: MemberCouponListItem) {
   return `满${formatAmount(coupon.minimumAmount)}可用`
 }
 
+function formatCouponValidity(coupon: MemberCouponListItem) {
+  if (!coupon.startsAt && !coupon.endsAt) {
+    return '长期有效'
+  }
+
+  const startLabel = coupon.startsAt ? coupon.startsAt.slice(0, 10) : '领取后'
+  const endLabel = coupon.endsAt ? coupon.endsAt.slice(0, 10) : '长期'
+  return `${startLabel} - ${endLabel}`
+}
+
 function resolveCouponStatus(coupon: MemberCouponListItem) {
   if (coupon.usedAt) {
     return 'used'
@@ -151,7 +161,7 @@ onActivated(() => {
           :key="coupon.userCouponId"
           :highlighted="resolveCouponStatus(coupon) === 'available'"
           :muted="resolveCouponStatus(coupon) !== 'available'"
-          :subtitle="formatCouponCondition(coupon)"
+          :subtitle="formatCouponValidity(coupon)"
           :title="coupon.name"
         >
           <template #side>
@@ -166,6 +176,10 @@ onActivated(() => {
                   {{ resolveCouponValue(coupon).suffix }}
                 </span>
               </div>
+
+              <span class="coupon-card-condition">
+                {{ formatCouponCondition(coupon) }}
+              </span>
 
               <span
                 class="coupon-card-status"
@@ -217,7 +231,7 @@ onActivated(() => {
 
 .coupon-card-side-stack {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   justify-items: center;
 }
 
@@ -241,6 +255,14 @@ onActivated(() => {
 
 .coupon-card-amount-suffix-small {
   font-size: 11px;
+}
+
+.coupon-card-condition {
+  color: #8a6f5b;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .coupon-card-status {
