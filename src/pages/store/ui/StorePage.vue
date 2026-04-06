@@ -1326,9 +1326,9 @@ watch(
   position: sticky;
   bottom: 0;
   z-index: 12;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   width: 100%;
   padding: 8px 10px calc(12px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid #eeeae5;
@@ -1463,6 +1463,7 @@ watch(
 
 .store-action-item {
   display: grid;
+  flex: 0 0 auto;
   gap: 4px;
   justify-items: center;
   min-width: 0;
