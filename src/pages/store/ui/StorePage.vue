@@ -1328,7 +1328,7 @@ watch(
   z-index: 12;
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: space-evenly;
   width: 100%;
   padding: 8px 10px calc(12px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid #eeeae5;
