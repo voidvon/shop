@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
+import { useBackendRuntime } from '@/app/providers/backend'
 import { currentBackendLabel } from '@/shared/config/backend'
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
 import LoadingState from '@/shared/ui/LoadingState.vue'
@@ -13,6 +14,7 @@ import { useCheckoutFlowStore } from '../model/useCheckoutFlowStore'
 const checkoutStore = useCheckoutFlowStore()
 const route = useRoute()
 const router = useRouter()
+const runtime = useBackendRuntime()
 const {
   availableBalance,
   confirmation,
@@ -27,7 +29,8 @@ const {
 } = storeToRefs(checkoutStore)
 
 const previewLines = computed(() => preview.value?.lines ?? [])
-const previewCouponGroups = computed(() => preview.value?.groups ?? [])
+const isCouponEnabled = computed(() => runtime.capabilities.coupon)
+const previewCouponGroups = computed(() => (isCouponEnabled.value ? (preview.value?.groups ?? []) : []))
 const payableAmountText = computed(() => formatAmount(preview.value?.payableAmount ?? 0))
 const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAmount ?? 0))
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
@@ -68,6 +71,10 @@ function openAddressSelector() {
 }
 
 function openCouponSelector(merchantId: number, balanceTypeId: number) {
+  if (!isCouponEnabled.value) {
+    return
+  }
+
   void router.push({
     name: 'checkout-coupons',
     query: {

@@ -2,6 +2,7 @@
 import { computed, onActivated, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
+import { useBackendRuntime } from '@/app/providers/backend'
 import type { MemberCouponListItem } from '@/processes/member-center'
 import CouponCard from '@/shared/ui/CouponCard.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
@@ -11,6 +12,8 @@ import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import { useMemberCouponsPageModel } from '../model/useMemberCouponsPageModel'
 
 const router = useRouter()
+const runtime = useBackendRuntime()
+const isCouponEnabled = computed(() => runtime.capabilities.coupon)
 const { errorMessage, isLoading, loadMemberCouponsPage, memberCouponsPageData } = useMemberCouponsPageModel()
 
 function goBack() {
@@ -129,10 +132,20 @@ const couponItems = computed(() =>
 )
 
 onMounted(() => {
+  if (!isCouponEnabled.value) {
+    void router.replace({ name: 'member' })
+    return
+  }
+
   void loadMemberCouponsPage()
 })
 
 onActivated(() => {
+  if (!isCouponEnabled.value) {
+    void router.replace({ name: 'member' })
+    return
+  }
+
   void loadMemberCouponsPage()
 })
 </script>

@@ -141,7 +141,7 @@ const capabilitiesByBackend: Record<BackendType, BackendCapabilities> = {
     memberPrice: false,
   },
   'backend-a': {
-    coupon: true,
+    coupon: false,
     memberPrice: true,
   },
 }

@@ -10,6 +10,7 @@ import {
 } from 'vant'
 import { useRoute, useRouter } from 'vue-router'
 
+import { useBackendRuntime } from '@/app/providers/backend'
 import { useMemberAuthSession } from '@/entities/member-auth'
 import { ProductCompactCard } from '@/entities/product'
 import type { MerchantCoupon } from '@/processes/storefront'
@@ -23,12 +24,13 @@ import { useStorePageModel } from '../model/useStorePageModel'
 
 const route = useRoute()
 const router = useRouter()
+const runtime = useBackendRuntime()
 const memberAuthSession = useMemberAuthSession()
 const topActions: PopoverAction[] = [
   { text: '刷新店铺', value: 'refresh' },
   { text: '返回首页', value: 'home' },
 ]
-const footerActions = [
+const allFooterActions = [
   { key: 'products', icon: 'apps-o', label: '全部商品' },
   { key: 'coupon', icon: 'coupon-o', label: '优惠券' },
   { key: 'service', icon: 'service-o', label: '联系客服' },
@@ -85,6 +87,10 @@ const {
 } = useStorePageModel(storeId, preferredStoreName)
 
 const primaryBenefit = computed(() => storeBenefits.value[0] ?? '支持售后无忧')
+const isCouponEnabled = computed(() => runtime.capabilities.coupon)
+const footerActions = computed(() =>
+  allFooterActions.filter((action) => action.key !== 'coupon' || isCouponEnabled.value),
+)
 const storeLogoDisplayUrl = computed(() => storeLogoUrl.value || defaultStoreLogoUrl)
 const couponPopupVisible = ref(false)
 const filterDrawerVisible = ref(false)
@@ -196,7 +202,7 @@ function handleTopAction(action: PopoverAction) {
 }
 
 async function openCouponPopup() {
-  if (isCouponLoading.value) {
+  if (!isCouponEnabled.value || isCouponLoading.value) {
     return
   }
 
@@ -322,7 +328,7 @@ async function redirectToCouponLogin() {
 }
 
 async function handleClaimCoupon(couponId: string) {
-  if (claimingCouponId.value) {
+  if (!isCouponEnabled.value || claimingCouponId.value) {
     return
   }
 
@@ -341,7 +347,7 @@ async function handleClaimCoupon(couponId: string) {
   }
 }
 
-function handleFooterAction(actionKey: (typeof footerActions)[number]['key']) {
+function handleFooterAction(actionKey: (typeof allFooterActions)[number]['key']) {
   if (actionKey === 'products') {
     selectTab('all-products')
     void nextTick(() => {
@@ -377,7 +383,9 @@ function handleFooterAction(actionKey: (typeof footerActions)[number]['key']) {
     return
   }
 
-  void openCouponPopup()
+  if (isCouponEnabled.value) {
+    void openCouponPopup()
+  }
 }
 
 function handleSortChange(field: 'sales' | 'price', nextValue: string) {
@@ -637,6 +645,7 @@ watch(
     </footer>
 
     <van-popup
+      v-if="isCouponEnabled"
       v-model:show="couponPopupVisible"
       class="coupon-popup"
       position="bottom"

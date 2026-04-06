@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
+import { useBackendRuntime } from '@/app/providers/backend'
 import CouponCard from '@/shared/ui/CouponCard.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
@@ -12,8 +13,10 @@ import { useCheckoutFlowStore } from '@/processes/checkout-flow/model/useCheckou
 
 const route = useRoute()
 const router = useRouter()
+const runtime = useBackendRuntime()
 const checkoutStore = useCheckoutFlowStore()
 const { errorMessage, isLoading, preview } = storeToRefs(checkoutStore)
+const isCouponEnabled = computed(() => runtime.capabilities.coupon)
 
 const merchantId = computed(() => {
   const rawValue = typeof route.query.merchantId === 'string' ? Number.parseInt(route.query.merchantId, 10) : NaN
@@ -98,6 +101,11 @@ async function handleSelectCoupon(userCouponId: number | null) {
 }
 
 onMounted(async () => {
+  if (!isCouponEnabled.value) {
+    await router.replace({ name: 'checkout' })
+    return
+  }
+
   if (!preview.value) {
     await checkoutStore.loadPreview()
   }

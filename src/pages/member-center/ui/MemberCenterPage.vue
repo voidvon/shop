@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
 
 import { MemberLogoutButton } from '@/features/member-logout'
+import { useBackendRuntime } from '@/app/providers/backend'
 import { readAppVersion } from '@/shared/lib/app-version'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
@@ -12,8 +13,10 @@ import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-brow
 import { useMemberCenterPageModel } from '../model/useMemberCenterPageModel'
 
 const router = useRouter()
+const runtime = useBackendRuntime()
 const { loadMemberCenterPage, memberCenterPageData } = useMemberCenterPageModel()
 const isCartEnabled = useModuleAvailability('cart')
+const isCouponEnabled = computed(() => runtime.capabilities.coupon)
 const isReviewEnabled = useModuleAvailability('review')
 const appVersionText = `版本号：${readAppVersion()}`
 const isLoggedIn = computed(() => memberCenterPageData.value.profile.isLoggedIn)
@@ -45,11 +48,20 @@ interface OrderEntry {
 }
 
 const countCards = computed<CountCard[]>(() => {
-  const cards: CountCard[] = [
-    { label: '优惠券', route: { name: 'member-coupons' }, value: memberCenterPageData.value.counts.couponCount },
+  const cards: CountCard[] = []
+
+  if (isCouponEnabled.value) {
+    cards.push({
+      label: '优惠券',
+      route: { name: 'member-coupons' },
+      value: memberCenterPageData.value.counts.couponCount,
+    })
+  }
+
+  cards.push(
     { label: '收藏夹', route: { name: 'member-favorites' }, value: memberCenterPageData.value.counts.favoritesCount },
     { label: '足迹', route: { name: 'member-history' }, value: memberCenterPageData.value.counts.browsingCount },
-  ]
+  )
 
   if (isCartEnabled.value) {
     cards.splice(2, 0, {
