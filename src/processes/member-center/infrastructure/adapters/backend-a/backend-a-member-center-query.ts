@@ -130,7 +130,8 @@ function mapUserCouponItem(item: BackendAUserCouponDto): MemberCouponListItem | 
     : isRecord(templateSource?.merchant)
       ? templateSource.merchant
       : null
-  const sources = [rootSource, templateSource, merchantSource]
+  const templateFirstSources = [templateSource, rootSource, merchantSource]
+  const rootFirstSources = [rootSource, templateSource, merchantSource]
   const userCouponId = pickInteger([rootSource], ['user_coupon_id', 'userCouponId', 'id'])
 
   if (!userCouponId) {
@@ -138,15 +139,16 @@ function mapUserCouponItem(item: BackendAUserCouponDto): MemberCouponListItem | 
   }
 
   return {
-    discountAmount: pickNumber(sources, ['discount_amount', 'discountAmount']) ?? 0,
-    discountRate: pickNumber(sources, ['discount_rate', 'discountRate']),
-    endsAt: pickString(sources, ['ends_at', 'endsAt', 'expired_at', 'expiredAt']),
+    // User coupon payload may carry runtime usage amounts; the template defines the face value shown in the list.
+    discountAmount: pickNumber(templateFirstSources, ['discount_amount', 'discountAmount']) ?? 0,
+    discountRate: pickNumber(templateFirstSources, ['discount_rate', 'discountRate']),
+    endsAt: pickString(rootFirstSources, ['ends_at', 'endsAt', 'expired_at', 'expiredAt']),
     merchantName: pickString([merchantSource, templateSource, rootSource], ['short_name', 'shortName', 'name', 'merchant_name', 'merchantName']),
-    minimumAmount: pickNumber(sources, ['minimum_amount', 'minimumAmount']) ?? 0,
-    name: pickString(sources, ['name', 'coupon_name', 'couponName']) ?? `优惠券${userCouponId}`,
-    startsAt: pickString(sources, ['starts_at', 'startsAt']),
-    type: pickString(sources, ['type']),
-    usedAt: pickString(sources, ['used_at', 'usedAt']),
+    minimumAmount: pickNumber(templateFirstSources, ['minimum_amount', 'minimumAmount']) ?? 0,
+    name: pickString([templateSource, rootSource], ['name', 'coupon_name', 'couponName']) ?? `优惠券${userCouponId}`,
+    startsAt: pickString(templateFirstSources, ['starts_at', 'startsAt']),
+    type: pickString(templateFirstSources, ['type']),
+    usedAt: pickString([rootSource], ['used_at', 'usedAt']),
     userCouponId,
   }
 }
