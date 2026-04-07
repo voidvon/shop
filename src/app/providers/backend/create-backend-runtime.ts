@@ -101,6 +101,7 @@ import type { AfterSaleListPageData } from '@/shared/types/modules'
 export interface BackendCapabilities {
   coupon: boolean
   memberPrice: boolean
+  wechatLogout: boolean
 }
 
 export interface BackendRuntime {
@@ -139,10 +140,12 @@ const capabilitiesByBackend: Record<BackendType, BackendCapabilities> = {
   mock: {
     coupon: false,
     memberPrice: false,
+    wechatLogout: true,
   },
   'backend-a': {
     coupon: false,
     memberPrice: true,
+    wechatLogout: false,
   },
 }
 

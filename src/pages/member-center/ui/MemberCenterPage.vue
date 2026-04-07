@@ -17,9 +17,11 @@ const runtime = useBackendRuntime()
 const { loadMemberCenterPage, memberCenterPageData } = useMemberCenterPageModel()
 const isCartEnabled = useModuleAvailability('cart')
 const isCouponEnabled = computed(() => runtime.capabilities.coupon)
+const canShowWechatLogout = computed(() => runtime.capabilities.wechatLogout)
 const isReviewEnabled = useModuleAvailability('review')
 const appVersionText = `版本号：${readAppVersion()}`
 const isLoggedIn = computed(() => memberCenterPageData.value.profile.isLoggedIn)
+const shouldShowLogoutButton = computed(() => !isWechatBrowser() || canShowWechatLogout.value)
 const loginEntryRoute = computed<RouteLocationRaw>(() => ({
   name: 'member-login',
   query: { redirect: '/member' },
@@ -213,7 +215,11 @@ onActivated(() => {
               <span>{{ memberCenterPageData.profile.isLoggedIn ? '欢迎回来' : '可查看更多信息' }}</span>
             </div>
 
-            <MemberLogoutButton class="logout-action" @logged-out="handleLoggedOut" />
+            <MemberLogoutButton
+              v-if="shouldShowLogoutButton"
+              class="logout-action"
+              @logged-out="handleLoggedOut"
+            />
           </div>
         </div>
         
