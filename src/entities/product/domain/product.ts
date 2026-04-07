@@ -1,4 +1,7 @@
 export interface ProductSummary {
+  balanceTypeCode?: string | null
+  balanceTypeId?: string | null
+  balanceTypeName?: string | null
   id: string
   categoryId: string
   name: string

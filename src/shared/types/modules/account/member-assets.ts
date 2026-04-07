@@ -8,6 +8,15 @@ export interface MemberAssetCard {
   usedAt: string | null
 }
 
+export interface BalanceAccountInfo {
+  accountId: string
+  availableAmount: number
+  balanceTypeCode: string | null
+  balanceTypeId: number
+  balanceTypeName: string
+  frozenAmount: number
+}
+
 export interface AccountBalanceLog {
   id: string
   description: string
@@ -22,6 +31,7 @@ export interface PaymentCodeInfo {
 }
 
 export interface MemberAssetsPageData {
+  balanceAccounts: BalanceAccountInfo[]
   balanceAmount: number
   cards: MemberAssetCard[]
   balanceLogs: AccountBalanceLog[]

@@ -1,4 +1,4 @@
-import type { AccountBalanceLog } from '@/shared/types/modules'
+import type { AccountBalanceLog, BalanceAccountInfo } from '@/shared/types/modules'
 
 export interface MemberCenterCountSummary {
   browsingCount: number
@@ -46,6 +46,7 @@ export interface MemberCardRedemptionRecord {
 }
 
 export interface MemberCardsPageData {
+  balanceAccounts: BalanceAccountInfo[]
   balanceAmount: number
   balanceLogs: AccountBalanceLog[]
   redemptionRecords: MemberCardRedemptionRecord[]

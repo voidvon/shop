@@ -137,6 +137,24 @@ export const mockAddressBookPageData = {
 }
 
 export const mockMemberAssetsPageData: MemberAssetsPageData = {
+  balanceAccounts: [
+    {
+      accountId: 'balance-account-1',
+      availableAmount: 200,
+      balanceTypeCode: 'cake',
+      balanceTypeId: 1,
+      balanceTypeName: '蛋糕余额',
+      frozenAmount: 0,
+    },
+    {
+      accountId: 'balance-account-2',
+      availableAmount: 168.5,
+      balanceTypeCode: 'general',
+      balanceTypeId: 2,
+      balanceTypeName: '通用余额',
+      frozenAmount: 0,
+    },
+  ],
   balanceAmount: 368.5,
   balanceLogs: [
     { amount: 120, description: '充值卡余额转入', direction: 'income', id: 'balance-log-1', occurredAt: '2026-03-01 09:20:00' },

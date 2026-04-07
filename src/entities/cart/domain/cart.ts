@@ -1,4 +1,6 @@
 export interface CartLine {
+  balanceTypeId?: string | null
+  balanceTypeName?: string | null
   lineTotal: number
   lineId: string
   productId: string
@@ -20,6 +22,8 @@ export interface CartSnapshot {
 }
 
 export interface AddCartItemCommand {
+  balanceTypeId?: string | null
+  balanceTypeName?: string | null
   lineId?: string
   productId: string
   productImageUrl?: string | null
@@ -51,6 +55,8 @@ export function createCartLine(input: AddCartItemCommand): CartLine {
   const quantity = normalizeQuantity(input.quantity)
 
   return {
+    balanceTypeId: input.balanceTypeId ?? null,
+    balanceTypeName: input.balanceTypeName ?? null,
     lineTotal: input.unitPrice * quantity,
     lineId: input.lineId ?? input.skuId ?? input.productId,
     productId: input.productId,

@@ -31,11 +31,13 @@ function mapCartSnapshotToPageData(snapshot: CartSnapshot): CartPageData {
     const store = resolveCartLineStore(line)
     const existingGroup = groupsByStoreId.get(store.storeId)
     const item = {
+      balanceTypeName: line.balanceTypeName?.trim() ?? null,
       lineId: line.lineId,
       productId: line.productId,
       productImageUrl: line.productImageUrl ?? null,
       productName: line.productName,
       quantity: line.quantity,
+      specText: line.specText?.trim() ?? null,
       unitPrice: line.unitPrice,
     }
 

@@ -1,6 +1,6 @@
 import type { MemberAuthSession } from '@/entities/member-auth'
 import { createBackendAHttpClient } from '@/shared/api/backend-a/backend-a-http-client'
-import type { AccountBalanceLog } from '@/shared/types/modules'
+import type { AccountBalanceLog, BalanceAccountInfo } from '@/shared/types/modules'
 
 import type {
   MemberAssetsService,
@@ -86,11 +86,21 @@ function createBindRequestNo() {
   return `bind_${Date.now()}`
 }
 
-function resolvePrimaryBalanceAmount(accounts: BackendABalanceAccountDto[]) {
-  return accounts.reduce((maxAmount, account) => {
-    const amount = parseAmount(account.available_amount)
-    return amount > maxAmount ? amount : maxAmount
-  }, 0)
+function mapBalanceAccountInfo(account: BackendABalanceAccountDto): BalanceAccountInfo {
+  const balanceTypeName = account.balance_type?.name?.trim()
+
+  return {
+    accountId: String(account.id),
+    availableAmount: Math.max(parseAmount(account.available_amount), 0),
+    balanceTypeCode: account.balance_type?.code?.trim() || null,
+    balanceTypeId: account.balance_type_id,
+    balanceTypeName: balanceTypeName || `余额类型#${account.balance_type_id}`,
+    frozenAmount: Math.max(parseAmount(account.frozen_amount), 0),
+  }
+}
+
+function resolveTotalBalanceAmount(accounts: BalanceAccountInfo[]) {
+  return accounts.reduce((sum, account) => sum + account.availableAmount, 0)
 }
 
 function normalizeBalanceLogDirection(value: string | null | undefined): AccountBalanceLog['direction'] {
@@ -230,8 +240,11 @@ function mapRemoteSnapshotToMemberAssetsSnapshot(input: {
   logs: AccountBalanceLog[]
   redemptionRecords: MemberCardRedemptionRecord[]
 }): MemberAssetsSnapshot {
+  const balanceAccounts = input.accounts.map(mapBalanceAccountInfo)
+
   return {
-    balanceAmount: resolvePrimaryBalanceAmount(input.accounts),
+    balanceAccounts,
+    balanceAmount: resolveTotalBalanceAmount(balanceAccounts),
     balanceLogs: input.logs,
     bindPage: resolveBackendAMemberCardBindSeed(),
     redemptionRecords: input.redemptionRecords,
@@ -286,8 +299,8 @@ export function createBackendAMemberAssetsService(memberAuthSession: MemberAuthS
   }
 
   async function readCurrentBalanceAmount() {
-    const accounts = await fetchBalanceAccounts()
-    return resolvePrimaryBalanceAmount(accounts)
+    const accounts = (await fetchBalanceAccounts()).map(mapBalanceAccountInfo)
+    return resolveTotalBalanceAmount(accounts)
   }
 
   return {

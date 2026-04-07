@@ -8,6 +8,7 @@ import {
 import { useCheckoutFlowPort } from '@/processes/checkout-flow'
 import { useTradeStore } from '@/processes/trade'
 import { useModuleAvailability } from '@/shared/lib/modules'
+import type { BalanceAccountInfo } from '@/shared/types/modules'
 import {
   createBrowserOrderRepository,
   createCheckoutPreview,
@@ -18,9 +19,7 @@ import {
 } from '@/entities/order'
 import {
   getMemberAssetsSnapshot,
-  spendMemberBalance,
   useMemberAssetsService,
-  type SpendMemberBalanceCommand,
 } from '@/processes/member-center'
 import {
   clearInstantCheckoutDraft,
@@ -53,6 +52,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const selectedAddress = computed(() =>
     memberAddressStore.resolveSelectedAddress(selectedAddressId.value ?? undefined),
   )
+  const balanceAccounts = ref<BalanceAccountInfo[]>([])
   const availableBalance = ref(0)
   const submissionMessage = ref<string | null>(null)
   const sourceLabel = computed(() =>
@@ -94,6 +94,15 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     ) ?? null
   }
 
+  function syncBalanceSnapshot(snapshot: Awaited<ReturnType<typeof getMemberAssetsSnapshot>>) {
+    balanceAccounts.value = snapshot.balanceAccounts.map((account) => ({ ...account }))
+    availableBalance.value = snapshot.balanceAmount
+  }
+
+  function findInsufficientBalanceGroups(targetPreview: CheckoutPreview | null) {
+    return (targetPreview?.groups ?? []).filter((group) => group.payableAmount > group.availableBalance)
+  }
+
   async function loadPreview(options?: { couponUsages?: CheckoutCouponUsage[] }) {
     if (!isCheckoutEnabled.value) {
       preview.value = null
@@ -117,8 +126,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
         selectedCouponUsages.value = preview.value.couponUsages
       }
 
-      const assetsSnapshot = await getMemberAssetsSnapshot(memberAssetsService)
-      availableBalance.value = assetsSnapshot.balanceAmount
+      syncBalanceSnapshot(await getMemberAssetsSnapshot(memberAssetsService))
       await syncSelectedAddress()
       confirmation.value = null
       submissionMessage.value = null
@@ -165,10 +173,12 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
 
     try {
       const instantCheckoutDraft = readInstantCheckoutDraft()
-      const payableAmount = preview.value?.payableAmount ?? 0
+      const insufficientGroups = findInsufficientBalanceGroups(preview.value)
 
-      if (payableAmount > availableBalance.value) {
-        errorMessage.value = `账户余额不足，当前余额 ${availableBalance.value.toFixed(2)}`
+      if (insufficientGroups.length > 0) {
+        errorMessage.value = insufficientGroups
+          .map((group) => `${group.merchantName}-${group.balanceTypeName} 余额不足`)
+          .join('；')
         throw new Error(errorMessage.value)
       }
 
@@ -190,11 +200,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
             remark: remark?.trim() ? remark.trim() : null,
           })
 
-      const spendCommand: SpendMemberBalanceCommand = {
-        amount: result.confirmation.payableAmount,
-        description: `商城订单 ${result.confirmation.orderId} 余额支付`,
-      }
-      availableBalance.value = await spendMemberBalance(memberAssetsService, spendCommand)
+      syncBalanceSnapshot(await getMemberAssetsSnapshot(memberAssetsService))
       confirmation.value = result.confirmation
       submissionMessage.value = `订单 ${result.confirmation.orderId} 已提交，已使用账户余额支付 ${result.confirmation.payableAmount}`
       preview.value = result.preview
@@ -220,6 +226,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   })
 
   return {
+    balanceAccounts,
     availableBalance,
     confirmation,
     errorMessage,

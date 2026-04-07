@@ -504,6 +504,9 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
           <section class="summary-block">
             <h1>{{ product.name }}</h1>
             <p class="subtitle">{{ product.summary }}</p>
+            <div v-if="product.balanceTypeName" class="balance-badge-row">
+              <span class="balance-badge">适用{{ product.balanceTypeName }}</span>
+            </div>
             <div class="price-row">
               <span class="price-value">¥{{ formatAmount(product.price) }}</span>
             </div>
@@ -706,6 +709,10 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
             <section class="spec-section">
               <span class="spec-section-label">选择规格</span>
+
+              <div v-if="product.balanceTypeName" class="spec-balance-note">
+                当前商品使用 {{ product.balanceTypeName }} 结算
+              </div>
 
               <div class="spec-tag-row">
                 <button
@@ -979,6 +986,22 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 .price-row {
   display: flex;
   align-items: center;
+}
+
+.balance-badge-row {
+  display: flex;
+  align-items: center;
+}
+
+.balance-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(234, 88, 12, 0.1);
+  color: #c2410c;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .price-value {
@@ -1554,6 +1577,11 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   color: #6d6c6a;
   font-size: 15px;
   font-weight: 500;
+}
+
+.spec-balance-note {
+  color: #c2410c;
+  font-size: 12px;
 }
 
 .spec-tag-row {

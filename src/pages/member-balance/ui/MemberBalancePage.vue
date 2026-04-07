@@ -39,14 +39,34 @@ onActivated(() => {
 
     <div class="content-scroll">
       <section class="hero-card">
-        <span class="hero-label">当前可用余额</span>
+        <span class="hero-label">总可用余额</span>
         <strong>¥ {{ formatAmount(memberBalancePageData.balanceAmount) }}</strong>
       </section>
 
       <p v-if="errorMessage" class="status-text">{{ errorMessage }}</p>
       <LoadingState v-else-if="isLoading" />
 
-      <section v-else-if="memberBalancePageData.balanceLogs.length > 0" class="log-card">
+      <section v-else class="accounts-card">
+        <header class="card-head">
+          <strong>余额账户</strong>
+          <span>{{ memberBalancePageData.balanceAccounts.length }} 个账户</span>
+        </header>
+
+        <div
+          v-for="account in memberBalancePageData.balanceAccounts"
+          :key="account.accountId"
+          class="account-row"
+        >
+          <div class="account-copy">
+            <strong>{{ account.balanceTypeName }}</strong>
+            <span v-if="account.frozenAmount > 0">冻结 ¥{{ formatAmount(account.frozenAmount) }}</span>
+            <span v-else>可用于指定商品结算</span>
+          </div>
+          <strong class="account-amount">¥{{ formatAmount(account.availableAmount) }}</strong>
+        </div>
+      </section>
+
+      <section v-if="memberBalancePageData.balanceLogs.length > 0" class="log-card">
         <header class="card-head">
           <strong>余额明细</strong>
           <span>最近 {{ memberBalancePageData.balanceLogs.length }} 笔</span>
@@ -99,6 +119,7 @@ onActivated(() => {
 }
 
 .hero-card,
+.accounts-card,
 .log-card {
   border-radius: 20px;
   background: #fff;
@@ -148,6 +169,42 @@ onActivated(() => {
 .card-head span {
   color: #8c8a86;
   font-size: 12px;
+}
+
+.accounts-card {
+  margin-bottom: 12px;
+}
+
+.account-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+}
+
+.account-row + .account-row {
+  border-top: 1px solid #f3ede6;
+}
+
+.account-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.account-copy strong {
+  color: #2b2926;
+  font-size: 14px;
+}
+
+.account-copy span {
+  color: #8c8a86;
+  font-size: 12px;
+}
+
+.account-amount {
+  color: #ea580c;
+  font-size: 16px;
 }
 
 .log-row {

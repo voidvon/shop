@@ -9,6 +9,7 @@ export type {
 } from './auth'
 export type {
   AccountBalanceLog,
+  BalanceAccountInfo,
   CardBindingPageData,
   CardBindingResult,
   MemberAssetCard,

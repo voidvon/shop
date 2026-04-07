@@ -3,6 +3,9 @@ import type { ProductAttribute, ProductDetail, ProductSummary } from '../../doma
 type FieldResolver<TSource, TValue> = keyof TSource | ((source: TSource) => TValue)
 
 export interface ProductSummaryFieldMap<TSource> {
+  balanceTypeCode?: FieldResolver<TSource, string | null>
+  balanceTypeId?: FieldResolver<TSource, string | null>
+  balanceTypeName?: FieldResolver<TSource, string | null>
   category: FieldResolver<TSource, string>
   categoryId: FieldResolver<TSource, string>
   coverImageUrl?: FieldResolver<TSource, string | null>
@@ -44,6 +47,9 @@ function cloneAttributes(values: ProductAttribute[]) {
 
 export function createProductSummaryMapper<TSource>(fieldMap: ProductSummaryFieldMap<TSource>) {
   return (source: TSource): ProductSummary => ({
+    balanceTypeCode: fieldMap.balanceTypeCode ? resolveField(source, fieldMap.balanceTypeCode) : null,
+    balanceTypeId: fieldMap.balanceTypeId ? resolveField(source, fieldMap.balanceTypeId) : null,
+    balanceTypeName: fieldMap.balanceTypeName ? resolveField(source, fieldMap.balanceTypeName) : null,
     category: resolveField(source, fieldMap.category),
     categoryId: resolveField(source, fieldMap.categoryId),
     coverImageUrl: fieldMap.coverImageUrl ? resolveField(source, fieldMap.coverImageUrl) : null,

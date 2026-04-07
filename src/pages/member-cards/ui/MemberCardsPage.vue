@@ -188,8 +188,9 @@ onMounted(async () => {
 
     <section class="balance-bar">
       <div class="balance-left">
-        <span class="balance-label">账户余额</span>
+        <span class="balance-label">总账户余额</span>
         <span class="balance-pill">¥ {{ formatAmount(memberCardsPageData.balanceAmount) }}</span>
+        <span class="balance-meta">{{ memberCardsPageData.balanceAccounts.length }} 类余额账户</span>
       </div>
 
       <button class="pay-link" type="button" @click="goToBalanceDetail">余额明细</button>
@@ -286,6 +287,7 @@ onMounted(async () => {
 
 .balance-left {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
   min-width: 0;
@@ -305,6 +307,11 @@ onMounted(async () => {
   font-size: 18px;
   font-weight: 700;
   line-height: 1;
+}
+
+.balance-meta {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
 }
 
 .pay-link {

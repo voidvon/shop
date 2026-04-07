@@ -7,6 +7,8 @@ const initialProducts = mockProducts.slice(0, 2)
 
 let cartLines = initialProducts.map((product, index) =>
   createCartLine({
+    balanceTypeId: null,
+    balanceTypeName: null,
     productId: product.productId,
     productImageUrl: product.imageUrl,
     productName: product.productName,
@@ -71,6 +73,8 @@ export const mockCartRepository: CartRepository = {
     cartLines = cartLines.map((line) =>
       line.lineId === lineId
         ? createCartLine({
+            balanceTypeId: line.balanceTypeId ?? null,
+            balanceTypeName: line.balanceTypeName ?? null,
             productId: line.productId,
             productImageUrl: line.productImageUrl ?? null,
             productName: line.productName,

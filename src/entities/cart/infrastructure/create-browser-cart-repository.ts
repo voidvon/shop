@@ -31,6 +31,8 @@ function normalizeStoredCartLine(value: unknown): CartLine | null {
 
   if (
     typeof candidate.productId !== 'string'
+    || (candidate.balanceTypeId !== null && candidate.balanceTypeId !== undefined && typeof candidate.balanceTypeId !== 'string')
+    || (candidate.balanceTypeName !== null && candidate.balanceTypeName !== undefined && typeof candidate.balanceTypeName !== 'string')
     || (candidate.skuId !== null && candidate.skuId !== undefined && typeof candidate.skuId !== 'string')
     || (candidate.specText !== null && candidate.specText !== undefined && typeof candidate.specText !== 'string')
     || (candidate.storeId !== null && candidate.storeId !== undefined && typeof candidate.storeId !== 'string')
@@ -43,6 +45,8 @@ function normalizeStoredCartLine(value: unknown): CartLine | null {
   }
 
   return createCartLine({
+    balanceTypeId: candidate.balanceTypeId ?? null,
+    balanceTypeName: candidate.balanceTypeName ?? null,
     productId: candidate.productId,
     productImageUrl: candidate.productImageUrl ?? null,
     productName: candidate.productName,
@@ -224,6 +228,8 @@ export function createBrowserCartRepository(options: CreateBrowserCartRepository
         lines: state.lines.map((line) =>
           line.lineId === lineId
             ? createCartLine({
+                balanceTypeId: line.balanceTypeId ?? null,
+                balanceTypeName: line.balanceTypeName ?? null,
                 productId: line.productId,
                 productImageUrl: line.productImageUrl ?? null,
                 productName: line.productName,

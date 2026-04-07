@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useMemberCenterQuery, type MemberCardsPageData } from '@/processes/member-center'
 
 const emptyMemberBalancePageData: MemberCardsPageData = {
+  balanceAccounts: [],
   balanceAmount: 0,
   balanceLogs: [],
   redemptionRecords: [],

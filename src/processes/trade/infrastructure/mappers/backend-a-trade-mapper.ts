@@ -14,11 +14,13 @@ export function mapBackendACartPageData(snapshot: CartSnapshot): CartPageData {
     groups: [
       {
         items: snapshot.lines.map((line) => ({
+          balanceTypeName: line.balanceTypeName ?? null,
           lineId: line.lineId,
           productId: line.productId,
           productImageUrl: line.productImageUrl ?? null,
           productName: line.productName,
           quantity: line.quantity,
+          specText: line.specText ?? null,
           unitPrice: line.unitPrice,
         })),
         storeId: 'backend-a-store',

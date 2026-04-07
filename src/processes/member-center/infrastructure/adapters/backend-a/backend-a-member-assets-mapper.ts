@@ -10,6 +10,16 @@ import type {
 
 export function mapBackendAMemberAssetsSnapshot(dto: BackendAMemberAssetsSnapshotDto): MemberAssetsSnapshot {
   return {
+    balanceAccounts: [
+      {
+        accountId: 'backend-a-gateway-balance',
+        availableAmount: dto.balance.amount,
+        balanceTypeCode: 'default',
+        balanceTypeId: 0,
+        balanceTypeName: '账户余额',
+        frozenAmount: 0,
+      },
+    ],
     balanceAmount: dto.balance.amount,
     balanceLogs: dto.balance.logs,
     bindPage: {

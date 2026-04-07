@@ -21,6 +21,8 @@ export function mapBackendACartItemDto(dto: BackendACartItemDto) {
   const merchantName = dto.merchant?.short_name?.trim() || dto.merchant?.name?.trim() || null
 
   return createCartLine({
+    balanceTypeId: String(dto.balance_type_id),
+    balanceTypeName: dto.product?.balanceType?.name ?? null,
     productId: String(dto.product_id),
     productImageUrl: resolveCartImageUrl(dto),
     productName: dto.product?.title ?? `商品#${dto.product_id}`,

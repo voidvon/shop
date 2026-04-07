@@ -88,6 +88,9 @@ function mapSkuSellingPoint(sku: BackendAProductSkuDto) {
 }
 
 const backendAProductSummaryFieldMap = {
+  balanceTypeCode: (dto: BackendAProductSummaryDto) => dto.balanceType?.code ?? null,
+  balanceTypeId: (dto: BackendAProductSummaryDto) => String(dto.balance_type_id),
+  balanceTypeName: (dto: BackendAProductSummaryDto) => dto.balanceType?.name ?? null,
   category: (dto: BackendAProductSummaryDto) => dto.category?.name ?? '未分类',
   categoryId: (dto: BackendAProductSummaryDto) => String(dto.category?.id ?? dto.product_category_id),
   coverImageUrl: (dto: BackendAProductSummaryDto) =>

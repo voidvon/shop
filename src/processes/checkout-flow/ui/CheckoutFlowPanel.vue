@@ -16,6 +16,7 @@ const route = useRoute()
 const router = useRouter()
 const runtime = useBackendRuntime()
 const {
+  balanceAccounts,
   availableBalance,
   confirmation,
   errorMessage,
@@ -29,13 +30,19 @@ const {
 } = storeToRefs(checkoutStore)
 
 const previewLines = computed(() => preview.value?.lines ?? [])
+const previewBalanceGroups = computed(() => preview.value?.groups ?? [])
 const isCouponEnabled = computed(() => runtime.capabilities.coupon)
-const previewCouponGroups = computed(() => (isCouponEnabled.value ? (preview.value?.groups ?? []) : []))
+const previewCouponGroups = computed(() => (isCouponEnabled.value ? previewBalanceGroups.value : []))
 const payableAmountText = computed(() => formatAmount(preview.value?.payableAmount ?? 0))
 const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAmount ?? 0))
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
 const availableBalanceText = computed(() => formatAmount(availableBalance.value))
 const merchantTitle = computed(() => preview.value?.source === 'cart' ? '购物车商品' : '立即购买商品')
+const hasInsufficientBalance = computed(() => previewBalanceGroups.value.some((group) => group.payableAmount > group.availableBalance))
+const insufficientBalanceMessage = computed(() => previewBalanceGroups.value
+  .filter((group) => group.payableAmount > group.availableBalance)
+  .map((group) => `${group.merchantName}-${group.balanceTypeName} 可用 ¥${formatAmount(group.availableBalance)}`)
+  .join('；'))
 const buyerMessage = ref('')
 const selectedAddressQueryId = computed(() =>
   typeof route.query.selectedAddressId === 'string'
@@ -159,8 +166,20 @@ function formatAmount(value: number) {
   return value.toFixed(2)
 }
 
-function formatCouponGroupLabel(merchantName: string) {
-  return merchantName ? `${merchantName}优惠券` : '优惠券'
+function formatCouponGroupLabel(merchantName: string, balanceTypeName: string) {
+  if (merchantName && balanceTypeName) {
+    return `${merchantName}-${balanceTypeName}优惠券`
+  }
+
+  if (merchantName) {
+    return `${merchantName}优惠券`
+  }
+
+  if (balanceTypeName) {
+    return `${balanceTypeName}优惠券`
+  }
+
+  return '优惠券'
 }
 
 function formatCouponGroupValue(
@@ -222,10 +241,20 @@ function formatCouponGroupValue(
           </van-cell-group>
 
           <van-cell-group class="checkout-cell-group meta-card">
-            <van-cell title="支付方式：" value="账户余额支付" />
-            <van-cell title="当前余额：" :value="`¥${availableBalanceText}`" />
+            <van-cell title="支付方式：" value="余额账户支付" />
+            <van-cell title="总可用余额：" :value="`¥${availableBalanceText}`" />
+            <van-cell
+              v-for="account in balanceAccounts"
+              :key="account.accountId"
+              :title="`${account.balanceTypeName}：`"
+              :value="`¥${formatAmount(account.availableAmount)}`"
+            />
             <van-cell title="发票信息：" value="暂不支持" />
           </van-cell-group>
+
+          <p v-if="hasInsufficientBalance" class="state-card state-card-error">
+            当前有分组余额不足：{{ insufficientBalanceMessage }}
+          </p>
 
           <section class="merchant-card">
             <OrderStoreHeader :store-name="merchantTitle" status-text="" />
@@ -246,6 +275,20 @@ function formatCouponGroupValue(
               <span class="merchant-row-value">运费0.00</span>
             </div>
 
+            <div
+              v-for="group in previewBalanceGroups"
+              :key="`balance-${group.merchantId}-${group.balanceTypeId}`"
+              class="merchant-row"
+            >
+              <span class="merchant-row-label">{{ group.merchantName }} · {{ group.balanceTypeName }}</span>
+              <span
+                class="merchant-row-value"
+                :class="{ 'merchant-row-value-error': group.payableAmount > group.availableBalance }"
+              >
+                可用 ¥{{ formatAmount(group.availableBalance) }}
+              </span>
+            </div>
+
             <button
               v-for="group in previewCouponGroups"
               :key="`${group.merchantId}-${group.balanceTypeId}`"
@@ -253,7 +296,7 @@ function formatCouponGroupValue(
               type="button"
               @click="openCouponSelector(group.merchantId, group.balanceTypeId)"
             >
-              <span class="merchant-row-label">{{ formatCouponGroupLabel(group.merchantName) }}</span>
+              <span class="merchant-row-label">{{ formatCouponGroupLabel(group.merchantName, group.balanceTypeName) }}</span>
               <span class="merchant-row-main">
                 <span
                   class="merchant-row-value"
@@ -302,8 +345,8 @@ function formatCouponGroupValue(
               <strong class="explain-amount">{{ discountAmountText }}</strong>
             </div>
             <div class="explain-row">
-              <span>余额支付后剩余</span>
-              <strong class="explain-amount">{{ formatAmount(Math.max(availableBalance - (preview?.payableAmount ?? 0), 0)) }}</strong>
+              <span>结算分组数</span>
+              <strong class="explain-amount">{{ previewBalanceGroups.length }}</strong>
             </div>
             <div class="explain-row">
               <span>数据来源</span>
@@ -319,7 +362,7 @@ function formatCouponGroupValue(
       :price="Math.round((preview?.payableAmount ?? 0) * 100)"
       button-text="提交订单"
       :loading="isSubmitting"
-      :disabled="!preview || !isCheckoutEnabled || isLoading || availableBalance < (preview?.payableAmount ?? 0)"
+      :disabled="!preview || !isCheckoutEnabled || isLoading || hasInsufficientBalance"
       @submit="handleSubmit"
     />
   </section>

@@ -162,6 +162,11 @@ onActivated(() => {
                         <strong>{{ item.productName }}</strong>
                       </div>
 
+                      <div v-if="item.specText || item.balanceTypeName" class="meta-row">
+                        <span v-if="item.specText">{{ item.specText }}</span>
+                        <span v-if="item.balanceTypeName" class="balance-tag">{{ item.balanceTypeName }}</span>
+                      </div>
+
                       <div class="price-wrap">
                         <span class="price-symbol">¥</span>
                         <span class="price-value">{{ formatAmount(item.unitPrice) }}</span>
@@ -340,6 +345,22 @@ onActivated(() => {
   font-size: 14px;
   font-weight: 500;
   line-height: 1.35;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  color: #8a8884;
+  font-size: 12px;
+}
+
+.balance-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(234, 88, 12, 0.1);
+  color: #c2410c;
 }
 
 .price-wrap {

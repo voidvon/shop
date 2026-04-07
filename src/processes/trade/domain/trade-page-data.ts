@@ -1,11 +1,13 @@
 import type { TradeOrderStatus } from '@/shared/types/modules'
 
 export interface CartPageItem {
+  balanceTypeName: string | null
   lineId: string
   productId: string
   productImageUrl: string | null
   productName: string
   quantity: number
+  specText: string | null
   unitPrice: number
 }
 

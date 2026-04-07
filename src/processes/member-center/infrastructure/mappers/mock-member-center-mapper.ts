@@ -85,6 +85,7 @@ export function mapMockMemberCardBindPageData(bindPageData: MemberCardBindPageDa
 
 export function mapMockMemberCardsPageData(snapshot: MemberAssetsSnapshot): MemberCardsPageData {
   return {
+    balanceAccounts: snapshot.balanceAccounts.map((account) => ({ ...account })),
     balanceAmount: snapshot.balanceAmount,
     balanceLogs: snapshot.balanceLogs,
     redemptionRecords: snapshot.redemptionRecords,

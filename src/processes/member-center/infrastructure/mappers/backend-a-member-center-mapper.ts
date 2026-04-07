@@ -51,6 +51,7 @@ export function mapBackendAMemberCardBindPageData(bindPageData: MemberCardBindPa
 
 export function mapBackendAMemberCardsPageData(snapshot: MemberAssetsSnapshot): MemberCardsPageData {
   return {
+    balanceAccounts: snapshot.balanceAccounts.map((account) => ({ ...account })),
     balanceAmount: snapshot.balanceAmount,
     balanceLogs: snapshot.balanceLogs,
     redemptionRecords: snapshot.redemptionRecords,

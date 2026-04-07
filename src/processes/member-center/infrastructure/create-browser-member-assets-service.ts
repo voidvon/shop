@@ -113,6 +113,16 @@ export function createBrowserMemberAssetsService(
       ])
 
       return {
+        balanceAccounts: [
+          {
+            accountId: 'mock-balance-account',
+            availableAmount: balanceRecord.balanceAmount,
+            balanceTypeCode: 'mock',
+            balanceTypeId: 1,
+            balanceTypeName: '文惠储值卡',
+            frozenAmount: 0,
+          },
+        ],
         balanceAmount: balanceRecord.balanceAmount,
         balanceLogs: balanceRecord.balanceLogs,
         bindPage,

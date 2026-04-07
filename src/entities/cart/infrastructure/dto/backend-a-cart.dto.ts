@@ -5,6 +5,12 @@ export interface BackendAMerchantSimpleDto {
   short_name: string | null
 }
 
+export interface BackendABalanceTypeSimpleDto {
+  code: string
+  id: number
+  name: string
+}
+
 export interface BackendAProductSkuDto {
   id: number
   image: string | null
@@ -18,6 +24,7 @@ export interface BackendAProductSkuDto {
 }
 
 export interface BackendAProductSummaryDto {
+  balanceType?: BackendABalanceTypeSimpleDto
   id: number
   main_images: string[]
   merchant?: BackendAMerchantSimpleDto

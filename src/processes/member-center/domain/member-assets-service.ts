@@ -2,9 +2,10 @@ import type {
   MemberCardBindPageData,
   MemberCardRedemptionRecord,
 } from './member-center-page-data'
-import type { AccountBalanceLog } from '@/shared/types/modules'
+import type { AccountBalanceLog, BalanceAccountInfo } from '@/shared/types/modules'
 
 export interface MemberAssetsSnapshot {
+  balanceAccounts: BalanceAccountInfo[]
   balanceAmount: number
   balanceLogs: AccountBalanceLog[]
   bindPage: MemberCardBindPageData

@@ -88,6 +88,8 @@ export const useCartStore = defineStore('cart', () => {
 
     try {
       snapshot.value = await addCartItem(cartRepository, {
+        balanceTypeId: product.balanceTypeId ?? null,
+        balanceTypeName: product.balanceTypeName ?? null,
         productId: product.id,
         productImageUrl: product.coverImageUrl,
         productName: product.name,
