@@ -9,6 +9,7 @@ import { backendTarget } from '@/shared/config/backend'
 const wechatBrowserPattern = /MicroMessenger/i
 const wechatLoginRedirectStorageKey = 'shop.member-auth.wechat-redirect'
 const wechatLoginStateStorageKey = 'shop.member-auth.wechat-state'
+const wechatAutoLoginAttemptedStorageKey = 'shop.member-auth.wechat-auto-login-attempted'
 const missingWechatOauthUrlMessage
   = '请配置 VITE_BACKEND_A_WECHAT_OAUTH_URL，或提供可用的微信公众号 AppID'
 
@@ -82,6 +83,22 @@ export function consumePendingWechatLoginState() {
 
   window.sessionStorage.removeItem(wechatLoginStateStorageKey)
   return state
+}
+
+export function hasAttemptedWechatAutoLogin() {
+  if (!canUseSessionStorage()) {
+    return false
+  }
+
+  return window.sessionStorage.getItem(wechatAutoLoginAttemptedStorageKey) === '1'
+}
+
+export function markWechatAutoLoginAttempted() {
+  if (!canUseSessionStorage()) {
+    return
+  }
+
+  window.sessionStorage.setItem(wechatAutoLoginAttemptedStorageKey, '1')
 }
 
 function savePendingWechatLoginState(state: string) {

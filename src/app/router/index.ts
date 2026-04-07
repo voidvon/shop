@@ -14,7 +14,9 @@ import { getBackendRuntime } from '@/app/providers/backend/backend-runtime-provi
 import {
   consumePendingWechatLoginRedirectPath,
   consumePendingWechatLoginState,
+  hasAttemptedWechatAutoLogin,
   isWechatBrowser,
+  markWechatAutoLoginAttempted,
   startWechatOauthLogin,
 } from '@/shared/lib/wechat-browser'
 
@@ -159,19 +161,15 @@ router.beforeEach(async (to, from) => {
     return wechatCallbackRedirect
   }
 
-  const requiresAuth = to.matched.some((record) => record.meta?.requiresAuth === true)
-
-  if (!requiresAuth) {
-    return true
-  }
-
   const authSnapshot = getBrowserMemberAuthSessionSnapshot()
 
-  if (authSnapshot.isAuthenticated) {
-    return true
-  }
+  if (
+    isWechatBrowser()
+    && !authSnapshot.isAuthenticated
+    && !hasAttemptedWechatAutoLogin()
+  ) {
+    markWechatAutoLoginAttempted()
 
-  if (isWechatBrowser()) {
     const result = await startWechatOauthLogin(to.fullPath)
 
     if (result.redirected) {
@@ -186,6 +184,16 @@ router.beforeEach(async (to, from) => {
     if (result.message) {
       showToast(result.message)
     }
+  }
+
+  const requiresAuth = to.matched.some((record) => record.meta?.requiresAuth === true)
+
+  if (!requiresAuth) {
+    return true
+  }
+
+  if (authSnapshot.isAuthenticated) {
+    return true
   }
 
   return {
