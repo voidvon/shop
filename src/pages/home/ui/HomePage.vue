@@ -33,6 +33,7 @@ const {
   homePageData,
   isHotProductsFinished,
   isLoading,
+  isRefreshing,
   isLoadingMoreHotProducts,
   loadHomePage,
   loadMoreHotProducts,
@@ -71,6 +72,12 @@ function syncFavoriteState(force = false) {
 
 function goToSearchPage() {
   void router.push({ name: 'search' })
+}
+
+async function handleRefresh() {
+  await loadHomePage({ refresh: true })
+  await nextTick()
+  tryLoadMoreOnScroll()
 }
 
 function configurePromoVideoElement(video: HTMLVideoElement) {
@@ -198,6 +205,7 @@ function tryLoadMoreOnScroll() {
     typeof window === 'undefined'
     || !loadMoreTriggerRef.value
     || isLoading.value
+    || isRefreshing.value
     || isLoadingMoreHotProducts.value
     || isHotProductsFinished.value
   ) {
@@ -265,140 +273,151 @@ watch(promoVideoUrl, () => {
 
 <template>
   <section class="home-page">
-    <van-sticky>
-      <div class="sticky-search">
-        <div class="sticky-search-inner">
-          <SearchField placeholder="搜索商品" readonly @click="goToSearchPage" />
-        </div>
-      </div>
-    </van-sticky>
-
-    <div class="content-wrapper">
-      <section v-if="promoVideoUrl" :style="promoVideoCardStyle" class="promo-video-card">
-        <video
-          ref="promoVideoRef"
-          :class="['promo-video-player', { 'promo-video-player-hidden': !isPromoVideoPlaying }]"
-          :poster="promoVideoPosterUrl"
-          :src="promoVideoUrl"
-          autoplay
-          controlslist="nodownload nofullscreen noremoteplayback"
-          disablepictureinpicture
-          loop
-          muted
-          @pause="handlePromoVideoPaused"
-          @playing="handlePromoVideoPlaying"
-          @waiting="handlePromoVideoPaused"
-          playsinline
-          webkit-playsinline="true"
-          x5-playsinline="true"
-          x5-video-player-type="h5"
-          x5-video-player-fullscreen="false"
-          preload="metadata"
-        />
-        <button
-          v-if="isPromoVideoManualPlayVisible && !isPromoVideoAutoplayChecking"
-          class="promo-video-play-button"
-          aria-label="播放视频"
-          type="button"
-          @click="handlePromoVideoManualPlay"
-        >
-          <span aria-hidden="true" class="promo-video-play-icon" />
-        </button>
-      </section>
-
-      <ImageCarousel v-else :bleed-x="'48px'" :items="carouselItems" />
-
-      <section class="category-grid">
-        <RouterLink
-          v-for="category in quickCategories"
-          :key="category.id"
-          class="category-card"
-          :to="{ name: 'category', params: { primaryCategoryId: category.id } }"
-        >
-          <img :src="category.imageUrl || '/images/image-placeholder.svg'" :alt="category.label">
-          <strong>{{ category.label }}</strong>
-        </RouterLink>
-      </section>
-
-      <section v-if="partnerStoreTypes.length > 0" class="partner-store-type-section">
-        <div class="partner-store-type-head">
-          <strong>合作门店类型</strong>
-        </div>
-
-        <div class="partner-store-type-list">
-          <RouterLink
-            v-for="storeType in partnerStoreTypes"
-            :key="storeType.id"
-            class="partner-store-type-card"
-            :class="{ 'partner-store-type-card-placeholder': !storeType.imageUrl }"
-            :to="{
-              name: 'partner-store-directory',
-              params: { storeTypeId: storeType.id },
-              query: { label: storeType.label },
-            }"
-          >
-            <img
-              class="partner-store-type-image"
-              :src="storeType.imageUrl || '/images/image-placeholder.svg'"
-              :alt="storeType.label"
-            >
-            <div v-if="!storeType.imageUrl" class="partner-store-type-overlay">
-              <strong>{{ storeType.label }}</strong>
-            </div>
-          </RouterLink>
-        </div>
-      </section>
-
-      <section class="product-section">
-        <div class="section-head">
-          <h2>热门推荐</h2>
-        </div>
-
-        <p v-if="errorMessage" class="status-text">
-          {{ errorMessage }}
-        </p>
-
-        <LoadingState v-else-if="isLoading" />
-
-        <div
-          v-else-if="displayedHotProducts.length > 0"
-          class="hot-product-list"
-        >
-          <div class="product-grid">
-            <ProductCompactCard
-              v-for="product in displayedHotProducts"
-              :key="product.id"
-              :image-url="product.imageUrl"
-              :is-favorited="isProductFavorited(product.id)"
-              :market-price="product.marketPrice"
-              :monthly-sales="product.monthlySales"
-              :name="product.name"
-              :price="product.price"
-              :to="{ name: 'product-detail', params: { productId: product.id } }"
-            />
+    <van-pull-refresh
+      v-model="isRefreshing"
+      class="home-page-refresh"
+      success-text="刷新成功"
+      @refresh="handleRefresh"
+    >
+      <van-sticky>
+        <div class="sticky-search">
+          <div class="sticky-search-inner">
+            <SearchField placeholder="搜索商品" readonly @click="goToSearchPage" />
           </div>
+        </div>
+      </van-sticky>
+
+      <div class="content-wrapper">
+        <section v-if="promoVideoUrl" :style="promoVideoCardStyle" class="promo-video-card">
+          <video
+            ref="promoVideoRef"
+            :class="['promo-video-player', { 'promo-video-player-hidden': !isPromoVideoPlaying }]"
+            :poster="promoVideoPosterUrl"
+            :src="promoVideoUrl"
+            autoplay
+            controlslist="nodownload nofullscreen noremoteplayback"
+            disablepictureinpicture
+            loop
+            muted
+            @pause="handlePromoVideoPaused"
+            @playing="handlePromoVideoPlaying"
+            @waiting="handlePromoVideoPaused"
+            playsinline
+            webkit-playsinline="true"
+            x5-playsinline="true"
+            x5-video-player-type="h5"
+            x5-video-player-fullscreen="false"
+            preload="metadata"
+          />
+          <button
+            v-if="isPromoVideoManualPlayVisible && !isPromoVideoAutoplayChecking"
+            class="promo-video-play-button"
+            aria-label="播放视频"
+            type="button"
+            @click="handlePromoVideoManualPlay"
+          >
+            <span aria-hidden="true" class="promo-video-play-icon" />
+          </button>
+        </section>
+
+        <ImageCarousel v-else :bleed-x="'48px'" :items="carouselItems" />
+
+        <section class="category-grid">
+          <RouterLink
+            v-for="category in quickCategories"
+            :key="category.id"
+            class="category-card"
+            :to="{ name: 'category', params: { primaryCategoryId: category.id } }"
+          >
+            <img :src="category.imageUrl || '/images/image-placeholder.svg'" :alt="category.label">
+            <strong>{{ category.label }}</strong>
+          </RouterLink>
+        </section>
+
+        <section v-if="partnerStoreTypes.length > 0" class="partner-store-type-section">
+          <div class="partner-store-type-head">
+            <strong>合作门店类型</strong>
+          </div>
+
+          <div class="partner-store-type-list">
+            <RouterLink
+              v-for="storeType in partnerStoreTypes"
+              :key="storeType.id"
+              class="partner-store-type-card"
+              :class="{ 'partner-store-type-card-placeholder': !storeType.imageUrl }"
+              :to="{
+                name: 'partner-store-directory',
+                params: { storeTypeId: storeType.id },
+                query: { label: storeType.label },
+              }"
+            >
+              <img
+                class="partner-store-type-image"
+                :src="storeType.imageUrl || '/images/image-placeholder.svg'"
+                :alt="storeType.label"
+              >
+              <div v-if="!storeType.imageUrl" class="partner-store-type-overlay">
+                <strong>{{ storeType.label }}</strong>
+              </div>
+            </RouterLink>
+          </div>
+        </section>
+
+        <section class="product-section">
+          <div class="section-head">
+            <h2>热门推荐</h2>
+          </div>
+
+          <p v-if="errorMessage && displayedHotProducts.length === 0" class="status-text">
+            {{ errorMessage }}
+          </p>
+
+          <LoadingState v-else-if="isLoading" />
 
           <div
-            ref="loadMoreTriggerRef"
-            class="load-more-trigger"
-            :class="{ 'load-more-trigger-finished': isHotProductsFinished }"
+            v-else-if="displayedHotProducts.length > 0"
+            class="hot-product-list"
           >
-            <span v-if="isLoadingMoreHotProducts" class="load-more-loading">
-              <van-loading size="14" type="spinner" />
-              <span>加载中...</span>
-            </span>
-            <span v-else-if="isHotProductsFinished">已经到底了</span>
-            <span v-else>继续下滑加载更多</span>
+            <p v-if="errorMessage" class="status-text status-text-inline">
+              {{ errorMessage }}
+            </p>
+
+            <div class="product-grid">
+              <ProductCompactCard
+                v-for="product in displayedHotProducts"
+                :key="product.id"
+                :image-url="product.imageUrl"
+                :is-favorited="isProductFavorited(product.id)"
+                :market-price="product.marketPrice"
+                :monthly-sales="product.monthlySales"
+                :name="product.name"
+                :price="product.price"
+                :to="{ name: 'product-detail', params: { productId: product.id } }"
+              />
+            </div>
+
+            <div
+              ref="loadMoreTriggerRef"
+              class="load-more-trigger"
+              :class="{ 'load-more-trigger-finished': isHotProductsFinished }"
+            >
+              <span v-if="isLoadingMoreHotProducts" class="load-more-loading">
+                <van-loading size="14" type="spinner" />
+                <span>加载中...</span>
+              </span>
+              <span v-else-if="isHotProductsFinished">已经到底了</span>
+              <span v-else>继续下滑加载更多</span>
+            </div>
           </div>
-        </div>
 
-        <p v-else class="status-text">
-          暂无热门推荐
-        </p>
-      </section>
+          <p v-else class="status-text">
+            暂无热门推荐
+          </p>
+        </section>
 
-      <van-back-top class="home-back-top" teleport="" />
-    </div>
+        <van-back-top class="home-back-top" teleport="" />
+      </div>
+    </van-pull-refresh>
   </section>
 </template>
 
@@ -409,6 +428,10 @@ watch(promoVideoUrl, () => {
   width: 100%;
   min-height: calc(100vh - 110px);
   background: #f5f4f1;
+}
+
+.home-page-refresh {
+  min-height: calc(100vh - 110px);
 }
 
 .content-wrapper {
@@ -632,6 +655,10 @@ watch(promoVideoUrl, () => {
   color: #9c9b99;
   font-size: 13px;
   text-align: center;
+}
+
+.status-text-inline {
+  padding: 0;
 }
 
 .section-head h2 {

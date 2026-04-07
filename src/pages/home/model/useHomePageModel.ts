@@ -18,6 +18,7 @@ export function useHomePageModel() {
   const homePageData = ref<HomePageData>(emptyHomePageData)
   const errorMessage = ref<string | null>(null)
   const isLoading = ref(false)
+  const isRefreshing = ref(false)
   const isLoadingMoreHotProducts = ref(false)
   const visibleHotProductCount = ref(0)
 
@@ -33,24 +34,46 @@ export function useHomePageModel() {
     isLoadingMoreHotProducts.value = false
   }
 
-  async function loadHomePage() {
-    isLoading.value = true
+  async function loadHomePage(options: { refresh?: boolean } = {}) {
+    const refresh = options.refresh === true
+
+    if (refresh) {
+      if (isLoading.value) {
+        return
+      }
+
+      isRefreshing.value = true
+    } else {
+      if (isLoading.value || isRefreshing.value) {
+        return
+      }
+
+      isLoading.value = true
+    }
+
     errorMessage.value = null
 
     try {
       homePageData.value = await storefrontQuery.getHomePageData()
       resetHotProductsPagination()
     } catch (error) {
-      homePageData.value = emptyHomePageData
-      resetHotProductsPagination()
+      if (!refresh) {
+        homePageData.value = emptyHomePageData
+        resetHotProductsPagination()
+      }
+
       errorMessage.value = error instanceof Error ? error.message : '首页数据加载失败'
     } finally {
-      isLoading.value = false
+      if (refresh) {
+        isRefreshing.value = false
+      } else {
+        isLoading.value = false
+      }
     }
   }
 
   async function loadMoreHotProducts() {
-    if (isLoading.value || isLoadingMoreHotProducts.value || isHotProductsFinished.value) {
+    if (isLoading.value || isRefreshing.value || isLoadingMoreHotProducts.value || isHotProductsFinished.value) {
       isLoadingMoreHotProducts.value = false
       return
     }
@@ -70,6 +93,7 @@ export function useHomePageModel() {
     homePageData,
     isHotProductsFinished,
     isLoading,
+    isRefreshing,
     isLoadingMoreHotProducts,
     loadMoreHotProducts,
     loadHomePage,
