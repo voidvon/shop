@@ -26,6 +26,17 @@ const bindPreviewVisible = ref(false)
 const devCardNumber = import.meta.env.VITE_DEV_MEMBER_CARD_NO?.trim() ?? ''
 const devCardSecret = import.meta.env.VITE_DEV_MEMBER_CARD_SECRET?.trim() ?? ''
 const normalizedMobile = computed(() => mobile.value.trim())
+const mobileErrorMessage = computed(() => {
+  if (normalizedMobile.value.length === 0) {
+    return '请输入手机号'
+  }
+
+  if (!/^1\d{10}$/.test(normalizedMobile.value)) {
+    return '请输入正确手机号'
+  }
+
+  return ''
+})
 const hasValidMobile = computed(() => /^1\d{10}$/.test(normalizedMobile.value))
 const canConfirmBind = computed(() =>
   !isSubmitting.value && Boolean(lookupResult.value?.canBind) && hasValidMobile.value,
@@ -139,8 +150,8 @@ async function openBindPreview() {
 async function submitBindCard() {
   mobile.value = normalizedMobile.value
 
-  if (!hasValidMobile.value) {
-    showFailToast('请输入正确手机号')
+  if (mobileErrorMessage.value) {
+    showFailToast(mobileErrorMessage.value)
     return
   }
 
@@ -309,8 +320,8 @@ onMounted(async () => {
       <section class="bind-preview-sheet">
         <header class="preview-header">
           <div>
-            <strong>充值预览</strong>
-            <p>确认卡信息和手机号后，再提交绑定充值。</p>
+            <strong>绑定预览</strong>
+            <p>确认卡信息和手机号后，再提交绑定。</p>
           </div>
           <button class="preview-close" type="button" @click="closeBindPreview">关闭</button>
         </header>
@@ -352,14 +363,12 @@ onMounted(async () => {
             placeholder="请输入绑定手机号"
           >
         </label>
-        <p :class="['mobile-hint', { 'mobile-hint-error': normalizedMobile.length > 0 && !hasValidMobile }]">
-          {{ normalizedMobile.length > 0 && !hasValidMobile ? '请输入正确手机号' : '仅校验手机号格式，不校验短信验证码。' }}
-        </p>
+        <p v-if="mobileErrorMessage" class="mobile-hint mobile-hint-error">{{ mobileErrorMessage }}</p>
 
         <div class="preview-actions">
           <button class="preview-cancel" type="button" @click="closeBindPreview">稍后再说</button>
           <button class="preview-confirm" :disabled="!canConfirmBind" type="button" @click="submitBindCard">
-            {{ isSubmitting ? '绑定中...' : '确认绑定并充值' }}
+            {{ isSubmitting ? '绑定中...' : '确认绑定' }}
           </button>
         </div>
       </section>
