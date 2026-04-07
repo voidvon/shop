@@ -2,6 +2,7 @@ import type {
   BindMemberCardResult,
   MemberAssetsSnapshot,
 } from '../../../domain/member-assets-service'
+import { sortBalanceAccountsForDisplay } from '@/shared/lib/balance-accounts'
 import type {
   BackendABindMemberCardResponseDto,
   BackendAMemberAssetsSnapshotDto,
@@ -9,17 +10,19 @@ import type {
 } from './backend-a-member-assets-gateway'
 
 export function mapBackendAMemberAssetsSnapshot(dto: BackendAMemberAssetsSnapshotDto): MemberAssetsSnapshot {
+  const balanceAccounts = sortBalanceAccountsForDisplay([
+    {
+      accountId: 'backend-a-gateway-balance',
+      availableAmount: dto.balance.amount,
+      balanceTypeCode: 'default',
+      balanceTypeId: 0,
+      balanceTypeName: '账户余额',
+      frozenAmount: 0,
+    },
+  ])
+
   return {
-    balanceAccounts: [
-      {
-        accountId: 'backend-a-gateway-balance',
-        availableAmount: dto.balance.amount,
-        balanceTypeCode: 'default',
-        balanceTypeId: 0,
-        balanceTypeName: '账户余额',
-        frozenAmount: 0,
-      },
-    ],
+    balanceAccounts,
     balanceAmount: dto.balance.amount,
     balanceLogs: dto.balance.logs,
     bindPage: {

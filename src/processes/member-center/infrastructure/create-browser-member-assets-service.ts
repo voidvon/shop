@@ -10,6 +10,7 @@ import {
   validateMemberCardSecret,
 } from '../domain/member-card-bind-rules'
 import type { MemberAssetsRepository } from './member-assets-repository'
+import { sortBalanceAccountsForDisplay } from '@/shared/lib/balance-accounts'
 
 function resolveCardNumberSeed(cardNumber: string) {
   const digits = cardNumber.replace(/\D/g, '')
@@ -111,18 +112,19 @@ export function createBrowserMemberAssetsService(
         repository.getBindPageData(),
         repository.readRedemptionRecords(),
       ])
+      const balanceAccounts = sortBalanceAccountsForDisplay([
+        {
+          accountId: 'mock-balance-account',
+          availableAmount: balanceRecord.balanceAmount,
+          balanceTypeCode: 'mock',
+          balanceTypeId: 1,
+          balanceTypeName: '文惠储值卡',
+          frozenAmount: 0,
+        },
+      ])
 
       return {
-        balanceAccounts: [
-          {
-            accountId: 'mock-balance-account',
-            availableAmount: balanceRecord.balanceAmount,
-            balanceTypeCode: 'mock',
-            balanceTypeId: 1,
-            balanceTypeName: '文惠储值卡',
-            frozenAmount: 0,
-          },
-        ],
+        balanceAccounts,
         balanceAmount: balanceRecord.balanceAmount,
         balanceLogs: balanceRecord.balanceLogs,
         bindPage,

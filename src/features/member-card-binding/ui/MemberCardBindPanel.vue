@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { LookupMemberCardResult } from '@/processes/member-center'
 
 import {
   memberCardNumberLengthRange,
@@ -14,13 +13,11 @@ const props = defineProps<{
   cardSecret: string
   isLookingUp?: boolean
   isSubmitting?: boolean
-  lookupResult?: LookupMemberCardResult | null
 }>()
 
 const emit = defineEmits<{
-  (e: 'lookup'): void
+  (e: 'preview'): void
   (e: 'simulate-scan'): void
-  (e: 'submit'): void
   (e: 'update:cardNumber', value: string): void
   (e: 'update:cardSecret', value: string): void
 }>()
@@ -36,11 +33,7 @@ const cardSecretModel = computed({
 })
 
 const isBusy = computed(() => props.isSubmitting || props.isLookingUp)
-const canSubmit = computed(() => !isBusy.value && (props.lookupResult?.canBind ?? true))
-
-function formatAmount(amount: number) {
-  return amount.toFixed(2)
-}
+const canPreview = computed(() => !isBusy.value)
 </script>
 
 <template>
@@ -67,47 +60,17 @@ function formatAmount(amount: number) {
     </label>
 
     <div class="bind-body">
-      <section v-if="lookupResult" class="lookup-card">
-        <div class="lookup-header">
-          <strong>{{ lookupResult.balanceTypeName || '储值卡信息' }}</strong>
-          <span :class="['lookup-status', { 'lookup-status-disabled': !lookupResult.canBind }]">
-            {{ lookupResult.statusText }}
-          </span>
-        </div>
-        <dl class="lookup-grid">
-          <div>
-            <dt>卡号</dt>
-            <dd>{{ lookupResult.cardNumber }}</dd>
-          </div>
-          <div>
-            <dt>面值</dt>
-            <dd>¥{{ formatAmount(lookupResult.faceValue) }}</dd>
-          </div>
-          <div>
-            <dt>当前余额</dt>
-            <dd>¥{{ formatAmount(lookupResult.currentAmount) }}</dd>
-          </div>
-          <div>
-            <dt>是否可绑</dt>
-            <dd>{{ lookupResult.canBind ? '可绑定' : '不可绑定' }}</dd>
-          </div>
-        </dl>
-      </section>
-
       <section class="scan-section">
         <button class="scan-button" :disabled="isBusy" type="button" @click="emit('simulate-scan')">
           <van-icon name="scan" size="108" />
         </button>
-        <strong>{{ isSubmitting ? '绑定中...' : isLookingUp ? '查询中...' : '扫码读取卡券' }}</strong>
-        <p>点击扫码后会自动读取卡券信息，并优先查询卡状态与余额。</p>
+        <strong>{{ isSubmitting ? '绑定中...' : isLookingUp ? '读取中...' : '扫码读取卡券' }}</strong>
+        <p>扫码或手动填写卡券信息后，会先弹出预览窗口，再完成绑定充值。</p>
       </section>
 
       <div class="action-area">
-        <button class="secondary-button" :disabled="isBusy" type="button" @click="emit('lookup')">
-          {{ isLookingUp ? '查询中...' : '查询卡信息' }}
-        </button>
-        <button class="primary-button" :disabled="!canSubmit" type="button" @click="emit('submit')">
-          {{ isSubmitting ? '充值中...' : '确认绑定并充值' }}
+        <button class="primary-button" :disabled="!canPreview" type="button" @click="emit('preview')">
+          {{ isSubmitting ? '绑定中...' : isLookingUp ? '读取中...' : '确认信息' }}
         </button>
       </div>
     </div>
@@ -156,69 +119,9 @@ function formatAmount(amount: number) {
 
 .bind-body {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   min-height: 0;
   padding: 28px 20px 24px;
-}
-
-.lookup-card {
-  display: grid;
-  gap: 14px;
-  padding: 16px;
-  border-radius: 18px;
-  background: #fff7f0;
-  box-shadow: inset 0 0 0 1px rgba(255, 106, 26, 0.08);
-}
-
-.lookup-header {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.lookup-header strong {
-  color: #1a1918;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.lookup-status {
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255, 106, 26, 0.12);
-  color: #d15a15;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.lookup-status-disabled {
-  background: rgba(127, 120, 114, 0.12);
-  color: #7f7872;
-}
-
-.lookup-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin: 0;
-}
-
-.lookup-grid div {
-  display: grid;
-  gap: 4px;
-}
-
-.lookup-grid dt {
-  color: #8a7f78;
-  font-size: 12px;
-}
-
-.lookup-grid dd {
-  margin: 0;
-  color: #1a1918;
-  font-size: 14px;
-  font-weight: 600;
 }
 
 .scan-section {

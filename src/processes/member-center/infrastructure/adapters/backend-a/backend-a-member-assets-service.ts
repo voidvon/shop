@@ -1,5 +1,6 @@
 import type { MemberAuthSession } from '@/entities/member-auth'
 import { createBackendAHttpClient } from '@/shared/api/backend-a/backend-a-http-client'
+import { sortBalanceAccountsForDisplay } from '@/shared/lib/balance-accounts'
 import type { AccountBalanceLog, BalanceAccountInfo } from '@/shared/types/modules'
 
 import type {
@@ -240,7 +241,7 @@ function mapRemoteSnapshotToMemberAssetsSnapshot(input: {
   logs: AccountBalanceLog[]
   redemptionRecords: MemberCardRedemptionRecord[]
 }): MemberAssetsSnapshot {
-  const balanceAccounts = input.accounts.map(mapBalanceAccountInfo)
+  const balanceAccounts = sortBalanceAccountsForDisplay(input.accounts.map(mapBalanceAccountInfo))
 
   return {
     balanceAccounts,

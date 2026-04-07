@@ -17,12 +17,19 @@ const isLookingUp = ref(false)
 const isSubmitting = ref(false)
 const cardNumber = ref('')
 const cardSecret = ref('')
+const mobile = ref('')
 const lookupResult = ref<LookupMemberCardResult | null>(null)
 const { bindMemberCard, lookupMemberCard } = useMemberCardBinding()
 const { errorMessage, isLoading, loadMemberCardsPage, memberCardsPageData } = useMemberCardsPageModel()
 const bindDrawerVisible = computed(() => route.query.drawer === 'bind')
+const bindPreviewVisible = ref(false)
 const devCardNumber = import.meta.env.VITE_DEV_MEMBER_CARD_NO?.trim() ?? ''
 const devCardSecret = import.meta.env.VITE_DEV_MEMBER_CARD_SECRET?.trim() ?? ''
+const normalizedMobile = computed(() => mobile.value.trim())
+const hasValidMobile = computed(() => /^1\d{10}$/.test(normalizedMobile.value))
+const canConfirmBind = computed(() =>
+  !isSubmitting.value && Boolean(lookupResult.value?.canBind) && hasValidMobile.value,
+)
 
 function formatAmount(amount: number) {
   return amount.toFixed(2)
@@ -42,6 +49,10 @@ function resolveSimulatedCardNumber() {
 
 function resolveSimulatedCardSecret() {
   return devCardSecret || cardSecret.value
+}
+
+function formatPreviewTitle(result: LookupMemberCardResult | null) {
+  return result?.balanceTypeName || '储值卡信息'
 }
 
 function goBack() {
@@ -103,7 +114,41 @@ function handleBindDrawerVisibilityChange(show: boolean) {
   void closeBindDrawer()
 }
 
+function closeBindPreview() {
+  bindPreviewVisible.value = false
+}
+
+async function openBindPreview() {
+  isLookingUp.value = true
+
+  try {
+    lookupResult.value = await lookupMemberCard({
+      cardNumber: cardNumber.value,
+      cardSecret: cardSecret.value,
+    })
+    bindPreviewVisible.value = true
+  } catch (error) {
+    lookupResult.value = null
+    bindPreviewVisible.value = false
+    showFailToast(error instanceof Error ? error.message : '卡信息查询失败')
+  } finally {
+    isLookingUp.value = false
+  }
+}
+
 async function submitBindCard() {
+  mobile.value = normalizedMobile.value
+
+  if (!hasValidMobile.value) {
+    showFailToast('请输入正确手机号')
+    return
+  }
+
+  if (!lookupResult.value?.canBind) {
+    showFailToast('当前卡券不可绑定充值')
+    return
+  }
+
   isSubmitting.value = true
 
   try {
@@ -112,6 +157,7 @@ async function submitBindCard() {
       cardSecret: cardSecret.value,
     })
     showSuccessToast('充值成功')
+    closeBindPreview()
     await closeBindDrawer()
     await loadMemberCardsPage()
   } catch (error) {
@@ -122,20 +168,7 @@ async function submitBindCard() {
 }
 
 async function runLookupCard() {
-  isLookingUp.value = true
-
-  try {
-    lookupResult.value = await lookupMemberCard({
-      cardNumber: cardNumber.value,
-      cardSecret: cardSecret.value,
-    })
-    showSuccessToast('卡信息已更新')
-  } catch (error) {
-    lookupResult.value = null
-    showFailToast(error instanceof Error ? error.message : '卡信息查询失败')
-  } finally {
-    isLookingUp.value = false
-  }
+  await openBindPreview()
 }
 
 async function simulateScan() {
@@ -156,7 +189,7 @@ async function simulateScan() {
   }
 
   showSuccessToast('已读取卡券信息')
-  await runLookupCard()
+  await openBindPreview()
 }
 
 watch(bindDrawerVisible, (visible, previousVisible) => {
@@ -166,11 +199,14 @@ watch(bindDrawerVisible, (visible, previousVisible) => {
 
   cardNumber.value = ''
   cardSecret.value = ''
+  mobile.value = ''
   lookupResult.value = null
+  bindPreviewVisible.value = false
 })
 
 watch([cardNumber, cardSecret], () => {
   lookupResult.value = null
+  bindPreviewVisible.value = false
 })
 
 onMounted(async () => {
@@ -256,11 +292,76 @@ onMounted(async () => {
           v-model:card-secret="cardSecret"
           :is-looking-up="isLookingUp"
           :is-submitting="isSubmitting"
-          :lookup-result="lookupResult"
-          @lookup="runLookupCard"
+          @preview="runLookupCard"
           @simulate-scan="simulateScan"
-          @submit="submitBindCard"
         />
+      </section>
+    </van-popup>
+
+    <van-popup
+      :show="bindPreviewVisible"
+      class="bind-preview-popup"
+      position="bottom"
+      round
+      teleport="body"
+      @update:show="closeBindPreview"
+    >
+      <section class="bind-preview-sheet">
+        <header class="preview-header">
+          <div>
+            <strong>充值预览</strong>
+            <p>确认卡信息和手机号后，再提交绑定充值。</p>
+          </div>
+          <button class="preview-close" type="button" @click="closeBindPreview">关闭</button>
+        </header>
+
+        <section v-if="lookupResult" class="lookup-card">
+          <div class="lookup-header">
+            <strong>{{ formatPreviewTitle(lookupResult) }}</strong>
+            <span :class="['lookup-status', { 'lookup-status-disabled': !lookupResult.canBind }]">
+              {{ lookupResult.statusText }}
+            </span>
+          </div>
+          <dl class="lookup-grid">
+            <div>
+              <dt>卡号</dt>
+              <dd>{{ lookupResult.cardNumber }}</dd>
+            </div>
+            <div>
+              <dt>面值</dt>
+              <dd>¥{{ formatAmount(lookupResult.faceValue) }}</dd>
+            </div>
+            <div>
+              <dt>当前余额</dt>
+              <dd>¥{{ formatAmount(lookupResult.currentAmount) }}</dd>
+            </div>
+            <div>
+              <dt>是否可绑</dt>
+              <dd>{{ lookupResult.canBind ? '可绑定' : '不可绑定' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <label class="mobile-field">
+          <span>手机号</span>
+          <input
+            v-model="mobile"
+            type="tel"
+            inputmode="numeric"
+            maxlength="11"
+            placeholder="请输入绑定手机号"
+          >
+        </label>
+        <p :class="['mobile-hint', { 'mobile-hint-error': normalizedMobile.length > 0 && !hasValidMobile }]">
+          {{ normalizedMobile.length > 0 && !hasValidMobile ? '请输入正确手机号' : '仅校验手机号格式，不校验短信验证码。' }}
+        </p>
+
+        <div class="preview-actions">
+          <button class="preview-cancel" type="button" @click="closeBindPreview">稍后再说</button>
+          <button class="preview-confirm" :disabled="!canConfirmBind" type="button" @click="submitBindCard">
+            {{ isSubmitting ? '绑定中...' : '确认绑定并充值' }}
+          </button>
+        </div>
       </section>
     </van-popup>
   </section>
@@ -432,5 +533,174 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   background: #fafaf8;
+}
+
+.bind-preview-popup {
+  overflow: hidden;
+  background: transparent;
+}
+
+.bind-preview-sheet {
+  display: grid;
+  gap: 16px;
+  padding: 20px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, #fffaf5 0%, #fff 100%);
+}
+
+.preview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.preview-header strong {
+  color: #1a1918;
+  font-size: 18px;
+}
+
+.preview-header p {
+  margin: 6px 0 0;
+  color: #8a7f78;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.preview-close {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #8a7f78;
+  font-size: 14px;
+}
+
+.lookup-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #fff7f0;
+  box-shadow: inset 0 0 0 1px rgba(255, 106, 26, 0.08);
+}
+
+.lookup-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lookup-header strong {
+  color: #1a1918;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.lookup-status {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 106, 26, 0.12);
+  color: #d15a15;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.lookup-status-disabled {
+  background: rgba(127, 120, 114, 0.12);
+  color: #7f7872;
+}
+
+.lookup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.lookup-grid div {
+  display: grid;
+  gap: 4px;
+}
+
+.lookup-grid dt {
+  color: #8a7f78;
+  font-size: 12px;
+}
+
+.lookup-grid dd {
+  margin: 0;
+  color: #1a1918;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mobile-field {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(26, 25, 24, 0.05);
+}
+
+.mobile-field span {
+  color: #1a1918;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mobile-field input {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #1a1918;
+  font-size: 16px;
+  font-weight: 500;
+  outline: none;
+}
+
+.mobile-field input::placeholder {
+  color: #a69d95;
+}
+
+.mobile-hint {
+  margin: -6px 2px 0;
+  color: #8a7f78;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.mobile-hint-error {
+  color: #d15a15;
+}
+
+.preview-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.preview-cancel,
+.preview-confirm {
+  height: 48px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.preview-cancel {
+  border: 1px solid #eadfd5;
+  background: #fff;
+  color: #7b7068;
+}
+
+.preview-confirm {
+  border: 0;
+  background: #ff6a1a;
+  color: #fff;
+}
+
+.preview-confirm:disabled {
+  opacity: 0.56;
 }
 </style>
