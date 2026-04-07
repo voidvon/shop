@@ -46,14 +46,6 @@ function goBack() {
   void router.push('/')
 }
 
-function goToStoreDetail(merchantId: string, merchantName: string) {
-  void router.push({
-    name: 'store-detail',
-    params: { storeId: merchantId },
-    query: { name: merchantName },
-  })
-}
-
 onMounted(() => {
   void loadPage()
 })
@@ -111,12 +103,10 @@ watch(storeTypeId, () => {
         <LoadingState v-else-if="isLoading || isLoadingMerchants" />
 
         <div v-else-if="merchants.length > 0" class="merchant-list">
-          <button
+          <article
             v-for="merchant in merchants"
             :key="merchant.id"
             class="merchant-card"
-            type="button"
-            @click="goToStoreDetail(merchant.id, merchant.name)"
           >
             <img
               class="merchant-cover"
@@ -145,7 +135,7 @@ watch(storeTypeId, () => {
                 </div>
               </dl>
             </div>
-          </button>
+          </article>
         </div>
 
         <section v-else class="merchant-empty">
@@ -173,7 +163,6 @@ watch(storeTypeId, () => {
     linear-gradient(180deg, #f7f1e6 0%, #f3efe8 100%);
 }
 
-.merchant-card,
 .region-item {
   padding: 0;
   border: 0;
