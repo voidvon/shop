@@ -1,31 +1,4 @@
 import type { AreaList } from 'vant/es/area'
+import { areaList } from '@vant/area-data'
 
-export const addressAreaList: AreaList = {
-  province_list: {
-    310000: '上海市',
-    330000: '浙江省',
-    420000: '湖北省',
-    440000: '广东省',
-  },
-  city_list: {
-    310100: '上海市',
-    330100: '杭州市',
-    420100: '武汉市',
-    440100: '广州市',
-    440300: '深圳市',
-  },
-  county_list: {
-    310115: '浦东新区',
-    310117: '松江区',
-    330106: '西湖区',
-    330108: '滨江区',
-    420102: '江岸区',
-    420103: '江汉区',
-    420106: '武昌区',
-    420111: '洪山区',
-    440103: '荔湾区',
-    440106: '天河区',
-    440305: '南山区',
-    440306: '宝安区',
-  },
-}
+export const addressAreaList: AreaList = areaList
