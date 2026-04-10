@@ -28,6 +28,7 @@ import { MemberProfileNamePage } from '@/pages/member-profile-name'
 import { MemberRegisterMobilePage } from '@/pages/member-register-mobile'
 import { MemberRegisterPage } from '@/pages/member-register'
 import { MemberSettingsPage } from '@/pages/member-settings'
+import { MerchantStaffBindPage } from '@/pages/merchant-staff-bind'
 import { OrderDetailPage } from '@/pages/order-detail'
 import { OrderListPage } from '@/pages/order-list'
 import { OrderSearchResultsPage } from '@/pages/order-search-results'
@@ -249,6 +250,14 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: MemberRegisterPage,
         meta: {
           title: '会员注册',
+        },
+      }),
+      createModuleRoute({
+        path: '/staff-bind',
+        name: 'merchant-staff-bind',
+        component: MerchantStaffBindPage,
+        meta: {
+          title: '员工绑定',
         },
       }),
       createModuleRoute({

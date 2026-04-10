@@ -65,6 +65,11 @@ import {
   type CustomerServiceQuery,
 } from '@/processes/customer-service'
 import {
+  createBackendAMerchantStaffInviteService,
+  mockMerchantStaffInviteService,
+  type MerchantStaffInviteService,
+} from '@/processes/merchant-staff-invite'
+import {
   createBackendAStorefrontQuery,
   mockStorefrontQuery,
   type StorefrontQuery,
@@ -122,6 +127,7 @@ export interface BackendRuntime {
     trade: TradeQuery
   }
   services: {
+    merchantStaffInvite: MerchantStaffInviteService
     memberAssets: MemberAssetsService
   }
   repositories: {
@@ -261,6 +267,19 @@ function resolveCustomerServiceQuery(
     case 'mock':
     default:
       return createMockCustomerServiceQuery(memberAuthSession)
+  }
+}
+
+function resolveMerchantStaffInviteService(
+  type: BackendType,
+  memberAuthSession: MemberAuthSession,
+) {
+  switch (type) {
+    case 'backend-a':
+      return createBackendAMerchantStaffInviteService(memberAuthSession)
+    case 'mock':
+    default:
+      return mockMerchantStaffInviteService
   }
 }
 
@@ -742,6 +761,7 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
   const memberProfileService = resolveMemberProfileService(type, memberAuthSession)
   const memberSecurityService = resolveMemberSecurityService(type, memberAuthSession)
   const memberAssetsService = resolveMemberAssetsService(type, memberAuthSession)
+  const merchantStaffInviteService = resolveMerchantStaffInviteService(type, memberAuthSession)
   const afterSaleRepository = resolveAfterSaleRepository(type, memberAuthSession)
   const cartRepository = resolveCartRepository(type, memberAuthSession)
   const memberAddressRepository = resolveMemberAddressRepository(type, memberAuthSession)
@@ -780,6 +800,7 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
       trade: resolveTradeQuery(type, afterSaleRepository, cartRepository, memberAuthSession),
     },
     services: {
+      merchantStaffInvite: merchantStaffInviteService,
       memberAssets: memberAssetsService,
     },
     repositories,

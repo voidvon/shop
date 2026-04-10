@@ -20,6 +20,7 @@ import {
   provideMemberAssetsService,
   provideMemberCenterQuery,
 } from '@/processes/member-center'
+import { provideMerchantStaffInviteService } from '@/processes/merchant-staff-invite'
 import { provideStorefrontQuery } from '@/processes/storefront'
 import { provideTradeQuery } from '@/processes/trade'
 
@@ -44,6 +45,7 @@ export function provideBackendRuntime(app: App) {
   provideCustomerServiceQuery(app, runtime.queries.customerService)
   provideMemberAssetsService(app, runtime.services.memberAssets)
   provideMemberCenterQuery(app, runtime.queries.memberCenter)
+  provideMerchantStaffInviteService(app, runtime.services.merchantStaffInvite)
   provideStorefrontQuery(app, runtime.queries.storefront)
   provideTradeQuery(app, runtime.queries.trade)
 
