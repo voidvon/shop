@@ -107,7 +107,7 @@
 | 方法 | 路径 | 鉴权 | 参数 | 请求体 | 成功响应 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | POST | /api/v1/auth/wechat | 公开 | - | WechatLoginRequest | WechatLoginResponse | 微信公众号静默授权登录 |
-| GET | /api/v1/auth/profile | Bearer | - | - | object | 获取当前用户资料 |
+| GET | /api/v1/auth/profile | Bearer | - | - | object | 获取当前用户资料（已绑定商户员工时返回 `merchant` 对象） |
 | PATCH | /api/v1/auth/profile | Bearer | - | object | object | 更新当前用户资料 |
 | GET | /api/v1/user-addresses | Bearer | - | - | ApiResponse | 地址列表 |
 | POST | /api/v1/user-addresses | Bearer | - | object | object | 新增地址 |

@@ -33,7 +33,7 @@ function resolveBackendAUsername(profile: BackendAUserProfileDto) {
 }
 
 function resolveBackendAMerchantId(profile: BackendAUserProfileDto) {
-  const merchantId = profile.merchantId ?? profile.merchant_id ?? null
+  const merchantId = profile.merchant?.id ?? profile.merchantId ?? profile.merchant_id ?? null
 
   if (typeof merchantId === 'string') {
     const normalizedMerchantId = merchantId.trim()

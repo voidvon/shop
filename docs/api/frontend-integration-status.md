@@ -157,6 +157,7 @@
 - 登录页支持在 URL 携带 `code` 时自动完成微信登录；后端会用该 `code` 换取 `openid` 并自动注册或登录用户，也可通过 `VITE_BACKEND_A_WECHAT_OAUTH_URL` 跳到静默授权入口
 - 绑定卡券扫码流程已接入微信 JS-SDK；前端会直接请求 `backend-a` 的 `GET /api/v1/wechat/jssdk-signature`，并携带 `url` 查询参数，后端会自动去掉 hash 后参与签名
 - runtime 启动后如果本地已有 token，会后台调用 `GET /api/v1/auth/profile` 刷新资料；如果返回 `401`，则自动清空 session
+- `auth/profile` 已新增 `merchant` 对象，前端登录态会优先读取 `merchant.id` 并映射为 `userInfo.merchantId`，供商户扣款页等员工能力读取
 - `updateNickname` 已调用 `PATCH /api/v1/auth/profile`，并把资料同步回本地 session
 - 地址管理 runtime 已装配真实 `createBackendAMemberAddressRepository(...)`
 - 登录密码、支付密码、微信绑定手机号由于 Swagger 中没有对应接口，当前改为显式提示不支持

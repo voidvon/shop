@@ -2576,6 +2576,15 @@
                         "type": "integer",
                         "example": 1
                     },
+                    "merchant": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/MerchantSimple"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "如果当前用户属于某个商户员工，则返回所属商户信息；否则为 null"
+                    },
                     "last_login_at": {
                         "description": "最后登录时间",
                         "type": "string",
