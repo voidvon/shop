@@ -4,7 +4,7 @@ import {
   normalizeMemberCardNumber,
   normalizeMemberCardSecret,
 } from '@/processes/member-center/domain/member-card-bind-rules'
-import { scanWechatQRCode } from '@/shared/lib/wechat-js-sdk'
+import { ensureWechatJsApiReady, scanWechatQRCode } from '@/shared/lib/wechat-js-sdk'
 
 export interface MemberCardScanResult {
   cardNumber: string
@@ -165,6 +165,10 @@ export function parseMemberCardScanResult(rawValue: string) {
   }
 
   return parsedResult
+}
+
+export async function prepareMemberCardScanByWechat() {
+  await ensureWechatJsApiReady()
 }
 
 export async function scanMemberCardByWechat() {

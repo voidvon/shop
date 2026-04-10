@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { showFailToast, showSuccessToast } from 'vant'
+import { showFailToast, showLoadingToast, showSuccessToast } from 'vant'
 
 import { useMemberAuthSession } from '@/entities/member-auth'
 import { MemberCardBindPanel, useMemberCardBinding } from '@/features/member-card-binding'
-import { scanMemberCardByWechat } from '@/features/member-card-binding/model/member-card-scanner'
+import { prepareMemberCardScanByWechat, scanMemberCardByWechat } from '@/features/member-card-binding/model/member-card-scanner'
 import type { LookupMemberCardResult } from '@/processes/member-center'
 import { normalizeMemberCardBindMobile, validateMemberCardBindMobile } from '@/processes/member-center/domain/member-card-bind-rules'
 import { isWechatBrowser } from '@/shared/lib/wechat-browser'
@@ -88,10 +88,19 @@ async function handleScanCard() {
     return
   }
 
+  const loadingToast = showLoadingToast({
+    duration: 0,
+    forbidClick: true,
+    message: '加载中...',
+  })
+
   try {
+    await prepareMemberCardScanByWechat()
+    loadingToast.close()
     const scanResult = await scanMemberCardByWechat()
     await applyScannedCardInfo(scanResult.cardNumber, scanResult.cardSecret)
   } catch (error) {
+    loadingToast.close()
     const message = error instanceof Error ? error.message : '微信扫码失败'
 
     if (message === '已取消扫码') {

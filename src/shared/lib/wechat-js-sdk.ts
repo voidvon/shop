@@ -10,6 +10,10 @@ interface WechatJsApiConfig {
   timestamp: number
 }
 
+interface CachedWechatJsApiConfig extends WechatJsApiConfig {
+  expiresAt: number
+}
+
 interface WechatScanResult {
   resultStr?: string
 }
@@ -50,8 +54,10 @@ declare global {
 
 const wechatJsSdkScriptUrl = 'https://res.wx.qq.com/open/js/jweixin-1.6.0.js'
 const wechatJsSdkReadyTimeoutMs = 10000
+const wechatJsSdkConfigCacheTtlMs = 5 * 60 * 1000
 const defaultWechatJsApiList = ['scanQRCode']
 const backendAWechatJssdkSignaturePath = '/api/v1/wechat/jssdk-signature'
+const wechatJsSdkConfigSessionStorageKeyPrefix = 'shop.wechat-js-sdk.config'
 
 let wechatJsSdkPromise: Promise<WechatJsSdk> | null = null
 const wechatJsSdkConfigPromiseCache = new Map<string, Promise<WechatJsSdk>>()
@@ -115,6 +121,76 @@ function getWechatScanConfigCacheKey(jsApiList: string[]) {
   }
 
   return `${pageUrl}::${[...jsApiList].sort().join(',')}`
+}
+
+function getWechatJsApiConfigSessionStorageKey(pageUrl: string) {
+  return `${wechatJsSdkConfigSessionStorageKeyPrefix}:${pageUrl}`
+}
+
+function readCachedWechatJsApiConfig(pageUrl: string) {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const rawValue = window.sessionStorage.getItem(getWechatJsApiConfigSessionStorageKey(pageUrl))
+
+  if (!rawValue) {
+    return null
+  }
+
+  try {
+    const parsedValue = JSON.parse(rawValue) as Partial<CachedWechatJsApiConfig>
+
+    if (
+      typeof parsedValue.appId !== 'string'
+      || typeof parsedValue.nonceStr !== 'string'
+      || typeof parsedValue.signature !== 'string'
+      || typeof parsedValue.timestamp !== 'number'
+      || typeof parsedValue.expiresAt !== 'number'
+    ) {
+      window.sessionStorage.removeItem(getWechatJsApiConfigSessionStorageKey(pageUrl))
+      return null
+    }
+
+    if (parsedValue.expiresAt <= Date.now()) {
+      window.sessionStorage.removeItem(getWechatJsApiConfigSessionStorageKey(pageUrl))
+      return null
+    }
+
+    return {
+      appId: parsedValue.appId,
+      nonceStr: parsedValue.nonceStr,
+      signature: parsedValue.signature,
+      timestamp: parsedValue.timestamp,
+    } satisfies WechatJsApiConfig
+  } catch {
+    window.sessionStorage.removeItem(getWechatJsApiConfigSessionStorageKey(pageUrl))
+    return null
+  }
+}
+
+function writeCachedWechatJsApiConfig(pageUrl: string, config: WechatJsApiConfig) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const cachedConfig: CachedWechatJsApiConfig = {
+    ...config,
+    expiresAt: Date.now() + wechatJsSdkConfigCacheTtlMs,
+  }
+
+  window.sessionStorage.setItem(
+    getWechatJsApiConfigSessionStorageKey(pageUrl),
+    JSON.stringify(cachedConfig),
+  )
+}
+
+function clearCachedWechatJsApiConfig(pageUrl: string) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.sessionStorage.removeItem(getWechatJsApiConfigSessionStorageKey(pageUrl))
 }
 
 function createAuthorizedHeaders() {
@@ -222,6 +298,27 @@ async function requestWechatJsApiConfig(pageUrl: string) {
   return normalizeWechatJsApiConfig(parsedValue)
 }
 
+async function getWechatJsApiConfig(pageUrl: string, forceRefresh = false) {
+  if (!forceRefresh) {
+    const cachedConfig = readCachedWechatJsApiConfig(pageUrl)
+
+    if (cachedConfig) {
+      return {
+        config: cachedConfig,
+        fromCache: true,
+      }
+    }
+  }
+
+  const config = await requestWechatJsApiConfig(pageUrl)
+  writeCachedWechatJsApiConfig(pageUrl, config)
+
+  return {
+    config,
+    fromCache: false,
+  }
+}
+
 async function ensureWechatJsApiAvailable(wx: WechatJsSdk, jsApiList: string[]) {
   const checkJsApi = wx.checkJsApi
 
@@ -247,20 +344,21 @@ async function ensureWechatJsApiAvailable(wx: WechatJsSdk, jsApiList: string[]) 
   })
 }
 
-async function configureWechatJsSdk(jsApiList: string[]) {
-  const pageUrl = getWechatScanSignatureUrl()
-
-  if (!pageUrl) {
-    throw new Error('当前环境不支持微信扫码')
-  }
-
-  const wx = await loadWechatJsSdkScript()
-  const config = await requestWechatJsApiConfig(pageUrl)
-
+async function initializeWechatJsSdk(
+  wx: WechatJsSdk,
+  config: WechatJsApiConfig,
+  jsApiList: string[],
+) {
   await new Promise<void>((resolve, reject) => {
     const timeout = window.setTimeout(() => reject(new Error('微信扫码初始化超时')), wechatJsSdkReadyTimeoutMs)
+    let settled = false
 
     wx.ready(async () => {
+      if (settled) {
+        return
+      }
+
+      settled = true
       window.clearTimeout(timeout)
 
       try {
@@ -272,6 +370,11 @@ async function configureWechatJsSdk(jsApiList: string[]) {
     })
 
     wx.error((error) => {
+      if (settled) {
+        return
+      }
+
+      settled = true
       window.clearTimeout(timeout)
       reject(new Error(normalizeWechatApiErrorMessage(error, '微信扫码初始化失败')))
     })
@@ -282,6 +385,29 @@ async function configureWechatJsSdk(jsApiList: string[]) {
       jsApiList,
     })
   })
+}
+
+async function configureWechatJsSdk(jsApiList: string[]) {
+  const pageUrl = getWechatScanSignatureUrl()
+
+  if (!pageUrl) {
+    throw new Error('当前环境不支持微信扫码')
+  }
+
+  const wx = await loadWechatJsSdkScript()
+  const initialConfigResult = await getWechatJsApiConfig(pageUrl)
+
+  try {
+    await initializeWechatJsSdk(wx, initialConfigResult.config, jsApiList)
+  } catch (error) {
+    if (!initialConfigResult.fromCache) {
+      throw error
+    }
+
+    clearCachedWechatJsApiConfig(pageUrl)
+    const refreshedConfigResult = await getWechatJsApiConfig(pageUrl, true)
+    await initializeWechatJsSdk(wx, refreshedConfigResult.config, jsApiList)
+  }
 
   return wx
 }
