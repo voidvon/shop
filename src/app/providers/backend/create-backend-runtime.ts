@@ -70,6 +70,11 @@ import {
   type MerchantStaffInviteService,
 } from '@/processes/merchant-staff-invite'
 import {
+  createBackendAMerchantDeductionService,
+  mockMerchantDeductionService,
+  type MerchantDeductionService,
+} from '@/processes/merchant-deduction'
+import {
   createBackendAStorefrontQuery,
   mockStorefrontQuery,
   type StorefrontQuery,
@@ -127,6 +132,7 @@ export interface BackendRuntime {
     trade: TradeQuery
   }
   services: {
+    merchantDeduction: MerchantDeductionService
     merchantStaffInvite: MerchantStaffInviteService
     memberAssets: MemberAssetsService
   }
@@ -280,6 +286,19 @@ function resolveMerchantStaffInviteService(
     case 'mock':
     default:
       return mockMerchantStaffInviteService
+  }
+}
+
+function resolveMerchantDeductionService(
+  type: BackendType,
+  memberAuthSession: MemberAuthSession,
+) {
+  switch (type) {
+    case 'backend-a':
+      return createBackendAMerchantDeductionService(memberAuthSession)
+    case 'mock':
+    default:
+      return mockMerchantDeductionService
   }
 }
 
@@ -761,6 +780,7 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
   const memberProfileService = resolveMemberProfileService(type, memberAuthSession)
   const memberSecurityService = resolveMemberSecurityService(type, memberAuthSession)
   const memberAssetsService = resolveMemberAssetsService(type, memberAuthSession)
+  const merchantDeductionService = resolveMerchantDeductionService(type, memberAuthSession)
   const merchantStaffInviteService = resolveMerchantStaffInviteService(type, memberAuthSession)
   const afterSaleRepository = resolveAfterSaleRepository(type, memberAuthSession)
   const cartRepository = resolveCartRepository(type, memberAuthSession)
@@ -800,6 +820,7 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
       trade: resolveTradeQuery(type, afterSaleRepository, cartRepository, memberAuthSession),
     },
     services: {
+      merchantDeduction: merchantDeductionService,
       merchantStaffInvite: merchantStaffInviteService,
       memberAssets: memberAssetsService,
     },
