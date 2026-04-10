@@ -21,7 +21,6 @@ const isLookingUp = ref(false)
 const lookupResult = ref<LookupMemberCardResult | null>(null)
 const resultDrawerVisible = ref(false)
 
-const canQuery = computed(() => !isLookingUp.value)
 const balanceTypeLabel = computed(() => lookupResult.value?.balanceTypeName?.trim() || '储值卡')
 
 function formatAmount(value: number) {
@@ -69,7 +68,7 @@ async function applyScannedCardInfo(nextCardNumber: string, nextCardSecret: stri
   cardSecret.value = nextCardSecret
 
   if (!nextCardSecret) {
-    showSuccessToast('已读取卡号，请补充卡密后查询余额')
+    showFailToast('未读取到卡密，请使用包含完整卡信息的二维码')
     return
   }
 
@@ -128,10 +127,6 @@ watch([cardNumber, cardSecret], () => {
           </button>
           <strong>{{ isLookingUp ? '查询中...' : '点击扫码' }}</strong>
         </div>
-
-        <button class="query-button" :disabled="!canQuery" type="button" @click="runLookupCard">
-          {{ isLookingUp ? '查询中...' : '查询余额' }}
-        </button>
       </section>
     </div>
 
@@ -193,14 +188,11 @@ watch([cardNumber, cardSecret], () => {
 }
 
 .content-scroll {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   min-height: 0;
   padding: 14px 16px 24px;
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-
-.content-scroll::-webkit-scrollbar {
-  display: none;
+  overflow: hidden;
 }
 
 .intro-card,
@@ -224,14 +216,9 @@ watch([cardNumber, cardSecret], () => {
   font-size: 17px;
 }
 
-.intro-card p {
-  margin: 0;
-  color: #867a72;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
 .lookup-card {
+  min-height: 0;
+  display: grid;
   overflow: hidden;
 }
 
@@ -239,7 +226,10 @@ watch([cardNumber, cardSecret], () => {
   display: grid;
   gap: 14px;
   justify-items: center;
-  padding: 28px 20px 22px;
+  align-content: center;
+  min-height: 0;
+  height: 100%;
+  padding: 24px 20px;
   text-align: center;
 }
 
@@ -254,8 +244,7 @@ watch([cardNumber, cardSecret], () => {
   color: #ef6b22;
 }
 
-.scan-button:disabled,
-.query-button:disabled {
+.scan-button:disabled {
   opacity: 0.72;
 }
 
@@ -271,19 +260,6 @@ watch([cardNumber, cardSecret], () => {
   color: #907b70;
   font-size: 13px;
   line-height: 1.5;
-}
-
-.query-button {
-  width: calc(100% - 32px);
-  height: 50px;
-  margin: 0 16px 18px;
-  border: 0;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #ff7a1a 0%, #ea580c 100%);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  box-shadow: 0 10px 24px rgba(234, 88, 12, 0.22);
 }
 
 .result-sheet {
