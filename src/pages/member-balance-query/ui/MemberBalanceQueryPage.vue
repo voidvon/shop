@@ -119,37 +119,14 @@ watch([cardNumber, cardSecret], () => {
     <div class="content-scroll">
       <section class="intro-card">
         <strong>扫码查询卡片余额</strong>
-        <p>用于公众号菜单直达查询。扫码后会读取卡号与卡密，并弹出卡片余额信息，不执行绑定或充值。</p>
       </section>
 
       <section class="lookup-card">
-        <label class="field-row">
-          <span>卡券编号</span>
-          <input
-            v-model="cardNumber"
-            type="text"
-            autocapitalize="characters"
-            maxlength="17"
-            placeholder="请输入12-17位卡券编号"
-          >
-        </label>
-
-        <label class="field-row">
-          <span>卡券卡密</span>
-          <input
-            v-model="cardSecret"
-            type="text"
-            maxlength="8"
-            placeholder="请输入6-8位卡券卡密"
-          >
-        </label>
-
         <div class="scan-panel">
           <button class="scan-button" :disabled="isLookingUp" type="button" @click="handleScanCard">
             <van-icon name="scan" size="108" />
           </button>
           <strong>{{ isLookingUp ? '查询中...' : '点击扫码' }}</strong>
-          <p>如果二维码里仅包含卡号，补充卡密后也可以手动查询余额。</p>
         </div>
 
         <button class="query-button" :disabled="!canQuery" type="button" @click="runLookupCard">
@@ -256,37 +233,6 @@ watch([cardNumber, cardSecret], () => {
 
 .lookup-card {
   overflow: hidden;
-}
-
-.field-row {
-  display: flex;
-  gap: 18px;
-  align-items: center;
-  min-height: 52px;
-  padding: 0 16px;
-  border-bottom: 1px solid #f1ece6;
-}
-
-.field-row span {
-  flex: none;
-  color: #2b2926;
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.field-row input {
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #1f1d1a;
-  font-size: 14px;
-  outline: none;
-}
-
-.field-row input::placeholder {
-  color: #a09891;
 }
 
 .scan-panel {
