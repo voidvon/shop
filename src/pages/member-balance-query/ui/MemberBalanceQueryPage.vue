@@ -1,0 +1,422 @@
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { showFailToast, showLoadingToast, showSuccessToast } from 'vant'
+
+import { useMemberCardBinding } from '@/features/member-card-binding'
+import {
+  prepareMemberCardScanByWechat,
+  scanMemberCardByWechat,
+} from '@/features/member-card-binding/model/member-card-scanner'
+import type { LookupMemberCardResult } from '@/processes/member-center'
+import { isWechatBrowser } from '@/shared/lib/wechat-browser'
+import PageTopBar from '@/shared/ui/PageTopBar.vue'
+
+const router = useRouter()
+const { lookupMemberCard } = useMemberCardBinding()
+
+const cardNumber = ref('')
+const cardSecret = ref('')
+const isLookingUp = ref(false)
+const lookupResult = ref<LookupMemberCardResult | null>(null)
+const resultDrawerVisible = ref(false)
+
+const canQuery = computed(() => !isLookingUp.value)
+const balanceTypeLabel = computed(() => lookupResult.value?.balanceTypeName?.trim() || '储值卡')
+
+function formatAmount(value: number) {
+  return value.toFixed(2)
+}
+
+function goBack() {
+  if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
+    router.back()
+    return
+  }
+
+  void router.push({ name: 'home' })
+}
+
+function closeResultDrawer() {
+  resultDrawerVisible.value = false
+}
+
+async function runLookupCard() {
+  isLookingUp.value = true
+
+  try {
+    lookupResult.value = await lookupMemberCard({
+      cardNumber: cardNumber.value,
+      cardSecret: cardSecret.value,
+    })
+    resultDrawerVisible.value = true
+  } catch (error) {
+    lookupResult.value = null
+    resultDrawerVisible.value = false
+    showFailToast(error instanceof Error ? error.message : '卡片余额查询失败')
+  } finally {
+    isLookingUp.value = false
+  }
+}
+
+async function applyScannedCardInfo(nextCardNumber: string, nextCardSecret: string) {
+  if (!nextCardNumber) {
+    showFailToast('未读取到卡券编号，请手动输入后重试')
+    return
+  }
+
+  cardNumber.value = nextCardNumber
+  cardSecret.value = nextCardSecret
+
+  if (!nextCardSecret) {
+    showSuccessToast('已读取卡号，请补充卡密后查询余额')
+    return
+  }
+
+  showSuccessToast('已读取卡券信息')
+  await runLookupCard()
+}
+
+async function handleScanCard() {
+  if (!isWechatBrowser()) {
+    showFailToast('请在微信内打开当前页面后扫码')
+    return
+  }
+
+  const loadingToast = showLoadingToast({
+    duration: 0,
+    forbidClick: true,
+    message: '加载中...',
+  })
+
+  try {
+    await prepareMemberCardScanByWechat()
+    loadingToast.close()
+    const scanResult = await scanMemberCardByWechat()
+    await applyScannedCardInfo(scanResult.cardNumber, scanResult.cardSecret)
+  } catch (error) {
+    loadingToast.close()
+    const message = error instanceof Error ? error.message : '微信扫码失败'
+
+    if (message === '已取消扫码') {
+      return
+    }
+
+    showFailToast(message)
+  }
+}
+
+watch([cardNumber, cardSecret], () => {
+  lookupResult.value = null
+  resultDrawerVisible.value = false
+})
+</script>
+
+<template>
+  <section class="member-balance-query-page">
+    <PageTopBar title="余额查询" @back="goBack" />
+
+    <div class="content-scroll">
+      <section class="intro-card">
+        <strong>扫码查询卡片余额</strong>
+        <p>用于公众号菜单直达查询。扫码后会读取卡号与卡密，并弹出卡片余额信息，不执行绑定或充值。</p>
+      </section>
+
+      <section class="lookup-card">
+        <label class="field-row">
+          <span>卡券编号</span>
+          <input
+            v-model="cardNumber"
+            type="text"
+            autocapitalize="characters"
+            maxlength="17"
+            placeholder="请输入12-17位卡券编号"
+          >
+        </label>
+
+        <label class="field-row">
+          <span>卡券卡密</span>
+          <input
+            v-model="cardSecret"
+            type="text"
+            maxlength="8"
+            placeholder="请输入6-8位卡券卡密"
+          >
+        </label>
+
+        <div class="scan-panel">
+          <button class="scan-button" :disabled="isLookingUp" type="button" @click="handleScanCard">
+            <van-icon name="scan" size="108" />
+          </button>
+          <strong>{{ isLookingUp ? '查询中...' : '点击扫码' }}</strong>
+          <p>如果二维码里仅包含卡号，补充卡密后也可以手动查询余额。</p>
+        </div>
+
+        <button class="query-button" :disabled="!canQuery" type="button" @click="runLookupCard">
+          {{ isLookingUp ? '查询中...' : '查询余额' }}
+        </button>
+      </section>
+    </div>
+
+    <van-popup
+      :show="resultDrawerVisible"
+      class="result-drawer"
+      position="bottom"
+      round
+      teleport="body"
+      @update:show="closeResultDrawer"
+    >
+      <section v-if="lookupResult" class="result-sheet">
+        <header class="result-header">
+          <div>
+            <strong>卡片余额</strong>
+            <p>{{ balanceTypeLabel }}</p>
+          </div>
+          <button class="result-close" type="button" @click="closeResultDrawer">关闭</button>
+        </header>
+
+        <section class="hero-card">
+          <span>当前可用余额</span>
+          <strong>¥{{ formatAmount(lookupResult.currentAmount) }}</strong>
+        </section>
+
+        <dl class="detail-grid">
+          <div>
+            <dt>卡号</dt>
+            <dd>{{ lookupResult.cardNumber }}</dd>
+          </div>
+          <div>
+            <dt>余额类型</dt>
+            <dd>{{ balanceTypeLabel }}</dd>
+          </div>
+          <div>
+            <dt>卡片面值</dt>
+            <dd>¥{{ formatAmount(lookupResult.faceValue) }}</dd>
+          </div>
+          <div>
+            <dt>卡片状态</dt>
+            <dd>{{ lookupResult.statusText }}</dd>
+          </div>
+        </dl>
+      </section>
+    </van-popup>
+  </section>
+</template>
+
+<style scoped>
+.member-balance-query-page {
+  display: grid;
+  grid-template-rows: 49px minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+  background:
+    radial-gradient(circle at top, rgba(255, 140, 66, 0.14), transparent 38%),
+    linear-gradient(180deg, #fff8f1 0%, #f6f1ea 100%);
+  overflow: hidden;
+}
+
+.content-scroll {
+  min-height: 0;
+  padding: 14px 16px 24px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.content-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.intro-card,
+.lookup-card,
+.hero-card,
+.detail-grid {
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(26, 25, 24, 0.06);
+}
+
+.intro-card {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 18px;
+}
+
+.intro-card strong {
+  color: #1f1d1a;
+  font-size: 17px;
+}
+
+.intro-card p {
+  margin: 0;
+  color: #867a72;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.lookup-card {
+  overflow: hidden;
+}
+
+.field-row {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 16px;
+  border-bottom: 1px solid #f1ece6;
+}
+
+.field-row span {
+  flex: none;
+  color: #2b2926;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.field-row input {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #1f1d1a;
+  font-size: 14px;
+  outline: none;
+}
+
+.field-row input::placeholder {
+  color: #a09891;
+}
+
+.scan-panel {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  padding: 28px 20px 22px;
+  text-align: center;
+}
+
+.scan-button {
+  display: grid;
+  place-items: center;
+  width: 168px;
+  height: 168px;
+  border: 0;
+  border-radius: 30px;
+  background: linear-gradient(180deg, #fff3ea 0%, #ffe1cb 100%);
+  color: #ef6b22;
+}
+
+.scan-button:disabled,
+.query-button:disabled {
+  opacity: 0.72;
+}
+
+.scan-panel strong {
+  color: #ca6a32;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.scan-panel p {
+  margin: 0;
+  max-width: 260px;
+  color: #907b70;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.query-button {
+  width: calc(100% - 32px);
+  height: 50px;
+  margin: 0 16px 18px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ff7a1a 0%, #ea580c 100%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 10px 24px rgba(234, 88, 12, 0.22);
+}
+
+.result-sheet {
+  display: grid;
+  gap: 14px;
+  padding: 18px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, #fff8f1 0%, #f8f4ee 100%);
+}
+
+.result-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.result-header strong {
+  color: #1f1d1a;
+  font-size: 18px;
+}
+
+.result-header p {
+  margin: 6px 0 0;
+  color: #8b8078;
+  font-size: 13px;
+}
+
+.result-close {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #8b8078;
+  font-size: 14px;
+}
+
+.hero-card {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  background: linear-gradient(135deg, #ff7a1a 0%, #ea580c 100%);
+}
+
+.hero-card span {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+}
+
+.hero-card strong {
+  color: #fff;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 0;
+  padding: 6px 0;
+}
+
+.detail-grid div {
+  display: grid;
+  gap: 6px;
+  padding: 14px 18px;
+}
+
+.detail-grid div + div {
+  border-top: 1px solid #f1ece6;
+}
+
+.detail-grid dt {
+  color: #8b8078;
+  font-size: 12px;
+}
+
+.detail-grid dd {
+  margin: 0;
+  color: #1f1d1a;
+  font-size: 15px;
+  font-weight: 600;
+  word-break: break-all;
+}
+</style>

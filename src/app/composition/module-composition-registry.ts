@@ -12,6 +12,7 @@ import { HomePage } from '@/pages/home'
 import { MemberCardBindPage } from '@/pages/member-card-bind'
 import { MemberCardsPage } from '@/pages/member-cards'
 import { MemberBalancePage } from '@/pages/member-balance'
+import { MemberBalanceQueryPage } from '@/pages/member-balance-query'
 import { MemberPaymentCodePage } from '@/pages/member-payment-code'
 import { MemberAboutPage } from '@/pages/member-about'
 import { MemberAddressesPage } from '@/pages/member-addresses'
@@ -60,6 +61,7 @@ type ModuleRouteMeta = NonNullable<RouteRecordRaw['meta']> & {
   keepAlive?: boolean
   mainNavigation?: MainNavigationMeta
   requiresAuth?: boolean
+  skipWechatAutoLogin?: boolean
 }
 
 function createModuleRoute(
@@ -415,6 +417,15 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
           activeMainNavigationKey: 'member',
           requiresAuth: true,
           title: '账户余额',
+        },
+      }),
+      createModuleRoute({
+        path: '/member/assets/balance-query',
+        name: 'member-balance-query',
+        component: MemberBalanceQueryPage,
+        meta: {
+          title: '余额查询',
+          skipWechatAutoLogin: true,
         },
       }),
       createModuleRoute({

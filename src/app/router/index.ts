@@ -162,9 +162,11 @@ router.beforeEach(async (to, from) => {
   }
 
   const authSnapshot = getBrowserMemberAuthSessionSnapshot()
+  const skipWechatAutoLogin = to.matched.some((record) => record.meta?.skipWechatAutoLogin === true)
 
   if (
-    isWechatBrowser()
+    !skipWechatAutoLogin
+    && isWechatBrowser()
     && !authSnapshot.isAuthenticated
     && !hasAttemptedWechatAutoLogin()
   ) {
