@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   showFailToast,
@@ -32,6 +32,7 @@ const remarkInput = ref('')
 const uploadedImages = ref<MerchantDeductionUploadedImage[]>([])
 const scanResult = ref<MerchantDeductionScanResult | null>(null)
 const lastSuccessMessage = ref('')
+const lastResolvedDisplayName = ref('')
 const isUploading = ref(false)
 const isScanning = ref(false)
 const isSubmitting = ref(false)
@@ -47,12 +48,21 @@ onUnmounted(() => {
 const normalizedMerchantId = computed(() => authSnapshot.value.authResult?.userInfo.merchantId?.trim() ?? '')
 const currentDisplayName = computed(() => {
   const userInfo = authSnapshot.value.authResult?.userInfo
+  const nextDisplayName = userInfo?.nickname?.trim() || userInfo?.username?.trim() || ''
+
+  if (nextDisplayName) {
+    return nextDisplayName
+  }
+
+  if (lastResolvedDisplayName.value) {
+    return lastResolvedDisplayName.value
+  }
 
   if (!userInfo) {
     return '当前账号'
   }
 
-  return userInfo.nickname ?? userInfo.username
+  return '当前账号'
 })
 const parsedAmount = computed(() => {
   if (!amountInput.value) {
@@ -107,6 +117,18 @@ const submitButtonLabel = computed(() => {
 onMounted(() => {
   void hydrateBackendAMemberAuthSession(memberAuthSession)
 })
+
+watch(
+  () => authSnapshot.value.authResult?.userInfo,
+  (userInfo) => {
+    const nextDisplayName = userInfo?.nickname?.trim() || userInfo?.username?.trim() || ''
+
+    if (nextDisplayName) {
+      lastResolvedDisplayName.value = nextDisplayName
+    }
+  },
+  { immediate: true },
+)
 
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
