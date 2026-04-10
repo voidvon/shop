@@ -6,6 +6,7 @@ import {
   showLoadingToast,
   showSuccessToast,
   showToast,
+  type ToastWrapperInstance,
 } from 'vant'
 
 import {
@@ -31,17 +32,20 @@ const amountInput = ref('')
 const remarkInput = ref('')
 const uploadedImages = ref<MerchantDeductionUploadedImage[]>([])
 const scanResult = ref<MerchantDeductionScanResult | null>(null)
+const submitPopupVisible = ref(false)
 const lastSuccessMessage = ref('')
 const lastResolvedDisplayName = ref('')
 const isUploading = ref(false)
 const isScanning = ref(false)
 const isSubmitting = ref(false)
+let activeLoadingToast: ToastWrapperInstance | null = null
 
 const stopAuthSubscription = memberAuthSession.subscribe((snapshot) => {
   authSnapshot.value = snapshot
 })
 
 onUnmounted(() => {
+  closeActiveLoadingToast()
   stopAuthSubscription()
 })
 
@@ -131,6 +135,8 @@ watch(
 )
 
 function goBack() {
+  closeActiveLoadingToast()
+
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
     router.back()
     return
@@ -156,6 +162,22 @@ function handleAmountInput(value: string) {
   lastSuccessMessage.value = ''
 }
 
+function createBlockingLoadingToast(message: string) {
+  closeActiveLoadingToast()
+  activeLoadingToast = showLoadingToast({
+    duration: 0,
+    forbidClick: true,
+    message,
+  })
+
+  return activeLoadingToast
+}
+
+function closeActiveLoadingToast() {
+  activeLoadingToast?.close()
+  activeLoadingToast = null
+}
+
 function openImagePicker() {
   if (!canUploadImage.value) {
     return
@@ -167,6 +189,14 @@ function openImagePicker() {
 function removeUploadedImage(imagePath: string) {
   uploadedImages.value = uploadedImages.value.filter((image) => image.path !== imagePath)
   lastSuccessMessage.value = ''
+}
+
+function openSubmitPopup() {
+  if (!scanResult.value) {
+    return
+  }
+
+  submitPopupVisible.value = true
 }
 
 function clearFileInput() {
@@ -235,11 +265,7 @@ async function handleScanCode() {
   }
 
   isScanning.value = true
-  const loadingToast = showLoadingToast({
-    duration: 0,
-    forbidClick: true,
-    message: '准备扫码...',
-  })
+  const loadingToast = createBlockingLoadingToast('准备扫码...')
 
   try {
     await ensureWechatJsApiReady()
@@ -247,6 +273,7 @@ async function handleScanCode() {
     const rawCode = await scanWechatQRCode()
     loadingToast.message = '识别中...'
     scanResult.value = await merchantDeductionService.scanCode(rawCode)
+    submitPopupVisible.value = true
     lastSuccessMessage.value = ''
     showSuccessToast('付款码识别成功')
   } catch (error) {
@@ -256,7 +283,7 @@ async function handleScanCode() {
       showFailToast(message)
     }
   } finally {
-    loadingToast.close()
+    closeActiveLoadingToast()
     isScanning.value = false
   }
 }
@@ -266,6 +293,7 @@ function resetDraft() {
   remarkInput.value = ''
   uploadedImages.value = []
   scanResult.value = null
+  submitPopupVisible.value = false
   clearFileInput()
 }
 
@@ -286,11 +314,7 @@ async function handleSubmitDeduction() {
   }
 
   isSubmitting.value = true
-  const loadingToast = showLoadingToast({
-    duration: 0,
-    forbidClick: true,
-    message: '扣款中...',
-  })
+  createBlockingLoadingToast('扣款中...')
 
   try {
     const result = await merchantDeductionService.submitDeduction({
@@ -309,7 +333,7 @@ async function handleSubmitDeduction() {
   } catch (error) {
     showFailToast(error instanceof Error ? error.message : '扣款失败')
   } finally {
-    loadingToast.close()
+    closeActiveLoadingToast()
     isSubmitting.value = false
   }
 }
@@ -433,36 +457,59 @@ async function handleSubmitDeduction() {
                 <dd>{{ row.value }}</dd>
               </div>
             </dl>
+
+            <button class="scan-result-action" type="button" @click="openSubmitPopup">
+              确认扣款
+            </button>
           </section>
-        </section>
-
-        <section class="section-card">
-          <header class="section-head">
-            <span class="section-step">03</span>
-            <div>
-              <strong>确认扣款</strong>
-            </div>
-          </header>
-
-          <div class="submit-summary">
-            <div>
-              <span>本次金额</span>
-              <strong>{{ parsedAmount === null ? '¥0.00' : `¥${parsedAmount.toFixed(2)}` }}</strong>
-            </div>
-            <div>
-              <span>图片数量</span>
-              <strong>{{ uploadedImages.length }} 张</strong>
-            </div>
-          </div>
-
-          <button class="submit-button" :disabled="!canSubmit" type="button" @click="handleSubmitDeduction">
-            {{ submitButtonLabel }}
-          </button>
-
-          <p v-if="lastSuccessMessage" class="field-hint field-hint-success">{{ lastSuccessMessage }}</p>
         </section>
       </template>
     </div>
+
+    <van-popup
+      :show="submitPopupVisible"
+      class="submit-popup"
+      position="bottom"
+      round
+      teleport="body"
+      @update:show="submitPopupVisible = $event"
+    >
+      <section class="submit-sheet">
+        <header class="submit-sheet-head">
+          <div>
+            <strong>确认扣款</strong>
+            <p>{{ scanResult?.payerName || '已识别付款对象' }}</p>
+          </div>
+          <button class="submit-sheet-close" type="button" @click="submitPopupVisible = false">
+            关闭
+          </button>
+        </header>
+
+        <div class="submit-summary">
+          <div>
+            <span>本次金额</span>
+            <strong>{{ parsedAmount === null ? '¥0.00' : `¥${parsedAmount.toFixed(2)}` }}</strong>
+          </div>
+          <div>
+            <span>图片数量</span>
+            <strong>{{ uploadedImages.length }} 张</strong>
+          </div>
+        </div>
+
+        <dl v-if="scanResult" class="submit-scan-grid">
+          <div v-for="row in scanResult.summaryRows" :key="`popup-${row.label}-${row.value}`">
+            <dt>{{ row.label }}</dt>
+            <dd>{{ row.value }}</dd>
+          </div>
+        </dl>
+
+        <button class="submit-button" :disabled="!canSubmit" type="button" @click="handleSubmitDeduction">
+          {{ submitButtonLabel }}
+        </button>
+
+        <p v-if="lastSuccessMessage" class="field-hint field-hint-success">{{ lastSuccessMessage }}</p>
+      </section>
+    </van-popup>
   </section>
 </template>
 
@@ -736,6 +783,7 @@ async function handleSubmitDeduction() {
 }
 
 .scan-result-grid div,
+.submit-scan-grid div,
 .submit-summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -743,12 +791,69 @@ async function handleSubmitDeduction() {
 }
 
 .scan-result-grid dd,
+.submit-scan-grid dd,
 .submit-summary strong {
   margin: 4px 0 0;
   color: #1f1d1a;
   font-size: 14px;
   line-height: 1.5;
   word-break: break-all;
+}
+
+.scan-result-action,
+.submit-sheet-close {
+  justify-self: start;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: #f5ede6;
+  color: #7a5c49;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.submit-popup {
+  overflow: hidden;
+}
+
+.submit-sheet {
+  display: grid;
+  gap: 16px;
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at top, rgba(231, 111, 81, 0.12), transparent 40%),
+    linear-gradient(180deg, #fffaf6 0%, #fff 100%);
+}
+
+.submit-sheet-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.submit-sheet-head strong {
+  color: #1f1d1a;
+  font-size: 18px;
+}
+
+.submit-sheet-head p {
+  margin: 6px 0 0;
+  color: #8c847d;
+  font-size: 13px;
+}
+
+.submit-scan-grid {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #fff7f1;
+}
+
+.submit-scan-grid dt {
+  color: #8c847d;
+  font-size: 12px;
 }
 
 .submit-button {
@@ -763,6 +868,7 @@ async function handleSubmitDeduction() {
   .identity-card,
   .hero-meta-grid,
   .scan-result-grid div,
+  .submit-scan-grid div,
   .submit-summary {
     grid-template-columns: 1fr;
   }
