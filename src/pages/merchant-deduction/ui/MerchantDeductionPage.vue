@@ -265,13 +265,13 @@ async function handleScanCode() {
   }
 
   isScanning.value = true
-  const loadingToast = createBlockingLoadingToast('准备扫码...')
+  createBlockingLoadingToast('准备扫码...')
 
   try {
     await ensureWechatJsApiReady()
-    loadingToast.message = '请扫描付款码'
+    closeActiveLoadingToast()
     const rawCode = await scanWechatQRCode()
-    loadingToast.message = '识别中...'
+    createBlockingLoadingToast('识别中...')
     scanResult.value = await merchantDeductionService.scanCode(rawCode)
     submitPopupVisible.value = true
     lastSuccessMessage.value = ''
