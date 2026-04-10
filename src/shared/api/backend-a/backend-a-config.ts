@@ -45,12 +45,6 @@ export function resolveBackendAWechatOauthUrl(
   return normalizeOptionalUrl(rawValue)
 }
 
-export function resolveBackendAWechatJsapiConfigUrl(
-  rawValue = import.meta.env.VITE_BACKEND_A_WECHAT_JSAPI_CONFIG_URL,
-) {
-  return normalizeOptionalUrl(rawValue)
-}
-
 export function resolveBackendAWechatAppId(
   rawValue = import.meta.env.VITE_BACKEND_A_WECHAT_APP_ID,
 ) {

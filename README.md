@@ -90,12 +90,11 @@ VITE_BACKEND_A_WECHAT_OAUTH_URL="https://your-wechat-oauth-entry" \
 npm run dev
 ```
 
-如果要接“绑定卡券”的微信扫码，还需要提供一个返回 JS-SDK 签名的接口地址。前端会在点击扫码时以 `GET {url}?url=当前页面完整地址(去掉 hash)` 请求该接口，返回 `appId / timestamp / nonceStr / signature`：
+如果要接“绑定卡券”的微信扫码，当前项目会直接走 `backend-a` 的 `GET /api/v1/wechat/jssdk-signature`。前端直接传当前页面完整地址，后端会自动去掉 hash 参与签名；响应至少包含 `appId / timestamp / nonceStr / signature`，并额外返回 `url / rawString` 便于调试。
 
 ```sh
 VITE_BACKEND_TARGET=backend-a \
 VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
-VITE_BACKEND_A_WECHAT_JSAPI_CONFIG_URL="https://your-api.example.com/api/v1/wechat/jsapi-config" \
 VITE_BACKEND_A_WECHAT_OAUTH_URL="https://your-wechat-oauth-entry" \
 npm run dev
 ```
@@ -111,18 +110,7 @@ npm run dev
 
 启动后会把 token 写入 `localStorage.shop.member-auth.session`，再自动请求 `GET /api/v1/auth/profile` 补全用户资料。这个入口只在 `import.meta.env.DEV` 下生效。
 
-如果要联调“我的卡券/储值卡绑定”，也可以给开发环境预置一组模拟扫码结果：
-
-```sh
-VITE_BACKEND_TARGET=backend-a \
-VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
-VITE_DEV_MEMBER_ACCESS_TOKEN="your-access-token" \
-VITE_DEV_MEMBER_CARD_NO="你的16位卡号" \
-VITE_DEV_MEMBER_CARD_SECRET="你的卡密" \
-npm run dev
-```
-
-这样“绑定卡券”页点击扫码按钮时，会模拟扫码成功，并直接调用 `POST /api/v1/stored-value-cards/recharge`。
+“绑定卡券”页现在走真实微信 JS-SDK 扫码，不再依赖开发环境模拟扫码；联调时需要在微信内打开页面，并确保上面的 JSSDK 签名接口可用。
 
 当前 `backend-a` 已真实接入：
 

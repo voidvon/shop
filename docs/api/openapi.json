@@ -44,6 +44,50 @@
                 }
             }
         },
+        "/api/v1/wechat/jssdk-signature": {
+            "get": {
+                "tags": [
+                    "微信"
+                ],
+                "summary": "获取微信公众号 JSSDK 签名参数",
+                "description": "前端传入当前页面完整 URL，后端会自动去掉 hash 片段后参与签名，返回 wx.config 所需 signPackage 参数",
+                "operationId": "cea365ba73d1b6bf50581a46a0657aa2",
+                "parameters": [
+                    {
+                        "name": "url",
+                        "in": "query",
+                        "description": "前端当前页面完整 URL，建议直接传 location.href",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "https://mall.example.com/pay?order_id=1001#/confirm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WechatJssdkSignPackageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "参数错误或微信配置异常",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/profile": {
             "get": {
                 "tags": [
@@ -1329,7 +1373,7 @@
                                         "example": "ab12cd"
                                     },
                                     "mobile": {
-                                        "description": "绑定手机号",
+                                        "description": "本次绑定填写的手机号，绑定成功后会同步更新当前用户手机号",
                                         "type": "string",
                                         "example": "13800138000"
                                     },
@@ -1510,6 +1554,18 @@
                 "summary": "我的优惠券",
                 "operationId": "07faa0b5644edccf4dc51c22c1f41931",
                 "parameters": [
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "优惠券过滤条件；available=可用券，unavailable=不可用券（已过期或已使用）",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "available",
+                                "unavailable"
+                            ]
+                        }
+                    },
                     {
                         "name": "per_page",
                         "in": "query",
@@ -2596,6 +2652,57 @@
                 },
                 "type": "object"
             },
+            "WechatJssdkSignPackage": {
+                "properties": {
+                    "appId": {
+                        "description": "公众号 appId",
+                        "type": "string",
+                        "example": "wx1234567890abcdef"
+                    },
+                    "nonceStr": {
+                        "description": "签名随机串",
+                        "type": "string",
+                        "example": "d8F3kLm9Qp1zXc7N"
+                    },
+                    "timestamp": {
+                        "description": "签名时间戳",
+                        "type": "integer",
+                        "example": 1712736000
+                    },
+                    "url": {
+                        "description": "参与签名的当前页面 URL，已自动去掉 hash",
+                        "type": "string",
+                        "example": "https://mall.example.com/pay?order_id=1001"
+                    },
+                    "signature": {
+                        "description": "微信 JSSDK 签名",
+                        "type": "string",
+                        "example": "5d41402abc4b2a76b9719d911017c592"
+                    },
+                    "rawString": {
+                        "description": "签名原始串，便于调试",
+                        "type": "string",
+                        "example": "jsapi_ticket=xxx&noncestr=d8F3kLm9Qp1zXc7N&timestamp=1712736000&url=https://mall.example.com/pay?order_id=1001"
+                    }
+                },
+                "type": "object"
+            },
+            "WechatJssdkSignPackageResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/WechatJssdkSignPackage"
+                    }
+                },
+                "type": "object"
+            },
             "PlatformSettingPayload": {
                 "properties": {
                     "id": {
@@ -2770,6 +2877,12 @@
                         "type": "object",
                         "nullable": true,
                         "additionalProperties": true
+                    },
+                    "original_price": {
+                        "description": "SKU原价，字符串形式返回",
+                        "type": "string",
+                        "example": "128.00",
+                        "nullable": true
                     },
                     "price": {
                         "description": "SKU价格，字符串形式返回",
@@ -3611,6 +3724,12 @@
                         "type": "integer",
                         "example": 1
                     },
+                    "mobile": {
+                        "description": "本次绑定填写的手机号",
+                        "type": "string",
+                        "example": "13800138000",
+                        "nullable": true
+                    },
                     "amount": {
                         "description": "充值金额",
                         "type": "string",
@@ -3688,6 +3807,10 @@
         {
             "name": "用户认证",
             "description": "用户端登录与资料接口"
+        },
+        {
+            "name": "微信",
+            "description": "微信公众号 JSSDK 与扫码能力相关接口"
         },
         {
             "name": "员工邀请",

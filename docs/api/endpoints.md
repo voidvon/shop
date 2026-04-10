@@ -1,7 +1,7 @@
 # API 接口明细索引
 
 来源：[`openapi.json`](/root/shop/docs/api/openapi.json)  
-抓取时间：`2026-04-04`
+抓取时间：`2026-04-10`
 
 说明：
 
@@ -113,6 +113,12 @@
 | POST | /api/v1/user-addresses | Bearer | - | object | object | 新增地址 |
 | DELETE | /api/v1/user-addresses/{userAddress} | Bearer | path:userAddress | - | ApiResponse | 删除地址 |
 | PATCH | /api/v1/user-addresses/{userAddress} | Bearer | path:userAddress | object | object | 更新地址 |
+
+## 微信
+
+| 方法 | 路径 | 鉴权 | 参数 | 请求体 | 成功响应 | 说明 |
+| --- | --- | --- | --- | --- | --- | --- |
+| GET | /api/v1/wechat/jssdk-signature | 公开 | query:url | - | WechatJssdkSignPackageResponse | 获取微信公众号 JSSDK 签名参数 |
 
 ## 优惠券
 

@@ -155,6 +155,7 @@
 
 - `backendAMemberAuthRepository` 已通过 `POST /api/v1/auth/wechat` 获取真实 Bearer token
 - 登录页支持在 URL 携带 `code` 时自动完成微信登录；后端会用该 `code` 换取 `openid` 并自动注册或登录用户，也可通过 `VITE_BACKEND_A_WECHAT_OAUTH_URL` 跳到静默授权入口
+- 绑定卡券扫码流程已接入微信 JS-SDK；前端会直接请求 `backend-a` 的 `GET /api/v1/wechat/jssdk-signature`，并携带 `url` 查询参数，后端会自动去掉 hash 后参与签名
 - runtime 启动后如果本地已有 token，会后台调用 `GET /api/v1/auth/profile` 刷新资料；如果返回 `401`，则自动清空 session
 - `updateNickname` 已调用 `PATCH /api/v1/auth/profile`，并把资料同步回本地 session
 - 地址管理 runtime 已装配真实 `createBackendAMemberAddressRepository(...)`
@@ -163,6 +164,7 @@
 对应 Swagger：
 
 - `POST /api/v1/auth/wechat`
+- `GET /api/v1/wechat/jssdk-signature`
 - `GET /api/v1/auth/profile`
 - `PATCH /api/v1/auth/profile`
 - `GET/POST/DELETE/PATCH /api/v1/user-addresses`
@@ -177,7 +179,7 @@
 
 - 余额、余额流水与储值卡充值已经切到 Swagger 真实接口
 - Swagger 文档中的 `POST /api/v1/stored-value-cards/recharge` 请求体现包含 `card_no + card_secret + mobile`，`request_no` 仍为可选幂等号
-- 当前前端代码提交绑卡时仍只发送 `card_no + card_secret + request_no`，尚未把页面填写的 `mobile` 透传到充值接口
+- 当前前端绑卡提交流程已经透传 `card_no + card_secret + mobile`，并继续支持可选 `request_no`
 - 余额页读取 `GET /api/v1/balance-accounts` 与 `GET /api/v1/balance-accounts/logs`
 - “我的卡券”页已接 `GET /api/v1/stored-value-cards/recharge-logs`
 - 绑卡提交流程会先调用 `POST /api/v1/stored-value-cards/lookup` 做真实校验，再调用充值接口

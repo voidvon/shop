@@ -1,5 +1,5 @@
 import { getBackendRuntime } from '@/app/providers/backend/backend-runtime-provider'
-import { resolveBackendAWechatJsapiConfigUrl } from '@/shared/api/backend-a/backend-a-config'
+import { resolveBackendABaseUrl } from '@/shared/api/backend-a/backend-a-config'
 
 import { isWechatBrowser } from './wechat-browser'
 
@@ -51,6 +51,7 @@ declare global {
 const wechatJsSdkScriptUrl = 'https://res.wx.qq.com/open/js/jweixin-1.6.0.js'
 const wechatJsSdkReadyTimeoutMs = 10000
 const defaultWechatJsApiList = ['scanQRCode']
+const backendAWechatJssdkSignaturePath = '/api/v1/wechat/jssdk-signature'
 
 let wechatJsSdkPromise: Promise<WechatJsSdk> | null = null
 const wechatJsSdkConfigPromiseCache = new Map<string, Promise<WechatJsSdk>>()
@@ -184,13 +185,7 @@ async function loadWechatJsSdkScript() {
 }
 
 async function requestWechatJsApiConfig(pageUrl: string) {
-  const configUrl = resolveBackendAWechatJsapiConfigUrl()
-
-  if (!configUrl) {
-    throw new Error('请配置 VITE_BACKEND_A_WECHAT_JSAPI_CONFIG_URL')
-  }
-
-  const requestUrl = new URL(configUrl, window.location.origin)
+  const requestUrl = new URL(backendAWechatJssdkSignaturePath, `${resolveBackendABaseUrl()}/`)
   requestUrl.searchParams.set('url', pageUrl)
 
   let response: Response

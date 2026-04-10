@@ -4,7 +4,7 @@
 
 - Swagger 页面：`http://123.207.4.226:8080/api/documentation`
 - OpenAPI JSON：`http://123.207.4.226:8080/docs?api-docs.json`
-- 最近一次抓取时间：`2026-03-24`
+- 最近一次抓取时间：`2026-04-10`
 - 原始文件：[`openapi.json`](/root/shop/docs/api/openapi.json)
 
 说明：
@@ -24,11 +24,11 @@
 
 | 项 | 数量 |
 | --- | ---: |
-| Path 数 | 36 |
-| Operation 数 | 43 |
-| Tag 数 | 16 |
-| 公开接口 | 11 |
-| 需鉴权接口 | 32 |
+| Path 数 | 39 |
+| Operation 数 | 46 |
+| Tag 数 | 17 |
+| 公开接口 | 13 |
+| 需鉴权接口 | 33 |
 
 后端文档信息：
 
@@ -55,6 +55,10 @@
 - `POST /api/v1/user-addresses` 新增地址
 - `DELETE /api/v1/user-addresses/{userAddress}` 删除地址
 - `PATCH /api/v1/user-addresses/{userAddress}` 更新地址
+
+### 微信
+
+- `GET /api/v1/wechat/jssdk-signature` 获取微信公众号 JSSDK 签名参数
 
 ### 员工邀请
 
@@ -150,6 +154,7 @@
 - `GET /api/v1/home` 已在本次抓取中更新为 `query:product_limit, category_limit`，响应商品字段改为 `products`
 - `2026-04-04` 已补入 `POST /api/v1/stored-value-cards/lookup`、`GET /api/v1/stored-value-cards/recharge-logs`、`GET /api/v1/merchant-coupons`
 - `2026-04-10` 已补充 `POST /api/v1/stored-value-cards/recharge` 请求体中的 `mobile` 字段说明
+- `2026-04-10` 已补入 `GET /api/v1/wechat/jssdk-signature`，前端传 `url` 查询参数即可获取 `wx.config` 所需签名参数；后端会自动去掉 hash，响应还包含 `url` 与 `rawString` 便于调试
 
 ## 5.1 当前项目范围内不接入的接口
 
