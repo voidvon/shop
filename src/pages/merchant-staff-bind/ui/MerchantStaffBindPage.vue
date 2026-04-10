@@ -357,7 +357,6 @@ watch(
             >
               {{ actionLabel }}
             </button>
-            <p class="action-tip">该页面无常规入口，请通过邀请链接访问。</p>
           </div>
         </template>
       </template>
@@ -461,8 +460,7 @@ watch(
 }
 
 .notice-card p,
-.success-card p,
-.action-tip {
+.success-card p {
   margin: 10px 0 0;
   color: #7a6a5d;
   font-size: 13px;
