@@ -301,18 +301,16 @@ async function handleSubmitDeduction() {
       <section class="hero-card">
         <span class="eyebrow">商户员工专用</span>
         <strong>线下扣款</strong>
-        <p>先录入金额，再上传备注和凭证图片，随后扫码识别付款码，最后发起扣款。</p>
-      </section>
+        <div class="hero-meta-grid">
+          <div class="identity-item">
+            <span>当前登录账号</span>
+            <strong>{{ currentDisplayName }}</strong>
+          </div>
 
-      <section class="identity-card">
-        <div class="identity-item">
-          <span>当前登录账号</span>
-          <strong>{{ currentDisplayName }}</strong>
-        </div>
-
-        <div class="identity-item">
-          <span>商户 ID</span>
-          <strong>{{ normalizedMerchantId || '当前账号未返回 merchantId' }}</strong>
+          <div class="identity-item">
+            <span>商户 ID</span>
+            <strong>{{ normalizedMerchantId || '当前账号未返回 merchantId' }}</strong>
+          </div>
         </div>
       </section>
 
@@ -332,7 +330,6 @@ async function handleSubmitDeduction() {
             <span class="section-step">01</span>
             <div>
               <strong>填写扣款信息</strong>
-              <p>金额必填，备注和凭证图片选填。</p>
             </div>
           </header>
 
@@ -394,7 +391,6 @@ async function handleSubmitDeduction() {
             <span class="section-step">02</span>
             <div>
               <strong>扫描付款码</strong>
-              <p>仅支持在微信内打开后调用扫码识别。</p>
             </div>
           </header>
 
@@ -423,7 +419,6 @@ async function handleSubmitDeduction() {
             <span class="section-step">03</span>
             <div>
               <strong>确认扣款</strong>
-              <p>确认金额、备注和扫码对象后，再提交扣款。</p>
             </div>
           </header>
 
@@ -473,7 +468,6 @@ async function handleSubmitDeduction() {
 }
 
 .hero-card,
-.identity-card,
 .section-card {
   display: grid;
   gap: 10px;
@@ -484,7 +478,6 @@ async function handleSubmitDeduction() {
 }
 
 .hero-card,
-.identity-card,
 .section-card,
 .empty-state {
   margin-bottom: 12px;
@@ -508,7 +501,6 @@ async function handleSubmitDeduction() {
   line-height: 1.2;
 }
 
-.hero-card p,
 .section-head p {
   margin: 0;
   color: #78716c;
@@ -516,7 +508,7 @@ async function handleSubmitDeduction() {
   line-height: 1.6;
 }
 
-.identity-card {
+.hero-meta-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
@@ -747,6 +739,7 @@ async function handleSubmitDeduction() {
 
 @media (max-width: 520px) {
   .identity-card,
+  .hero-meta-grid,
   .scan-result-grid div,
   .submit-summary {
     grid-template-columns: 1fr;
