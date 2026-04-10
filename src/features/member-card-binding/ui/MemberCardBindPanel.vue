@@ -17,7 +17,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'preview'): void
-  (e: 'simulate-scan'): void
+  (e: 'scan'): void
   (e: 'update:cardNumber', value: string): void
   (e: 'update:cardSecret', value: string): void
 }>()
@@ -61,7 +61,7 @@ const canPreview = computed(() => !isBusy.value)
 
     <div class="bind-body">
       <section class="scan-section">
-        <button class="scan-button" :disabled="isBusy" type="button" @click="emit('simulate-scan')">
+        <button class="scan-button" :disabled="isBusy" type="button" @click="emit('scan')">
           <van-icon name="scan" size="108" />
         </button>
         <strong>{{ isSubmitting ? '绑定中...' : isLookingUp ? '读取中...' : '扫码读取卡券' }}</strong>

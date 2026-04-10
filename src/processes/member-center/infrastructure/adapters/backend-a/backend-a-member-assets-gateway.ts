@@ -37,6 +37,7 @@ export interface BackendAMemberAssetsSnapshotDto {
 export interface BackendABindMemberCardRequestDto {
   cardNo: string
   cardSecret: string
+  mobile: string
 }
 
 export interface BackendABindMemberCardResponseDto {
@@ -91,6 +92,7 @@ function mapBindMemberCardCommand(command: BindMemberCardCommand): BackendABindM
   return {
     cardNo: normalizeMemberCardNumber(command.cardNumber),
     cardSecret: normalizeMemberCardSecret(command.cardSecret),
+    mobile: String(command.mobile ?? '').trim(),
   }
 }
 

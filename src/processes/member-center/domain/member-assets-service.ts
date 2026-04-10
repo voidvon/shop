@@ -15,6 +15,7 @@ export interface MemberAssetsSnapshot {
 export interface BindMemberCardCommand {
   cardNumber: string
   cardSecret: string
+  mobile?: string
 }
 
 export interface LookupMemberCardResult {

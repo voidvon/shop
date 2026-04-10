@@ -4,8 +4,10 @@ import type {
   MemberAssetsService,
 } from '../domain/member-assets-service'
 import {
+  normalizeMemberCardBindMobile,
   normalizeMemberCardNumber,
   normalizeMemberCardSecret,
+  validateMemberCardBindMobile,
   validateMemberCardNumber,
   validateMemberCardSecret,
 } from '../domain/member-card-bind-rules'
@@ -73,10 +75,16 @@ export function createBrowserMemberAssetsService(
     },
 
     async bindMemberCard(command: BindMemberCardCommand) {
+      const mobile = normalizeMemberCardBindMobile(command.mobile ?? '')
       const cardNumber = normalizeMemberCardNumber(command.cardNumber)
       const cardSecret = normalizeMemberCardSecret(command.cardSecret)
+      const mobileError = validateMemberCardBindMobile(mobile)
       const cardNumberError = validateMemberCardNumber(cardNumber)
       const cardSecretError = validateMemberCardSecret(cardSecret)
+
+      if (mobileError) {
+        throw new Error(mobileError)
+      }
 
       if (cardNumberError) {
         throw new Error(cardNumberError)

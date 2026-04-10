@@ -8,6 +8,10 @@ export const memberCardSecretLengthRange = {
   max: 8,
 } as const
 
+export function normalizeMemberCardBindMobile(value: string) {
+  return value.replace(/\D/g, '').slice(0, 11)
+}
+
 export function normalizeMemberCardNumber(value: string) {
   return value
     .toUpperCase()
@@ -50,6 +54,20 @@ export function validateMemberCardSecret(value: string) {
     || normalized.length > memberCardSecretLengthRange.max
   ) {
     return `请输入${memberCardSecretLengthRange.min}-${memberCardSecretLengthRange.max}位卡券卡密`
+  }
+
+  return null
+}
+
+export function validateMemberCardBindMobile(value: string) {
+  const normalized = normalizeMemberCardBindMobile(value)
+
+  if (!normalized) {
+    return '请输入手机号'
+  }
+
+  if (!/^1\d{10}$/.test(normalized)) {
+    return '请输入正确手机号'
   }
 
   return null

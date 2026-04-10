@@ -90,6 +90,16 @@ VITE_BACKEND_A_WECHAT_OAUTH_URL="https://your-wechat-oauth-entry" \
 npm run dev
 ```
 
+如果要接“绑定卡券”的微信扫码，还需要提供一个返回 JS-SDK 签名的接口地址。前端会在点击扫码时以 `GET {url}?url=当前页面完整地址(去掉 hash)` 请求该接口，返回 `appId / timestamp / nonceStr / signature`：
+
+```sh
+VITE_BACKEND_TARGET=backend-a \
+VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
+VITE_BACKEND_A_WECHAT_JSAPI_CONFIG_URL="https://your-api.example.com/api/v1/wechat/jsapi-config" \
+VITE_BACKEND_A_WECHAT_OAUTH_URL="https://your-wechat-oauth-entry" \
+npm run dev
+```
+
 如果后端当前只有一个可用 token，可在开发环境临时预置：
 
 ```sh

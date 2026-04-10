@@ -149,6 +149,7 @@
 - 后续如果后端 Swagger 变更，优先重新抓取 `openapi.json`，再同步更新本文件中的统计与分组
 - `GET /api/v1/home` 已在本次抓取中更新为 `query:product_limit, category_limit`，响应商品字段改为 `products`
 - `2026-04-04` 已补入 `POST /api/v1/stored-value-cards/lookup`、`GET /api/v1/stored-value-cards/recharge-logs`、`GET /api/v1/merchant-coupons`
+- `2026-04-10` 已补充 `POST /api/v1/stored-value-cards/recharge` 请求体中的 `mobile` 字段说明
 
 ## 5.1 当前项目范围内不接入的接口
 

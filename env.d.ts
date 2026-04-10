@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_BACKEND_A_MEMBER_ASSETS_BASE_URL?: string
   readonly VITE_BACKEND_A_MEMBER_ASSETS_TIMEOUT_MS?: string
   readonly VITE_BACKEND_A_WECHAT_APP_ID?: string
+  readonly VITE_BACKEND_A_WECHAT_JSAPI_CONFIG_URL?: string
   readonly VITE_BACKEND_A_WECHAT_OAUTH_SCOPE?: 'snsapi_base' | 'snsapi_userinfo'
   readonly VITE_BACKEND_A_WECHAT_OAUTH_URL?: string
   readonly VITE_DEV_MEMBER_ACCESS_TOKEN?: string

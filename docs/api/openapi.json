@@ -1314,7 +1314,8 @@
                             "schema": {
                                 "required": [
                                     "card_no",
-                                    "card_secret"
+                                    "card_secret",
+                                    "mobile"
                                 ],
                                 "properties": {
                                     "card_no": {
@@ -1326,6 +1327,11 @@
                                         "description": "储值卡卡密",
                                         "type": "string",
                                         "example": "ab12cd"
+                                    },
+                                    "mobile": {
+                                        "description": "绑定手机号",
+                                        "type": "string",
+                                        "example": "13800138000"
                                     },
                                     "request_no": {
                                         "description": "绑定请求幂等号",

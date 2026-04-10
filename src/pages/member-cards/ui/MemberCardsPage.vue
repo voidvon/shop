@@ -3,8 +3,12 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
+import { useMemberAuthSession } from '@/entities/member-auth'
 import { MemberCardBindPanel, useMemberCardBinding } from '@/features/member-card-binding'
+import { scanMemberCardByWechat } from '@/features/member-card-binding/model/member-card-scanner'
 import type { LookupMemberCardResult } from '@/processes/member-center'
+import { normalizeMemberCardBindMobile, validateMemberCardBindMobile } from '@/processes/member-center/domain/member-card-bind-rules'
+import { isWechatBrowser } from '@/shared/lib/wechat-browser'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
@@ -13,6 +17,7 @@ import { useMemberCardsPageModel } from '../model/useMemberCardsPageModel'
 
 const route = useRoute()
 const router = useRouter()
+const memberAuthSession = useMemberAuthSession()
 const isLookingUp = ref(false)
 const isSubmitting = ref(false)
 const cardNumber = ref('')
@@ -23,21 +28,15 @@ const { bindMemberCard, lookupMemberCard } = useMemberCardBinding()
 const { errorMessage, isLoading, loadMemberCardsPage, memberCardsPageData } = useMemberCardsPageModel()
 const bindDrawerVisible = computed(() => route.query.drawer === 'bind')
 const bindPreviewVisible = ref(false)
-const devCardNumber = import.meta.env.VITE_DEV_MEMBER_CARD_NO?.trim() ?? ''
-const devCardSecret = import.meta.env.VITE_DEV_MEMBER_CARD_SECRET?.trim() ?? ''
-const normalizedMobile = computed(() => mobile.value.trim())
-const mobileErrorMessage = computed(() => {
-  if (normalizedMobile.value.length === 0) {
-    return '请输入手机号'
-  }
-
-  if (!/^1\d{10}$/.test(normalizedMobile.value)) {
-    return '请输入正确手机号'
-  }
-
-  return ''
-})
-const hasValidMobile = computed(() => /^1\d{10}$/.test(normalizedMobile.value))
+const defaultMobile = computed(() =>
+  normalizeMemberCardBindMobile(memberAuthSession.getSnapshot().authResult?.userInfo.mobile ?? ''),
+)
+const canScanCardByWechat = computed(
+  () => memberAuthSession.getSnapshot().authResult?.capabilities.includes('wechat-scan-card') === true,
+)
+const normalizedMobile = computed(() => normalizeMemberCardBindMobile(mobile.value))
+const mobileErrorMessage = computed(() => validateMemberCardBindMobile(normalizedMobile.value) ?? '')
+const hasValidMobile = computed(() => !mobileErrorMessage.value)
 const canConfirmBind = computed(() =>
   !isSubmitting.value && Boolean(lookupResult.value?.canBind) && hasValidMobile.value,
 )
@@ -52,14 +51,6 @@ function maskCardNumber(cardNumberValue: string) {
   }
 
   return `${cardNumberValue.slice(0, 4)} **** ${cardNumberValue.slice(-4)}`
-}
-
-function resolveSimulatedCardNumber() {
-  return devCardNumber || cardNumber.value
-}
-
-function resolveSimulatedCardSecret() {
-  return devCardSecret || cardSecret.value
 }
 
 function formatPreviewTitle(result: LookupMemberCardResult | null) {
@@ -92,6 +83,10 @@ async function replaceBaseRouteQuery() {
 }
 
 function goToBindCard() {
+  if (!mobile.value) {
+    mobile.value = defaultMobile.value
+  }
+
   void router.push({
     query: {
       ...route.query,
@@ -166,6 +161,7 @@ async function submitBindCard() {
     await bindMemberCard({
       cardNumber: cardNumber.value,
       cardSecret: cardSecret.value,
+      mobile: normalizedMobile.value,
     })
     showSuccessToast('充值成功')
     closeBindPreview()
@@ -182,20 +178,17 @@ async function runLookupCard() {
   await openBindPreview()
 }
 
-async function simulateScan() {
-  const simulatedCardNumber = resolveSimulatedCardNumber()
-  const simulatedCardSecret = resolveSimulatedCardSecret()
-
-  if (!simulatedCardNumber) {
+async function applyScannedCardInfo(nextCardNumber: string, nextCardSecret: string) {
+  if (!nextCardNumber) {
     showFailToast('未读取到卡券编号，请手动输入后重试')
     return
   }
 
-  cardNumber.value = simulatedCardNumber
-  cardSecret.value = simulatedCardSecret
+  cardNumber.value = nextCardNumber
+  cardSecret.value = nextCardSecret
 
-  if (!simulatedCardSecret) {
-    showFailToast('未读取到卡券卡密，请手动输入后重试')
+  if (!nextCardSecret) {
+    showSuccessToast('已读取卡号，请补充卡密后继续')
     return
   }
 
@@ -203,14 +196,44 @@ async function simulateScan() {
   await openBindPreview()
 }
 
+async function handleScanCard() {
+  if (!canScanCardByWechat.value) {
+    showFailToast('当前账号暂不支持微信扫码绑卡')
+    return
+  }
+
+  if (!isWechatBrowser()) {
+    showFailToast('请在微信内打开当前页面后扫码')
+    return
+  }
+
+  try {
+    const scanResult = await scanMemberCardByWechat()
+    await applyScannedCardInfo(scanResult.cardNumber, scanResult.cardSecret)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '微信扫码失败'
+
+    if (message === '已取消扫码') {
+      return
+    }
+
+    showFailToast(message)
+  }
+}
+
 watch(bindDrawerVisible, (visible, previousVisible) => {
+  if (visible && !previousVisible && !mobile.value) {
+    mobile.value = defaultMobile.value
+    return
+  }
+
   if (visible || !previousVisible) {
     return
   }
 
   cardNumber.value = ''
   cardSecret.value = ''
-  mobile.value = ''
+  mobile.value = defaultMobile.value
   lookupResult.value = null
   bindPreviewVisible.value = false
 })
@@ -221,6 +244,7 @@ watch([cardNumber, cardSecret], () => {
 })
 
 onMounted(async () => {
+  mobile.value = defaultMobile.value
   await loadMemberCardsPage()
 
   if (errorMessage.value) {
@@ -304,7 +328,7 @@ onMounted(async () => {
           :is-looking-up="isLookingUp"
           :is-submitting="isSubmitting"
           @preview="runLookupCard"
-          @simulate-scan="simulateScan"
+          @scan="handleScanCard"
         />
       </section>
     </van-popup>

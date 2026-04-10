@@ -11,8 +11,10 @@ import type {
 } from '../../../domain/member-assets-service'
 import type { MemberCardRedemptionRecord } from '../../../domain/member-center-page-data'
 import {
+  normalizeMemberCardBindMobile,
   normalizeMemberCardNumber,
   normalizeMemberCardSecret,
+  validateMemberCardBindMobile,
   validateMemberCardNumber,
   validateMemberCardSecret,
 } from '../../../domain/member-card-bind-rules'
@@ -323,10 +325,16 @@ export function createBackendAMemberAssetsService(memberAuthSession: MemberAuthS
     },
 
     async bindMemberCard(command) {
+      const mobile = normalizeMemberCardBindMobile(command.mobile ?? '')
       const cardNumber = normalizeMemberCardNumber(command.cardNumber)
       const cardSecret = normalizeMemberCardSecret(command.cardSecret)
+      const mobileError = validateMemberCardBindMobile(mobile)
       const cardNumberError = validateMemberCardNumber(cardNumber)
       const cardSecretError = validateMemberCardSecret(cardSecret)
+
+      if (mobileError) {
+        throw new Error(mobileError)
+      }
 
       if (cardNumberError) {
         throw new Error(cardNumberError)
@@ -346,12 +354,14 @@ export function createBackendAMemberAssetsService(memberAuthSession: MemberAuthS
         const gatewayCommand: BackendABindMemberCardRequestDto = {
           cardNo: cardNumber,
           cardSecret,
+          mobile,
         }
 
         return mapBackendABindMemberCardResult(await gateway.bindMemberCard(gatewayCommand))
       }
 
       await httpClient.post<unknown>('/api/v1/stored-value-cards/recharge', {
+        mobile,
         card_no: cardNumber,
         card_secret: cardSecret,
         request_no: createBindRequestNo(),

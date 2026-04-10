@@ -6,7 +6,7 @@
 - 当前运行时装配：[`src/app/providers/backend/create-backend-runtime.ts`](/root/shop/src/app/providers/backend/create-backend-runtime.ts)
 - 现有 `backend-a` 适配层与浏览器仓储实现
 
-更新时间：`2026-04-04`
+更新时间：`2026-04-10`
 
 ## 1. 先看结论
 
@@ -176,7 +176,8 @@
 现状：
 
 - 余额、余额流水与储值卡充值已经切到 Swagger 真实接口
-- 会员卡绑定页现在会提交 `card_no + card_secret + request_no` 到 `POST /api/v1/stored-value-cards/recharge`
+- Swagger 文档中的 `POST /api/v1/stored-value-cards/recharge` 请求体现包含 `card_no + card_secret + mobile`，`request_no` 仍为可选幂等号
+- 当前前端代码提交绑卡时仍只发送 `card_no + card_secret + request_no`，尚未把页面填写的 `mobile` 透传到充值接口
 - 余额页读取 `GET /api/v1/balance-accounts` 与 `GET /api/v1/balance-accounts/logs`
 - “我的卡券”页已接 `GET /api/v1/stored-value-cards/recharge-logs`
 - 绑卡提交流程会先调用 `POST /api/v1/stored-value-cards/lookup` 做真实校验，再调用充值接口
