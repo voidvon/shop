@@ -32,10 +32,26 @@ function resolveBackendAUsername(profile: BackendAUserProfileDto) {
   return `wx_user_${profile.id}`
 }
 
+function resolveBackendAMerchantId(profile: BackendAUserProfileDto) {
+  const merchantId = profile.merchantId ?? profile.merchant_id ?? null
+
+  if (typeof merchantId === 'string') {
+    const normalizedMerchantId = merchantId.trim()
+    return normalizedMerchantId || null
+  }
+
+  if (typeof merchantId === 'number' && Number.isFinite(merchantId)) {
+    return String(merchantId)
+  }
+
+  return null
+}
+
 export function mapBackendAUserProfileDto(profile: BackendAUserProfileDto): AuthUserInfo {
   return {
     avatarUrl: profile.avatar,
     email: null,
+    merchantId: resolveBackendAMerchantId(profile),
     mobile: profile.mobile,
     nickname: profile.nickname.trim() || profile.name.trim() || null,
     userId: String(profile.id),

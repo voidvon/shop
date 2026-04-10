@@ -51,6 +51,7 @@ export const mockMemberAuthRepository: MemberAuthRepository = {
     return Promise.resolve(createMockAuthResult({
       avatarUrl: null,
       email: command.email,
+      merchantId: '10001',
       mobile: null,
       nickname: command.username,
       userId: `mock-member-${Date.now()}`,
@@ -64,6 +65,7 @@ export const mockMemberAuthRepository: MemberAuthRepository = {
     return Promise.resolve(createMockAuthResult({
       avatarUrl: null,
       email: null,
+      merchantId: '10001',
       mobile: command.mobile,
       nickname: `手机用户${mobileSuffix}`,
       userId: `mock-mobile-member-${Date.now()}`,

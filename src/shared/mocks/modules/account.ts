@@ -44,6 +44,7 @@ export const mockAuthResult: AuthResult = {
   userInfo: {
     avatarUrl: mockUser.avatarUrl,
     email: mockUser.email,
+    merchantId: '10001',
     mobile: mockUser.mobile,
     nickname: mockUser.nickname,
     userId: mockUser.userId,

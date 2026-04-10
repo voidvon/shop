@@ -4,6 +4,8 @@ export interface BackendAUserProfileDto {
   id: number
   last_login_at: string | null
   mobile: string | null
+  merchant_id?: number | string | null
+  merchantId?: number | string | null
   name: string
   nickname: string
   openid: string

@@ -23,6 +23,7 @@ function buildDevAuthResult(accessToken: string): AuthResult {
     userInfo: {
       avatarUrl: null,
       email: null,
+      merchantId: null,
       mobile: null,
       nickname: null,
       userId: 'dev-token-user',

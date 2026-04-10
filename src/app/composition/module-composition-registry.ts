@@ -28,6 +28,7 @@ import { MemberProfileNamePage } from '@/pages/member-profile-name'
 import { MemberRegisterMobilePage } from '@/pages/member-register-mobile'
 import { MemberRegisterPage } from '@/pages/member-register'
 import { MemberSettingsPage } from '@/pages/member-settings'
+import { MerchantDeductionPage } from '@/pages/merchant-deduction'
 import { MerchantStaffBindPage } from '@/pages/merchant-staff-bind'
 import { OrderDetailPage } from '@/pages/order-detail'
 import { OrderListPage } from '@/pages/order-list'
@@ -258,6 +259,15 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         component: MerchantStaffBindPage,
         meta: {
           title: '员工绑定',
+        },
+      }),
+      createModuleRoute({
+        path: '/merchant/deduction',
+        name: 'merchant-deduction',
+        component: MerchantDeductionPage,
+        meta: {
+          requiresAuth: true,
+          title: '扣款',
         },
       }),
       createModuleRoute({

@@ -7,6 +7,7 @@ export interface AuthUserInfo {
   email: string | null
   mobile: string | null
   avatarUrl: string | null
+  merchantId: string | null
 }
 
 export type AccountCapability =
