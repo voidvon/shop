@@ -288,7 +288,7 @@ onMounted(() => {
                     <strong>¥{{ formatAmount(log.amount) }}</strong>
                   </div>
 
-                  <VanTag plain round :type="resolveStatusType(log.status)">
+                  <VanTag round :type="resolveStatusType(log.status)">
                     {{ log.statusLabel }}
                   </VanTag>
                 </header>
