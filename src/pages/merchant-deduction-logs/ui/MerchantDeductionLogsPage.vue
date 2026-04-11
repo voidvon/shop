@@ -480,6 +480,7 @@ onMounted(() => {
 }
 
 .log-detail-grid {
+  margin: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
@@ -494,6 +495,8 @@ onMounted(() => {
 .log-detail-meta {
   grid-column: 1 / -1;
   gap: 8px;
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 
 .log-detail-row {
