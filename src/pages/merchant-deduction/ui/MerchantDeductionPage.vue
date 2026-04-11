@@ -495,9 +495,9 @@ async function handleSubmitDeduction() {
             </button>
           </section>
         </section>
-        <button class="flow-entry-button" type="button" @click="goToDeductionLogs">
+        <van-button block round type="default" class="flow-entry-button" @click="goToDeductionLogs">
           店铺流水查询
-        </button>
+        </van-button>
       </template>
     </div>
 
@@ -643,16 +643,12 @@ async function handleSubmitDeduction() {
 }
 
 .flow-entry-button {
-  width: 100%;
   margin-bottom: 12px;
-  padding: 14px 18px;
-  border: 1px solid #ece6df;
-  border-radius: 18px;
-  background: #fff;
-  color: #4b5563;
-  font-size: 15px;
-  font-weight: 600;
-  box-shadow: 0 10px 24px rgba(27, 25, 22, 0.06);
+  --van-button-default-background: #fff;
+  --van-button-default-border-color: #ece6df;
+  --van-button-default-color: #4b5563;
+  --van-button-border-width: 1px;
+  --van-button-normal-font-size: 15px;
 }
 
 .field-block {
