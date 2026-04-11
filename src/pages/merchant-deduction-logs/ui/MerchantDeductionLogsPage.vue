@@ -20,7 +20,7 @@ import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 3
 
 const router = useRouter()
 const memberAuthSession = useMemberAuthSession()
