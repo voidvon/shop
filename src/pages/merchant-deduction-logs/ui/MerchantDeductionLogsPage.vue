@@ -455,7 +455,7 @@ onMounted(() => {
 }
 
 .log-card {
-  gap: 14px;
+  gap: 12px;
   padding: 16px;
   border-radius: 22px;
   background: #fff;
@@ -486,14 +486,14 @@ onMounted(() => {
 
 .log-detail-grid > div {
   min-width: 0;
-  padding: 12px 14px;
+  padding: 10px 14px;
   border-radius: 16px;
   background: #f7f7f7;
 }
 
 .log-detail-meta {
   grid-column: 1 / -1;
-  gap: 10px;
+  gap: 8px;
 }
 
 .log-detail-row {
