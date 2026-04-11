@@ -26,7 +26,7 @@ const router = useRouter()
 const memberAuthSession = useMemberAuthSession()
 const merchantDeductionService = useMerchantDeductionService()
 const authSnapshot = ref(memberAuthSession.getSnapshot())
-const refreshContainer = useTemplateRef<InstanceType<typeof VanPullRefresh>>('refreshContainer')
+const scrollContainer = useTemplateRef<HTMLDivElement>('scrollContainer')
 const logs = ref<MerchantDeductionLogItem[]>([])
 const currentPage = ref(1)
 const isPageInitializing = ref(true)
@@ -242,110 +242,110 @@ onMounted(() => {
       <strong>您还不是商户员工</strong>
     </div>
 
-    <VanPullRefresh
-      v-else
-      ref="refreshContainer"
-      v-model="isRefreshing"
-      class="merchant-deduction-logs-refresh"
-      success-text="刷新成功"
-      @refresh="handleRefresh"
-    >
-      <div class="content-scroll">
-        <section class="list-section">
-          <header class="list-head">
-            <strong>流水明细</strong>
-            <span v-if="hasLoadedOnce">第 {{ currentPage }} 页</span>
-          </header>
+    <div v-else ref="scrollContainer" class="merchant-deduction-logs-scroll">
+      <VanPullRefresh
+        v-model="isRefreshing"
+        class="merchant-deduction-logs-refresh"
+        success-text="刷新成功"
+        @refresh="handleRefresh"
+      >
+        <div class="content-scroll">
+          <section class="list-section">
+            <header class="list-head">
+              <strong>流水明细</strong>
+              <span v-if="hasLoadedOnce">第 {{ currentPage }} 页</span>
+            </header>
 
-          <LoadingState v-if="isInitialLoading && !hasLogs" class="list-state" fill text="正在加载店铺流水..." />
+            <LoadingState v-if="isInitialLoading && !hasLogs" class="list-state" fill text="正在加载店铺流水..." />
 
-          <section v-else-if="errorMessage && !hasLogs" class="list-state">
+            <section v-else-if="errorMessage && !hasLogs" class="list-state">
+              <EmptyState
+                boxed
+                description="请下拉刷新，或点击下方按钮重新加载。"
+                description-width="240px"
+                icon="warning-o"
+                title="流水加载失败"
+              />
+              <p class="error-message">{{ errorMessage }}</p>
+              <button class="retry-button" type="button" @click="loadLogs('initial')">
+                重新加载
+              </button>
+            </section>
+
             <EmptyState
+              v-else-if="hasLoadedOnce && !hasLogs"
               boxed
-              description="请下拉刷新，或点击下方按钮重新加载。"
+              class="list-state"
+              description="当前店铺暂时还没有线下支付流水。"
               description-width="240px"
-              icon="warning-o"
-              title="流水加载失败"
+              icon="orders-o"
+              title="暂无流水"
             />
-            <p class="error-message">{{ errorMessage }}</p>
-            <button class="retry-button" type="button" @click="loadLogs('initial')">
-              重新加载
-            </button>
+
+            <VanList
+              v-else
+              v-model:loading="isLoadingMore"
+              :scroller="scrollContainer ?? undefined"
+              class="log-list"
+              :finished="!hasMore"
+              finished-text="没有更多流水了"
+              offset="80"
+              @load="handleLoadMore"
+            >
+              <article v-for="log in logs" :key="log.id" class="log-card">
+                <header class="log-card-head">
+                  <div class="log-card-title">
+                    <strong>¥{{ formatAmount(log.amount) }}</strong>
+                    <p>{{ getDetailSummary(log) }}</p>
+                  </div>
+
+                  <VanTag plain round :type="resolveStatusType(log.status)">
+                    {{ log.statusLabel }}
+                  </VanTag>
+                </header>
+
+                <dl class="log-detail-grid">
+                  <div>
+                    <dt>付款单号</dt>
+                    <dd>{{ log.paymentNo }}</dd>
+                  </div>
+
+                  <div>
+                    <dt>支付用户</dt>
+                    <dd>{{ getUserSummary(log) }}</dd>
+                  </div>
+
+                  <div>
+                    <dt>创建时间</dt>
+                    <dd>{{ formatDateTime(log.createdAt) }}</dd>
+                  </div>
+
+                  <div>
+                    <dt>成功时间</dt>
+                    <dd>{{ formatDateTime(log.paidAt) }}</dd>
+                  </div>
+
+                  <div v-if="log.cardNumber">
+                    <dt>储值卡号</dt>
+                    <dd>{{ log.cardNumber }}</dd>
+                  </div>
+
+                  <div v-if="log.remark">
+                    <dt>备注</dt>
+                    <dd>{{ log.remark }}</dd>
+                  </div>
+
+                  <div v-if="log.failureReason">
+                    <dt>失败原因</dt>
+                    <dd class="log-detail-danger">{{ log.failureReason }}</dd>
+                  </div>
+                </dl>
+              </article>
+            </VanList>
           </section>
-
-          <EmptyState
-            v-else-if="hasLoadedOnce && !hasLogs"
-            boxed
-            class="list-state"
-            description="当前店铺暂时还没有线下支付流水。"
-            description-width="240px"
-            icon="orders-o"
-            title="暂无流水"
-          />
-
-          <VanList
-            v-else
-            v-model:loading="isLoadingMore"
-            :scroller="refreshContainer?.$el"
-            class="log-list"
-            :finished="!hasMore"
-            finished-text="没有更多流水了"
-            offset="80"
-            @load="handleLoadMore"
-          >
-            <article v-for="log in logs" :key="log.id" class="log-card">
-              <header class="log-card-head">
-                <div class="log-card-title">
-                  <strong>¥{{ formatAmount(log.amount) }}</strong>
-                  <p>{{ getDetailSummary(log) }}</p>
-                </div>
-
-                <VanTag plain round :type="resolveStatusType(log.status)">
-                  {{ log.statusLabel }}
-                </VanTag>
-              </header>
-
-              <dl class="log-detail-grid">
-                <div>
-                  <dt>付款单号</dt>
-                  <dd>{{ log.paymentNo }}</dd>
-                </div>
-
-                <div>
-                  <dt>支付用户</dt>
-                  <dd>{{ getUserSummary(log) }}</dd>
-                </div>
-
-                <div>
-                  <dt>创建时间</dt>
-                  <dd>{{ formatDateTime(log.createdAt) }}</dd>
-                </div>
-
-                <div>
-                  <dt>成功时间</dt>
-                  <dd>{{ formatDateTime(log.paidAt) }}</dd>
-                </div>
-
-                <div v-if="log.cardNumber">
-                  <dt>储值卡号</dt>
-                  <dd>{{ log.cardNumber }}</dd>
-                </div>
-
-                <div v-if="log.remark">
-                  <dt>备注</dt>
-                  <dd>{{ log.remark }}</dd>
-                </div>
-
-                <div v-if="log.failureReason">
-                  <dt>失败原因</dt>
-                  <dd class="log-detail-danger">{{ log.failureReason }}</dd>
-                </div>
-              </dl>
-            </article>
-          </VanList>
-        </section>
-      </div>
-    </VanPullRefresh>
+        </div>
+      </VanPullRefresh>
+    </div>
   </section>
 </template>
 
@@ -359,14 +359,19 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.merchant-deduction-logs-refresh {
+.merchant-deduction-logs-scroll {
+  height: 100%;
   min-height: 0;
   overflow-y: auto;
   scrollbar-width: none;
 }
 
-.merchant-deduction-logs-refresh::-webkit-scrollbar {
+.merchant-deduction-logs-scroll::-webkit-scrollbar {
   display: none;
+}
+
+.merchant-deduction-logs-refresh {
+  min-height: 100%;
 }
 
 .page-loading-state {
