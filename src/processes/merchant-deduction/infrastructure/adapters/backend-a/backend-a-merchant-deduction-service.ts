@@ -465,6 +465,41 @@ function createDeductionIdempotencyKey(command: MerchantDeductionSubmitCommand) 
   ].join('-')
 }
 
+function createSubmitRequestPayload(command: MerchantDeductionSubmitCommand) {
+  const merchantId = normalizeMerchantId(command.merchantId)
+  const amount = normalizeSubmitAmount(command.amount)
+  const paymentToken = normalizeString(command.paymentToken)
+  const cardQrContent = normalizeString(command.cardQrContent)
+
+  if (!paymentToken && !cardQrContent) {
+    throw new Error('请先扫描付款码')
+  }
+
+  const primaryCodePayload = paymentToken
+    ? { payment_token: paymentToken }
+    : { card_qr_content: cardQrContent! }
+  const balanceTypeId = normalizeOptionalInteger(command.balanceTypeId)
+
+  return {
+    ...primaryCodePayload,
+    ...(balanceTypeId && !paymentToken ? { balance_type_id: balanceTypeId } : {}),
+    ...(normalizeString(command.remark) ? { remark: normalizeString(command.remark) } : {}),
+    ...(command.attachments.length > 0
+      ? {
+          attachments: command.attachments.map((attachment) => ({
+            ...(attachment.disk ? { disk: attachment.disk } : {}),
+            ...(attachment.mimeType ? { mime_type: attachment.mimeType } : {}),
+            path: attachment.path,
+            ...(attachment.size ? { size: attachment.size } : {}),
+          })),
+        }
+      : {}),
+    amount,
+    idempotency_key: createDeductionIdempotencyKey(command),
+    merchant_id: merchantId,
+  }
+}
+
 function mapSubmitResult(response: unknown): MerchantDeductionSubmitResult {
   const rawPayload = isRecord(response) ? response : null
 
@@ -493,36 +528,9 @@ export function createBackendAMerchantDeductionService(
     },
 
     async submitDeduction(command: MerchantDeductionSubmitCommand) {
-      const merchantId = normalizeMerchantId(command.merchantId)
-      const amount = normalizeSubmitAmount(command.amount)
-      const paymentToken = normalizeString(command.paymentToken)
-      const cardQrContent = normalizeString(command.cardQrContent)
-
-      if (!paymentToken && !cardQrContent) {
-        throw new Error('请先扫描付款码')
-      }
-
       const response = await httpClient.post<unknown>(
         '/api/v1/merchant/offline-payments/pay',
-        {
-          ...(paymentToken ? { payment_token: paymentToken } : {}),
-          ...(cardQrContent ? { card_qr_content: cardQrContent } : {}),
-          ...(normalizeOptionalInteger(command.balanceTypeId) ? { balance_type_id: normalizeOptionalInteger(command.balanceTypeId) } : {}),
-          ...(normalizeString(command.remark) ? { remark: normalizeString(command.remark) } : {}),
-          ...(command.attachments.length > 0
-            ? {
-                attachments: command.attachments.map((attachment) => ({
-                  ...(attachment.disk ? { disk: attachment.disk } : {}),
-                  ...(attachment.mimeType ? { mime_type: attachment.mimeType } : {}),
-                  path: attachment.path,
-                  ...(attachment.size ? { size: attachment.size } : {}),
-                })),
-              }
-            : {}),
-          amount,
-          idempotency_key: createDeductionIdempotencyKey(command),
-          merchant_id: merchantId,
-        },
+        createSubmitRequestPayload(command),
       )
 
       return mapSubmitResult(response)
