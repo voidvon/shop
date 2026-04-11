@@ -158,17 +158,6 @@ watch(
   { immediate: true },
 )
 
-function goBack() {
-  closeActiveLoadingToast()
-
-  if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
-    router.back()
-    return
-  }
-
-  void router.push('/member')
-}
-
 function goToDeductionLogs() {
   void router.push({ name: 'merchant-deduction-logs' })
 }
@@ -392,7 +381,7 @@ async function handleSubmitDeduction() {
 
 <template>
   <section class="merchant-deduction-page">
-    <PageTopBar title="商户员工扣款" @back="goBack" />
+    <PageTopBar title="商户员工扣款" :show-back="false" />
 
     <div class="content-scroll">
       <section v-if="!isMerchantStaff" class="merchant-staff-empty-state">
