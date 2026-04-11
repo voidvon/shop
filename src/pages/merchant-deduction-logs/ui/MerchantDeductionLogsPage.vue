@@ -100,11 +100,6 @@ function getUserSummary(log: MerchantDeductionLogItem) {
   return parts.length > 0 ? parts.join(' · ') : '未返回用户信息'
 }
 
-function getDetailSummary(log: MerchantDeductionLogItem) {
-  const parts = [log.paySourceLabel, log.balanceTypeName].filter(Boolean)
-  return parts.length > 0 ? parts.join(' · ') : log.paySourceLabel
-}
-
 function resolveStatusType(status: MerchantDeductionLogItem['status']) {
   switch (status) {
     case 'success':
@@ -291,7 +286,6 @@ onMounted(() => {
                 <header class="log-card-head">
                   <div class="log-card-title">
                     <strong>¥{{ formatAmount(log.amount) }}</strong>
-                    <p>{{ getDetailSummary(log) }}</p>
                   </div>
 
                   <VanTag plain round :type="resolveStatusType(log.status)">
@@ -308,11 +302,6 @@ onMounted(() => {
                   <div>
                     <dt>支付用户</dt>
                     <dd>{{ getUserSummary(log) }}</dd>
-                  </div>
-
-                  <div>
-                    <dt>创建时间</dt>
-                    <dd>{{ formatDateTime(log.createdAt) }}</dd>
                   </div>
 
                   <div>
