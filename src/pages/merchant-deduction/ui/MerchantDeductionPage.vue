@@ -504,38 +504,42 @@ async function handleSubmitDeduction() {
       </template>
     </div>
 
-    <van-popup
-      :show="submitPopupVisible"
-      class="submit-popup"
-      position="bottom"
-      round
+    <van-dialog
+      v-model:show="submitPopupVisible"
+      class="submit-dialog"
+      :close-on-click-overlay="!isSubmitting"
+      :show-cancel-button="false"
+      :show-confirm-button="false"
       teleport="body"
-      @update:show="submitPopupVisible = $event"
     >
-      <section class="submit-sheet">
-        <header class="submit-sheet-head">
+      <section class="submit-dialog-content">
+        <header class="submit-dialog-head">
           <strong>确认扣款</strong>
-          <button class="submit-sheet-close" type="button" @click="submitPopupVisible = false">
+          <button
+            class="submit-dialog-close"
+            :disabled="isSubmitting"
+            type="button"
+            @click="submitPopupVisible = false"
+          >
             关闭
           </button>
         </header>
 
+        <div class="submit-amount-block">
+          <span>金额</span>
+          <strong>{{ parsedAmount === null ? '¥0.00' : `¥${parsedAmount.toFixed(2)}` }}</strong>
+        </div>
+
         <div class="submit-summary">
-          <div>
-            <span>金额</span>
-            <strong>{{ parsedAmount === null ? '¥0.00' : `¥${parsedAmount.toFixed(2)}` }}</strong>
-          </div>
-          <div>
-            <span>备注</span>
-            <strong>{{ remarkInput.trim() || '无' }}</strong>
-          </div>
+          <span>备注</span>
+          <strong>{{ remarkInput.trim() || '无' }}</strong>
         </div>
 
         <button class="submit-button" :disabled="!canSubmit" type="button" @click="handleSubmitDeduction">
           {{ submitButtonLabel }}
         </button>
       </section>
-    </van-popup>
+    </van-dialog>
   </section>
 </template>
 
@@ -607,6 +611,7 @@ async function handleSubmitDeduction() {
 .identity-item span,
 .field-block span,
 .upload-head span,
+.submit-amount-block span,
 .submit-summary span,
 .scan-result-grid dt {
   color: #8c847d;
@@ -781,15 +786,13 @@ async function handleSubmitDeduction() {
   gap: 10px;
 }
 
-.scan-result-grid div,
-.submit-summary {
+.scan-result-grid div {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-.scan-result-grid dd,
-.submit-summary strong {
+.scan-result-grid dd {
   margin: 4px 0 0;
   color: #1f1d1a;
   font-size: 14px;
@@ -798,7 +801,7 @@ async function handleSubmitDeduction() {
 }
 
 .scan-result-action,
-.submit-sheet-close {
+.submit-dialog-close {
   justify-self: start;
   padding: 9px 14px;
   border: 0;
@@ -809,29 +812,66 @@ async function handleSubmitDeduction() {
   font-weight: 600;
 }
 
-.submit-popup {
+.submit-dialog {
+  width: min(92vw, 360px);
+  overflow: hidden;
+  border-radius: 24px;
+  background: #fffdfa;
+}
+
+.submit-dialog :deep(.van-dialog__content) {
   overflow: hidden;
 }
 
-.submit-sheet {
+.submit-dialog-content {
   display: grid;
   gap: 16px;
-  padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+  padding: 22px 18px 18px;
   background:
     radial-gradient(circle at top, rgba(231, 111, 81, 0.12), transparent 40%),
     linear-gradient(180deg, #fffaf6 0%, #fff 100%);
 }
 
-.submit-sheet-head {
+.submit-dialog-head {
   display: flex;
   align-items: start;
   justify-content: space-between;
   gap: 12px;
 }
 
-.submit-sheet-head strong {
+.submit-dialog-head strong {
   color: #1f1d1a;
   font-size: 18px;
+}
+
+.submit-amount-block {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 8px 0 4px;
+  text-align: center;
+}
+
+.submit-amount-block strong {
+  color: #1f1d1a;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.submit-summary {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #fff7f1;
+}
+
+.submit-summary strong {
+  color: #1f1d1a;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-all;
 }
 
 .submit-button {
@@ -845,8 +885,7 @@ async function handleSubmitDeduction() {
 @media (max-width: 520px) {
   .identity-card,
   .hero-meta-grid,
-  .scan-result-grid div,
-  .submit-summary {
+  .scan-result-grid div {
     grid-template-columns: 1fr;
   }
 }
