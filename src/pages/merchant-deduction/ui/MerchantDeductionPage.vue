@@ -35,6 +35,7 @@ const scanResult = ref<MerchantDeductionScanResult | null>(null)
 const submitPopupVisible = ref(false)
 const lastSuccessMessage = ref('')
 const lastResolvedDisplayName = ref('')
+const selectedBalanceTypeId = ref('')
 const isUploading = ref(false)
 const isScanning = ref(false)
 const isSubmitting = ref(false)
@@ -50,6 +51,12 @@ onUnmounted(() => {
 })
 
 const normalizedMerchantId = computed(() => authSnapshot.value.authResult?.userInfo.merchantId?.trim() ?? '')
+const supportedBalanceTypes = computed(() =>
+  authSnapshot.value.authResult?.userInfo.merchantSupportedBalanceTypes ?? [],
+)
+const selectedBalanceType = computed(() =>
+  supportedBalanceTypes.value.find((item) => item.id === selectedBalanceTypeId.value) ?? null,
+)
 const currentDisplayName = computed(() => {
   const userInfo = authSnapshot.value.authResult?.userInfo
   const nextDisplayName = userInfo?.nickname?.trim() || userInfo?.username?.trim() || ''
@@ -87,11 +94,29 @@ const amountErrorMessage = computed(() => {
 
   return ''
 })
+const balanceTypeErrorMessage = computed(() => {
+  if (!normalizedMerchantId.value) {
+    return ''
+  }
+
+  if (supportedBalanceTypes.value.length === 0) {
+    return '当前商户未返回可用的余额类型'
+  }
+
+  if (!selectedBalanceTypeId.value) {
+    return '请选择扣款余额类型'
+  }
+
+  return ''
+})
 const canUploadImage = computed(() =>
   !isUploading.value && uploadedImages.value.length < 3,
 )
 const canScan = computed(() =>
-  !amountErrorMessage.value && Boolean(normalizedMerchantId.value) && !isScanning.value,
+  !amountErrorMessage.value
+  && !balanceTypeErrorMessage.value
+  && Boolean(normalizedMerchantId.value)
+  && !isScanning.value,
 )
 const canSubmit = computed(() =>
   canScan.value && Boolean(scanResult.value) && !isUploading.value && !isSubmitting.value,
@@ -134,6 +159,18 @@ watch(
   { immediate: true },
 )
 
+watch(
+  supportedBalanceTypes,
+  (balanceTypes) => {
+    if (balanceTypes.some((item) => item.id === selectedBalanceTypeId.value)) {
+      return
+    }
+
+    selectedBalanceTypeId.value = balanceTypes[0]?.id ?? ''
+  },
+  { immediate: true },
+)
+
 function goBack() {
   closeActiveLoadingToast()
 
@@ -159,6 +196,11 @@ function normalizeAmountInput(rawValue: string) {
 
 function handleAmountInput(value: string) {
   amountInput.value = normalizeAmountInput(value)
+  lastSuccessMessage.value = ''
+}
+
+function selectBalanceType(balanceTypeId: string) {
+  selectedBalanceTypeId.value = balanceTypeId
   lastSuccessMessage.value = ''
 }
 
@@ -259,6 +301,11 @@ async function handleScanCode() {
     return
   }
 
+  if (balanceTypeErrorMessage.value) {
+    showFailToast(balanceTypeErrorMessage.value)
+    return
+  }
+
   if (!isWechatBrowser()) {
     showFailToast('请在微信内打开当前页面后扫码')
     return
@@ -308,6 +355,11 @@ async function handleSubmitDeduction() {
     return
   }
 
+  if (balanceTypeErrorMessage.value) {
+    showFailToast(balanceTypeErrorMessage.value)
+    return
+  }
+
   if (!scanResult.value || !parsedAmount.value) {
     showFailToast('请先完成扫码识别')
     return
@@ -320,7 +372,7 @@ async function handleSubmitDeduction() {
     const result = await merchantDeductionService.submitDeduction({
       amount: parsedAmount.value,
       attachments: uploadedImages.value,
-      balanceTypeId: scanResult.value.balanceTypeId,
+      balanceTypeId: selectedBalanceTypeId.value,
       cardQrContent: scanResult.value.cardQrContent,
       merchantId: normalizedMerchantId.value,
       paymentToken: scanResult.value.paymentToken,
@@ -370,6 +422,16 @@ async function handleSubmitDeduction() {
         title="缺少商户信息"
       />
 
+      <EmptyState
+        v-else-if="supportedBalanceTypes.length === 0"
+        boxed
+        class="empty-state"
+        description="当前登录资料里没有返回 merchant.supported_balance_types，暂时无法发起商户扣款。"
+        description-width="280px"
+        icon="warning-o"
+        title="缺少扣款余额类型"
+      />
+
       <template v-else>
         <section class="section-card">
           <header class="section-head">
@@ -393,6 +455,23 @@ async function handleSubmitDeduction() {
             </div>
           </label>
           <p v-if="amountErrorMessage" class="field-hint field-hint-error">{{ amountErrorMessage }}</p>
+
+          <div class="field-block">
+            <span>扣款余额</span>
+            <div class="balance-type-grid">
+              <button
+                v-for="balanceType in supportedBalanceTypes"
+                :key="balanceType.id"
+                :class="['balance-type-chip', { 'balance-type-chip-active': balanceType.id === selectedBalanceTypeId }]"
+                type="button"
+                @click="selectBalanceType(balanceType.id)"
+              >
+                <strong>{{ balanceType.name }}</strong>
+                <span v-if="balanceType.code">{{ balanceType.code }}</span>
+              </button>
+            </div>
+          </div>
+          <p v-if="balanceTypeErrorMessage" class="field-hint field-hint-error">{{ balanceTypeErrorMessage }}</p>
 
           <label class="field-block">
             <span>备注</span>
@@ -448,7 +527,7 @@ async function handleSubmitDeduction() {
           <section v-if="scanResult" class="scan-result-card">
             <div class="scan-result-head">
               <strong>已识别付款信息</strong>
-              <span>{{ scanResult.balanceTypeName || '待后端返回余额类型' }}</span>
+              <span>{{ selectedBalanceType?.name || scanResult.balanceTypeName || '待确认扣款余额' }}</span>
             </div>
 
             <dl class="scan-result-grid">
@@ -489,6 +568,10 @@ async function handleSubmitDeduction() {
           <div>
             <span>本次金额</span>
             <strong>{{ parsedAmount === null ? '¥0.00' : `¥${parsedAmount.toFixed(2)}` }}</strong>
+          </div>
+          <div>
+            <span>扣款余额</span>
+            <strong>{{ selectedBalanceType?.name || '未选择' }}</strong>
           </div>
           <div>
             <span>图片数量</span>
@@ -624,6 +707,40 @@ async function handleSubmitDeduction() {
 .field-block {
   display: grid;
   gap: 10px;
+}
+
+.balance-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.balance-type-chip {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid #efe7de;
+  border-radius: 18px;
+  background: #fffaf5;
+  color: #7c6759;
+  text-align: left;
+}
+
+.balance-type-chip strong {
+  color: #1f1d1a;
+  font-size: 14px;
+}
+
+.balance-type-chip span {
+  color: #9c8f84;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.balance-type-chip-active {
+  border-color: #de7a46;
+  background: linear-gradient(180deg, #fff2e8 0%, #ffe5d5 100%);
+  box-shadow: inset 0 0 0 1px rgba(212, 94, 36, 0.08);
 }
 
 .amount-input-shell,
@@ -867,6 +984,7 @@ async function handleSubmitDeduction() {
 @media (max-width: 520px) {
   .identity-card,
   .hero-meta-grid,
+  .balance-type-grid,
   .scan-result-grid div,
   .submit-scan-grid div,
   .submit-summary {

@@ -1,6 +1,7 @@
 export type {
   AccountCapability,
   AccountSecurityState,
+  AuthMerchantSupportedBalanceType,
   AuthResult,
   AuthSession,
   AuthUserInfo,

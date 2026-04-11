@@ -2839,6 +2839,13 @@
                         "type": "string",
                         "example": "uploads/merchants/logo.png",
                         "nullable": true
+                    },
+                    "supported_balance_types": {
+                        "description": "商家支持的余额类型，仅当前用户资料等需要展示商户收款能力的接口返回",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BalanceTypeSimple"
+                        }
                     }
                 },
                 "type": "object"

@@ -100,14 +100,14 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | GET | /api/v1/offline-payments/payment-code | Bearer | - | - | ApiResponse | 获取用户付款码 |
 | POST | /api/v1/merchant/offline-payments/scan | Bearer | - | object | ApiResponse | 商户核销员扫码识别用户付款码或储值卡二维码 |
-| POST | /api/v1/merchant/offline-payments/pay | Bearer | - | object | ApiResponse | 商户核销员提交线下支付 |
+| POST | /api/v1/merchant/offline-payments/pay | Bearer | - | object | ApiResponse | 商户核销员提交线下支付；前端应带 `balance_type_id`，来源为 `GET /api/v1/auth/profile -> data.merchant.supported_balance_types` |
 
 ## 用户认证
 
 | 方法 | 路径 | 鉴权 | 参数 | 请求体 | 成功响应 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | POST | /api/v1/auth/wechat | 公开 | - | WechatLoginRequest | WechatLoginResponse | 微信公众号静默授权登录 |
-| GET | /api/v1/auth/profile | Bearer | - | - | object | 获取当前用户资料（已绑定商户员工时返回 `merchant` 对象） |
+| GET | /api/v1/auth/profile | Bearer | - | - | object | 获取当前用户资料（已绑定商户员工时返回 `merchant` 对象，包含 `id` 与 `supported_balance_types`） |
 | PATCH | /api/v1/auth/profile | Bearer | - | object | object | 更新当前用户资料 |
 | GET | /api/v1/user-addresses | Bearer | - | - | ApiResponse | 地址列表 |
 | POST | /api/v1/user-addresses | Bearer | - | object | object | 新增地址 |

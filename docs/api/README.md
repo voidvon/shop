@@ -49,7 +49,7 @@
 ### 用户认证
 
 - `POST /api/v1/auth/wechat` 微信公众号静默授权登录（后端按 `code -> openid` 自动登录或注册）
-- `GET /api/v1/auth/profile` 获取当前用户资料；已绑定商户员工时，响应 `data` 中会额外返回 `merchant` 对象，前端读取其中的 `merchant.id`
+- `GET /api/v1/auth/profile` 获取当前用户资料；已绑定商户员工时，响应 `data` 中会额外返回 `merchant` 对象，前端读取其中的 `merchant.id` 与 `merchant.supported_balance_types`
 - `PATCH /api/v1/auth/profile` 更新当前用户资料
 - `GET /api/v1/user-addresses` 地址列表
 - `POST /api/v1/user-addresses` 新增地址
@@ -138,7 +138,7 @@
 
 - `GET /api/v1/offline-payments/payment-code` 获取用户付款码
 - `POST /api/v1/merchant/offline-payments/scan` 商户核销员扫码识别用户付款码或储值卡二维码
-- `POST /api/v1/merchant/offline-payments/pay` 商户核销员提交线下支付
+- `POST /api/v1/merchant/offline-payments/pay` 商户核销员提交线下支付；前端需附带 `balance_type_id`，其来源为 `GET /api/v1/auth/profile -> data.merchant.supported_balance_types`
 
 ### 上传
 
@@ -156,6 +156,7 @@
 - `2026-04-10` 已补充 `POST /api/v1/stored-value-cards/recharge` 请求体中的 `mobile` 字段说明
 - `2026-04-10` 已补入 `GET /api/v1/wechat/jssdk-signature`，前端传 `url` 查询参数即可获取 `wx.config` 所需签名参数；后端会自动去掉 hash，响应还包含 `url` 与 `rawString` 便于调试
 - `2026-04-11` 已补充 `GET /api/v1/auth/profile` 的 `merchant` 字段说明，用于前端识别当前登录用户所属商户
+- `2026-04-11` 已同步 `merchant.supported_balance_types`，商户扣款提交时应从这里选择并传递 `balance_type_id`
 
 ## 5.1 当前项目范围内不接入的接口
 

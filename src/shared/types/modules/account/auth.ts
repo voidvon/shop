@@ -1,5 +1,11 @@
 import type { OperationState } from '../base'
 
+export interface AuthMerchantSupportedBalanceType {
+  id: string
+  name: string
+  code: string | null
+}
+
 export interface AuthUserInfo {
   userId: string
   username: string
@@ -8,6 +14,7 @@ export interface AuthUserInfo {
   mobile: string | null
   avatarUrl: string | null
   merchantId: string | null
+  merchantSupportedBalanceTypes?: AuthMerchantSupportedBalanceType[]
 }
 
 export type AccountCapability =

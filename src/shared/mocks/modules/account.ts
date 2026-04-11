@@ -45,6 +45,13 @@ export const mockAuthResult: AuthResult = {
     avatarUrl: mockUser.avatarUrl,
     email: mockUser.email,
     merchantId: '10001',
+    merchantSupportedBalanceTypes: [
+      {
+        code: 'general',
+        id: '1',
+        name: '通用余额',
+      },
+    ],
     mobile: mockUser.mobile,
     nickname: mockUser.nickname,
     userId: mockUser.userId,

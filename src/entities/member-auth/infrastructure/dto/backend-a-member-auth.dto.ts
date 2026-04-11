@@ -1,8 +1,15 @@
+export interface BackendABalanceTypeSimpleDto {
+  code?: string | null
+  id?: number | string | null
+  name?: string | null
+}
+
 export interface BackendAMerchantSimpleDto {
   id?: number | string | null
   logo?: string | null
   name?: string | null
   short_name?: string | null
+  supported_balance_types?: BackendABalanceTypeSimpleDto[] | null
 }
 
 export interface BackendAUserProfileDto {

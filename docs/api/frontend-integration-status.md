@@ -102,7 +102,7 @@
 | 优惠券 | 是 | 页面能力弱 | 部分直连 | 商家页已接 `/api/v1/merchant-coupons` 与 `/api/v1/coupons/{couponTemplate}/claim`；“我的优惠券”仍未直连 |
 | 合作商家 | 是 | 否 | 未接入 | 当前没有对应页面或 query |
 | 客服 | 是 | 否 | 未接入 | 当前没有客服会话页面和消息数据层 |
-| 线下付款 | 是 | 部分有 | 部分直连 | 用户付款码页已接 `/api/v1/offline-payments/payment-code`，商户扫码/核销仍未接入 |
+| 线下付款 | 是 | 是 | 已直连 | 用户付款码页已接 `/api/v1/offline-payments/payment-code`；商户扣款页已接 `/api/v1/merchant/offline-payments/scan`、`/api/v1/merchant/offline-payments/pay`，并依赖 `/api/v1/auth/profile` 返回 `merchant.supported_balance_types` |
 | 上传 | 是 | 间接可能需要 | 未接入 | 当前没有统一上传 gateway |
 | 员工邀请 | 是 | 否 | 未接入 | 当前没有邀请查看/绑定页面流程 |
 | 平台配置 | 是 | 弱依赖 | 部分直连 | 会员中心客服热线与关于我们文案已接 `/api/v1/platform/settings` |
@@ -157,7 +157,7 @@
 - 登录页支持在 URL 携带 `code` 时自动完成微信登录；后端会用该 `code` 换取 `openid` 并自动注册或登录用户，也可通过 `VITE_BACKEND_A_WECHAT_OAUTH_URL` 跳到静默授权入口
 - 绑定卡券扫码流程已接入微信 JS-SDK；前端会直接请求 `backend-a` 的 `GET /api/v1/wechat/jssdk-signature`，并携带 `url` 查询参数，后端会自动去掉 hash 后参与签名
 - runtime 启动后如果本地已有 token，会后台调用 `GET /api/v1/auth/profile` 刷新资料；如果返回 `401`，则自动清空 session
-- `auth/profile` 已新增 `merchant` 对象，前端登录态会优先读取 `merchant.id` 并映射为 `userInfo.merchantId`，供商户扣款页等员工能力读取
+- `auth/profile` 已新增 `merchant` 对象，前端登录态会优先读取 `merchant.id` 并映射为 `userInfo.merchantId`；同时读取 `merchant.supported_balance_types`，供商户扣款页提交 `balance_type_id`
 - `updateNickname` 已调用 `PATCH /api/v1/auth/profile`，并把资料同步回本地 session
 - 地址管理 runtime 已装配真实 `createBackendAMemberAddressRepository(...)`
 - 登录密码、支付密码、微信绑定手机号由于 Swagger 中没有对应接口，当前改为显式提示不支持

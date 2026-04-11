@@ -470,19 +470,23 @@ function createSubmitRequestPayload(command: MerchantDeductionSubmitCommand) {
   const amount = normalizeSubmitAmount(command.amount)
   const paymentToken = normalizeString(command.paymentToken)
   const cardQrContent = normalizeString(command.cardQrContent)
+  const balanceTypeId = normalizeOptionalInteger(command.balanceTypeId)
 
   if (!paymentToken && !cardQrContent) {
     throw new Error('请先扫描付款码')
   }
 
+  if (!balanceTypeId) {
+    throw new Error('当前账号未返回可用的扣款余额类型')
+  }
+
   const primaryCodePayload = paymentToken
     ? { payment_token: paymentToken }
     : { card_qr_content: cardQrContent! }
-  const balanceTypeId = normalizeOptionalInteger(command.balanceTypeId)
 
   return {
     ...primaryCodePayload,
-    ...(balanceTypeId && !paymentToken ? { balance_type_id: balanceTypeId } : {}),
+    balance_type_id: balanceTypeId,
     ...(normalizeString(command.remark) ? { remark: normalizeString(command.remark) } : {}),
     ...(command.attachments.length > 0
       ? {
