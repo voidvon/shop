@@ -20,7 +20,7 @@ import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
-const PAGE_SIZE = 3
+const PAGE_SIZE = 20
 
 const router = useRouter()
 const memberAuthSession = useMemberAuthSession()
@@ -294,19 +294,21 @@ onMounted(() => {
                 </header>
 
                 <dl class="log-detail-grid">
-                  <div>
-                    <dt>付款单号</dt>
-                    <dd>{{ log.paymentNo }}</dd>
-                  </div>
+                  <div class="log-detail-meta">
+                    <div class="log-detail-row">
+                      <dt>付款单号</dt>
+                      <dd>{{ log.paymentNo }}</dd>
+                    </div>
 
-                  <div>
-                    <dt>支付用户</dt>
-                    <dd>{{ getUserSummary(log) }}</dd>
-                  </div>
+                    <div class="log-detail-row">
+                      <dt>支付用户</dt>
+                      <dd>{{ getUserSummary(log) }}</dd>
+                    </div>
 
-                  <div>
-                    <dt>成功时间</dt>
-                    <dd>{{ formatDateTime(log.paidAt) }}</dd>
+                    <div class="log-detail-row">
+                      <dt>成功时间</dt>
+                      <dd>{{ formatDateTime(log.paidAt) }}</dd>
+                    </div>
                   </div>
 
                   <div v-if="log.cardNumber">
@@ -393,7 +395,6 @@ onMounted(() => {
   display: grid;
 }
 
-.log-card-title p,
 .log-detail-grid dt {
   color: #8b7768;
 }
@@ -455,7 +456,7 @@ onMounted(() => {
 
 .log-card {
   gap: 14px;
-  padding: 18px;
+  padding: 16px;
   border-radius: 22px;
   background: #fff;
   box-shadow: 0 14px 32px rgba(27, 25, 22, 0.08);
@@ -478,26 +479,29 @@ onMounted(() => {
   line-height: 1;
 }
 
-.log-card-title p {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
 .log-detail-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-.log-detail-grid div {
+.log-detail-grid > div {
   min-width: 0;
   padding: 12px 14px;
   border-radius: 16px;
   background: #f7f7f7;
 }
 
+.log-detail-meta {
+  grid-column: 1 / -1;
+  gap: 10px;
+}
+
+.log-detail-row {
+  display: grid;
+  gap: 4px;
+}
+
 .log-detail-grid dt {
-  margin-bottom: 6px;
   font-size: 12px;
 }
 
