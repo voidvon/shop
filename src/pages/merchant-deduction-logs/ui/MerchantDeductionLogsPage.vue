@@ -45,6 +45,8 @@ onUnmounted(() => {
   stopAuthSubscription()
 })
 
+const normalizedMerchantId = computed(() => authSnapshot.value.authResult?.userInfo.merchantId?.trim() ?? '')
+const isMerchantStaff = computed(() => Boolean(normalizedMerchantId.value))
 const merchantDisplayName = computed(() =>
   authSnapshot.value.authResult?.userInfo.merchantName?.trim()
   || logs.value[0]?.merchantName
@@ -194,14 +196,29 @@ async function initializePage() {
     // Ignore refresh failures here and let the list request surface the error.
   }
 
+  if (!isMerchantStaff.value) {
+    hasLoadedOnce.value = false
+    return
+  }
+
   await loadLogs('initial')
 }
 
 async function handleRefresh() {
+  if (!isMerchantStaff.value) {
+    isRefreshing.value = false
+    return
+  }
+
   await loadLogs('refresh')
 }
 
 async function handleLoadMore() {
+  if (!isMerchantStaff.value) {
+    isLoadingMore.value = false
+    return
+  }
+
   await loadLogs('append')
 }
 
@@ -214,7 +231,12 @@ onMounted(() => {
   <section class="merchant-deduction-logs-page">
     <PageTopBar title="店铺流水查询" @back="goBack" />
 
+    <div v-if="!isMerchantStaff" class="merchant-staff-empty-state">
+      <strong>您还不是商户员工</strong>
+    </div>
+
     <VanPullRefresh
+      v-else
       v-model="isRefreshing"
       class="merchant-deduction-logs-refresh"
       success-text="刷新成功"
@@ -347,6 +369,22 @@ onMounted(() => {
 .merchant-deduction-logs-refresh,
 .content-scroll {
   min-height: 100%;
+}
+
+.merchant-staff-empty-state {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 140px);
+  min-height: calc(100dvh - 140px);
+  padding: 24px;
+  text-align: center;
+}
+
+.merchant-staff-empty-state strong {
+  color: #1f1d1a;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .content-scroll {

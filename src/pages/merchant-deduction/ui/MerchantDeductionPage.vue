@@ -50,6 +50,7 @@ onUnmounted(() => {
 })
 
 const normalizedMerchantId = computed(() => authSnapshot.value.authResult?.userInfo.merchantId?.trim() ?? '')
+const isMerchantStaff = computed(() => Boolean(normalizedMerchantId.value))
 const merchantDisplayName = computed(() =>
   authSnapshot.value.authResult?.userInfo.merchantName?.trim() || '未返回商户名称',
 )
@@ -394,42 +395,36 @@ async function handleSubmitDeduction() {
     <PageTopBar title="商户员工扣款" @back="goBack" />
 
     <div class="content-scroll">
-      <section class="hero-card">
-        <div class="hero-meta-grid">
-          <div class="identity-item">
-            <span>商户名称</span>
-            <strong>{{ merchantDisplayName }}</strong>
-          </div>
-
-          <div class="identity-item">
-            <span>用户名称</span>
-            <strong>{{ currentDisplayName }}</strong>
-          </div>
-        </div>
+      <section v-if="!isMerchantStaff" class="merchant-staff-empty-state">
+        <strong>您还不是商户员工</strong>
       </section>
 
-      <EmptyState
-        v-if="!normalizedMerchantId"
-        boxed
-        class="empty-state"
-        description="当前登录资料里没有返回 merchantId，暂时无法发起商户扣款。"
-        description-width="260px"
-        icon="warning-o"
-        title="缺少商户信息"
-      />
-
-      <EmptyState
-        v-else-if="supportedBalanceTypes.length === 0"
-        boxed
-        class="empty-state"
-        description="当前登录资料里没有返回 merchant.supported_balance_types，暂时无法发起商户扣款。"
-        description-width="280px"
-        icon="warning-o"
-        title="缺少扣款余额类型"
-      />
-
       <template v-else>
-        <section class="section-card">
+        <section class="hero-card">
+          <div class="hero-meta-grid">
+            <div class="identity-item">
+              <span>商户名称</span>
+              <strong>{{ merchantDisplayName }}</strong>
+            </div>
+
+            <div class="identity-item">
+              <span>用户名称</span>
+              <strong>{{ currentDisplayName }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <EmptyState
+          v-if="supportedBalanceTypes.length === 0"
+          boxed
+          class="empty-state"
+          description="当前登录资料里没有返回 merchant.supported_balance_types，暂时无法发起商户扣款。"
+          description-width="280px"
+          icon="warning-o"
+          title="缺少扣款余额类型"
+        />
+
+        <section v-else class="section-card">
           <header class="section-head">
             <strong>扣款信息</strong>
           </header>
@@ -511,23 +506,10 @@ async function handleSubmitDeduction() {
             </button>
           </section>
         </section>
+        <button class="flow-entry-button" type="button" @click="goToDeductionLogs">
+          店铺流水查询
+        </button>
       </template>
-
-      <section class="section-card flow-entry-card">
-        <header class="section-head">
-          <strong>店铺流水</strong>
-        </header>
-
-        <van-cell-group inset class="flow-entry-group">
-          <van-cell
-            center
-            is-link
-            label="查看当前店铺的线下支付流水，支持下拉刷新和分页加载。"
-            title="店铺流水查询"
-            @click="goToDeductionLogs"
-          />
-        </van-cell-group>
-      </section>
     </div>
 
     <van-dialog
@@ -608,18 +590,26 @@ async function handleSubmitDeduction() {
   margin-bottom: 12px;
 }
 
-.flow-entry-card {
-  gap: 0;
-}
-
-.flow-entry-group {
-  margin: 0;
-}
-
 .hero-card strong,
 .identity-item strong,
 .section-head strong {
   color: #1f1d1a;
+}
+
+.merchant-staff-empty-state {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 140px);
+  min-height: calc(100dvh - 140px);
+  padding: 24px;
+  text-align: center;
+}
+
+.merchant-staff-empty-state strong {
+  color: #1f1d1a;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .section-head p {
@@ -661,6 +651,19 @@ async function handleSubmitDeduction() {
 
 .section-head {
   display: block;
+}
+
+.flow-entry-button {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 14px 30px rgba(234, 88, 12, 0.22);
 }
 
 .field-block {
