@@ -19,7 +19,6 @@ import {
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
-import SectionCard from '@/shared/ui/SectionCard.vue'
 
 const PAGE_SIZE = 20
 
@@ -28,7 +27,6 @@ const memberAuthSession = useMemberAuthSession()
 const merchantDeductionService = useMerchantDeductionService()
 const authSnapshot = ref(memberAuthSession.getSnapshot())
 const logs = ref<MerchantDeductionLogItem[]>([])
-const total = ref(0)
 const currentPage = ref(1)
 const isPageInitializing = ref(true)
 const isRefreshing = ref(false)
@@ -48,12 +46,6 @@ onUnmounted(() => {
 
 const normalizedMerchantId = computed(() => authSnapshot.value.authResult?.userInfo.merchantId?.trim() ?? '')
 const isMerchantStaff = computed(() => Boolean(normalizedMerchantId.value))
-const merchantDisplayName = computed(() =>
-  authSnapshot.value.authResult?.userInfo.merchantName?.trim()
-  || logs.value[0]?.merchantName
-  || '当前店铺',
-)
-const totalLabel = computed(() => `${total.value} 笔`)
 const hasLogs = computed(() => logs.value.length > 0)
 
 function goBack() {
@@ -162,7 +154,6 @@ async function loadLogs(mode: 'append' | 'initial' | 'refresh') {
     logs.value = mode === 'append'
       ? [...logs.value, ...pageData.list]
       : pageData.list
-    total.value = pageData.total
     currentPage.value = pageData.page
     hasMore.value = pageData.hasMore
     errorMessage.value = ''
@@ -258,20 +249,6 @@ onMounted(() => {
       @refresh="handleRefresh"
     >
       <div class="content-scroll">
-        <SectionCard title="当前店铺" description="下拉刷新最新流水，上拉继续加载下一页。">
-          <div class="summary-grid">
-            <div class="summary-item">
-              <span>店铺名称</span>
-              <strong>{{ merchantDisplayName }}</strong>
-            </div>
-
-            <div class="summary-item">
-              <span>流水总数</span>
-              <strong>{{ totalLabel }}</strong>
-            </div>
-          </div>
-        </SectionCard>
-
         <section class="list-section">
           <header class="list-head">
             <strong>流水明细</strong>
@@ -381,9 +358,14 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.merchant-deduction-logs-refresh,
-.content-scroll {
-  min-height: 100%;
+.merchant-deduction-logs-refresh {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.merchant-deduction-logs-refresh::-webkit-scrollbar {
+  display: none;
 }
 
 .page-loading-state {
@@ -408,11 +390,10 @@ onMounted(() => {
 }
 
 .content-scroll {
+  min-height: 100%;
   padding: 12px 16px 24px;
 }
 
-.summary-grid,
-.summary-item,
 .list-section,
 .list-state,
 .log-list,
@@ -422,46 +403,20 @@ onMounted(() => {
   display: grid;
 }
 
-.summary-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.summary-item {
-  gap: 8px;
-  min-width: 0;
-  padding: 16px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255, 245, 238, 0.95) 0%, rgba(255, 237, 226, 0.92) 100%);
-}
-
-.summary-item span,
 .list-head span,
 .log-card-title p,
 .log-detail-grid dt {
   color: #8b7768;
 }
 
-.summary-item strong,
 .list-head strong,
 .log-card-title strong,
 .log-detail-grid dd {
   color: #1f1d1a;
 }
 
-.summary-item span {
-  font-size: 12px;
-}
-
-.summary-item strong {
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
 .list-section {
   gap: 12px;
-  margin-top: 12px;
 }
 
 .list-head {
@@ -569,7 +524,6 @@ onMounted(() => {
 }
 
 @media (max-width: 420px) {
-  .summary-grid,
   .log-detail-grid {
     grid-template-columns: minmax(0, 1fr);
   }
