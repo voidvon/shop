@@ -39,7 +39,9 @@ const selectedBalanceTypeId = ref('')
 const isUploading = ref(false)
 const isScanning = ref(false)
 const isSubmitting = ref(false)
+const deductionSuccessVisibleMs = 3000
 let activeLoadingToast: ToastWrapperInstance | null = null
+let successResetTimer: ReturnType<typeof globalThis.setTimeout> | null = null
 
 const stopAuthSubscription = memberAuthSession.subscribe((snapshot) => {
   authSnapshot.value = snapshot
@@ -47,6 +49,7 @@ const stopAuthSubscription = memberAuthSession.subscribe((snapshot) => {
 
 onUnmounted(() => {
   closeActiveLoadingToast()
+  clearSuccessResetTimer()
   stopAuthSubscription()
 })
 
@@ -220,6 +223,20 @@ function closeActiveLoadingToast() {
   activeLoadingToast = null
 }
 
+function clearSuccessResetTimer() {
+  if (successResetTimer !== null) {
+    globalThis.clearTimeout(successResetTimer)
+    successResetTimer = null
+  }
+}
+
+function scheduleResetDraft() {
+  clearSuccessResetTimer()
+  successResetTimer = globalThis.setTimeout(() => {
+    resetDraft()
+  }, deductionSuccessVisibleMs)
+}
+
 function openImagePicker() {
   if (!canUploadImage.value) {
     return
@@ -336,11 +353,13 @@ async function handleScanCode() {
 }
 
 function resetDraft() {
+  clearSuccessResetTimer()
   amountInput.value = ''
   remarkInput.value = ''
   uploadedImages.value = []
   scanResult.value = null
   submitPopupVisible.value = false
+  lastSuccessMessage.value = ''
   clearFileInput()
 }
 
@@ -380,8 +399,11 @@ async function handleSubmitDeduction() {
     })
 
     lastSuccessMessage.value = result.successMessage
-    showSuccessToast(result.successMessage)
-    resetDraft()
+    showSuccessToast({
+      duration: deductionSuccessVisibleMs,
+      message: result.successMessage,
+    })
+    scheduleResetDraft()
   } catch (error) {
     showFailToast(error instanceof Error ? error.message : '扣款失败')
   } finally {
