@@ -6,11 +6,21 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { VantResolver } from '@vant/auto-import-resolver'
 
+const buildVersionTimeZone = 'Asia/Shanghai'
+
 function createBuildVersion() {
-  const now = new Date()
-  const day = String(now.getDate()).padStart(2, '0')
-  const hour = String(now.getHours()).padStart(2, '0')
-  const minute = String(now.getMinutes()).padStart(2, '0')
+  const parts = new Intl.DateTimeFormat('zh-CN', {
+    day: '2-digit',
+    hour: '2-digit',
+    hour12: false,
+    minute: '2-digit',
+    timeZone: buildVersionTimeZone,
+  }).formatToParts(new Date())
+
+  const partMap = Object.fromEntries(parts.map((part) => [part.type, part.value]))
+  const day = partMap.day ?? '00'
+  const hour = partMap.hour ?? '00'
+  const minute = partMap.minute ?? '00'
   const random = Math.floor(Math.random() * 9000) + 1000
 
   return `${day}${hour}${minute}.${random}`
