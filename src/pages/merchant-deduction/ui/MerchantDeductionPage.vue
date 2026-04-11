@@ -168,6 +168,10 @@ function goBack() {
   void router.push('/member')
 }
 
+function goToDeductionLogs() {
+  void router.push({ name: 'merchant-deduction-logs' })
+}
+
 function normalizeAmountInput(rawValue: string) {
   const withoutInvalidCharacters = rawValue.replace(/[^\d.]/g, '')
   const [integerPart = '', ...fractionParts] = withoutInvalidCharacters.split('.')
@@ -508,6 +512,22 @@ async function handleSubmitDeduction() {
           </section>
         </section>
       </template>
+
+      <section class="section-card flow-entry-card">
+        <header class="section-head">
+          <strong>店铺流水</strong>
+        </header>
+
+        <van-cell-group inset class="flow-entry-group">
+          <van-cell
+            center
+            is-link
+            label="查看当前店铺的线下支付流水，支持下拉刷新和分页加载。"
+            title="店铺流水查询"
+            @click="goToDeductionLogs"
+          />
+        </van-cell-group>
+      </section>
     </div>
 
     <van-dialog
@@ -586,6 +606,14 @@ async function handleSubmitDeduction() {
 .section-card,
 .empty-state {
   margin-bottom: 12px;
+}
+
+.flow-entry-card {
+  gap: 0;
+}
+
+.flow-entry-group {
+  margin: 0;
 }
 
 .hero-card strong,

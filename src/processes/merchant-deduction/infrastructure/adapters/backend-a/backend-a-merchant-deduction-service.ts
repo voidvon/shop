@@ -3,8 +3,11 @@ import {
   createBackendAHttpClient,
 } from '@/shared/api/backend-a/backend-a-http-client'
 import { resolveBackendAMediaUrl } from '@/shared/api/backend-a/backend-a-config'
+import type { PageResult } from '@/shared/types/modules'
 
 import type {
+  MerchantDeductionLogItem,
+  MerchantDeductionLogQuery,
   MerchantDeductionScanResult,
   MerchantDeductionService,
   MerchantDeductionSubmitCommand,
@@ -49,6 +52,16 @@ function normalizeNumber(value: unknown) {
   }
 
   return null
+}
+
+function normalizeInteger(value: unknown) {
+  const normalizedValue = normalizeNumber(value)
+
+  if (normalizedValue === null) {
+    return null
+  }
+
+  return Math.trunc(normalizedValue)
 }
 
 function findNestedStringByPredicate(
@@ -427,6 +440,126 @@ function mapUploadedImage(file: File, response: unknown): MerchantDeductionUploa
   }
 }
 
+function normalizePaginationNumber(value: unknown, fallback: number, { allowZero = false } = {}) {
+  const normalizedValue = normalizeInteger(value)
+
+  if (normalizedValue === null) {
+    return fallback
+  }
+
+  if (allowZero) {
+    return normalizedValue >= 0 ? normalizedValue : fallback
+  }
+
+  return normalizedValue > 0 ? normalizedValue : fallback
+}
+
+function mapDeductionPaySource(value: unknown): MerchantDeductionLogItem['paySource'] {
+  const normalizedValue = normalizeString(value)
+
+  switch (normalizedValue) {
+    case 'user_balance':
+      return 'user-balance'
+    case 'stored_value_card':
+      return 'stored-value-card'
+    default:
+      return 'unknown'
+  }
+}
+
+function getDeductionPaySourceLabel(paySource: MerchantDeductionLogItem['paySource']) {
+  switch (paySource) {
+    case 'user-balance':
+      return '用户余额'
+    case 'stored-value-card':
+      return '储值卡'
+    default:
+      return '未知来源'
+  }
+}
+
+function mapDeductionStatus(value: unknown): MerchantDeductionLogItem['status'] {
+  const normalizedValue = normalizeInteger(value)
+
+  switch (normalizedValue) {
+    case 0:
+      return 'processing'
+    case 1:
+      return 'success'
+    case 2:
+      return 'failed'
+    default:
+      return 'unknown'
+  }
+}
+
+function getDeductionStatusLabel(status: MerchantDeductionLogItem['status']) {
+  switch (status) {
+    case 'processing':
+      return '处理中'
+    case 'success':
+      return '支付成功'
+    case 'failed':
+      return '支付失败'
+    default:
+      return '状态未知'
+  }
+}
+
+function mapDeductionLogItem(source: unknown, index: number): MerchantDeductionLogItem {
+  const rawPayload = isRecord(source) ? source : {}
+  const balanceTypeRecord = isRecord(rawPayload.balance_type) ? rawPayload.balance_type : null
+  const merchantRecord = isRecord(rawPayload.merchant) ? rawPayload.merchant : null
+  const storedValueCardRecord = isRecord(rawPayload.stored_value_card) ? rawPayload.stored_value_card : null
+  const userRecord = isRecord(rawPayload.user) ? rawPayload.user : null
+  const paySource = mapDeductionPaySource(rawPayload.pay_source)
+  const status = mapDeductionStatus(rawPayload.status)
+  const id = normalizeString(rawPayload.id) ?? String(index + 1)
+  const paymentNo = normalizeString(rawPayload.payment_no) ?? `offline-payment-${id}`
+
+  return {
+    amount: normalizeNumber(rawPayload.amount) ?? 0,
+    balanceTypeName: balanceTypeRecord ? pickString([balanceTypeRecord], ['name', 'balance_type_name', 'balanceTypeName']) : null,
+    cardNumber: storedValueCardRecord ? pickString([storedValueCardRecord], ['card_no', 'card_number', 'cardNumber']) : null,
+    createdAt: normalizeString(rawPayload.created_at),
+    failureReason: normalizeString(rawPayload.failure_reason),
+    id,
+    merchantName: merchantRecord ? pickString([merchantRecord], ['short_name', 'merchant_name', 'merchantName', 'name']) : null,
+    paidAt: normalizeString(rawPayload.paid_at),
+    paySource,
+    paySourceLabel: getDeductionPaySourceLabel(paySource),
+    paymentNo,
+    remark: normalizeString(rawPayload.remark),
+    status,
+    statusLabel: getDeductionStatusLabel(status),
+    userMobile: userRecord ? pickString([userRecord], ['mobile', 'phone']) : null,
+    userName: userRecord ? pickString([userRecord], ['nickname', 'name', 'payer_name', 'user_name']) : null,
+  }
+}
+
+function mapDeductionLogsPage(
+  response: unknown,
+  query: MerchantDeductionLogQuery,
+): PageResult<MerchantDeductionLogItem> {
+  const rawPayload = isRecord(response) ? response : {}
+  const currentPage = normalizePaginationNumber(rawPayload.current_page, query.page)
+  const pageSize = normalizePaginationNumber(rawPayload.per_page, query.pageSize)
+  const listSource = Array.isArray(rawPayload.data) ? rawPayload.data : []
+  const list = listSource.map((item, index) => mapDeductionLogItem(item, index))
+  const total = normalizePaginationNumber(rawPayload.total, list.length, { allowZero: true })
+  const lastPage = normalizePaginationNumber(rawPayload.last_page, currentPage)
+  const hasMore = Boolean(normalizeString(rawPayload.next_page_url))
+    || (lastPage > currentPage && list.length > 0)
+
+  return {
+    hasMore,
+    list,
+    page: currentPage,
+    pageSize,
+    total,
+  }
+}
+
 function normalizeSubmitAmount(amount: number) {
   const normalizedAmount = Number(amount)
 
@@ -521,6 +654,20 @@ export function createBackendAMerchantDeductionService(
   })
 
   return {
+    async getDeductionLogs(query) {
+      const normalizedPage = normalizePaginationNumber(query.page, 1)
+      const normalizedPageSize = normalizePaginationNumber(query.pageSize, 20)
+      const response = await httpClient.get<unknown>('/api/v1/merchant/offline-payments', {
+        page: normalizedPage,
+        per_page: normalizedPageSize,
+      })
+
+      return mapDeductionLogsPage(response, {
+        page: normalizedPage,
+        pageSize: normalizedPageSize,
+      })
+    },
+
     async scanCode(rawCode: string) {
       const scanPayload = createScanRequestPayload(rawCode)
       const response = await httpClient.post<unknown>(

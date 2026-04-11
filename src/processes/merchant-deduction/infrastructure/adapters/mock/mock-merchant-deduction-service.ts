@@ -1,4 +1,5 @@
 import type {
+  MerchantDeductionLogItem,
   MerchantDeductionScanResult,
   MerchantDeductionService,
   MerchantDeductionSubmitCommand,
@@ -58,7 +59,53 @@ function createMockScanResult(rawCode: string): MerchantDeductionScanResult {
   }
 }
 
+const mockDeductionLogs: MerchantDeductionLogItem[] = Array.from({ length: 36 }, (_, index) => {
+  const sequence = index + 1
+  const status = sequence % 6 === 0
+    ? 'failed'
+    : sequence % 4 === 0
+      ? 'processing'
+      : 'success'
+  const paySource = sequence % 3 === 0 ? 'stored-value-card' : 'user-balance'
+
+  return {
+    amount: 28 + sequence * 3.6,
+    balanceTypeName: paySource === 'stored-value-card' ? '文旅储值卡' : '文旅储值余额',
+    cardNumber: paySource === 'stored-value-card' ? `DG2026${String(sequence).padStart(6, '0')}` : null,
+    createdAt: `2026-04-${String((sequence % 9) + 2).padStart(2, '0')} ${String((sequence % 10) + 9).padStart(2, '0')}:12:00`,
+    failureReason: status === 'failed' ? '账户余额不足' : null,
+    id: String(sequence),
+    merchantName: '御欣堂旗舰店',
+    paidAt: status === 'success'
+      ? `2026-04-${String((sequence % 9) + 2).padStart(2, '0')} ${String((sequence % 10) + 9).padStart(2, '0')}:15:00`
+      : null,
+    paySource,
+    paySourceLabel: paySource === 'stored-value-card' ? '储值卡' : '用户余额',
+    paymentNo: `OFF20260411${String(sequence).padStart(4, '0')}`,
+    remark: sequence % 5 === 0 ? '门店消费扣款' : null,
+    status,
+    statusLabel: status === 'failed' ? '支付失败' : status === 'processing' ? '处理中' : '支付成功',
+    userMobile: '138****0000',
+    userName: `示例顾客${sequence}`,
+  }
+})
+
 export const mockMerchantDeductionService: MerchantDeductionService = {
+  async getDeductionLogs(query) {
+    const page = Number.isFinite(query.page) && query.page > 0 ? Math.trunc(query.page) : 1
+    const pageSize = Number.isFinite(query.pageSize) && query.pageSize > 0 ? Math.trunc(query.pageSize) : 20
+    const start = (page - 1) * pageSize
+    const list = mockDeductionLogs.slice(start, start + pageSize)
+
+    return Promise.resolve({
+      hasMore: start + pageSize < mockDeductionLogs.length,
+      list,
+      page,
+      pageSize,
+      total: mockDeductionLogs.length,
+    })
+  },
+
   async scanCode(rawCode: string) {
     return Promise.resolve(createMockScanResult(rawCode))
   },

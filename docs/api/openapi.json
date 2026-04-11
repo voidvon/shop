@@ -201,7 +201,7 @@
                 "tags": [
                     "员工邀请"
                 ],
-                "summary": "查看商户员工邀请链接信息",
+                "summary": "查看合作商家员工邀请链接信息",
                 "operationId": "c59342fb8ae042549733f0a0fc5f213f",
                 "parameters": [
                     {
@@ -219,7 +219,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/MerchantStaffInviteResponse"
                                 }
                             }
                         }
@@ -242,7 +242,7 @@
                 "tags": [
                     "员工邀请"
                 ],
-                "summary": "当前微信用户通过邀请链接绑定为商户员工",
+                "summary": "当前微信用户通过邀请链接绑定为合作商家员工",
                 "operationId": "7a3e15e7622c6d77a3a50915dc97e561",
                 "parameters": [
                     {
@@ -260,7 +260,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/MerchantStaffInviteResponse"
                                 }
                             }
                         }
@@ -2301,7 +2301,7 @@
                 "tags": [
                     "线下付款"
                 ],
-                "summary": "商户核销员扫码识别用户公众号生成的付款码(payment_token)或纸质储值卡二维码(card_qr_content),只需要传一种即可",
+                "summary": "合作商家核销员扫码识别用户公众号生成的付款码(payment_token)或纸质储值卡二维码(card_qr_content),只需要传一种即可",
                 "operationId": "1e910c9f454354f9eb527ddea97b0a10",
                 "requestBody": {
                     "content": {
@@ -2341,12 +2341,100 @@
                 ]
             }
         },
+        "/api/v1/merchant/offline-payments": {
+            "get": {
+                "tags": [
+                    "线下付款"
+                ],
+                "summary": "合作商家员工查看当前所属商家的线下支付流水",
+                "description": "无需传合作商家ID，后端会从当前登录用户的员工关系中获取所属合作商家并过滤流水",
+                "operationId": "f59abf54b8d79a0629efc29d4cdee760",
+                "parameters": [
+                    {
+                        "name": "min_amount",
+                        "in": "query",
+                        "description": "最小金额",
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "max_amount",
+                        "in": "query",
+                        "description": "最大金额",
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 100
+                        }
+                    },
+                    {
+                        "name": "start_time",
+                        "in": "query",
+                        "description": "开始时间，按流水创建时间过滤",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2026-04-11 00:00:00"
+                        }
+                    },
+                    {
+                        "name": "end_time",
+                        "in": "query",
+                        "description": "结束时间，按流水创建时间过滤",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2026-04-11 23:59:59"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "分页大小",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MerchantOfflinePaymentLogResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "当前用户不是合作商家员工",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/v1/merchant/offline-payments/pay": {
             "post": {
                 "tags": [
                     "线下付款"
                 ],
-                "summary": "商户核销员提交线下支付",
+                "summary": "合作商家核销员提交线下支付",
                 "operationId": "da985892ef8470f40d7d7df01bcb2f79",
                 "requestBody": {
                     "required": true,
@@ -2368,6 +2456,7 @@
                                         "example": "card_no=DG2026000001&card_secret=ab12cd"
                                     },
                                     "merchant_id": {
+                                        "description": "合作商家ID",
                                         "type": "integer",
                                         "example": 1
                                     },
@@ -2420,7 +2509,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "支付结果",
+                        "description": "支付结果；业务失败时 HTTP 仍为 200，但 JSON code 为 403，并返回失败支付单信息",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2430,7 +2519,7 @@
                         }
                     },
                     "422": {
-                        "description": "支付失败",
+                        "description": "参数错误",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2583,7 +2672,7 @@
                             }
                         ],
                         "nullable": true,
-                        "description": "如果当前用户属于某个商户员工，则返回所属商户信息；否则为 null"
+                        "description": "如果当前用户属于某个合作商家员工，则返回所属合作商家信息；否则为 null"
                     },
                     "last_login_at": {
                         "description": "最后登录时间",
@@ -2708,6 +2797,87 @@
                     },
                     "data": {
                         "$ref": "#/components/schemas/WechatJssdkSignPackage"
+                    }
+                },
+                "type": "object"
+            },
+            "MerchantStaffInvitePayload": {
+                "properties": {
+                    "id": {
+                        "description": "邀请ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "invite_token": {
+                        "description": "邀请token",
+                        "type": "string",
+                        "example": "merchant_staff_invite_001"
+                    },
+                    "invite_url": {
+                        "description": "邀请链接",
+                        "type": "string",
+                        "example": "https://mall.example.com/staff-bind?invite_token=xxx"
+                    },
+                    "status": {
+                        "description": "邀请状态",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "available": {
+                        "description": "当前是否可绑定",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "expires_at": {
+                        "description": "过期时间",
+                        "type": "string",
+                        "example": "2026-04-12 12:00:00",
+                        "nullable": true
+                    },
+                    "used_at": {
+                        "description": "绑定时间",
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "merchant": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/MerchantSimple"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "兼容字段，实际为合作商家"
+                    },
+                    "partner_merchant": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/MerchantSimple"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "合作商家"
+                    },
+                    "role": {
+                        "description": "员工角色",
+                        "type": "string",
+                        "example": "checker"
+                    }
+                },
+                "type": "object"
+            },
+            "MerchantStaffInviteResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/MerchantStaffInvitePayload"
                     }
                 },
                 "type": "object"
@@ -2841,7 +3011,7 @@
                         "nullable": true
                     },
                     "supported_balance_types": {
-                        "description": "商家支持的余额类型，仅当前用户资料等需要展示商户收款能力的接口返回",
+                        "description": "商家支持的余额类型；合作商家最多返回一种，字段名和线上商户保持一致",
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/BalanceTypeSimple"
@@ -3784,6 +3954,201 @@
                 },
                 "type": "object"
             },
+            "OfflinePaymentUserSimple": {
+                "properties": {
+                    "id": {
+                        "description": "用户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nickname": {
+                        "description": "昵称",
+                        "type": "string",
+                        "example": "微信用户",
+                        "nullable": true
+                    },
+                    "avatar": {
+                        "description": "头像",
+                        "type": "string",
+                        "example": "https://example.com/avatar.jpg",
+                        "nullable": true
+                    },
+                    "mobile": {
+                        "description": "手机号",
+                        "type": "string",
+                        "example": "13800138000",
+                        "nullable": true
+                    },
+                    "name": {
+                        "description": "姓名",
+                        "type": "string",
+                        "example": "张三",
+                        "nullable": true
+                    }
+                },
+                "type": "object",
+                "nullable": true
+            },
+            "OfflinePaymentStoredValueCardSimple": {
+                "properties": {
+                    "id": {
+                        "description": "储值卡ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "card_no": {
+                        "description": "储值卡卡号",
+                        "type": "string",
+                        "example": "DG2026000001"
+                    }
+                },
+                "type": "object",
+                "nullable": true
+            },
+            "OfflinePaymentPayload": {
+                "properties": {
+                    "id": {
+                        "description": "线下支付流水ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "payment_no": {
+                        "description": "线下支付单号",
+                        "type": "string",
+                        "example": "OFF202604110001"
+                    },
+                    "pay_source": {
+                        "description": "支付来源：user_balance 用户余额，stored_value_card 储值卡",
+                        "type": "string",
+                        "example": "user_balance"
+                    },
+                    "amount": {
+                        "description": "支付金额",
+                        "type": "string",
+                        "example": "50.00"
+                    },
+                    "status": {
+                        "description": "支付状态：0处理中，1成功，2失败",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "remark": {
+                        "description": "备注",
+                        "type": "string",
+                        "example": "线下消费",
+                        "nullable": true
+                    },
+                    "failure_reason": {
+                        "description": "失败原因",
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "paid_at": {
+                        "description": "支付成功时间",
+                        "type": "string",
+                        "example": "2026-04-11 12:00:00",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "创建时间",
+                        "type": "string",
+                        "example": "2026-04-11 12:00:00",
+                        "nullable": true
+                    },
+                    "merchant": {
+                        "$ref": "#/components/schemas/MerchantSimple"
+                    },
+                    "balance_type": {
+                        "$ref": "#/components/schemas/BalanceTypeSimple"
+                    },
+                    "stored_value_card": {
+                        "$ref": "#/components/schemas/OfflinePaymentStoredValueCardSimple"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/OfflinePaymentUserSimple"
+                    }
+                },
+                "type": "object"
+            },
+            "MerchantOfflinePaymentLogPage": {
+                "properties": {
+                    "current_page": {
+                        "description": "当前页",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OfflinePaymentPayload"
+                        }
+                    },
+                    "first_page_url": {
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/merchant/offline-payments?page=1",
+                        "nullable": true
+                    },
+                    "from": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "last_page": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "last_page_url": {
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/merchant/offline-payments?page=3",
+                        "nullable": true
+                    },
+                    "next_page_url": {
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/merchant/offline-payments?page=2",
+                        "nullable": true
+                    },
+                    "path": {
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/merchant/offline-payments"
+                    },
+                    "per_page": {
+                        "type": "integer",
+                        "example": 20
+                    },
+                    "prev_page_url": {
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "to": {
+                        "type": "integer",
+                        "example": 20,
+                        "nullable": true
+                    },
+                    "total": {
+                        "type": "integer",
+                        "example": 45
+                    }
+                },
+                "type": "object"
+            },
+            "MerchantOfflinePaymentLogResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/MerchantOfflinePaymentLogPage"
+                    }
+                },
+                "type": "object"
+            },
             "StoredValueCardQrPayload": {
                 "properties": {
                     "id": {
@@ -3830,7 +4195,7 @@
         },
         {
             "name": "员工邀请",
-            "description": "商户员工邀请链接与绑定"
+            "description": "合作商家员工邀请链接与绑定"
         },
         {
             "name": "平台",

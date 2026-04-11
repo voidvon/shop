@@ -24,17 +24,17 @@
 
 | 项 | 数量 |
 | --- | ---: |
-| Path 数 | 39 |
-| Operation 数 | 46 |
+| Path 数 | 40 |
+| Operation 数 | 47 |
 | Tag 数 | 17 |
 | 公开接口 | 13 |
-| 需鉴权接口 | 33 |
+| 需鉴权接口 | 34 |
 
 后端文档信息：
 
 - 标题：`微信 H5 商城系统 API`
 - 版本：`1.0.0`
-- 描述：`微信 H5 商城系统前端接口文档（V1），商户核销员使用普通微信用户 Token，通过商户员工关系拥有核销权限`
+- 描述：`微信 H5 商城系统前端接口文档（V1），合作商家核销员使用普通微信用户 Token，通过商户员工关系拥有核销权限`
 
 ## 3. 鉴权说明
 
@@ -62,8 +62,8 @@
 
 ### 员工邀请
 
-- `GET /api/v1/merchant-staff-invites/{token}` 查看商户员工邀请链接信息
-- `POST /api/v1/merchant-staff-invites/{token}/bind` 当前微信用户通过邀请链接绑定为商户员工
+- `GET /api/v1/merchant-staff-invites/{token}` 查看合作商家员工邀请链接信息
+- `POST /api/v1/merchant-staff-invites/{token}/bind` 当前微信用户通过邀请链接绑定为合作商家员工
 
 ### 平台
 
@@ -137,8 +137,9 @@
 ### 线下付款
 
 - `GET /api/v1/offline-payments/payment-code` 获取用户付款码
-- `POST /api/v1/merchant/offline-payments/scan` 商户核销员扫码识别用户付款码或储值卡二维码
-- `POST /api/v1/merchant/offline-payments/pay` 商户核销员提交线下支付；前端需附带 `balance_type_id`，其来源为 `GET /api/v1/auth/profile -> data.merchant.supported_balance_types`
+- `GET /api/v1/merchant/offline-payments` 合作商家员工查看当前所属商家的线下支付流水，支持 `min_amount / max_amount / start_time / end_time / per_page`
+- `POST /api/v1/merchant/offline-payments/scan` 合作商家核销员扫码识别用户付款码或储值卡二维码
+- `POST /api/v1/merchant/offline-payments/pay` 合作商家核销员提交线下支付；前端需附带 `balance_type_id`，其来源为 `GET /api/v1/auth/profile -> data.merchant.supported_balance_types`
 
 ### 上传
 
@@ -157,6 +158,8 @@
 - `2026-04-10` 已补入 `GET /api/v1/wechat/jssdk-signature`，前端传 `url` 查询参数即可获取 `wx.config` 所需签名参数；后端会自动去掉 hash，响应还包含 `url` 与 `rawString` 便于调试
 - `2026-04-11` 已补充 `GET /api/v1/auth/profile` 的 `merchant` 字段说明，用于前端识别当前登录用户所属商户
 - `2026-04-11` 已同步 `merchant.supported_balance_types`，商户扣款提交时应从这里选择并传递 `balance_type_id`
+- `2026-04-11` 已补入 `GET /api/v1/merchant/offline-payments`，用于合作商家员工查看线下支付流水
+- `2026-04-11` 已将线下支付与员工邀请接口文案统一为“合作商家”
 
 ## 5.1 当前项目范围内不接入的接口
 
@@ -166,9 +169,6 @@
   - `GET /api/v1/partner-regions`
   - `GET /api/v1/partner-store-types`
   - `GET /api/v1/partner-merchants`
-- 商户侧扫码核销相关
-  - `POST /api/v1/merchant/offline-payments/scan`
-  - `POST /api/v1/merchant/offline-payments/pay`
 - 商户员工邀请相关
   - `GET /api/v1/merchant-staff-invites/{token}`
   - `POST /api/v1/merchant-staff-invites/{token}/bind`

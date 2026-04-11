@@ -29,6 +29,7 @@ import { MemberRegisterMobilePage } from '@/pages/member-register-mobile'
 import { MemberRegisterPage } from '@/pages/member-register'
 import { MemberSettingsPage } from '@/pages/member-settings'
 import { MerchantDeductionPage } from '@/pages/merchant-deduction'
+import { MerchantDeductionLogsPage } from '@/pages/merchant-deduction-logs'
 import { MerchantStaffBindPage } from '@/pages/merchant-staff-bind'
 import { OrderDetailPage } from '@/pages/order-detail'
 import { OrderListPage } from '@/pages/order-list'
@@ -268,6 +269,15 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         meta: {
           requiresAuth: true,
           title: '扣款',
+        },
+      }),
+      createModuleRoute({
+        path: '/merchant/deduction/logs',
+        name: 'merchant-deduction-logs',
+        component: MerchantDeductionLogsPage,
+        meta: {
+          requiresAuth: true,
+          title: '店铺流水查询',
         },
       }),
       createModuleRoute({
