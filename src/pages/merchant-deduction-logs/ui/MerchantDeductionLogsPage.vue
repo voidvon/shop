@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   List as VanList,
@@ -26,6 +26,7 @@ const router = useRouter()
 const memberAuthSession = useMemberAuthSession()
 const merchantDeductionService = useMerchantDeductionService()
 const authSnapshot = ref(memberAuthSession.getSnapshot())
+const refreshContainer = useTemplateRef<InstanceType<typeof VanPullRefresh>>('refreshContainer')
 const logs = ref<MerchantDeductionLogItem[]>([])
 const currentPage = ref(1)
 const isPageInitializing = ref(true)
@@ -243,6 +244,7 @@ onMounted(() => {
 
     <VanPullRefresh
       v-else
+      ref="refreshContainer"
       v-model="isRefreshing"
       class="merchant-deduction-logs-refresh"
       success-text="刷新成功"
@@ -284,6 +286,7 @@ onMounted(() => {
           <VanList
             v-else
             v-model:loading="isLoadingMore"
+            :scroller="refreshContainer?.$el"
             class="log-list"
             :finished="!hasMore"
             finished-text="没有更多流水了"
