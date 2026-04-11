@@ -451,9 +451,13 @@ async function handleSubmitDeduction() {
           <van-field
             :model-value="amountInput"
             class="deduction-field deduction-amount-field"
+            :formatter="normalizeAmountInput"
+            format-trigger="onChange"
             input-align="right"
+            inputmode="decimal"
             label="金额"
             placeholder="0.00"
+            type="number"
             @update:model-value="handleAmountInput"
           />
           <p v-if="amountErrorMessage" class="field-hint field-hint-error">{{ amountErrorMessage }}</p>
