@@ -127,7 +127,7 @@ const uploadButtonLabel = computed(() => {
     return '上传中...'
   }
 
-  return uploadedImages.value.length >= 3 ? '最多上传 3 张' : '上传凭证图片'
+  return uploadedImages.value.length >= 3 ? '最多上传 3 张' : '上传备注图片'
 })
 const scanButtonLabel = computed(() => {
   if (isScanning.value) {
@@ -473,7 +473,7 @@ async function handleSubmitDeduction() {
 
           <div class="upload-section">
             <div class="upload-head">
-              <span>凭证图片</span>
+              <span>备注图片</span>
               <button class="upload-button" :disabled="!canUploadImage" type="button" @click="openImagePicker">
                 {{ uploadButtonLabel }}
               </button>
