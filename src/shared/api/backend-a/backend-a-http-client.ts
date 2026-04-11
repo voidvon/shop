@@ -98,11 +98,29 @@ function normalizeHttpErrorMessage(status: number, fallbackMessage: string) {
 async function parseResponseBody<T>(response: Response): Promise<T> {
   const text = await response.text()
 
-  if (!text) {
-    if (response.ok) {
-      return undefined as T
+  if (response.status !== 200) {
+    let parsedValue: unknown = null
+
+    if (text) {
+      try {
+        parsedValue = JSON.parse(text)
+      } catch {
+        parsedValue = null
+      }
     }
 
+    const envelope = parsedValue as BackendAEnvelope<T> | null
+
+    throw new BackendAHttpError(
+      normalizeHttpErrorMessage(
+        response.status,
+        envelope?.message ?? `请求失败(${response.status})`,
+      ),
+      response.status,
+    )
+  }
+
+  if (!text) {
     throw new BackendAHttpError('后端接口返回为空', response.status)
   }
 
@@ -114,24 +132,18 @@ async function parseResponseBody<T>(response: Response): Promise<T> {
     throw new BackendAHttpError('后端接口返回格式无效', response.status)
   }
 
-  const envelope = parsedValue as BackendAEnvelope<T>
-
-  if (!response.ok) {
-    throw new BackendAHttpError(
-      normalizeHttpErrorMessage(
-        response.status,
-        envelope.message ?? `请求失败(${response.status})`,
-      ),
-      response.status,
-    )
+  if (
+    !parsedValue
+    || typeof parsedValue !== 'object'
+    || !('code' in parsedValue)
+    || typeof (parsedValue as BackendAEnvelope<T>).code !== 'number'
+  ) {
+    throw new BackendAHttpError('后端接口返回格式无效', response.status)
   }
 
-  if (
-    typeof envelope.code === 'number'
-    && envelope.code !== 0
-    && envelope.code !== 200
-    && envelope.data === undefined
-  ) {
+  const envelope = parsedValue as BackendAEnvelope<T>
+
+  if (envelope.code !== 0) {
     throw new BackendAHttpError(envelope.message ?? '后端接口返回失败', response.status)
   }
 
