@@ -646,13 +646,13 @@ async function handleSubmitDeduction() {
   width: 100%;
   margin-bottom: 12px;
   padding: 14px 18px;
-  border: 0;
+  border: 1px solid #ece6df;
   border-radius: 18px;
-  background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
-  color: #fff;
+  background: #fff;
+  color: #4b5563;
   font-size: 15px;
   font-weight: 600;
-  box-shadow: 0 14px 30px rgba(234, 88, 12, 0.22);
+  box-shadow: 0 10px 24px rgba(27, 25, 22, 0.06);
 }
 
 .field-block {
