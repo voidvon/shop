@@ -470,6 +470,23 @@ onMounted(() => {
   gap: 12px;
 }
 
+.log-list :deep(.van-list__loading),
+.log-list :deep(.van-list__finished-text) {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+  color: #b8b2aa;
+  text-align: center;
+}
+
+.log-list :deep(.van-list__loading) {
+  font-size: 13px;
+}
+
+.log-list :deep(.van-list__loading .van-loading) {
+  color: #b8b2aa;
+}
+
 .log-card {
   gap: 14px;
   padding: 18px;
