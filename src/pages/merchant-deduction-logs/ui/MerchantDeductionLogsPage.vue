@@ -30,6 +30,7 @@ const authSnapshot = ref(memberAuthSession.getSnapshot())
 const logs = ref<MerchantDeductionLogItem[]>([])
 const total = ref(0)
 const currentPage = ref(1)
+const isPageInitializing = ref(true)
 const isRefreshing = ref(false)
 const isInitialLoading = ref(false)
 const isLoadingMore = ref(false)
@@ -190,6 +191,8 @@ async function loadLogs(mode: 'append' | 'initial' | 'refresh') {
 }
 
 async function initializePage() {
+  isPageInitializing.value = true
+
   try {
     await hydrateBackendAMemberAuthSession(memberAuthSession)
   } catch {
@@ -198,10 +201,15 @@ async function initializePage() {
 
   if (!isMerchantStaff.value) {
     hasLoadedOnce.value = false
+    isPageInitializing.value = false
     return
   }
 
-  await loadLogs('initial')
+  try {
+    await loadLogs('initial')
+  } finally {
+    isPageInitializing.value = false
+  }
 }
 
 async function handleRefresh() {
@@ -231,7 +239,14 @@ onMounted(() => {
   <section class="merchant-deduction-logs-page">
     <PageTopBar title="店铺流水查询" @back="goBack" />
 
-    <div v-if="!isMerchantStaff" class="merchant-staff-empty-state">
+    <LoadingState
+      v-if="isPageInitializing"
+      class="page-loading-state"
+      fill
+      text="正在加载店铺流水..."
+    />
+
+    <div v-else-if="!isMerchantStaff" class="merchant-staff-empty-state">
       <strong>您还不是商户员工</strong>
     </div>
 
@@ -369,6 +384,11 @@ onMounted(() => {
 .merchant-deduction-logs-refresh,
 .content-scroll {
   min-height: 100%;
+}
+
+.page-loading-state {
+  min-height: calc(100vh - 49px);
+  min-height: calc(100dvh - 49px);
 }
 
 .merchant-staff-empty-state {
