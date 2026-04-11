@@ -14,6 +14,7 @@ export interface AuthUserInfo {
   mobile: string | null
   avatarUrl: string | null
   merchantId: string | null
+  merchantName?: string | null
   merchantSupportedBalanceTypes?: AuthMerchantSupportedBalanceType[]
 }
 

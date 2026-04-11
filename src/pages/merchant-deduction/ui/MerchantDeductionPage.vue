@@ -35,11 +35,10 @@ const scanResult = ref<MerchantDeductionScanResult | null>(null)
 const submitPopupVisible = ref(false)
 const lastSuccessMessage = ref('')
 const lastResolvedDisplayName = ref('')
-const selectedBalanceTypeId = ref('')
 const isUploading = ref(false)
 const isScanning = ref(false)
 const isSubmitting = ref(false)
-const deductionSuccessVisibleMs = 3000
+const feedbackToastVisibleMs = 3000
 let activeLoadingToast: ToastWrapperInstance | null = null
 let successResetTimer: ReturnType<typeof globalThis.setTimeout> | null = null
 
@@ -54,11 +53,14 @@ onUnmounted(() => {
 })
 
 const normalizedMerchantId = computed(() => authSnapshot.value.authResult?.userInfo.merchantId?.trim() ?? '')
+const merchantDisplayName = computed(() =>
+  authSnapshot.value.authResult?.userInfo.merchantName?.trim() || '未返回商户名称',
+)
 const supportedBalanceTypes = computed(() =>
   authSnapshot.value.authResult?.userInfo.merchantSupportedBalanceTypes ?? [],
 )
 const selectedBalanceType = computed(() =>
-  supportedBalanceTypes.value.find((item) => item.id === selectedBalanceTypeId.value) ?? null,
+  supportedBalanceTypes.value[0] ?? null,
 )
 const currentDisplayName = computed(() => {
   const userInfo = authSnapshot.value.authResult?.userInfo
@@ -102,12 +104,8 @@ const balanceTypeErrorMessage = computed(() => {
     return ''
   }
 
-  if (supportedBalanceTypes.value.length === 0) {
+  if (!selectedBalanceType.value) {
     return '当前商户未返回可用的余额类型'
-  }
-
-  if (!selectedBalanceTypeId.value) {
-    return '请选择扣款余额类型'
   }
 
   return ''
@@ -162,18 +160,6 @@ watch(
   { immediate: true },
 )
 
-watch(
-  supportedBalanceTypes,
-  (balanceTypes) => {
-    if (balanceTypes.some((item) => item.id === selectedBalanceTypeId.value)) {
-      return
-    }
-
-    selectedBalanceTypeId.value = balanceTypes[0]?.id ?? ''
-  },
-  { immediate: true },
-)
-
 function goBack() {
   closeActiveLoadingToast()
 
@@ -202,11 +188,6 @@ function handleAmountInput(value: string) {
   lastSuccessMessage.value = ''
 }
 
-function selectBalanceType(balanceTypeId: string) {
-  selectedBalanceTypeId.value = balanceTypeId
-  lastSuccessMessage.value = ''
-}
-
 function createBlockingLoadingToast(message: string) {
   closeActiveLoadingToast()
   activeLoadingToast = showLoadingToast({
@@ -223,6 +204,13 @@ function closeActiveLoadingToast() {
   activeLoadingToast = null
 }
 
+function showPersistentFailToast(message: string) {
+  showFailToast({
+    duration: feedbackToastVisibleMs,
+    message,
+  })
+}
+
 function clearSuccessResetTimer() {
   if (successResetTimer !== null) {
     globalThis.clearTimeout(successResetTimer)
@@ -234,7 +222,7 @@ function scheduleResetDraft() {
   clearSuccessResetTimer()
   successResetTimer = globalThis.setTimeout(() => {
     resetDraft()
-  }, deductionSuccessVisibleMs)
+  }, feedbackToastVisibleMs)
 }
 
 function openImagePicker() {
@@ -300,7 +288,7 @@ async function handleImageSelection(event: Event) {
     lastSuccessMessage.value = ''
     showSuccessToast(`已上传 ${filesToUpload.length} 张图片`)
   } catch (error) {
-    showFailToast(error instanceof Error ? error.message : '图片上传失败')
+    showPersistentFailToast(error instanceof Error ? error.message : '图片上传失败')
   } finally {
     isUploading.value = false
     clearFileInput()
@@ -309,22 +297,22 @@ async function handleImageSelection(event: Event) {
 
 async function handleScanCode() {
   if (!normalizedMerchantId.value) {
-    showFailToast('当前账号未返回可用的商户 ID')
+    showPersistentFailToast('当前账号未返回可用的商户 ID')
     return
   }
 
   if (amountErrorMessage.value) {
-    showFailToast(amountErrorMessage.value)
+    showPersistentFailToast(amountErrorMessage.value)
     return
   }
 
   if (balanceTypeErrorMessage.value) {
-    showFailToast(balanceTypeErrorMessage.value)
+    showPersistentFailToast(balanceTypeErrorMessage.value)
     return
   }
 
   if (!isWechatBrowser()) {
-    showFailToast('请在微信内打开当前页面后扫码')
+    showPersistentFailToast('请在微信内打开当前页面后扫码')
     return
   }
 
@@ -344,7 +332,8 @@ async function handleScanCode() {
     const message = error instanceof Error ? error.message : '付款码识别失败'
 
     if (message !== '已取消扫码') {
-      showFailToast(message)
+      closeActiveLoadingToast()
+      showPersistentFailToast(message)
     }
   } finally {
     closeActiveLoadingToast()
@@ -365,22 +354,22 @@ function resetDraft() {
 
 async function handleSubmitDeduction() {
   if (!normalizedMerchantId.value) {
-    showFailToast('当前账号未返回可用的商户 ID')
+    showPersistentFailToast('当前账号未返回可用的商户 ID')
     return
   }
 
   if (amountErrorMessage.value) {
-    showFailToast(amountErrorMessage.value)
+    showPersistentFailToast(amountErrorMessage.value)
     return
   }
 
   if (balanceTypeErrorMessage.value) {
-    showFailToast(balanceTypeErrorMessage.value)
+    showPersistentFailToast(balanceTypeErrorMessage.value)
     return
   }
 
   if (!scanResult.value || !parsedAmount.value) {
-    showFailToast('请先完成扫码识别')
+    showPersistentFailToast('请先完成扫码识别')
     return
   }
 
@@ -391,7 +380,7 @@ async function handleSubmitDeduction() {
     const result = await merchantDeductionService.submitDeduction({
       amount: parsedAmount.value,
       attachments: uploadedImages.value,
-      balanceTypeId: selectedBalanceTypeId.value,
+      balanceTypeId: selectedBalanceType.value?.id ?? '',
       cardQrContent: scanResult.value.cardQrContent,
       merchantId: normalizedMerchantId.value,
       paymentToken: scanResult.value.paymentToken,
@@ -400,12 +389,13 @@ async function handleSubmitDeduction() {
 
     lastSuccessMessage.value = result.successMessage
     showSuccessToast({
-      duration: deductionSuccessVisibleMs,
+      duration: feedbackToastVisibleMs,
       message: result.successMessage,
     })
     scheduleResetDraft()
   } catch (error) {
-    showFailToast(error instanceof Error ? error.message : '扣款失败')
+    closeActiveLoadingToast()
+    showPersistentFailToast(error instanceof Error ? error.message : '扣款失败')
   } finally {
     closeActiveLoadingToast()
     isSubmitting.value = false
@@ -415,12 +405,10 @@ async function handleSubmitDeduction() {
 
 <template>
   <section class="merchant-deduction-page">
-    <PageTopBar title="扣款" @back="goBack" />
+    <PageTopBar title="商户员工扣款" @back="goBack" />
 
     <div class="content-scroll">
       <section class="hero-card">
-        <span class="eyebrow">商户员工专用</span>
-        <strong>线下扣款</strong>
         <div class="hero-meta-grid">
           <div class="identity-item">
             <span>当前登录账号</span>
@@ -428,8 +416,8 @@ async function handleSubmitDeduction() {
           </div>
 
           <div class="identity-item">
-            <span>商户 ID</span>
-            <strong>{{ normalizedMerchantId || '当前账号未返回 merchantId' }}</strong>
+            <span>商户名称</span>
+            <strong>{{ merchantDisplayName }}</strong>
           </div>
         </div>
       </section>
@@ -457,10 +445,7 @@ async function handleSubmitDeduction() {
       <template v-else>
         <section class="section-card">
           <header class="section-head">
-            <span class="section-step">01</span>
-            <div>
-              <strong>填写扣款信息</strong>
-            </div>
+            <strong>扣款信息</strong>
           </header>
 
           <label class="field-block">
@@ -480,17 +465,9 @@ async function handleSubmitDeduction() {
 
           <div class="field-block">
             <span>扣款余额</span>
-            <div class="balance-type-grid">
-              <button
-                v-for="balanceType in supportedBalanceTypes"
-                :key="balanceType.id"
-                :class="['balance-type-chip', { 'balance-type-chip-active': balanceType.id === selectedBalanceTypeId }]"
-                type="button"
-                @click="selectBalanceType(balanceType.id)"
-              >
-                <strong>{{ balanceType.name }}</strong>
-                <span v-if="balanceType.code">{{ balanceType.code }}</span>
-              </button>
+            <div class="balance-type-display">
+              <strong>{{ selectedBalanceType?.name || '未返回扣款余额类型' }}</strong>
+              <span v-if="selectedBalanceType?.code">{{ selectedBalanceType.code }}</span>
             </div>
           </div>
           <p v-if="balanceTypeErrorMessage" class="field-hint field-hint-error">{{ balanceTypeErrorMessage }}</p>
@@ -531,16 +508,10 @@ async function handleSubmitDeduction() {
               </article>
             </div>
           </div>
-        </section>
 
-        <section class="section-card">
-          <header class="section-head">
-            <span class="section-step">02</span>
-            <div>
-              <strong>扫描付款码</strong>
-            </div>
-          </header>
-
+          <div class="inline-section-head">
+            <strong>扫描付款码</strong>
+          </div>
           <button class="scan-button" :disabled="!canScan" type="button" @click="handleScanCode">
             <van-icon name="scan" size="36" />
             <span>{{ scanButtonLabel }}</span>
@@ -657,22 +628,10 @@ async function handleSubmitDeduction() {
   margin-bottom: 12px;
 }
 
-.eyebrow {
-  color: #c2410c;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
 .hero-card strong,
 .identity-item strong,
 .section-head strong {
   color: #1f1d1a;
-}
-
-.hero-card strong {
-  font-size: 22px;
-  line-height: 1.2;
 }
 
 .section-head p {
@@ -683,6 +642,7 @@ async function handleSubmitDeduction() {
 }
 
 .hero-meta-grid {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
@@ -708,22 +668,17 @@ async function handleSubmitDeduction() {
 }
 
 .section-head {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
+  display: block;
 }
 
-.section-step {
-  display: inline-grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  background: #fff1e8;
-  color: #d45e24;
-  font-size: 13px;
-  font-weight: 700;
+.inline-section-head {
+  padding-top: 2px;
+  border-top: 1px solid #f3e8de;
+}
+
+.inline-section-head strong {
+  color: #1f1d1a;
+  font-size: 16px;
 }
 
 .field-block {
@@ -731,13 +686,7 @@ async function handleSubmitDeduction() {
   gap: 10px;
 }
 
-.balance-type-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.balance-type-chip {
+.balance-type-display {
   display: grid;
   gap: 4px;
   padding: 12px 14px;
@@ -748,21 +697,15 @@ async function handleSubmitDeduction() {
   text-align: left;
 }
 
-.balance-type-chip strong {
+.balance-type-display strong {
   color: #1f1d1a;
   font-size: 14px;
 }
 
-.balance-type-chip span {
+.balance-type-display span {
   color: #9c8f84;
   font-size: 11px;
   text-transform: uppercase;
-}
-
-.balance-type-chip-active {
-  border-color: #de7a46;
-  background: linear-gradient(180deg, #fff2e8 0%, #ffe5d5 100%);
-  box-shadow: inset 0 0 0 1px rgba(212, 94, 36, 0.08);
 }
 
 .amount-input-shell,
@@ -1006,7 +949,6 @@ async function handleSubmitDeduction() {
 @media (max-width: 520px) {
   .identity-card,
   .hero-meta-grid,
-  .balance-type-grid,
   .scan-result-grid div,
   .submit-scan-grid div,
   .submit-summary {

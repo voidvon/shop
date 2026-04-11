@@ -52,6 +52,12 @@ function resolveBackendAMerchantId(profile: BackendAUserProfileDto) {
   return null
 }
 
+function resolveBackendAMerchantName(profile: BackendAUserProfileDto) {
+  return normalizeString(profile.merchant?.name)
+    ?? normalizeString(profile.merchant?.short_name)
+    ?? null
+}
+
 function normalizeString(value: string | null | undefined) {
   if (typeof value !== 'string') {
     return null
@@ -102,6 +108,7 @@ export function mapBackendAUserProfileDto(profile: BackendAUserProfileDto): Auth
     avatarUrl: profile.avatar,
     email: null,
     merchantId: resolveBackendAMerchantId(profile),
+    merchantName: resolveBackendAMerchantName(profile),
     merchantSupportedBalanceTypes: resolveBackendAMerchantSupportedBalanceTypes(profile),
     mobile: profile.mobile,
     nickname: profile.nickname.trim() || profile.name.trim() || null,
