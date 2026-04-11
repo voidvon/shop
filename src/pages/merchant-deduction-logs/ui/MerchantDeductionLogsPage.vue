@@ -501,7 +501,9 @@ onMounted(() => {
 
 .log-detail-row {
   display: grid;
-  gap: 4px;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
 }
 
 .log-detail-grid dt {
@@ -513,6 +515,11 @@ onMounted(() => {
   word-break: break-all;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.log-detail-meta .log-detail-row dd {
+  text-align: right;
+  word-break: normal;
 }
 
 .log-detail-danger {
