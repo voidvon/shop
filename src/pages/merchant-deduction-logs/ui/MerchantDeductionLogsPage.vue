@@ -251,11 +251,6 @@ onMounted(() => {
       >
         <div class="content-scroll">
           <section class="list-section">
-            <header class="list-head">
-              <strong>流水明细</strong>
-              <span v-if="hasLoadedOnce">第 {{ currentPage }} 页</span>
-            </header>
-
             <LoadingState v-if="isInitialLoading && !hasLogs" class="list-state" fill text="正在加载店铺流水..." />
 
             <section v-else-if="errorMessage && !hasLogs" class="list-state">
@@ -409,13 +404,11 @@ onMounted(() => {
   display: grid;
 }
 
-.list-head span,
 .log-card-title p,
 .log-detail-grid dt {
   color: #8b7768;
 }
 
-.list-head strong,
 .log-card-title strong,
 .log-detail-grid dd {
   color: #1f1d1a;
@@ -423,22 +416,6 @@ onMounted(() => {
 
 .list-section {
   gap: 12px;
-}
-
-.list-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-  padding: 0 4px;
-}
-
-.list-head strong {
-  font-size: 17px;
-}
-
-.list-head span {
-  font-size: 12px;
 }
 
 .list-state {
