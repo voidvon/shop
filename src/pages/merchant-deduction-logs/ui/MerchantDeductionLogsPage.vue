@@ -352,9 +352,7 @@ onMounted(() => {
   grid-template-rows: 49px minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
-  background:
-    radial-gradient(circle at top, rgba(231, 111, 81, 0.16), transparent 32%),
-    linear-gradient(180deg, #fff9f4 0%, #f2ede7 100%);
+  background: #fff;
   overflow: hidden;
 }
 
@@ -504,7 +502,7 @@ onMounted(() => {
   min-width: 0;
   padding: 12px 14px;
   border-radius: 16px;
-  background: #faf7f3;
+  background: #f7f7f7;
 }
 
 .log-detail-grid dt {
