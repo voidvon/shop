@@ -416,7 +416,7 @@ async function handleSubmitDeduction() {
           </div>
 
           <div class="identity-item">
-            <span>用户</span>
+            <span>用户名称</span>
             <strong>{{ currentDisplayName }}</strong>
           </div>
         </div>
@@ -452,7 +452,7 @@ async function handleSubmitDeduction() {
             :model-value="amountInput"
             class="deduction-field deduction-amount-field"
             input-align="right"
-            label="扣款金额"
+            label="金额"
             placeholder="0.00"
             @update:model-value="handleAmountInput"
           />
@@ -498,9 +498,6 @@ async function handleSubmitDeduction() {
             </div>
           </div>
 
-          <div class="inline-section-head">
-            <strong>扫描付款码</strong>
-          </div>
           <button class="scan-button" :disabled="!canScan" type="button" @click="handleScanCode">
             <van-icon name="scan" size="36" />
             <span>{{ scanButtonLabel }}</span>
@@ -661,16 +658,6 @@ async function handleSubmitDeduction() {
 
 .section-head {
   display: block;
-}
-
-.inline-section-head {
-  padding-top: 2px;
-  border-top: 1px solid #f3e8de;
-}
-
-.inline-section-head strong {
-  color: #1f1d1a;
-  font-size: 16px;
 }
 
 .field-block {
@@ -923,10 +910,6 @@ async function handleSubmitDeduction() {
   .submit-scan-grid div,
   .submit-summary {
     grid-template-columns: 1fr;
-  }
-
-  .image-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>
