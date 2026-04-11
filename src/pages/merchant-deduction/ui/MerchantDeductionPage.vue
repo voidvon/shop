@@ -207,6 +207,13 @@ function showPersistentFailToast(message: string) {
   })
 }
 
+function showPersistentSuccessToast(message: string) {
+  showSuccessToast({
+    duration: feedbackToastVisibleMs,
+    message,
+  })
+}
+
 function openImagePicker() {
   if (!canUploadImage.value) {
     return
@@ -305,8 +312,9 @@ async function handleScanCode() {
     isScanning.value = true
     createBlockingLoadingToast('识别中...')
     scanResult.value = await merchantDeductionService.scanCode(rawCode)
+    closeActiveLoadingToast()
     submitPopupVisible.value = true
-    showSuccessToast('付款码识别成功')
+    showPersistentSuccessToast('付款码识别成功')
   } catch (error) {
     const message = error instanceof Error ? error.message : '付款码识别失败'
 
@@ -364,11 +372,9 @@ async function handleSubmitDeduction() {
       remark: remarkInput.value,
     })
 
+    closeActiveLoadingToast()
     resetDraft()
-    showSuccessToast({
-      duration: feedbackToastVisibleMs,
-      message: result.successMessage || '操作成功',
-    })
+    showPersistentSuccessToast(result.successMessage || '操作成功')
   } catch (error) {
     closeActiveLoadingToast()
     showPersistentFailToast(error instanceof Error ? error.message : '扣款失败')
