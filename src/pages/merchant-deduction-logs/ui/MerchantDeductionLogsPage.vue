@@ -120,7 +120,7 @@ function resolveStatusType(status: MerchantDeductionLogItem['status']) {
 
 async function loadLogs(mode: 'append' | 'initial' | 'refresh') {
   if (mode === 'append') {
-    if (isInitialLoading.value || isRefreshing.value || isLoadingMore.value || !hasMore.value) {
+    if (isInitialLoading.value || isRefreshing.value || !hasMore.value) {
       isLoadingMore.value = false
       return
     }
@@ -137,7 +137,7 @@ async function loadLogs(mode: 'append' | 'initial' | 'refresh') {
   }
 
   if (mode === 'refresh') {
-    if (isRefreshing.value) {
+    if (isInitialLoading.value || isLoadingMore.value) {
       return
     }
 
