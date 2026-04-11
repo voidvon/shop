@@ -411,13 +411,13 @@ async function handleSubmitDeduction() {
       <section class="hero-card">
         <div class="hero-meta-grid">
           <div class="identity-item">
-            <span>当前登录账号</span>
-            <strong>{{ currentDisplayName }}</strong>
+            <span>商户名称</span>
+            <strong>{{ merchantDisplayName }}</strong>
           </div>
 
           <div class="identity-item">
-            <span>商户名称</span>
-            <strong>{{ merchantDisplayName }}</strong>
+            <span>用户</span>
+            <strong>{{ currentDisplayName }}</strong>
           </div>
         </div>
       </section>
@@ -448,39 +448,28 @@ async function handleSubmitDeduction() {
             <strong>扣款信息</strong>
           </header>
 
-          <label class="field-block">
-            <span>扣款金额</span>
-            <div class="amount-input-shell">
-              <em>¥</em>
-              <input
-                :value="amountInput"
-                type="text"
-                inputmode="decimal"
-                placeholder="0.00"
-                @input="handleAmountInput(($event.target as HTMLInputElement).value)"
-              >
-            </div>
-          </label>
+          <van-field
+            :model-value="amountInput"
+            class="deduction-field deduction-amount-field"
+            input-align="right"
+            label="扣款金额"
+            placeholder="0.00"
+            @update:model-value="handleAmountInput"
+          />
           <p v-if="amountErrorMessage" class="field-hint field-hint-error">{{ amountErrorMessage }}</p>
-
-          <div class="field-block">
-            <span>扣款余额</span>
-            <div class="balance-type-display">
-              <strong>{{ selectedBalanceType?.name || '未返回扣款余额类型' }}</strong>
-              <span v-if="selectedBalanceType?.code">{{ selectedBalanceType.code }}</span>
-            </div>
-          </div>
           <p v-if="balanceTypeErrorMessage" class="field-hint field-hint-error">{{ balanceTypeErrorMessage }}</p>
 
-          <label class="field-block">
-            <span>备注</span>
-            <textarea
-              v-model="remarkInput"
-              rows="3"
-              maxlength="120"
-              placeholder="可填写扣款说明或业务备注"
-            />
-          </label>
+          <van-field
+            v-model="remarkInput"
+            autosize
+            class="deduction-field deduction-remark-field"
+            label="备注"
+            maxlength="120"
+            placeholder="可填写扣款说明或业务备注"
+            rows="3"
+            show-word-limit
+            type="textarea"
+          />
 
           <div class="upload-section">
             <div class="upload-head">
@@ -648,8 +637,10 @@ async function handleSubmitDeduction() {
 }
 
 .identity-item {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
 }
 
 .identity-item span,
@@ -662,8 +653,9 @@ async function handleSubmitDeduction() {
 }
 
 .identity-item strong {
-  font-size: 17px;
-  line-height: 1.5;
+  flex: 1;
+  font-size: 15px;
+  line-height: 1.4;
   word-break: break-all;
 }
 
@@ -686,72 +678,50 @@ async function handleSubmitDeduction() {
   gap: 10px;
 }
 
-.balance-type-display {
-  display: grid;
-  gap: 4px;
-  padding: 12px 14px;
+.deduction-field {
+  overflow: hidden;
   border: 1px solid #efe7de;
   border-radius: 18px;
   background: #fffaf5;
-  color: #7c6759;
-  text-align: left;
+  --van-cell-background: #fffaf5;
+  --van-field-label-color: #8c847d;
+  --van-field-placeholder-text-color: #b8aea5;
+  --van-field-word-limit-color: #9c8f84;
 }
 
-.balance-type-display strong {
-  color: #1f1d1a;
-  font-size: 14px;
-}
-
-.balance-type-display span {
-  color: #9c8f84;
-  font-size: 11px;
-  text-transform: uppercase;
-}
-
-.amount-input-shell,
-.field-block textarea {
-  width: 100%;
-  border: 1px solid #efe7de;
-  border-radius: 18px;
-  background: #fffaf5;
-}
-
-.amount-input-shell {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-  padding: 0 16px;
-}
-
-.amount-input-shell em {
-  color: #d45e24;
-  font-style: normal;
-  font-size: 22px;
-  font-weight: 700;
-}
-
-.amount-input-shell input,
-.field-block textarea {
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: #1f1d1a;
-}
-
-.amount-input-shell input {
-  min-width: 0;
-  height: 58px;
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.field-block textarea {
-  min-height: 92px;
+.deduction-field :deep(.van-cell) {
   padding: 14px 16px;
-  resize: vertical;
+}
+
+.deduction-field :deep(.van-field__label) {
+  width: 84px;
+  color: #8c847d;
+  font-size: 12px;
+}
+
+.deduction-field :deep(.van-field__value) {
+  color: #1f1d1a;
+}
+
+.deduction-field :deep(.van-field__control) {
+  color: #1f1d1a;
   font-size: 14px;
   line-height: 1.6;
+}
+
+.deduction-amount-field :deep(.van-field__control) {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.deduction-remark-field :deep(.van-field__control) {
+  min-height: 68px;
+}
+
+.deduction-remark-field :deep(.van-field__word-limit) {
+  margin-top: 6px;
+  font-size: 11px;
 }
 
 .field-hint {
