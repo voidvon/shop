@@ -33,14 +33,12 @@ const remarkInput = ref('')
 const uploadedImages = ref<MerchantDeductionUploadedImage[]>([])
 const scanResult = ref<MerchantDeductionScanResult | null>(null)
 const submitPopupVisible = ref(false)
-const lastSuccessMessage = ref('')
 const lastResolvedDisplayName = ref('')
 const isUploading = ref(false)
 const isScanning = ref(false)
 const isSubmitting = ref(false)
 const feedbackToastVisibleMs = 3000
 let activeLoadingToast: ToastWrapperInstance | null = null
-let successResetTimer: ReturnType<typeof globalThis.setTimeout> | null = null
 
 const stopAuthSubscription = memberAuthSession.subscribe((snapshot) => {
   authSnapshot.value = snapshot
@@ -48,7 +46,6 @@ const stopAuthSubscription = memberAuthSession.subscribe((snapshot) => {
 
 onUnmounted(() => {
   closeActiveLoadingToast()
-  clearSuccessResetTimer()
   stopAuthSubscription()
 })
 
@@ -185,7 +182,6 @@ function normalizeAmountInput(rawValue: string) {
 
 function handleAmountInput(value: string) {
   amountInput.value = normalizeAmountInput(value)
-  lastSuccessMessage.value = ''
 }
 
 function createBlockingLoadingToast(message: string) {
@@ -211,20 +207,6 @@ function showPersistentFailToast(message: string) {
   })
 }
 
-function clearSuccessResetTimer() {
-  if (successResetTimer !== null) {
-    globalThis.clearTimeout(successResetTimer)
-    successResetTimer = null
-  }
-}
-
-function scheduleResetDraft() {
-  clearSuccessResetTimer()
-  successResetTimer = globalThis.setTimeout(() => {
-    resetDraft()
-  }, feedbackToastVisibleMs)
-}
-
 function openImagePicker() {
   if (!canUploadImage.value) {
     return
@@ -235,7 +217,6 @@ function openImagePicker() {
 
 function removeUploadedImage(imagePath: string) {
   uploadedImages.value = uploadedImages.value.filter((image) => image.path !== imagePath)
-  lastSuccessMessage.value = ''
 }
 
 function openSubmitPopup() {
@@ -285,7 +266,6 @@ async function handleImageSelection(event: Event) {
       uploadedImages.value = [...uploadedImages.value, uploadedImage]
     }
 
-    lastSuccessMessage.value = ''
     showSuccessToast(`已上传 ${filesToUpload.length} 张图片`)
   } catch (error) {
     showPersistentFailToast(error instanceof Error ? error.message : '图片上传失败')
@@ -326,7 +306,6 @@ async function handleScanCode() {
     createBlockingLoadingToast('识别中...')
     scanResult.value = await merchantDeductionService.scanCode(rawCode)
     submitPopupVisible.value = true
-    lastSuccessMessage.value = ''
     showSuccessToast('付款码识别成功')
   } catch (error) {
     const message = error instanceof Error ? error.message : '付款码识别失败'
@@ -342,13 +321,11 @@ async function handleScanCode() {
 }
 
 function resetDraft() {
-  clearSuccessResetTimer()
   amountInput.value = ''
   remarkInput.value = ''
   uploadedImages.value = []
   scanResult.value = null
   submitPopupVisible.value = false
-  lastSuccessMessage.value = ''
   clearFileInput()
 }
 
@@ -387,12 +364,11 @@ async function handleSubmitDeduction() {
       remark: remarkInput.value,
     })
 
-    lastSuccessMessage.value = result.successMessage
+    resetDraft()
     showSuccessToast({
       duration: feedbackToastVisibleMs,
-      message: result.successMessage,
+      message: result.successMessage || '操作成功',
     })
-    scheduleResetDraft()
   } catch (error) {
     closeActiveLoadingToast()
     showPersistentFailToast(error instanceof Error ? error.message : '扣款失败')
@@ -538,10 +514,7 @@ async function handleSubmitDeduction() {
     >
       <section class="submit-sheet">
         <header class="submit-sheet-head">
-          <div>
-            <strong>确认扣款</strong>
-            <p>{{ scanResult?.payerName || '已识别付款对象' }}</p>
-          </div>
+          <strong>确认扣款</strong>
           <button class="submit-sheet-close" type="button" @click="submitPopupVisible = false">
             关闭
           </button>
@@ -549,31 +522,18 @@ async function handleSubmitDeduction() {
 
         <div class="submit-summary">
           <div>
-            <span>本次金额</span>
+            <span>金额</span>
             <strong>{{ parsedAmount === null ? '¥0.00' : `¥${parsedAmount.toFixed(2)}` }}</strong>
           </div>
           <div>
-            <span>扣款余额</span>
-            <strong>{{ selectedBalanceType?.name || '未选择' }}</strong>
-          </div>
-          <div>
-            <span>图片数量</span>
-            <strong>{{ uploadedImages.length }} 张</strong>
+            <span>备注</span>
+            <strong>{{ remarkInput.trim() || '无' }}</strong>
           </div>
         </div>
-
-        <dl v-if="scanResult" class="submit-scan-grid">
-          <div v-for="row in scanResult.summaryRows" :key="`popup-${row.label}-${row.value}`">
-            <dt>{{ row.label }}</dt>
-            <dd>{{ row.value }}</dd>
-          </div>
-        </dl>
 
         <button class="submit-button" :disabled="!canSubmit" type="button" @click="handleSubmitDeduction">
           {{ submitButtonLabel }}
         </button>
-
-        <p v-if="lastSuccessMessage" class="field-hint field-hint-success">{{ lastSuccessMessage }}</p>
       </section>
     </van-popup>
   </section>
@@ -724,10 +684,6 @@ async function handleSubmitDeduction() {
   color: #d14343;
 }
 
-.field-hint-success {
-  color: #15803d;
-}
-
 .upload-section {
   display: grid;
   gap: 12px;
@@ -826,7 +782,6 @@ async function handleSubmitDeduction() {
 }
 
 .scan-result-grid div,
-.submit-scan-grid div,
 .submit-summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -834,7 +789,6 @@ async function handleSubmitDeduction() {
 }
 
 .scan-result-grid dd,
-.submit-scan-grid dd,
 .submit-summary strong {
   margin: 4px 0 0;
   color: #1f1d1a;
@@ -880,25 +834,6 @@ async function handleSubmitDeduction() {
   font-size: 18px;
 }
 
-.submit-sheet-head p {
-  margin: 6px 0 0;
-  color: #8c847d;
-  font-size: 13px;
-}
-
-.submit-scan-grid {
-  display: grid;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: #fff7f1;
-}
-
-.submit-scan-grid dt {
-  color: #8c847d;
-  font-size: 12px;
-}
-
 .submit-button {
   width: 100%;
   padding: 15px 18px;
@@ -911,7 +846,6 @@ async function handleSubmitDeduction() {
   .identity-card,
   .hero-meta-grid,
   .scan-result-grid div,
-  .submit-scan-grid div,
   .submit-summary {
     grid-template-columns: 1fr;
   }
