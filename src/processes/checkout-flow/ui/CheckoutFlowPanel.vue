@@ -5,7 +5,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { useBackendRuntime } from '@/app/providers/backend'
-import { currentBackendLabel } from '@/shared/config/backend'
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 
@@ -25,13 +24,13 @@ const {
   isSubmitting,
   preview,
   selectedAddress,
-  sourceLabel,
   submissionMessage,
 } = storeToRefs(checkoutStore)
 
 const previewLines = computed(() => preview.value?.lines ?? [])
 const previewBalanceGroups = computed(() => preview.value?.groups ?? [])
 const isCouponEnabled = computed(() => runtime.capabilities.coupon)
+const isInvoiceEnabled = computed(() => runtime.capabilities.invoice)
 const previewCouponGroups = computed(() => (isCouponEnabled.value ? previewBalanceGroups.value : []))
 const payableAmountText = computed(() => formatAmount(preview.value?.payableAmount ?? 0))
 const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAmount ?? 0))
@@ -249,7 +248,7 @@ function formatCouponGroupValue(
               :title="`${account.balanceTypeName}：`"
               :value="`¥${formatAmount(account.availableAmount)}`"
             />
-            <van-cell title="发票信息：" value="暂不支持" />
+            <van-cell v-if="isInvoiceEnabled" title="发票信息：" value="暂不支持" />
           </van-cell-group>
 
           <p v-if="hasInsufficientBalance" class="state-card state-card-error">
@@ -333,24 +332,12 @@ function formatCouponGroupValue(
 
           <section class="explain-card">
             <div class="explain-row">
-              <span>订单来源</span>
-              <strong class="explain-value">{{ sourceLabel }}</strong>
-            </div>
-            <div class="explain-row">
               <span>商品小计</span>
               <strong class="explain-amount">{{ subtotalAmountText }}</strong>
             </div>
             <div class="explain-row">
               <span>优惠减免</span>
               <strong class="explain-amount">{{ discountAmountText }}</strong>
-            </div>
-            <div class="explain-row">
-              <span>结算分组数</span>
-              <strong class="explain-amount">{{ previewBalanceGroups.length }}</strong>
-            </div>
-            <div class="explain-row">
-              <span>数据来源</span>
-              <strong class="explain-value">{{ currentBackendLabel }}</strong>
             </div>
           </section>
         </template>

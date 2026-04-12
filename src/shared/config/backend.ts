@@ -7,6 +7,24 @@ const backendLabels: Record<BackendType, string> = {
   'backend-a': 'Backend A Adapter',
 }
 
+function resolveBoolean(rawValue: string | undefined, fallback: boolean) {
+  if (!rawValue) {
+    return fallback
+  }
+
+  const normalized = rawValue.trim().toLowerCase()
+
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) {
+    return true
+  }
+
+  if (['0', 'false', 'no', 'off'].includes(normalized)) {
+    return false
+  }
+
+  return fallback
+}
+
 function isBackendType(value: string): value is BackendType {
   return backendTypes.includes(value as BackendType)
 }
@@ -22,3 +40,9 @@ export function getBackendLabel(type: BackendType) {
 }
 
 export const currentBackendLabel = getBackendLabel(backendTarget)
+
+export function resolveBackendAInvoiceEnabled(
+  rawValue = import.meta.env.VITE_BACKEND_A_ENABLE_INVOICE,
+) {
+  return resolveBoolean(rawValue, false)
+}

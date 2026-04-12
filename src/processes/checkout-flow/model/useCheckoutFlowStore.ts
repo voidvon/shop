@@ -55,9 +55,6 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   const balanceAccounts = ref<BalanceAccountInfo[]>([])
   const availableBalance = ref(0)
   const submissionMessage = ref<string | null>(null)
-  const sourceLabel = computed(() =>
-    preview.value?.source === 'cart' ? '从购物车进入' : '从立即购买进入',
-  )
 
   async function syncSelectedAddress(options?: { preferredAddressId?: string }) {
     await memberAddressStore.syncCurrentUserAddresses()
@@ -240,7 +237,6 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     preview,
     selectAddress,
     selectedAddress,
-    sourceLabel,
     submissionMessage,
     submitCurrentOrder,
     syncSelectedAddress,

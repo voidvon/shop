@@ -90,6 +90,15 @@ VITE_BACKEND_A_WECHAT_OAUTH_URL="https://your-wechat-oauth-entry" \
 npm run dev
 ```
 
+`backend-a` 默认隐藏发票入口；如果后端后续补齐发票能力，可显式开启：
+
+```sh
+VITE_BACKEND_TARGET=backend-a \
+VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
+VITE_BACKEND_A_ENABLE_INVOICE=true \
+npm run dev
+```
+
 如果要接“绑定卡券”的微信扫码，当前项目会直接走 `backend-a` 的 `GET /api/v1/wechat/jssdk-signature`。前端直接传当前页面完整地址，后端会自动去掉 hash 参与签名；响应至少包含 `appId / timestamp / nonceStr / signature`，并额外返回 `url / rawString` 便于调试。
 
 ```sh

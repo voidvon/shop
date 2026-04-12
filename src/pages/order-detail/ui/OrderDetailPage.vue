@@ -3,6 +3,7 @@ import { computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
+import { useBackendRuntime } from '@/app/providers/backend'
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
@@ -24,6 +25,7 @@ function canUseAction(actions: { enabled: boolean; key: string }[], key: string)
 
 const route = useRoute()
 const router = useRouter()
+const runtime = useBackendRuntime()
 const {
   cancelOrder,
   confirmReceipt,
@@ -34,6 +36,7 @@ const {
 } = useOrderDetailPageModel()
 
 const orderId = computed(() => normalizeRouteParam(route.params.orderId))
+const isInvoiceEnabled = computed(() => runtime.capabilities.invoice)
 
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
@@ -281,7 +284,7 @@ onMounted(() => {
               <span>配送备注</span>
               <strong>{{ orderDetailPageData.deliveryRemark ?? '无' }}</strong>
             </div>
-            <div class="info-row">
+            <div v-if="isInvoiceEnabled" class="info-row">
               <span>发票信息</span>
               <strong>{{ orderDetailPageData.invoiceInfo ?? '未开票' }}</strong>
             </div>

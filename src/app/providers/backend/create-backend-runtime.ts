@@ -100,7 +100,12 @@ import {
   createBrowserOrderDetailPageDataReader,
 } from '@/processes/trade/infrastructure/create-browser-order-detail-page-data-reader'
 import { getMockStore, mockTradeData } from '@/shared/mocks'
-import { backendTarget, getBackendLabel, type BackendType } from '@/shared/config/backend'
+import {
+  backendTarget,
+  getBackendLabel,
+  resolveBackendAInvoiceEnabled,
+  type BackendType,
+} from '@/shared/config/backend'
 import {
   resolveRuntimeEnabledModules,
   supportedModulesByBackend,
@@ -110,6 +115,7 @@ import type { AfterSaleListPageData } from '@/shared/types/modules'
 
 export interface BackendCapabilities {
   coupon: boolean
+  invoice: boolean
   memberPrice: boolean
   wechatLogout: boolean
 }
@@ -148,17 +154,24 @@ export interface BackendRuntime {
   type: BackendType
 }
 
-const capabilitiesByBackend: Record<BackendType, BackendCapabilities> = {
-  mock: {
-    coupon: false,
-    memberPrice: false,
-    wechatLogout: true,
-  },
-  'backend-a': {
-    coupon: false,
-    memberPrice: true,
-    wechatLogout: false,
-  },
+function resolveCapabilities(type: BackendType): BackendCapabilities {
+  switch (type) {
+    case 'backend-a':
+      return {
+        coupon: false,
+        invoice: resolveBackendAInvoiceEnabled(),
+        memberPrice: true,
+        wechatLogout: false,
+      }
+    case 'mock':
+    default:
+      return {
+        coupon: false,
+        invoice: true,
+        memberPrice: false,
+        wechatLogout: true,
+      }
+  }
 }
 
 function resolveProductRepository(type: BackendType) {
@@ -802,7 +815,7 @@ export function createBackendRuntime(type = backendTarget): BackendRuntime {
       securityService: memberSecurityService,
       session: memberAuthSession,
     },
-    capabilities: capabilitiesByBackend[type],
+    capabilities: resolveCapabilities(type),
     enabledModules,
     label: getBackendLabel(type),
     queries: {

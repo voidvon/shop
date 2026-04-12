@@ -3,6 +3,7 @@
 interface ImportMetaEnv {
   readonly VITE_BACKEND_TARGET?: 'mock' | 'backend-a'
   readonly VITE_BACKEND_A_BASE_URL?: string
+  readonly VITE_BACKEND_A_ENABLE_INVOICE?: string
   readonly VITE_BACKEND_A_TIMEOUT_MS?: string
   readonly VITE_BACKEND_A_MEMBER_ASSETS_BASE_URL?: string
   readonly VITE_BACKEND_A_MEMBER_ASSETS_TIMEOUT_MS?: string
