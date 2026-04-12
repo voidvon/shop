@@ -46,6 +46,12 @@ const insufficientBalanceMessage = computed(() => previewBalanceGroups.value
   .filter((group) => group.payableAmount > group.availableBalance)
   .map((group) => `${group.merchantName}-${group.balanceTypeName} 可用 ¥${formatAmount(group.availableBalance)}`)
   .join('；'))
+
+function isGeneralBalanceType(balanceTypeName: string) {
+  const normalizedName = balanceTypeName.trim()
+  return normalizedName === '通用余额' || normalizedName === '账户余额' || normalizedName.includes('通用')
+}
+
 const paymentOptions = computed<CheckoutPaymentOption[]>(() => {
   const paymentOptionMap = new Map<number, CheckoutPaymentOption>()
 
@@ -64,15 +70,20 @@ const paymentOptions = computed<CheckoutPaymentOption[]>(() => {
     currentOption.availableAmount = Math.max(currentOption.availableAmount, group.availableBalance)
   })
 
-  return [...paymentOptionMap.values()]
+  return [...paymentOptionMap.values()].sort((left, right) => {
+    const leftPriority = isGeneralBalanceType(left.balanceTypeName) ? 1 : 0
+    const rightPriority = isGeneralBalanceType(right.balanceTypeName) ? 1 : 0
+
+    if (leftPriority !== rightPriority) {
+      return leftPriority - rightPriority
+    }
+
+    return left.balanceTypeId - right.balanceTypeId
+  })
 })
-const selectedPaymentTypeId = ref<number | null>(null)
-const selectedPaymentOption = computed(() =>
-  paymentOptions.value.find((option) => option.balanceTypeId === selectedPaymentTypeId.value)
-  ?? paymentOptions.value[0]
-  ?? null,
+const paymentMethodLabel = computed(() =>
+  paymentOptions.value.length > 1 ? '按余额类型自动扣款' : (paymentOptions.value[0]?.balanceTypeName ?? '余额账户支付'),
 )
-const paymentMethodLabel = computed(() => selectedPaymentOption.value?.balanceTypeName ?? '余额账户支付')
 const buyerMessage = ref('')
 const selectedAddressQueryId = computed(() =>
   typeof route.query.selectedAddressId === 'string'
@@ -241,26 +252,6 @@ function formatCouponGroupValue(
   return '无可用优惠券'
 }
 
-function selectPaymentType(balanceTypeId: number) {
-  selectedPaymentTypeId.value = balanceTypeId
-}
-
-watch(
-  paymentOptions,
-  (options) => {
-    if (options.length === 0) {
-      selectedPaymentTypeId.value = null
-      return
-    }
-
-    const [firstOption] = options
-
-    if (!options.some((option) => option.balanceTypeId === selectedPaymentTypeId.value)) {
-      selectedPaymentTypeId.value = firstOption?.balanceTypeId ?? null
-    }
-  },
-  { immediate: true },
-)
 </script>
 
 <template>
@@ -293,26 +284,11 @@ watch(
 
           <van-cell-group class="checkout-cell-group meta-card">
             <van-cell title="支付方式：" :value="paymentMethodLabel" />
-            <div
-              v-if="paymentOptions.length > 1"
-              class="payment-option-list"
-            >
-              <button
-                v-for="option in paymentOptions"
-                :key="`payment-option-${option.balanceTypeId}`"
-                class="payment-option-button"
-                :class="{ 'payment-option-button-active': option.balanceTypeId === selectedPaymentTypeId }"
-                type="button"
-                @click="selectPaymentType(option.balanceTypeId)"
-              >
-                <span class="payment-option-name">{{ option.balanceTypeName }}</span>
-                <span class="payment-option-amount">可用 ¥{{ formatAmount(option.availableAmount) }}</span>
-              </button>
-            </div>
             <van-cell
-              v-else-if="selectedPaymentOption"
-              :title="`${selectedPaymentOption.balanceTypeName}：`"
-              :value="`¥${formatAmount(selectedPaymentOption.availableAmount)}`"
+              v-for="option in paymentOptions"
+              :key="`payment-option-${option.balanceTypeId}`"
+              :title="`${option.balanceTypeName}：`"
+              :value="`¥${formatAmount(option.availableAmount)}`"
             />
             <van-cell v-if="isInvoiceEnabled" title="发票信息：" value="暂不支持" />
           </van-cell-group>
@@ -612,42 +588,6 @@ watch(
 .meta-card :deep(.van-cell__title) {
   color: #3c3b39;
   font-size: 14px;
-  font-weight: 500;
-}
-
-.payment-option-list {
-  display: grid;
-  gap: 10px;
-  padding: 0 16px 14px;
-}
-
-.payment-option-button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 44px;
-  padding: 12px 14px;
-  border: 1px solid #ece6de;
-  border-radius: 12px;
-  background: #faf8f5;
-  text-align: left;
-}
-
-.payment-option-button-active {
-  border-color: #d89575;
-  background: #fff4ef;
-}
-
-.payment-option-name {
-  color: #3c3b39;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.payment-option-amount {
-  color: #6d6c6a;
-  font-size: 13px;
   font-weight: 500;
 }
 
