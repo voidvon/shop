@@ -242,6 +242,76 @@ function buildMessageSources(record: BackendACustomerServiceRecord) {
   return [record, sender]
 }
 
+function pickLatestConversationMessageRecord(record: BackendACustomerServiceRecord) {
+  const embeddedMessages = ensureArray(record.messages).filter(isRecord)
+
+  if (embeddedMessages.length === 0) {
+    return pickRecordFromSources([record], ['last_message', 'lastMessage', 'latest_message', 'latestMessage'])
+  }
+
+  return embeddedMessages.reduce<BackendACustomerServiceRecord | null>((latestRecord, currentRecord) => {
+    if (!latestRecord) {
+      return currentRecord
+    }
+
+    const latestId = pickNumberFromSources([latestRecord], ['id', 'message_id', 'messageId']) ?? -1
+    const currentId = pickNumberFromSources([currentRecord], ['id', 'message_id', 'messageId']) ?? -1
+
+    if (currentId !== latestId) {
+      return currentId > latestId ? currentRecord : latestRecord
+    }
+
+    const latestTime = Date.parse(
+      pickStringFromSources([latestRecord], ['created_at', 'createdAt', 'sent_at', 'sentAt', 'updated_at', 'updatedAt']) ?? '',
+    )
+    const currentTime = Date.parse(
+      pickStringFromSources([currentRecord], ['created_at', 'createdAt', 'sent_at', 'sentAt', 'updated_at', 'updatedAt']) ?? '',
+    )
+
+    return currentTime > latestTime ? currentRecord : latestRecord
+  }, null)
+}
+
+function resolveConversationUnreadCount(record: BackendACustomerServiceRecord) {
+  const explicitUnreadCount = pickNumberFromSources(
+    [record],
+    ['unread_message_count', 'unreadMessageCount', 'unread_count', 'unreadCount', 'unread'],
+  )
+
+  if (explicitUnreadCount !== null) {
+    return Math.max(0, explicitUnreadCount)
+  }
+
+  const latestMessage = pickLatestConversationMessageRecord(record)
+
+  if (!latestMessage) {
+    return 0
+  }
+
+  const userLastReadMessageId = pickNumberFromSources(
+    [record],
+    ['user_last_read_message_id', 'userLastReadMessageId'],
+  )
+
+  if (userLastReadMessageId === null) {
+    return 0
+  }
+
+  const latestMessageId = pickNumberFromSources([latestMessage], ['id', 'message_id', 'messageId'])
+
+  if (latestMessageId === null || latestMessageId <= userLastReadMessageId) {
+    return 0
+  }
+
+  const latestMessageRole = resolveSenderRole(
+    pickStringFromSources([latestMessage], ['sender_type', 'senderType', 'role']),
+    pickStringFromSources([latestMessage], ['direction', 'from_type', 'fromType']),
+    pickNumberFromSources([latestMessage], ['is_admin', 'isAdmin']),
+  )
+
+  return latestMessageRole === 'member' ? 0 : 1
+}
+
 export function normalizeBackendACustomerServiceConversationCollection(input: unknown) {
   return normalizeCollection(input)
 }
@@ -277,7 +347,7 @@ export function mapBackendACustomerServiceConversationSummary(
     status: statusInfo.status,
     statusLabel: pickStringFromSources(sources, ['status_name', 'statusName']) ?? statusInfo.statusLabel,
     subject: pickStringFromSources(sources, ['subject', 'title', 'name']) ?? '客服咨询',
-    unreadCount: Math.max(0, pickNumberFromSources(sources, ['unread_count', 'unreadCount', 'unread']) ?? 0),
+    unreadCount: resolveConversationUnreadCount(record),
   }
 }
 

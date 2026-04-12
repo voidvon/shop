@@ -285,9 +285,7 @@ onActivated(() => {
               <div class="conversation-avatar">
                 {{ (conversation.sourceLabel || '客服').slice(0, 1) }}
               </div>
-              <span v-if="conversation.unreadCount > 0" class="conversation-avatar-badge">
-                {{ conversation.unreadCount > 99 ? '99+' : conversation.unreadCount }}
-              </span>
+              <span v-if="conversation.unreadCount > 0" class="conversation-avatar-dot" aria-hidden="true" />
             </div>
 
             <div class="conversation-main">
@@ -298,9 +296,6 @@ onActivated(() => {
 
               <div class="conversation-foot">
                 <p class="conversation-preview">{{ conversation.previewText }}</p>
-                <span v-if="conversation.unreadCount > 0" class="conversation-unread">
-                  {{ conversation.unreadCount > 99 ? '99+' : conversation.unreadCount }}
-                </span>
               </div>
 
               <div class="conversation-meta">
@@ -416,21 +411,15 @@ onActivated(() => {
   flex: none;
 }
 
-.conversation-avatar-badge {
+.conversation-avatar-dot {
   position: absolute;
-  right: -6px;
-  top: -4px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border: 1px solid #fff;
-  border-radius: 999px;
+  right: -2px;
+  top: -2px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #fff;
+  border-radius: 50%;
   background: #fa5151;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 16px;
-  text-align: center;
 }
 
 .service-entry-copy {
@@ -594,19 +583,6 @@ onActivated(() => {
 
 .conversation-source {
   color: #999;
-}
-
-.conversation-unread {
-  flex: none;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: #fa5151;
-  color: #fff;
-  font-size: 12px;
-  line-height: 20px;
-  text-align: center;
 }
 
 .empty-state {
