@@ -34,6 +34,7 @@ const {
 } = useOrderListPageModel()
 const customerServiceUnreadStore = useCustomerServiceUnreadStore()
 const isReviewEnabled = useModuleAvailability('review')
+const isVirtualOrderEnabled = useModuleAvailability('virtual-order')
 
 const keyword = ref('')
 
@@ -271,7 +272,7 @@ onBeforeUnmount(() => {
         @submit="submitSearch"
       />
 
-      <button class="type-filter" type="button">
+      <button v-if="isVirtualOrderEnabled" class="type-filter" type="button">
         <span>实物</span>
         <van-icon name="arrow-down" size="14" />
       </button>

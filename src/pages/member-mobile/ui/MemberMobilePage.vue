@@ -40,8 +40,8 @@ async function handleSave() {
   isSubmitting.value = true
 
   try {
-    const result = await updateMemberMobile({ mobile: normalizedMobile.value })
-    showSuccessToast(`手机号已更新为 ${result.mobile}`)
+    await updateMemberMobile({ mobile: normalizedMobile.value })
+    showSuccessToast('手机号已更新')
   } catch (error) {
     showToast(error instanceof Error ? error.message : '手机号保存失败')
   } finally {
