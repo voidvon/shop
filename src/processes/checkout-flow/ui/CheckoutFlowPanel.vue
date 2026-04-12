@@ -252,7 +252,7 @@ function formatCouponGroupValue(
           </van-cell-group>
 
           <p v-if="hasInsufficientBalance" class="state-card state-card-error">
-            当前有分组余额不足：{{ insufficientBalanceMessage }}
+            余额不足：{{ insufficientBalanceMessage }}
           </p>
 
           <section class="merchant-card">
