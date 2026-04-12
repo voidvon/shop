@@ -281,8 +281,13 @@ onActivated(() => {
             class="conversation-card"
             @click="openConversation(conversation.id)"
           >
-            <div class="conversation-avatar">
-              {{ (conversation.sourceLabel || '客服').slice(0, 1) }}
+            <div class="conversation-avatar-wrap">
+              <div class="conversation-avatar">
+                {{ (conversation.sourceLabel || '客服').slice(0, 1) }}
+              </div>
+              <span v-if="conversation.unreadCount > 0" class="conversation-avatar-badge">
+                {{ conversation.unreadCount > 99 ? '99+' : conversation.unreadCount }}
+              </span>
             </div>
 
             <div class="conversation-main">
@@ -404,6 +409,28 @@ onActivated(() => {
   color: #fff;
   font-size: 18px;
   font-weight: 700;
+}
+
+.conversation-avatar-wrap {
+  position: relative;
+  flex: none;
+}
+
+.conversation-avatar-badge {
+  position: absolute;
+  right: -6px;
+  top: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border: 1px solid #fff;
+  border-radius: 999px;
+  background: #fa5151;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
 }
 
 .service-entry-copy {
