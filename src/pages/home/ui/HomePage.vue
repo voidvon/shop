@@ -5,6 +5,7 @@ import { RouterLink, useRouter } from 'vue-router'
 
 import { useMemberFavoriteStore } from '@/entities/member-favorite'
 import { ProductCompactCard } from '@/entities/product'
+import { useCustomerServiceUnreadStore } from '@/processes/customer-service'
 import { isWechatBrowser } from '@/shared/lib/wechat-browser'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
@@ -40,6 +41,7 @@ const {
 } = useHomePageModel()
 const router = useRouter()
 const memberFavoriteStore = useMemberFavoriteStore()
+const customerServiceUnreadStore = useCustomerServiceUnreadStore()
 const promoVideoRef = ref<HTMLVideoElement | null>(null)
 const promoVideoUrl = computed(() => homePageData.value.promo_video)
 const carouselItems = computed(() =>
@@ -72,6 +74,10 @@ function syncFavoriteState(force = false) {
 
 function goToSearchPage() {
   void router.push({ name: 'search' })
+}
+
+function goToCustomerServicePage() {
+  void router.push({ name: 'member-customer-service' })
 }
 
 async function handleRefresh() {
@@ -282,7 +288,28 @@ watch(promoVideoUrl, () => {
       <van-sticky>
         <div class="sticky-search">
           <div class="sticky-search-inner">
-            <SearchField placeholder="搜索商品" readonly @click="goToSearchPage" />
+            <SearchField
+              class="sticky-search-field"
+              placeholder="搜索商品"
+              readonly
+              @click="goToSearchPage"
+            />
+
+            <button
+              class="message-entry-button"
+              type="button"
+              aria-label="打开消息列表"
+              @click="goToCustomerServicePage"
+            >
+              <van-badge
+                :content="customerServiceUnreadStore.totalUnreadCount > 0 ? customerServiceUnreadStore.totalUnreadCount : undefined"
+                :max="99"
+                :offset="[-2, 2]"
+                class="message-entry-badge"
+              >
+                <van-icon name="chat-o" size="22" />
+              </van-badge>
+            </button>
           </div>
         </div>
       </van-sticky>
@@ -519,7 +546,55 @@ watch(promoVideoUrl, () => {
 }
 
 .sticky-search-inner {
+  display: flex;
+  gap: 12px;
+  align-items: center;
   padding: 16px 24px 12px;
+}
+
+.sticky-search-field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.message-entry-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #fff;
+  color: #3c3b39;
+  box-shadow: 0 8px 18px rgba(60, 59, 57, 0.08);
+}
+
+.message-entry-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message-entry-badge :deep(.van-badge__wrapper) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message-entry-badge :deep(.van-badge__content) {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border: 1px solid #fff;
+  background: #ea580c;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
 }
 
 .category-grid {
