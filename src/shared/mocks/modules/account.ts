@@ -128,11 +128,10 @@ export const mockProfileNameResult: ProfileNameResult = {
 
 export const mockAboutPageData: AboutPageData = {
   companyName: '武汉城市文创科技有限公司',
-  copyrightYear: 2026,
-  operatorName: '武汉城市文创科技有限公司',
-  organizerName: '武汉文化消费促进中心',
-  platformBackground: '面向城市文化消费与商户联动的公共服务平台。',
-  platformMission: '连接本地特色商品、文化活动与消费补贴，形成可持续的数字化消费入口。',
+  companyAddress: '湖北省武汉市江汉区青年路 99 号城市文创中心 16 楼',
+  customerServicePhone: '400-800-8899',
+  customerServiceWechat: 'whwc_service',
+  businessPhone: '027-85551234',
 }
 
 export const mockAddressBookPageData = {

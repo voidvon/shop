@@ -3,12 +3,11 @@ import { ref } from 'vue'
 import { useMemberCenterQuery, type MemberAboutPageData } from '@/processes/member-center'
 
 const emptyMemberAboutPageData: MemberAboutPageData = {
+  businessPhone: '',
+  companyAddress: '',
   companyName: '',
-  copyrightYear: new Date().getFullYear(),
-  operatorName: '',
-  organizerName: '',
-  platformBackground: '',
-  platformMission: '',
+  customerServicePhone: '',
+  customerServiceWechat: '',
 }
 
 export function useMemberAboutPageModel() {

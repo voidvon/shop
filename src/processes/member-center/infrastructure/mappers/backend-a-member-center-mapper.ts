@@ -83,6 +83,12 @@ export function mapBackendAMemberSettingsPageData(authResult: AuthResult | null)
       value: authResult?.userInfo.nickname ?? 'Backend A 用户',
     },
     {
+      key: 'mobile',
+      label: '手机号码',
+      route: '/member/mobile',
+      value: mobile,
+    },
+    {
       key: 'about',
       label: '关于我们',
       route: '/member/about',
@@ -106,26 +112,12 @@ export function mapBackendAMemberProfileNamePageData(authResult: AuthResult | nu
 export function mapBackendAMemberAboutPageData(
   platformSettings?: BackendAPlatformSettingsDto | null,
 ): MemberAboutPageData {
-  const companyName = platformSettings?.company_name?.trim() || 'Backend A 城市文化服务有限公司'
-  const operatorName = companyName
-  const organizerName = platformSettings?.domain?.trim()
-    || platformSettings?.business_phone?.trim()
-    || 'Backend A 消费促进联合体'
-  const background = [
-    platformSettings?.address?.trim() || null,
-    platformSettings?.icp_number?.trim() || null,
-  ].filter((value): value is string => Boolean(value)).join(' / ')
-  const mission = platformSettings?.customer_service_wechat?.trim()
-    ? `平台客服微信：${platformSettings.customer_service_wechat.trim()}`
-    : '通过统一契约和后端适配层，提供稳定的商城会员体验。'
-
   return {
-    companyName,
-    copyrightYear: new Date().getFullYear(),
-    operatorName,
-    organizerName,
-    platformBackground: background || '面向多商户、多业态城市消费场景的统一会员与交易适配前端。',
-    platformMission: mission,
+    businessPhone: platformSettings?.business_phone?.trim() || '',
+    companyAddress: platformSettings?.address?.trim() || '',
+    companyName: platformSettings?.company_name?.trim() || 'Backend A 城市文化服务有限公司',
+    customerServicePhone: platformSettings?.customer_service_phone?.trim() || '',
+    customerServiceWechat: platformSettings?.customer_service_wechat?.trim() || '',
   }
 }
 

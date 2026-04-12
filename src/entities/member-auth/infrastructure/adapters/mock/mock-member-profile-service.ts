@@ -5,6 +5,8 @@ import type { MemberAuthSession } from '../../../domain/member-auth-session'
 import type {
   BindMemberMobileByWechatResult,
   MemberProfileService,
+  UpdateMemberMobileCommand,
+  UpdateMemberMobileResult,
   UpdateMemberNicknameCommand,
 } from '../../../domain/member-profile-service'
 
@@ -57,6 +59,31 @@ export function createMockMemberProfileService(memberAuthSession: MemberAuthSess
       }
 
       const mobile = authResult.userInfo.mobile ?? createMockWechatMobile()
+
+      memberAuthSession.setAuthResult(
+        buildNextAuthResult(authResult, mobile),
+        { persistence: resolvePersistence() },
+      )
+
+      return { mobile }
+    },
+
+    async updateMobile(command: UpdateMemberMobileCommand): Promise<UpdateMemberMobileResult> {
+      const authResult = memberAuthSession.getSnapshot().authResult
+
+      if (!authResult) {
+        throw new Error('当前未登录，无法保存手机号')
+      }
+
+      const mobile = command.mobile.replace(/\D/g, '').slice(0, 11)
+
+      if (!mobile) {
+        throw new Error('请输入手机号')
+      }
+
+      if (!/^1\d{10}$/.test(mobile)) {
+        throw new Error('请输入正确手机号')
+      }
 
       memberAuthSession.setAuthResult(
         buildNextAuthResult(authResult, mobile),

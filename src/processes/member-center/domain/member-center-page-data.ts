@@ -89,11 +89,10 @@ export interface MemberProfileNamePageData {
 
 export interface MemberAboutPageData {
   companyName: string
-  copyrightYear: number
-  operatorName: string
-  organizerName: string
-  platformBackground: string
-  platformMission: string
+  companyAddress: string
+  customerServicePhone: string
+  customerServiceWechat: string
+  businessPhone: string
 }
 
 export interface MemberCardBindPageData {

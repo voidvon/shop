@@ -66,12 +66,11 @@ export interface ProfileNameResult {
 }
 
 export interface AboutPageData {
-  organizerName: string
-  operatorName: string
-  platformBackground: string
-  platformMission: string
-  copyrightYear: number
   companyName: string
+  companyAddress: string
+  customerServicePhone: string
+  customerServiceWechat: string
+  businessPhone: string
 }
 
 export interface AddressItem {

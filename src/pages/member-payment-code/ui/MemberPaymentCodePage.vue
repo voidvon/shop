@@ -81,7 +81,6 @@ onActivated(() => {
       <section class="hero-card">
         <span class="eyebrow">线下消费</span>
         <strong>向商户出示付款码</strong>
-        <p>页面激活时会重新拉取一次后端付款码，减少使用旧码的风险。</p>
       </section>
 
       <p v-if="errorMessage" class="status-text">{{ errorMessage }}</p>

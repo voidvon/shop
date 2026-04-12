@@ -17,6 +17,8 @@ export type { MemberAuthSession } from './domain/member-auth-session'
 export type {
   BindMemberMobileByWechatResult,
   MemberProfileService,
+  UpdateMemberMobileCommand,
+  UpdateMemberMobileResult,
   UpdateMemberNicknameCommand,
 } from './domain/member-profile-service'
 export type {

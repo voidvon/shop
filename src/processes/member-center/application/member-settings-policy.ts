@@ -12,7 +12,7 @@ export function shouldShowMemberMobileSetting(authResult: AuthResult | null) {
 
 export function filterVisibleMemberSettings(
   items: MemberSettingsItem[],
-  authResult: AuthResult | null,
+  _authResult: AuthResult | null,
 ) {
-  return items.filter((item) => item.key !== 'mobile' || shouldShowMemberMobileSetting(authResult))
+  return items
 }

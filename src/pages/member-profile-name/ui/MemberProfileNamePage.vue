@@ -10,7 +10,6 @@ import MemberSettingsSubpageLayout from '@/pages/member-settings/ui/MemberSettin
 import { useMemberProfileNamePageModel } from '../model/useMemberProfileNamePageModel'
 
 const {
-  errorMessage,
   isLoading,
   loadMemberProfileNamePage,
   memberProfileNamePageData,
@@ -71,14 +70,6 @@ onMounted(() => {
           :disabled="isLoading || isSubmitting"
           :maxlength="memberProfileNamePageData.maxLength"
           placeholder="请输入用户昵称"
-        />
-      </van-cell-group>
-
-      <van-cell-group inset>
-        <van-cell
-          title="说明"
-          :value="`${nickname.length}/${memberProfileNamePageData.maxLength}`"
-          :label="errorMessage ?? (isLoading ? '加载中...' : '昵称会同步展示在“我的”和“用户设置”页面。')"
         />
       </van-cell-group>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 
 import { useMemberSettingsSubpageNavigation } from '@/pages/member-settings/model/useMemberSettingsSubpageNavigation'
 import LoadingState from '@/shared/ui/LoadingState.vue'
@@ -10,6 +10,14 @@ import { useMemberAboutPageModel } from '../model/useMemberAboutPageModel'
 const { errorMessage, isLoading, loadMemberAboutPage, memberAboutPageData } = useMemberAboutPageModel()
 const { goBackToMemberSettings } = useMemberSettingsSubpageNavigation()
 
+const infoRows = computed(() => [
+  { key: 'company-name', label: '公司名称', value: memberAboutPageData.value.companyName },
+  { key: 'company-address', label: '公司地址', value: memberAboutPageData.value.companyAddress },
+  { key: 'customer-service-phone', label: '客服电话', value: memberAboutPageData.value.customerServicePhone },
+  { key: 'customer-service-wechat', label: '客服微信', value: memberAboutPageData.value.customerServiceWechat },
+  { key: 'business-phone', label: '商务电话', value: memberAboutPageData.value.businessPhone },
+])
+
 onMounted(() => {
   void loadMemberAboutPage()
 })
@@ -17,40 +25,26 @@ onMounted(() => {
 
 <template>
   <MemberSettingsSubpageLayout title="关于我们" @back="goBackToMemberSettings">
-    <section class="settings-stack">
-      <van-cell-group inset>
-        <van-cell
-          :title="memberAboutPageData.companyName || '平台信息'"
-          :label="memberAboutPageData.platformMission || '加载中...'"
-        />
-      </van-cell-group>
+    <p v-if="errorMessage" class="status-text">{{ errorMessage }}</p>
+    <LoadingState v-else-if="isLoading" />
 
-      <p v-if="errorMessage" class="status-text">{{ errorMessage }}</p>
-      <LoadingState v-else-if="isLoading" />
-
-      <van-cell-group v-else inset>
-        <van-cell title="主办单位" :value="memberAboutPageData.organizerName" />
-        <van-cell title="运营单位" :value="memberAboutPageData.operatorName" />
-        <van-cell title="平台背景" :label="memberAboutPageData.platformBackground" />
-        <van-cell title="平台使命" :label="memberAboutPageData.platformMission" />
-      </van-cell-group>
-    </section>
-
-    <p class="copyright">
-      Copyright © {{ memberAboutPageData.copyrightYear }}
-      {{ memberAboutPageData.companyName }}
-    </p>
+    <van-cell-group v-else inset class="info-group">
+      <van-cell
+        v-for="item in infoRows"
+        :key="item.key"
+        :title="item.label"
+        :value="item.value || '待补充'"
+      />
+    </van-cell-group>
   </MemberSettingsSubpageLayout>
 </template>
 
 <style scoped>
-.settings-stack {
-  display: grid;
-  gap: 12px;
+.info-group {
+  margin-top: 12px;
 }
 
-.status-text,
-.copyright {
+.status-text {
   margin: 0;
   color: #8c8a86;
   font-size: 13px;
@@ -59,11 +53,6 @@ onMounted(() => {
 
 .status-text {
   padding: 18px 0;
-  text-align: center;
-}
-
-.copyright {
-  padding: 14px 4px 0;
   text-align: center;
 }
 </style>
