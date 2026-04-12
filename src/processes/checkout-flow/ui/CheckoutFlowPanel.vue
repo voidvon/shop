@@ -89,6 +89,37 @@ const paymentOptions = computed<CheckoutPaymentOption[]>(() => {
     return left.balanceTypeId - right.balanceTypeId
   })
 })
+const subtotalBreakdownText = computed(() => {
+  const subtotalBreakdownMap = new Map<number, { balanceTypeName: string; totalAmount: number }>()
+
+  previewBalanceGroups.value.forEach((group) => {
+    const currentItem = subtotalBreakdownMap.get(group.balanceTypeId)
+
+    if (!currentItem) {
+      subtotalBreakdownMap.set(group.balanceTypeId, {
+        balanceTypeName: group.balanceTypeName,
+        totalAmount: group.totalAmount,
+      })
+      return
+    }
+
+    currentItem.totalAmount += group.totalAmount
+  })
+
+  return [...subtotalBreakdownMap.entries()]
+    .sort((left, right) => {
+      const leftPriority = isGeneralBalanceType(left[1].balanceTypeName) ? 1 : 0
+      const rightPriority = isGeneralBalanceType(right[1].balanceTypeName) ? 1 : 0
+
+      if (leftPriority !== rightPriority) {
+        return leftPriority - rightPriority
+      }
+
+      return left[0] - right[0]
+    })
+    .map(([, item]) => `${formatAmount(item.totalAmount)}(${item.balanceTypeName})`)
+    .join('+')
+})
 const paymentMethodLabel = computed(() =>
   paymentOptions.value.length > 1 ? '按余额类型自动扣款' : (paymentOptions.value[0]?.balanceTypeName ?? '余额账户支付'),
 )
@@ -369,7 +400,10 @@ function formatCouponGroupValue(
           <section class="explain-card">
             <div class="explain-row">
               <span>商品小计</span>
-              <strong class="explain-amount">{{ subtotalAmountText }}</strong>
+              <div class="explain-subtotal">
+                <span v-if="subtotalBreakdownText" class="explain-subtotal-breakdown">{{ subtotalBreakdownText }}</span>
+                <strong class="explain-subtotal-total">{{ subtotalAmountText }}</strong>
+              </div>
             </div>
             <div class="explain-row">
               <span>优惠减免</span>
@@ -513,6 +547,28 @@ function formatCouponGroupValue(
 .explain-amount {
   color: #ea580c;
   font-size: 18px;
+  font-weight: 700;
+}
+
+.explain-subtotal {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.explain-subtotal-breakdown {
+  color: #8c867e;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.explain-subtotal-total {
+  color: #3c3b39;
+  font-size: 16px;
   font-weight: 700;
 }
 
