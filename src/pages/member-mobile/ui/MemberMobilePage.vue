@@ -87,9 +87,12 @@ async function handleSave() {
 :deep(.settings-form) {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 :deep(.van-button) {
+  width: calc(100% - 32px);
   margin: 0 16px;
+  box-sizing: border-box;
 }
 </style>
