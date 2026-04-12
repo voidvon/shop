@@ -13,6 +13,7 @@ const POLLING_INTERVAL_MS = 12000
 const route = useRoute()
 const router = useRouter()
 const draftMessage = ref('')
+const composerInputRef = useTemplateRef<HTMLDivElement>('composerInputRef')
 const imageInputRef = useTemplateRef<HTMLInputElement>('imageInputRef')
 const messageListRef = useTemplateRef<HTMLDivElement>('messageListRef')
 
@@ -257,6 +258,19 @@ function openAttachmentPicker() {
   imageInputRef.value?.click()
 }
 
+function focusComposerInput() {
+  if (!canReply.value) {
+    return
+  }
+
+  const inputElement = composerInputRef.value?.querySelector('textarea, input') as
+    | HTMLTextAreaElement
+    | HTMLInputElement
+    | null
+
+  inputElement?.focus()
+}
+
 async function handleImageFileChange(event: Event) {
   if (!conversationId.value) {
     return
@@ -451,17 +465,23 @@ onBeforeUnmount(() => {
         <van-loading v-if="isUploadingImage" size="18" />
         <van-icon v-else name="photograph" size="20" />
       </button>
-      <van-field
-        v-model="draftMessage"
-        autosize
+      <div
+        ref="composerInputRef"
         class="composer-input"
-        maxlength="500"
-        rows="1"
-        type="textarea"
-        :disabled="!canReply"
-        :placeholder="footerPlaceholder"
-        @keydown="handleMessageKeydown"
-      />
+        @click="focusComposerInput"
+      >
+        <van-field
+          v-model="draftMessage"
+          autosize
+          class="composer-input-field"
+          maxlength="500"
+          rows="1"
+          type="textarea"
+          :disabled="!canReply"
+          :placeholder="footerPlaceholder"
+          @keydown="handleMessageKeydown"
+        />
+      </div>
       <van-button
         color="#07c160"
         :disabled="!canReply || !draftMessage.trim() || isUploadingImage"
@@ -699,33 +719,52 @@ onBeforeUnmount(() => {
 .composer-input {
   display: flex;
   align-items: center;
+  min-width: 0;
+  width: 100%;
   min-height: 30px;
   border-radius: 6px;
   background: #fff;
+  cursor: text;
 }
 
-.composer-input :deep(.van-cell) {
+.composer-input-field {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.composer-input-field :deep(.van-cell) {
   display: flex;
   align-items: center;
+  width: 100%;
   min-height: 30px;
   padding: 0 10px;
 }
 
-.composer-input :deep(.van-field__control) {
+.composer-input-field :deep(.van-field__control) {
+  width: 100%;
+  max-width: none;
   max-height: 120px;
   min-height: 20px;
   padding: 0;
   line-height: 20px;
 }
 
-.composer-input :deep(.van-field__body) {
+.composer-input-field :deep(.van-field__body) {
+  display: flex;
+  flex: 1;
   align-items: center;
+  min-width: 0;
+  width: 100%;
   min-height: 30px;
 }
 
-.composer-input :deep(.van-field__value) {
+.composer-input-field :deep(.van-field__value) {
   display: flex;
+  flex: 1;
   align-items: center;
+  min-width: 0;
+  width: 100%;
   padding: 2px 0;
 }
 
