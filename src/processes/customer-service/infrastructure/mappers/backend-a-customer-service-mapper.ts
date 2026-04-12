@@ -231,7 +231,11 @@ function resolveSenderRole(
 }
 
 function buildConversationSources(record: BackendACustomerServiceRecord) {
-  const lastMessage = pickRecordFromSources([record], ['last_message', 'lastMessage', 'latest_message', 'latestMessage'])
+  const lastMessageRecord = pickRecordFromSources(
+    [record],
+    ['last_message', 'lastMessage', 'latest_message', 'latestMessage'],
+  )
+  const lastMessage = lastMessageRecord ? normalizeRecord(lastMessageRecord) ?? lastMessageRecord : null
 
   return [record, lastMessage]
 }
@@ -246,7 +250,12 @@ function pickLatestConversationMessageRecord(record: BackendACustomerServiceReco
   const embeddedMessages = ensureArray(record.messages).filter(isRecord)
 
   if (embeddedMessages.length === 0) {
-    return pickRecordFromSources([record], ['last_message', 'lastMessage', 'latest_message', 'latestMessage'])
+    const lastMessageRecord = pickRecordFromSources(
+      [record],
+      ['last_message', 'lastMessage', 'latest_message', 'latestMessage'],
+    )
+
+    return lastMessageRecord ? normalizeRecord(lastMessageRecord) ?? lastMessageRecord : null
   }
 
   return embeddedMessages.reduce<BackendACustomerServiceRecord | null>((latestRecord, currentRecord) => {
@@ -312,6 +321,24 @@ function resolveConversationUnreadCount(record: BackendACustomerServiceRecord) {
   return latestMessageRole === 'member' ? 0 : 1
 }
 
+function resolveConversationPreviewText(record: BackendACustomerServiceRecord) {
+  const directPreviewText = pickStringFromSources(
+    [record],
+    ['last_message', 'lastMessage', 'latest_message', 'latestMessage', 'preview'],
+  )
+
+  if (directPreviewText) {
+    return directPreviewText
+  }
+
+  const sources = buildConversationSources(record)
+
+  return pickStringFromSources(
+    sources,
+    ['content', 'message', 'text', 'body', 'preview'],
+  )
+}
+
 export function normalizeBackendACustomerServiceConversationCollection(input: unknown) {
   return normalizeCollection(input)
 }
@@ -331,10 +358,7 @@ export function mapBackendACustomerServiceConversationSummary(
   const rawStatus = pickStringFromSources([record], ['status_name', 'statusName', 'status_text', 'statusText', 'status'])
   const rawStatusCode = pickNumberFromSources([record], ['status_code', 'statusCode', 'status'])
   const statusInfo = resolveConversationStatus(rawStatus, rawStatusCode)
-  const previewText = pickStringFromSources(
-    sources,
-    ['preview', 'content', 'message', 'text', 'body'],
-  )
+  const previewText = resolveConversationPreviewText(record)
 
   return {
     id: pickStringFromSources(sources, ['id', 'conversation_id', 'conversationId']) ?? '',
