@@ -333,12 +333,30 @@ export function mapBackendACustomerServiceUnreadSummary(
       0,
       pickNumberFromSources(
         [record],
-        ['conversation_count', 'conversationCount', 'total', 'count'],
+        [
+          'unread_conversation_count',
+          'unreadConversationCount',
+          'conversation_count',
+          'conversationCount',
+          'total',
+          'count',
+        ],
       ) ?? 0,
     ),
     messageCount: Math.max(
       0,
-      pickNumberFromSources([record], ['message_count', 'messageCount', 'unread_count', 'unreadCount']) ?? 0,
+      pickNumberFromSources(
+        [record],
+        [
+          'unread_message_count',
+          'unreadMessageCount',
+          'message_count',
+          'messageCount',
+          'unread_count',
+          'unreadCount',
+          'unread',
+        ],
+      ) ?? 0,
     ),
   }
 }
