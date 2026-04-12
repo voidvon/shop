@@ -185,7 +185,12 @@ function mapOrderDetail(dto: BackendAOrderDto): OrderDetailPageData {
     Number.parseFloat(dto.total_amount) - Number.parseFloat(dto.payable_amount),
     0,
   )
-  const timelineBase = dto.paid_at ?? new Date().toISOString()
+  const createdAt = dto.created_at ?? dto.paid_at ?? dto.shipped_at ?? new Date().toISOString()
+  const paidAt = dto.paid_at ?? null
+  const shippedAt = dto.shipped_at ?? null
+  const completedAt = record.status === 'completed'
+    ? (shippedAt ?? paidAt ?? createdAt)
+    : null
 
   return {
     actions: resolveOrderActions(record.status),
@@ -213,7 +218,7 @@ function mapOrderDetail(dto: BackendAOrderDto): OrderDetailPageData {
       ? {
           description: '后端暂未提供物流轨迹详情。',
           title: '物流信息待补充',
-          updatedAt: timelineBase,
+          updatedAt: shippedAt ?? paidAt ?? createdAt,
         }
       : null,
     orderId: record.orderId,
@@ -229,10 +234,10 @@ function mapOrderDetail(dto: BackendAOrderDto): OrderDetailPageData {
     storeId: String(dto.merchant?.id ?? dto.merchant_id),
     storeName: record.storeName,
     timeline: {
-      completedAt: record.status === 'completed' ? timelineBase : null,
-      createdAt: timelineBase,
-      paidAt: dto.payment_status === 1 ? timelineBase : null,
-      shippedAt: dto.delivery_status > 0 ? timelineBase : null,
+      completedAt,
+      createdAt,
+      paidAt: dto.payment_status === 1 ? paidAt : null,
+      shippedAt: dto.delivery_status > 0 ? shippedAt : null,
     },
   }
 }

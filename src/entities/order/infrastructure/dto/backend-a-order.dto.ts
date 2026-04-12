@@ -24,6 +24,7 @@ export interface BackendAOrderDto {
   city?: string | null
   consignee_name?: string | null
   coupon_amount: string
+  created_at?: string | null
   delivery_status: number
   district?: string | null
   id: number
@@ -40,6 +41,7 @@ export interface BackendAOrderDto {
   phone?: string | null
   province?: string | null
   remark: string | null
+  shipped_at?: string | null
   status: number
   street?: string | null
   submit_no: string | null
