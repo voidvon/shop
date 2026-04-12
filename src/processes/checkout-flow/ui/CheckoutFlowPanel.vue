@@ -14,9 +14,14 @@ const checkoutStore = useCheckoutFlowStore()
 const route = useRoute()
 const router = useRouter()
 const runtime = useBackendRuntime()
+
+interface CheckoutPaymentOption {
+  availableAmount: number
+  balanceTypeId: number
+  balanceTypeName: string
+}
+
 const {
-  balanceAccounts,
-  availableBalance,
   confirmation,
   errorMessage,
   isCheckoutEnabled,
@@ -35,13 +40,39 @@ const previewCouponGroups = computed(() => (isCouponEnabled.value ? previewBalan
 const payableAmountText = computed(() => formatAmount(preview.value?.payableAmount ?? 0))
 const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAmount ?? 0))
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
-const availableBalanceText = computed(() => formatAmount(availableBalance.value))
 const merchantTitle = computed(() => preview.value?.source === 'cart' ? '购物车商品' : '立即购买商品')
 const hasInsufficientBalance = computed(() => previewBalanceGroups.value.some((group) => group.payableAmount > group.availableBalance))
 const insufficientBalanceMessage = computed(() => previewBalanceGroups.value
   .filter((group) => group.payableAmount > group.availableBalance)
   .map((group) => `${group.merchantName}-${group.balanceTypeName} 可用 ¥${formatAmount(group.availableBalance)}`)
   .join('；'))
+const paymentOptions = computed<CheckoutPaymentOption[]>(() => {
+  const paymentOptionMap = new Map<number, CheckoutPaymentOption>()
+
+  previewBalanceGroups.value.forEach((group) => {
+    const currentOption = paymentOptionMap.get(group.balanceTypeId)
+
+    if (!currentOption) {
+      paymentOptionMap.set(group.balanceTypeId, {
+        availableAmount: group.availableBalance,
+        balanceTypeId: group.balanceTypeId,
+        balanceTypeName: group.balanceTypeName,
+      })
+      return
+    }
+
+    currentOption.availableAmount = Math.max(currentOption.availableAmount, group.availableBalance)
+  })
+
+  return [...paymentOptionMap.values()]
+})
+const selectedPaymentTypeId = ref<number | null>(null)
+const selectedPaymentOption = computed(() =>
+  paymentOptions.value.find((option) => option.balanceTypeId === selectedPaymentTypeId.value)
+  ?? paymentOptions.value[0]
+  ?? null,
+)
+const paymentMethodLabel = computed(() => selectedPaymentOption.value?.balanceTypeName ?? '余额账户支付')
 const buyerMessage = ref('')
 const selectedAddressQueryId = computed(() =>
   typeof route.query.selectedAddressId === 'string'
@@ -209,6 +240,27 @@ function formatCouponGroupValue(
 
   return '无可用优惠券'
 }
+
+function selectPaymentType(balanceTypeId: number) {
+  selectedPaymentTypeId.value = balanceTypeId
+}
+
+watch(
+  paymentOptions,
+  (options) => {
+    if (options.length === 0) {
+      selectedPaymentTypeId.value = null
+      return
+    }
+
+    const [firstOption] = options
+
+    if (!options.some((option) => option.balanceTypeId === selectedPaymentTypeId.value)) {
+      selectedPaymentTypeId.value = firstOption?.balanceTypeId ?? null
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -240,13 +292,27 @@ function formatCouponGroupValue(
           </van-cell-group>
 
           <van-cell-group class="checkout-cell-group meta-card">
-            <van-cell title="支付方式：" value="余额账户支付" />
-            <van-cell title="总可用余额：" :value="`¥${availableBalanceText}`" />
+            <van-cell title="支付方式：" :value="paymentMethodLabel" />
+            <div
+              v-if="paymentOptions.length > 1"
+              class="payment-option-list"
+            >
+              <button
+                v-for="option in paymentOptions"
+                :key="`payment-option-${option.balanceTypeId}`"
+                class="payment-option-button"
+                :class="{ 'payment-option-button-active': option.balanceTypeId === selectedPaymentTypeId }"
+                type="button"
+                @click="selectPaymentType(option.balanceTypeId)"
+              >
+                <span class="payment-option-name">{{ option.balanceTypeName }}</span>
+                <span class="payment-option-amount">可用 ¥{{ formatAmount(option.availableAmount) }}</span>
+              </button>
+            </div>
             <van-cell
-              v-for="account in balanceAccounts"
-              :key="account.accountId"
-              :title="`${account.balanceTypeName}：`"
-              :value="`¥${formatAmount(account.availableAmount)}`"
+              v-else-if="selectedPaymentOption"
+              :title="`${selectedPaymentOption.balanceTypeName}：`"
+              :value="`¥${formatAmount(selectedPaymentOption.availableAmount)}`"
             />
             <van-cell v-if="isInvoiceEnabled" title="发票信息：" value="暂不支持" />
           </van-cell-group>
@@ -546,6 +612,42 @@ function formatCouponGroupValue(
 .meta-card :deep(.van-cell__title) {
   color: #3c3b39;
   font-size: 14px;
+  font-weight: 500;
+}
+
+.payment-option-list {
+  display: grid;
+  gap: 10px;
+  padding: 0 16px 14px;
+}
+
+.payment-option-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 12px 14px;
+  border: 1px solid #ece6de;
+  border-radius: 12px;
+  background: #faf8f5;
+  text-align: left;
+}
+
+.payment-option-button-active {
+  border-color: #d89575;
+  background: #fff4ef;
+}
+
+.payment-option-name {
+  color: #3c3b39;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.payment-option-amount {
+  color: #6d6c6a;
+  font-size: 13px;
   font-weight: 500;
 }
 
