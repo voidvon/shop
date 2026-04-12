@@ -520,18 +520,16 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
           title: '用户昵称',
         },
       }),
-      ...(backendTarget === 'mock'
-        ? [createModuleRoute({
-          path: '/member/mobile',
-          name: 'member-mobile',
-          component: MemberMobilePage,
-          meta: {
-            activeMainNavigationKey: 'member',
-            requiresAuth: true,
-            title: '手机号码',
-          },
-        })]
-        : []),
+      createModuleRoute({
+        path: '/member/mobile',
+        name: 'member-mobile',
+        component: MemberMobilePage,
+        meta: {
+          activeMainNavigationKey: 'member',
+          requiresAuth: true,
+          title: '手机号码',
+        },
+      }),
       ...(backendTarget === 'mock'
         ? [createModuleRoute({
           path: '/member/pay-password',
