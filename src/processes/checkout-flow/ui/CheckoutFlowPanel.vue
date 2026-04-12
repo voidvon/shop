@@ -42,10 +42,18 @@ const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAm
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
 const merchantTitle = computed(() => preview.value?.source === 'cart' ? '购物车商品' : '立即购买商品')
 const hasInsufficientBalance = computed(() => previewBalanceGroups.value.some((group) => group.payableAmount > group.availableBalance))
-const insufficientBalanceMessage = computed(() => previewBalanceGroups.value
-  .filter((group) => group.payableAmount > group.availableBalance)
-  .map((group) => `${group.merchantName}-${group.balanceTypeName} 可用 ¥${formatAmount(group.availableBalance)}`)
-  .join('；'))
+const insufficientBalanceMessage = computed(() => {
+  const insufficientBalanceTypes = new Set(
+    previewBalanceGroups.value
+      .filter((group) => group.payableAmount > group.availableBalance)
+      .map((group) => group.balanceTypeName.trim())
+      .filter(Boolean),
+  )
+
+  return [...insufficientBalanceTypes]
+    .map((balanceTypeName) => `${balanceTypeName}余额不足`)
+    .join('；')
+})
 
 function isGeneralBalanceType(balanceTypeName: string) {
   const normalizedName = balanceTypeName.trim()
@@ -314,20 +322,6 @@ function formatCouponGroupValue(
             <div class="merchant-row">
               <span class="merchant-row-label">物流配送</span>
               <span class="merchant-row-value">运费0.00</span>
-            </div>
-
-            <div
-              v-for="group in previewBalanceGroups"
-              :key="`balance-${group.merchantId}-${group.balanceTypeId}`"
-              class="merchant-row"
-            >
-              <span class="merchant-row-label">{{ group.merchantName }} · {{ group.balanceTypeName }}</span>
-              <span
-                class="merchant-row-value"
-                :class="{ 'merchant-row-value-error': group.payableAmount > group.availableBalance }"
-              >
-                可用 ¥{{ formatAmount(group.availableBalance) }}
-              </span>
             </div>
 
             <button
