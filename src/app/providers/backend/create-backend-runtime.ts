@@ -104,6 +104,7 @@ import {
   backendTarget,
   getBackendLabel,
   resolveBackendAInvoiceEnabled,
+  resolveBackendALogisticsEnabled,
   type BackendType,
 } from '@/shared/config/backend'
 import {
@@ -116,6 +117,7 @@ import type { AfterSaleListPageData } from '@/shared/types/modules'
 export interface BackendCapabilities {
   coupon: boolean
   invoice: boolean
+  logistics: boolean
   memberPrice: boolean
   wechatLogout: boolean
 }
@@ -160,6 +162,7 @@ function resolveCapabilities(type: BackendType): BackendCapabilities {
       return {
         coupon: false,
         invoice: resolveBackendAInvoiceEnabled(),
+        logistics: resolveBackendALogisticsEnabled(),
         memberPrice: true,
         wechatLogout: false,
       }
@@ -168,6 +171,7 @@ function resolveCapabilities(type: BackendType): BackendCapabilities {
       return {
         coupon: false,
         invoice: true,
+        logistics: true,
         memberPrice: false,
         wechatLogout: true,
       }

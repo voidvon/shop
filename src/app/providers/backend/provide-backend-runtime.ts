@@ -24,12 +24,40 @@ import { provideMerchantDeductionService } from '@/processes/merchant-deduction'
 import { provideMerchantStaffInviteService } from '@/processes/merchant-staff-invite'
 import { provideStorefrontQuery } from '@/processes/storefront'
 import { provideTradeQuery } from '@/processes/trade'
+import { setBackendAUnauthorizedHandler } from '@/shared/api/backend-a/backend-a-http-client'
+import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
 
 import { provideBackendRuntimeContext } from './backend-runtime-provider'
 import { createBackendRuntime } from './create-backend-runtime'
 
 export function provideBackendRuntime(app: App) {
   const runtime = createBackendRuntime()
+  let isRecoveringUnauthorized = false
+
+  async function recoverUnauthorizedSession() {
+    const wasAuthenticated = runtime.auth.session.getSnapshot().isAuthenticated
+
+    if (wasAuthenticated) {
+      runtime.auth.session.clear()
+    }
+
+    if (
+      typeof window === 'undefined'
+      || isRecoveringUnauthorized
+      || !isWechatBrowser()
+    ) {
+      return
+    }
+
+    isRecoveringUnauthorized = true
+
+    try {
+      const redirectPath = `${window.location.pathname}${window.location.search}${window.location.hash}`
+      await startWechatOauthLogin(redirectPath)
+    } finally {
+      isRecoveringUnauthorized = false
+    }
+  }
 
   provideBackendRuntimeContext(app, runtime)
   provideMemberAuthRepository(app, runtime.auth.repository)
@@ -52,8 +80,11 @@ export function provideBackendRuntime(app: App) {
   provideTradeQuery(app, runtime.queries.trade)
 
   if (runtime.type === 'backend-a') {
+    setBackendAUnauthorizedHandler(recoverUnauthorizedSession)
     seedDevMemberAuthSession(runtime.auth.session)
     void hydrateBackendAMemberAuthSession(runtime.auth.session)
+  } else {
+    setBackendAUnauthorizedHandler(null)
   }
 
   return runtime

@@ -1,4 +1,5 @@
 import type { MemberAuthSession } from '@/entities/member-auth'
+import { notifyBackendAUnauthorized } from '@/shared/api/backend-a/backend-a-http-client'
 import {
   resolveBackendAMemberAssetsBaseUrl,
   resolveBackendAMemberAssetsTimeoutMs,
@@ -25,6 +26,7 @@ interface BackendAMemberAssetsHttpGatewayOptions {
   baseUrl: string
   getAccessToken: () => string | null
   getMemberId: () => string | null
+  onUnauthorized?: () => void | Promise<void>
   timeoutMs?: number
 }
 
@@ -127,6 +129,10 @@ async function requestBackendAMemberAssets<T>(
     return await parseResponseBody<T>(response)
   } catch (error) {
     if (error instanceof BackendAMemberAssetsHttpError) {
+      if (error.status === 401 && options.getAccessToken()) {
+        await options.onUnauthorized?.()
+      }
+
       throw error
     }
 
@@ -191,6 +197,7 @@ export function createBackendAMemberAssetsGatewayFromEnv(
     baseUrl,
     getAccessToken: () => memberAuthSession.getSnapshot().authResult?.session.accessToken ?? null,
     getMemberId: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? null,
+    onUnauthorized: notifyBackendAUnauthorized,
     timeoutMs: resolveBackendAMemberAssetsTimeoutMs(),
   })
 }

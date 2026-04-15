@@ -3,9 +3,12 @@ import { onBeforeUnmount, onMounted } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { RouterView } from 'vue-router'
 
+import { useBackendRuntime } from '@/app/providers/backend'
+import { hydrateBackendAMemberAuthSession } from '@/entities/member-auth'
 import { useCustomerServiceUnreadStore } from '@/processes/customer-service'
 import AppShell from '@/shared/ui/AppShell.vue'
 
+const runtime = useBackendRuntime()
 const customerServiceUnreadStore = useCustomerServiceUnreadStore()
 
 function resolveRouteViewKey(route: RouteLocationNormalizedLoaded) {
@@ -15,6 +18,10 @@ function resolveRouteViewKey(route: RouteLocationNormalizedLoaded) {
 function handleVisibilityChange() {
   if (typeof document === 'undefined' || document.visibilityState !== 'visible') {
     return
+  }
+
+  if (runtime.type === 'backend-a' && runtime.auth.session.getSnapshot().authResult) {
+    void hydrateBackendAMemberAuthSession(runtime.auth.session)
   }
 
   void customerServiceUnreadStore.refreshUnreadSummary({ silent: true })

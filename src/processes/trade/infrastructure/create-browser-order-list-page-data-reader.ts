@@ -11,6 +11,7 @@ function mapOrderRecord(order: OrderRecord): OrderListEntry {
     itemCount: order.itemCount,
     items: order.items.map((item) => ({
       orderItemId: item.orderItemId,
+      productId: item.productId,
       productImageUrl: item.productImageUrl,
       productName: item.productName,
       quantity: item.quantity,

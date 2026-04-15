@@ -89,6 +89,7 @@ export function mapBackendAOrderDto(dto: BackendAOrderDto): OrderRecord {
     itemCount: dto.item_count,
     items: dto.items.map((item) => ({
       orderItemId: String(item.id),
+      productId: String(item.product_id),
       productImageUrl: resolveBackendAMediaUrl(item.image),
       productName: item.product_title,
       quantity: item.quantity,

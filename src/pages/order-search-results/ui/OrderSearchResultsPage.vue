@@ -124,6 +124,7 @@ onActivated(() => {
               :price-text="formatAmount(item.unitPrice)"
               :product-name="item.productName"
               :quantity-text="`x${item.quantity}`"
+              :to="{ name: 'product-detail', params: { productId: item.productId } }"
             />
 
             <footer class="store-footer store-footer-actions">

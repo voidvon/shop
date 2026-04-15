@@ -22,6 +22,10 @@ interface BackendAHttpClientOptions {
   timeoutMs?: number
 }
 
+type BackendAUnauthorizedHandler = (() => void | Promise<void>) | null
+
+let backendAUnauthorizedHandler: BackendAUnauthorizedHandler = null
+
 interface BackendARequestOptions {
   body?: BackendARequestBody
   method: 'DELETE' | 'GET' | 'PATCH' | 'POST'
@@ -37,6 +41,14 @@ export class BackendAHttpError extends Error {
     this.name = 'BackendAHttpError'
     this.status = status
   }
+}
+
+export function setBackendAUnauthorizedHandler(handler: BackendAUnauthorizedHandler) {
+  backendAUnauthorizedHandler = handler
+}
+
+export async function notifyBackendAUnauthorized() {
+  await backendAUnauthorizedHandler?.()
 }
 
 function createEndpointUrl(baseUrl: string, path: string, query?: BackendAQueryParams) {
@@ -189,6 +201,10 @@ export function createBackendAHttpClient(options: BackendAHttpClientOptions = {}
       return await parseResponseBody<T>(response)
     } catch (error) {
       if (error instanceof BackendAHttpError) {
+        if (error.status === 401 && options.getAccessToken?.()) {
+          await notifyBackendAUnauthorized()
+        }
+
         throw error
       }
 

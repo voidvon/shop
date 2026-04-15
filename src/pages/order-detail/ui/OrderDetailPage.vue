@@ -37,6 +37,7 @@ const {
 
 const orderId = computed(() => normalizeRouteParam(route.params.orderId))
 const isInvoiceEnabled = computed(() => runtime.capabilities.invoice)
+const isLogisticsEnabled = computed(() => runtime.capabilities.logistics)
 
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
@@ -162,14 +163,14 @@ onMounted(() => {
             <p>{{ orderDetailPageData.statusHint }}</p>
           </div>
 
-          <div v-if="orderDetailPageData.logistics" class="logistics-summary">
+          <div v-if="isLogisticsEnabled && orderDetailPageData.logistics" class="logistics-summary">
             <span>{{ orderDetailPageData.logistics.title }}</span>
             <p>{{ orderDetailPageData.logistics.description }}</p>
             <small>最近更新：{{ orderDetailPageData.logistics.updatedAt }}</small>
           </div>
 
           <RouterLink
-            v-else-if="canViewLogistics(orderDetailPageData.actions)"
+            v-else-if="isLogisticsEnabled && canViewLogistics(orderDetailPageData.actions)"
             class="logistics-empty-link"
             :to="{ name: 'member-order-logistics', params: { orderId: orderDetailPageData.orderId } }"
           >

@@ -46,3 +46,9 @@ export function resolveBackendAInvoiceEnabled(
 ) {
   return resolveBoolean(rawValue, false)
 }
+
+export function resolveBackendALogisticsEnabled(
+  rawValue = import.meta.env.VITE_BACKEND_A_ENABLE_LOGISTICS,
+) {
+  return resolveBoolean(rawValue, false)
+}

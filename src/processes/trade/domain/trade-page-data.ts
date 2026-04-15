@@ -24,6 +24,7 @@ export interface CartPageData {
 
 export interface OrderListItem {
   orderItemId: string
+  productId: string
   productImageUrl: string | null
   productName: string
   quantity: number

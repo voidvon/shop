@@ -76,6 +76,7 @@ export interface OrderConfirmation {
 
 export interface OrderRecordItem {
   orderItemId: string
+  productId: string
   productImageUrl: string | null
   productName: string
   quantity: number
