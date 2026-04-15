@@ -25,6 +25,10 @@ import { provideMerchantStaffInviteService } from '@/processes/merchant-staff-in
 import { provideStorefrontQuery } from '@/processes/storefront'
 import { provideTradeQuery } from '@/processes/trade'
 import { setBackendAUnauthorizedHandler } from '@/shared/api/backend-a/backend-a-http-client'
+import {
+  finishBackendAAuthRecovery,
+  startBackendAAuthRecovery,
+} from '@/shared/lib/backend-a-auth-recovery'
 import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
 
 import { provideBackendRuntimeContext } from './backend-runtime-provider'
@@ -46,6 +50,7 @@ export function provideBackendRuntime(app: App) {
       || isRecoveringUnauthorized
       || !isWechatBrowser()
     ) {
+      finishBackendAAuthRecovery()
       return
     }
 
@@ -53,7 +58,12 @@ export function provideBackendRuntime(app: App) {
 
     try {
       const redirectPath = `${window.location.pathname}${window.location.search}${window.location.hash}`
-      await startWechatOauthLogin(redirectPath)
+      startBackendAAuthRecovery()
+      const result = await startWechatOauthLogin(redirectPath)
+
+      if (!result.redirected) {
+        finishBackendAAuthRecovery()
+      }
     } finally {
       isRecoveringUnauthorized = false
     }
@@ -84,6 +94,7 @@ export function provideBackendRuntime(app: App) {
     seedDevMemberAuthSession(runtime.auth.session)
     void hydrateBackendAMemberAuthSession(runtime.auth.session)
   } else {
+    finishBackendAAuthRecovery()
     setBackendAUnauthorizedHandler(null)
   }
 

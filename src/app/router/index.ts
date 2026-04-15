@@ -19,6 +19,7 @@ import {
   markWechatAutoLoginAttempted,
   startWechatOauthLogin,
 } from '@/shared/lib/wechat-browser'
+import { finishBackendAAuthRecovery } from '@/shared/lib/backend-a-auth-recovery'
 
 import { routes } from './routes'
 
@@ -121,12 +122,14 @@ async function tryHandleWechatOauthCallback(to: RouteLocationNormalized) {
       repository: runtime.auth.repository,
       session: runtime.auth.session,
     })
+    finishBackendAAuthRecovery()
 
     const pendingRedirectPath = consumePendingWechatLoginRedirectPath()
     return pendingRedirectPath && pendingRedirectPath !== '/member/login'
       ? pendingRedirectPath
       : buildRouteWithoutWechatAuthQuery(to)
   } catch (error) {
+    finishBackendAAuthRecovery()
     showToast(error instanceof Error ? error.message : '微信登录失败')
 
     const pendingRedirectPath = consumePendingWechatLoginRedirectPath()

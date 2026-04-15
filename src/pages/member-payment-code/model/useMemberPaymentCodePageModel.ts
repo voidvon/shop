@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 
 import { useMemberCenterQuery, type MemberPaymentCodePageData } from '@/processes/member-center'
+import { isBackendAAuthRecovering } from '@/shared/lib/backend-a-auth-recovery'
 
 const emptyMemberPaymentCodePageData: MemberPaymentCodePageData = {
   paymentCode: null,
@@ -20,7 +21,9 @@ export function useMemberPaymentCodePageModel() {
     try {
       memberPaymentCodePageData.value = await memberCenterQuery.getMemberPaymentCodePageData()
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : '付款码加载失败'
+      if (!isBackendAAuthRecovering()) {
+        errorMessage.value = error instanceof Error ? error.message : '付款码加载失败'
+      }
     } finally {
       isLoading.value = false
     }

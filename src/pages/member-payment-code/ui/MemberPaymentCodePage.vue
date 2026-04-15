@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
+import { useBackendAAuthRecoveryState } from '@/shared/lib/backend-a-auth-recovery'
 
 import { useMemberPaymentCodePageModel } from '../model/useMemberPaymentCodePageModel'
 
@@ -16,6 +17,7 @@ const {
   loadMemberPaymentCodePage,
   memberPaymentCodePageData,
 } = useMemberPaymentCodePageModel()
+const isAuthRecovering = useBackendAAuthRecoveryState()
 const paymentCode = computed(() => memberPaymentCodePageData.value.paymentCode)
 const generatedCodeUrl = ref<string | null>(null)
 let generateCodeTaskId = 0
@@ -83,8 +85,8 @@ onActivated(() => {
         <strong>向商户出示付款码</strong>
       </section>
 
-      <p v-if="errorMessage" class="status-text">{{ errorMessage }}</p>
-      <LoadingState v-else-if="isLoading" />
+      <p v-if="errorMessage && !isAuthRecovering" class="status-text">{{ errorMessage }}</p>
+      <LoadingState v-else-if="isLoading || isAuthRecovering" />
 
       <section v-else-if="paymentCode" class="code-card">
         <div v-if="displayCodeUrl" class="code-frame">
