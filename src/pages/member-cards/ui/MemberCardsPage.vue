@@ -280,7 +280,7 @@ onMounted(async () => {
       <section class="intro-card">
         <div>
           <strong>扫码绑定卡券并充值</strong>
-          <p>绑定动作会读取卡券编号并提交后端充值；如后端返回兑换历史，下方会展示真实记录。</p>
+          <p>实体卡绑定后，实体卡中的余额将转入线上账户，实体卡作废清零！</p>
         </div>
         <button class="secondary-button" type="button" @click="goToBindCard">绑定新卡</button>
       </section>
