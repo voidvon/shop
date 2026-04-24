@@ -1266,6 +1266,77 @@
                 ]
             }
         },
+        "/api/v1/orders/{order}/receive": {
+            "post": {
+                "tags": [
+                    "订单"
+                ],
+                "summary": "确认收货",
+                "description": "仅允许当前登录用户确认自己的已发货订单，确认后订单状态更新为已完成，发货状态更新为已收货",
+                "operationId": "44540e3e456a80733c2edc2f26584385",
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "确认收货成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "确认收货成功"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/OrderPayload"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "订单不存在",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "仅支持确认自己的已发货订单",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/v1/balance-accounts": {
             "get": {
                 "tags": [
@@ -1331,7 +1402,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/BalanceAccountLogResponse"
                                 }
                             }
                         }
@@ -2536,6 +2607,45 @@
                 ]
             }
         },
+        "/api/v1/merchant/offline-payments/{offlinePayment}/refund": {
+            "post": {
+                "tags": [
+                    "线下付款"
+                ],
+                "summary": "合作商家核销员发起线下付款退款",
+                "description": "仅允许当前登录商户员工对所属商家的已支付且未退款线下付款单发起退款，且付款时间必须在48小时内；退款后金额按原支付来源原路返回，并生成退款流水",
+                "operationId": "946426f1ebea006e5bdae510e69d8620",
+                "parameters": [
+                    {
+                        "name": "offlinePayment",
+                        "in": "path",
+                        "description": "线下付款流水ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "退款结果；业务失败时 HTTP 仍为 200，但 JSON code 为 403",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MerchantOfflinePaymentRefundResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/v1/uploads/images": {
             "post": {
                 "tags": [
@@ -3690,8 +3800,25 @@
                     "paid_at": {
                         "description": "支付时间",
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2026-03-23T12:00:00+08:00",
+                        "example": "2026-04-12 04:16:10",
+                        "nullable": true
+                    },
+                    "shipped_at": {
+                        "description": "发货时间，未发货时为 null",
+                        "type": "string",
+                        "example": "2026-04-12 05:30:00",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "下单时间",
+                        "type": "string",
+                        "example": "2026-04-12 04:16:10",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "description": "更新时间",
+                        "type": "string",
+                        "example": "2026-04-12 04:16:10",
                         "nullable": true
                     },
                     "remark": {
@@ -3747,6 +3874,210 @@
                     },
                     "balance_type": {
                         "$ref": "#/components/schemas/BalanceTypeSimple"
+                    }
+                },
+                "type": "object"
+            },
+            "BalanceAccountLogPayload": {
+                "properties": {
+                    "id": {
+                        "description": "余额流水ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_balance_account_id": {
+                        "description": "余额账户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "用户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "balance_type_id": {
+                        "description": "余额类型ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "merchant_id": {
+                        "description": "关联商户ID",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "order_id": {
+                        "description": "关联订单ID",
+                        "type": "integer",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "offline_payment_id": {
+                        "description": "关联线下支付ID",
+                        "type": "integer",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "card_recharge_record_id": {
+                        "description": "关联储值卡绑定记录ID",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "operator_staff_id": {
+                        "description": "操作员工ID",
+                        "type": "integer",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "change_type": {
+                        "description": "变动类型",
+                        "type": "string",
+                        "example": "card_bind"
+                    },
+                    "direction": {
+                        "description": "方向：in 入账，out 出账",
+                        "type": "string",
+                        "example": "in"
+                    },
+                    "amount": {
+                        "description": "变动金额",
+                        "type": "string",
+                        "example": "100.00"
+                    },
+                    "balance_before": {
+                        "description": "变动前余额",
+                        "type": "string",
+                        "example": "0.00"
+                    },
+                    "balance_after": {
+                        "description": "变动后余额",
+                        "type": "string",
+                        "example": "100.00"
+                    },
+                    "biz_no": {
+                        "description": "业务编号",
+                        "type": "string",
+                        "example": "bind_001",
+                        "nullable": true
+                    },
+                    "remark": {
+                        "description": "备注",
+                        "type": "string",
+                        "example": "储值卡绑定入账",
+                        "nullable": true
+                    },
+                    "meta": {
+                        "description": "扩展信息",
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "创建时间",
+                        "type": "string",
+                        "example": "2026-04-11 10:30:00",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "description": "更新时间",
+                        "type": "string",
+                        "example": "2026-04-11 10:30:00",
+                        "nullable": true
+                    },
+                    "deleted_at": {
+                        "description": "删除时间",
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "balance_type": {
+                        "$ref": "#/components/schemas/BalanceTypeSimple"
+                    },
+                    "merchant": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/MerchantSimple"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "BalanceAccountLogPage": {
+                "properties": {
+                    "current_page": {
+                        "description": "当前页",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BalanceAccountLogPayload"
+                        }
+                    },
+                    "first_page_url": {
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/balance-accounts/logs?page=1",
+                        "nullable": true
+                    },
+                    "from": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "last_page": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "last_page_url": {
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/balance-accounts/logs?page=3",
+                        "nullable": true
+                    },
+                    "next_page_url": {
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/balance-accounts/logs?page=2",
+                        "nullable": true
+                    },
+                    "path": {
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/balance-accounts/logs"
+                    },
+                    "per_page": {
+                        "type": "integer",
+                        "example": 20
+                    },
+                    "prev_page_url": {
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "to": {
+                        "type": "integer",
+                        "example": 20,
+                        "nullable": true
+                    },
+                    "total": {
+                        "type": "integer",
+                        "example": 45
+                    }
+                },
+                "type": "object"
+            },
+            "BalanceAccountLogResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/BalanceAccountLogPage"
                     }
                 },
                 "type": "object"
@@ -3929,8 +4260,19 @@
                     "recharged_at": {
                         "description": "充值时间",
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2026-04-04T10:00:00+08:00",
+                        "example": "2026-04-04 10:00:00",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "创建时间",
+                        "type": "string",
+                        "example": "2026-04-04 10:00:00",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "description": "更新时间",
+                        "type": "string",
+                        "example": "2026-04-04 10:00:00",
                         "nullable": true
                     },
                     "stored_value_card": {
@@ -4028,7 +4370,7 @@
                         "example": "50.00"
                     },
                     "status": {
-                        "description": "支付状态：0处理中，1成功，2失败",
+                        "description": "支付状态：0处理中，1成功，2失败，3已退款",
                         "type": "integer",
                         "example": 1
                     },
@@ -4048,6 +4390,18 @@
                         "description": "支付成功时间",
                         "type": "string",
                         "example": "2026-04-11 12:00:00",
+                        "nullable": true
+                    },
+                    "refund_no": {
+                        "description": "退款流水号，未退款时为 null",
+                        "type": "string",
+                        "example": "REF202604240001",
+                        "nullable": true
+                    },
+                    "refunded_at": {
+                        "description": "退款时间，未退款时为 null",
+                        "type": "string",
+                        "example": "2026-04-24 12:00:00",
                         "nullable": true
                     },
                     "created_at": {
@@ -4145,6 +4499,22 @@
                     },
                     "data": {
                         "$ref": "#/components/schemas/MerchantOfflinePaymentLogPage"
+                    }
+                },
+                "type": "object"
+            },
+            "MerchantOfflinePaymentRefundResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "退款成功"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/OfflinePaymentPayload"
                     }
                 },
                 "type": "object"

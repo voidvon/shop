@@ -41,6 +41,11 @@ export interface MerchantDeductionSubmitResult {
   successMessage: string
 }
 
+export interface MerchantDeductionRefundResult {
+  rawPayload: Record<string, unknown> | null
+  successMessage: string
+}
+
 export interface MerchantDeductionLogQuery {
   page: number
   pageSize: number
@@ -50,6 +55,7 @@ export interface MerchantDeductionLogItem {
   id: string
   amount: number
   balanceTypeName: string | null
+  canRefund: boolean
   cardNumber: string | null
   createdAt: string | null
   failureReason: string | null
@@ -59,7 +65,9 @@ export interface MerchantDeductionLogItem {
   paySourceLabel: string
   paymentNo: string
   remark: string | null
-  status: 'failed' | 'processing' | 'success' | 'unknown'
+  refundNo: string | null
+  refundedAt: string | null
+  status: 'failed' | 'processing' | 'refunded' | 'success' | 'unknown'
   statusLabel: string
   userMobile: string | null
   userName: string | null
@@ -67,6 +75,7 @@ export interface MerchantDeductionLogItem {
 
 export interface MerchantDeductionService {
   getDeductionLogs(query: MerchantDeductionLogQuery): Promise<PageResult<MerchantDeductionLogItem>>
+  refundDeduction(logId: string): Promise<MerchantDeductionRefundResult>
   scanCode(rawCode: string): Promise<MerchantDeductionScanResult>
   submitDeduction(command: MerchantDeductionSubmitCommand): Promise<MerchantDeductionSubmitResult>
   uploadImage(file: File): Promise<MerchantDeductionUploadedImage>

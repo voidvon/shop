@@ -13,6 +13,7 @@ import type {
   BackendAOrderDto,
 } from '../../dto/backend-a-order.dto'
 import {
+  mapBackendAOrderDto,
   mapBackendACheckoutPreviewDto,
 } from '../../mappers/backend-a-order-mapper'
 
@@ -44,8 +45,18 @@ function normalizeAddressId(addressId: string) {
   return normalizedAddressId
 }
 
+function normalizeOrderId(orderId: string) {
+  const normalizedOrderId = Number.parseInt(orderId, 10)
+
+  if (!Number.isFinite(normalizedOrderId) || normalizedOrderId <= 0) {
+    throw new Error('订单标识无效')
+  }
+
+  return normalizedOrderId
+}
+
 function createUnsupportedOrderActionError() {
-  return new Error('当前后端文档未提供订单取消、支付或确认收货接口')
+  return new Error('当前后端文档未提供订单取消或支付接口')
 }
 
 function parseNumber(value: unknown) {
@@ -108,6 +119,21 @@ function mapOrderConfirmation(
   }
 }
 
+function mapTransitionStatusResult(
+  action: Parameters<OrderRepository['transitionStatus']>[0]['action'],
+  dto: BackendAOrderDto,
+) {
+  const record = mapBackendAOrderDto(dto)
+
+  return {
+    action,
+    orderId: String(dto.id),
+    status: record.status,
+    statusText: record.statusText,
+    updatedAt: dto.updated_at ?? dto.shipped_at ?? dto.paid_at ?? dto.created_at ?? new Date().toISOString(),
+  }
+}
+
 export function getBackendAOrderSeedRecords(): OrderRecord[] {
   return []
 }
@@ -160,8 +186,16 @@ export function createBackendAOrderRepository(
       return mapOrderConfirmation(command, orders)
     },
 
-    async transitionStatus() {
-      throw createUnsupportedOrderActionError()
+    async transitionStatus(command) {
+      if (command.action !== 'confirm-receipt') {
+        throw createUnsupportedOrderActionError()
+      }
+
+      const order = await httpClient.post<BackendAOrderDto>(
+        `/api/v1/orders/${normalizeOrderId(command.orderId)}/receive`,
+      )
+
+      return mapTransitionStatusResult(command.action, order)
     },
   }
 }

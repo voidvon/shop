@@ -102,7 +102,7 @@
 | 优惠券 | 是 | 页面能力弱 | 部分直连 | 商家页已接 `/api/v1/merchant-coupons` 与 `/api/v1/coupons/{couponTemplate}/claim`；“我的优惠券”仍未直连 |
 | 合作商家 | 是 | 否 | 未接入 | 当前没有对应页面或 query |
 | 客服 | 是 | 否 | 未接入 | 当前没有客服会话页面和消息数据层 |
-| 线下付款 | 是 | 是 | 已直连 | 用户付款码页已接 `/api/v1/offline-payments/payment-code`；商户扣款页已接 `/api/v1/merchant/offline-payments/scan`、`/api/v1/merchant/offline-payments/pay`，并依赖 `/api/v1/auth/profile` 返回 `merchant.supported_balance_types` |
+| 线下付款 | 是 | 是 | 已直连 | 用户付款码页已接 `/api/v1/offline-payments/payment-code`；商户扣款页已接 `/api/v1/merchant/offline-payments/scan`、`/api/v1/merchant/offline-payments/pay`、`/api/v1/merchant/offline-payments/{offlinePayment}/refund`，并依赖 `/api/v1/auth/profile` 返回 `merchant.supported_balance_types` |
 | 上传 | 是 | 间接可能需要 | 未接入 | 当前没有统一上传 gateway |
 | 员工邀请 | 是 | 否 | 未接入 | 当前没有邀请查看/绑定页面流程 |
 | 平台配置 | 是 | 弱依赖 | 部分直连 | 会员中心客服热线与关于我们文案已接 `/api/v1/platform/settings` |
@@ -134,7 +134,7 @@
 - 商品详情页 SKU 选择已改为使用真实后端 SKU，而不是前端伪造默认规格
 - checkout 提交时会把已选 cart item、收货地址、买家备注提交给真实后端
 - 下单成功后，订单列表、订单详情和会员中心订单角标都会从真实 `/api/v1/orders` 刷新
-- 当前仍保留显式能力裁剪：Swagger 中没有订单取消、支付、确认收货接口，因此 `backend-a` 不再继续伪造这些动作
+- 当前仍保留部分显式能力裁剪：Swagger 里仍没有订单取消、支付接口，因此 `backend-a` 仍会显式提示不支持这两个动作；确认收货已接入 `POST /api/v1/orders/{order}/receive`
 
 对应 Swagger：
 
@@ -143,6 +143,7 @@
 - `POST /api/v1/checkout/submit`
 - `GET /api/v1/orders`
 - `GET /api/v1/orders/{order}`
+- `POST /api/v1/orders/{order}/receive`
 
 ### 4.3 会员登录、资料、地址
 
@@ -187,6 +188,7 @@
 - 付款码页面已落地到 `/member/assets/payment-code`，读取 `GET /api/v1/offline-payments/payment-code`
 - 充值记录现在直接展示后端返回的真实历史，不再使用前端本地生成记录
 - 真实订单扣减余额后，页面刷新会再次读取远端余额，不再伪造本地扣款
+- 店铺流水页已接 `POST /api/v1/merchant/offline-payments/{offlinePayment}/refund`，支持对成功流水发起退款
 
 与 Swagger 的关系：
 
@@ -197,6 +199,7 @@
   - `GET /api/v1/stored-value-cards/recharge-logs`
   - `POST /api/v1/stored-value-cards/lookup`
   - `GET /api/v1/offline-payments/payment-code`
+  - `POST /api/v1/merchant/offline-payments/{offlinePayment}/refund`
   - `GET /api/v1/platform/settings`
 - 仍未落位的 Swagger 资产相关路径：
   - `GET /api/v1/stored-value-cards/{storedValueCard}/qr`
@@ -219,7 +222,6 @@
 - 物流详情
 - 订单取消
 - 订单支付
-- 确认收货
 
 这意味着当前前端功能面大于这份 Swagger 的公开范围。后续接后端前，需要先确认这些能力是：
 
@@ -233,9 +235,8 @@
 
 - 合作商家列表 / 详情 / 地区 / 门店类型
 - 客服会话、消息、增量拉取
-- 商户线下扫码识别、核销支付
-- 图片上传
 - 商户员工邀请查看与绑定
+- 图片上传
 
 这些能力如果属于本期范围，建议单独建新的 `entities / processes / pages`，不要塞进现有商品或会员模块里混用。
 

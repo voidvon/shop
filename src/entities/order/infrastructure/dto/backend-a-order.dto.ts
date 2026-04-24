@@ -46,6 +46,7 @@ export interface BackendAOrderDto {
   street?: string | null
   submit_no: string | null
   total_amount: string
+  updated_at?: string | null
   user_address?: string | BackendAOrderAddressDto | null
   user_coupon_id: number | null
   user_id: number

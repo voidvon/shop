@@ -59,7 +59,7 @@ function createMockScanResult(rawCode: string): MerchantDeductionScanResult {
   }
 }
 
-const mockDeductionLogs: MerchantDeductionLogItem[] = Array.from({ length: 36 }, (_, index) => {
+let mockDeductionLogs: MerchantDeductionLogItem[] = Array.from({ length: 36 }, (_, index) => {
   const sequence = index + 1
   const status = sequence % 6 === 0
     ? 'failed'
@@ -71,6 +71,7 @@ const mockDeductionLogs: MerchantDeductionLogItem[] = Array.from({ length: 36 },
   return {
     amount: 28 + sequence * 3.6,
     balanceTypeName: paySource === 'stored-value-card' ? '文旅储值卡' : '文旅储值余额',
+    canRefund: status === 'success',
     cardNumber: paySource === 'stored-value-card' ? `DG2026${String(sequence).padStart(6, '0')}` : null,
     createdAt: `2026-04-${String((sequence % 9) + 2).padStart(2, '0')} ${String((sequence % 10) + 9).padStart(2, '0')}:12:00`,
     failureReason: status === 'failed' ? '账户余额不足' : null,
@@ -83,6 +84,8 @@ const mockDeductionLogs: MerchantDeductionLogItem[] = Array.from({ length: 36 },
     paySourceLabel: paySource === 'stored-value-card' ? '储值卡' : '用户余额',
     paymentNo: `OFF20260411${String(sequence).padStart(4, '0')}`,
     remark: sequence % 5 === 0 ? '门店消费扣款' : null,
+    refundNo: null,
+    refundedAt: null,
     status,
     statusLabel: status === 'failed' ? '支付失败' : status === 'processing' ? '处理中' : '支付成功',
     userMobile: '138****0000',
@@ -108,6 +111,43 @@ export const mockMerchantDeductionService: MerchantDeductionService = {
 
   async scanCode(rawCode: string) {
     return Promise.resolve(createMockScanResult(rawCode))
+  },
+
+  async refundDeduction(logId: string) {
+    const targetLog = mockDeductionLogs.find((item) => item.id === logId) ?? null
+
+    if (!targetLog) {
+      throw new Error('未找到对应的线下付款流水')
+    }
+
+    if (!targetLog.canRefund) {
+      throw new Error('当前流水暂不支持退款')
+    }
+
+    const refundedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
+    const refundNo = `REF${Date.now()}`
+
+    mockDeductionLogs = mockDeductionLogs.map((item) =>
+      item.id === logId
+        ? {
+            ...item,
+            canRefund: false,
+            refundNo,
+            refundedAt,
+            status: 'refunded',
+            statusLabel: '已退款',
+          }
+        : item,
+    )
+
+    return Promise.resolve({
+      rawPayload: {
+        id: logId,
+        refund_no: refundNo,
+        refunded_at: refundedAt,
+      },
+      successMessage: '退款成功',
+    })
   },
 
   async submitDeduction(command: MerchantDeductionSubmitCommand) {

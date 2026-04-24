@@ -8,6 +8,7 @@ import type { PageResult } from '@/shared/types/modules'
 import type {
   MerchantDeductionLogItem,
   MerchantDeductionLogQuery,
+  MerchantDeductionRefundResult,
   MerchantDeductionScanResult,
   MerchantDeductionService,
   MerchantDeductionSubmitCommand,
@@ -488,6 +489,8 @@ function mapDeductionStatus(value: unknown): MerchantDeductionLogItem['status'] 
       return 'success'
     case 2:
       return 'failed'
+    case 3:
+      return 'refunded'
     default:
       return 'unknown'
   }
@@ -501,6 +504,8 @@ function getDeductionStatusLabel(status: MerchantDeductionLogItem['status']) {
       return '支付成功'
     case 'failed':
       return '支付失败'
+    case 'refunded':
+      return '已退款'
     default:
       return '状态未知'
   }
@@ -516,10 +521,13 @@ function mapDeductionLogItem(source: unknown, index: number): MerchantDeductionL
   const status = mapDeductionStatus(rawPayload.status)
   const id = normalizeString(rawPayload.id) ?? String(index + 1)
   const paymentNo = normalizeString(rawPayload.payment_no) ?? `offline-payment-${id}`
+  const refundNo = normalizeString(rawPayload.refund_no)
+  const refundedAt = normalizeString(rawPayload.refunded_at)
 
   return {
     amount: normalizeNumber(rawPayload.amount) ?? 0,
     balanceTypeName: balanceTypeRecord ? pickString([balanceTypeRecord], ['name', 'balance_type_name', 'balanceTypeName']) : null,
+    canRefund: status === 'success' && !refundNo && !refundedAt,
     cardNumber: storedValueCardRecord ? pickString([storedValueCardRecord], ['card_no', 'card_number', 'cardNumber']) : null,
     createdAt: normalizeString(rawPayload.created_at),
     failureReason: normalizeString(rawPayload.failure_reason),
@@ -530,6 +538,8 @@ function mapDeductionLogItem(source: unknown, index: number): MerchantDeductionL
     paySourceLabel: getDeductionPaySourceLabel(paySource),
     paymentNo,
     remark: normalizeString(rawPayload.remark),
+    refundNo,
+    refundedAt,
     status,
     statusLabel: getDeductionStatusLabel(status),
     userMobile: userRecord ? pickString([userRecord], ['mobile', 'phone']) : null,
@@ -646,6 +656,25 @@ function mapSubmitResult(response: unknown): MerchantDeductionSubmitResult {
   }
 }
 
+function normalizeOfflinePaymentId(logId: string) {
+  const normalizedLogId = Number.parseInt(logId.trim(), 10)
+
+  if (!Number.isFinite(normalizedLogId) || normalizedLogId <= 0) {
+    throw new Error('线下付款流水标识无效')
+  }
+
+  return normalizedLogId
+}
+
+function mapRefundResult(response: unknown): MerchantDeductionRefundResult {
+  const rawPayload = isRecord(response) ? response : null
+
+  return {
+    rawPayload,
+    successMessage: normalizeString(rawPayload?.message) ?? '退款成功',
+  }
+}
+
 export function createBackendAMerchantDeductionService(
   memberAuthSession: MemberAuthSession,
 ): MerchantDeductionService {
@@ -676,6 +705,14 @@ export function createBackendAMerchantDeductionService(
       )
 
       return mapScanResult(rawCode, scanPayload.paymentToken, scanPayload.cardQrContent, response)
+    },
+
+    async refundDeduction(logId: string) {
+      const response = await httpClient.post<unknown>(
+        `/api/v1/merchant/offline-payments/${normalizeOfflinePaymentId(logId)}/refund`,
+      )
+
+      return mapRefundResult(response)
     },
 
     async submitDeduction(command: MerchantDeductionSubmitCommand) {

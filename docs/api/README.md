@@ -2,14 +2,14 @@
 
 ## 1. 文档来源
 
-- Swagger 页面：`http://123.207.4.226:8080/api/documentation`
-- OpenAPI JSON：`http://123.207.4.226:8080/docs?api-docs.json`
-- 最近一次抓取时间：`2026-04-11`
+- Swagger 页面：`https://api.qzxys.com/api/documentation`
+- OpenAPI JSON：`https://api.qzxys.com/docs?api-docs.json`
+- 最近一次抓取时间：`2026-04-24`
 - 原始文件：[`openapi.json`](/root/shop/docs/api/openapi.json)
 
 说明：
 
-- Swagger UI 实际加载的是 `http://123.207.4.226:8080/docs?api-docs.json`
+- Swagger UI 实际加载的是 `https://api.qzxys.com/docs?api-docs.json`
 - 当前导出格式为 `OpenAPI 3.0.0`
 - 文档 `servers[0].url` 为 `/`，前端接入时仍应以项目环境变量中的后端基地址为准
 
@@ -24,11 +24,11 @@
 
 | 项 | 数量 |
 | --- | ---: |
-| Path 数 | 40 |
-| Operation 数 | 47 |
+| Path 数 | 42 |
+| Operation 数 | 49 |
 | Tag 数 | 17 |
 | 公开接口 | 13 |
-| 需鉴权接口 | 34 |
+| 需鉴权接口 | 36 |
 
 后端文档信息：
 
@@ -105,6 +105,7 @@
 
 - `GET /api/v1/orders` 订单列表
 - `GET /api/v1/orders/{order}` 订单详情
+- `POST /api/v1/orders/{order}/receive` 确认收货
 
 ### 余额
 
@@ -140,6 +141,7 @@
 - `GET /api/v1/merchant/offline-payments` 合作商家员工查看当前所属商家的线下支付流水，支持 `min_amount / max_amount / start_time / end_time / per_page`
 - `POST /api/v1/merchant/offline-payments/scan` 合作商家核销员扫码识别用户付款码或储值卡二维码
 - `POST /api/v1/merchant/offline-payments/pay` 合作商家核销员提交线下支付；前端需附带 `balance_type_id`，其来源为 `GET /api/v1/auth/profile -> data.merchant.supported_balance_types`
+- `POST /api/v1/merchant/offline-payments/{offlinePayment}/refund` 合作商家核销员发起线下付款退款
 
 ### 上传
 
@@ -160,6 +162,9 @@
 - `2026-04-11` 已同步 `merchant.supported_balance_types`，商户扣款提交时应从这里选择并传递 `balance_type_id`
 - `2026-04-11` 已补入 `GET /api/v1/merchant/offline-payments`，用于合作商家员工查看线下支付流水
 - `2026-04-11` 已将线下支付与员工邀请接口文案统一为“合作商家”
+- `2026-04-24` 已补入 `POST /api/v1/orders/{order}/receive`，会员端订单现已在 Swagger 中提供确认收货接口
+- `2026-04-24` 已补入 `POST /api/v1/merchant/offline-payments/{offlinePayment}/refund`，用于合作商家员工发起线下付款退款
+- `2026-04-24` 已将 `GET /api/v1/balance-accounts/logs` 的成功响应补充为 `BalanceAccountLogResponse`
 
 ## 5.1 当前项目范围内不接入的接口
 
@@ -186,5 +191,5 @@
 可在项目根目录执行：
 
 ```bash
-curl --max-time 20 -L http://123.207.4.226:8080/docs?api-docs.json -o docs/api/openapi.json
+curl --max-time 20 -L https://api.qzxys.com/docs?api-docs.json -o docs/api/openapi.json
 ```

@@ -22,7 +22,8 @@ const {
   results,
   submitSearch,
 } = useOrderSearchResultsPageModel()
-const supportsOrderTransitions = backendTarget === 'mock'
+const supportsOrderCancelAndPay = backendTarget === 'mock'
+const supportsOrderConfirmReceipt = backendTarget === 'mock' || backendTarget === 'backend-a'
 
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
@@ -140,13 +141,13 @@ onActivated(() => {
                   订单详情
                 </RouterLink>
 
-                <template v-if="supportsOrderTransitions && order.status === 'pending-payment'">
+                <template v-if="supportsOrderCancelAndPay && order.status === 'pending-payment'">
                   <button class="ghost-button" type="button" @click="handleCancelOrder(order.orderId)">取消订单</button>
                   <RouterLink class="primary-button primary-link-button" :to="{ name: 'checkout' }">余额支付</RouterLink>
                 </template>
 
                 <button
-                  v-else-if="supportsOrderTransitions && order.status === 'pending-receipt'"
+                  v-else-if="supportsOrderConfirmReceipt && order.status === 'pending-receipt'"
                   class="primary-button"
                   type="button"
                   @click="handleConfirmReceipt(order.orderId)"

@@ -1,6 +1,7 @@
 export type {
   MerchantDeductionLogItem,
   MerchantDeductionLogQuery,
+  MerchantDeductionRefundResult,
   MerchantDeductionScanResult,
   MerchantDeductionService,
   MerchantDeductionSubmitCommand,

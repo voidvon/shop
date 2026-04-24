@@ -77,7 +77,7 @@ VITE_BACKEND_TARGET=backend-a npm run dev
 
 ```sh
 VITE_BACKEND_TARGET=backend-a \
-VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
+VITE_BACKEND_A_BASE_URL=https://api.qzxys.com \
 npm run dev
 ```
 
@@ -85,7 +85,7 @@ npm run dev
 
 ```sh
 VITE_BACKEND_TARGET=backend-a \
-VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
+VITE_BACKEND_A_BASE_URL=https://api.qzxys.com \
 VITE_BACKEND_A_WECHAT_OAUTH_URL="https://your-wechat-oauth-entry" \
 npm run dev
 ```
@@ -94,7 +94,7 @@ npm run dev
 
 ```sh
 VITE_BACKEND_TARGET=backend-a \
-VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
+VITE_BACKEND_A_BASE_URL=https://api.qzxys.com \
 VITE_BACKEND_A_ENABLE_INVOICE=true \
 npm run dev
 ```
@@ -103,7 +103,7 @@ npm run dev
 
 ```sh
 VITE_BACKEND_TARGET=backend-a \
-VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
+VITE_BACKEND_A_BASE_URL=https://api.qzxys.com \
 VITE_BACKEND_A_WECHAT_OAUTH_URL="https://your-wechat-oauth-entry" \
 npm run dev
 ```
@@ -112,7 +112,7 @@ npm run dev
 
 ```sh
 VITE_BACKEND_TARGET=backend-a \
-VITE_BACKEND_A_BASE_URL=http://123.207.4.226:8080 \
+VITE_BACKEND_A_BASE_URL=https://api.qzxys.com \
 VITE_DEV_MEMBER_ACCESS_TOKEN="your-access-token" \
 npm run dev
 ```
@@ -160,7 +160,6 @@ npm run dev
 - 微信绑定手机号
 - 订单取消
 - 订单支付
-- 确认收货
 
 当前 Swagger 里仍未接完、或前端还没有完整页面承接的能力：
 

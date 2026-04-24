@@ -1,7 +1,7 @@
 # API 接口明细索引
 
 来源：[`openapi.json`](/root/shop/docs/api/openapi.json)  
-抓取时间：`2026-04-11`
+抓取时间：`2026-04-24`
 
 说明：
 
@@ -25,6 +25,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | GET | /api/v1/orders | Bearer | query:per_page | - | object | 订单列表 |
 | GET | /api/v1/orders/{order} | Bearer | path:order | - | object | 订单详情 |
+| POST | /api/v1/orders/{order}/receive | Bearer | path:order | - | object | 确认收货 |
 
 ## 分类
 
@@ -102,6 +103,7 @@
 | GET | /api/v1/merchant/offline-payments | Bearer | query:min_amount, query:max_amount, query:start_time, query:end_time, query:per_page | - | MerchantOfflinePaymentLogResponse | 合作商家员工查看当前所属商家的线下支付流水 |
 | POST | /api/v1/merchant/offline-payments/scan | Bearer | - | object | ApiResponse | 合作商家核销员扫码识别用户付款码或储值卡二维码 |
 | POST | /api/v1/merchant/offline-payments/pay | Bearer | - | object | ApiResponse | 合作商家核销员提交线下支付；前端应带 `balance_type_id`，来源为 `GET /api/v1/auth/profile -> data.merchant.supported_balance_types` |
+| POST | /api/v1/merchant/offline-payments/{offlinePayment}/refund | Bearer | path:offlinePayment | - | MerchantOfflinePaymentRefundResponse | 合作商家核销员发起线下付款退款 |
 
 ## 用户认证
 
@@ -134,7 +136,7 @@
 | 方法 | 路径 | 鉴权 | 参数 | 请求体 | 成功响应 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | GET | /api/v1/balance-accounts | Bearer | - | - | object | 余额账户列表 |
-| GET | /api/v1/balance-accounts/logs | Bearer | query:per_page | - | ApiResponse | 余额流水 |
+| GET | /api/v1/balance-accounts/logs | Bearer | query:per_page | - | BalanceAccountLogResponse | 余额流水 |
 
 ## 员工邀请
 

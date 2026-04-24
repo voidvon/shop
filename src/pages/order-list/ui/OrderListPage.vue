@@ -65,7 +65,8 @@ const activeTab = ref<OrderListFilterStatus>(resolveRouteStatus(route.query.stat
 const retainedPanels = ref<Set<OrderListFilterStatus>>(new Set([activeTab.value]))
 const hideTimers = new Map<OrderListFilterStatus, ReturnType<typeof setTimeout>>()
 let routeSyncTimer: ReturnType<typeof setTimeout> | null = null
-const supportsOrderTransitions = backendTarget === 'mock'
+const supportsOrderCancelAndPay = backendTarget === 'mock'
+const supportsOrderConfirmReceipt = backendTarget === 'mock' || backendTarget === 'backend-a'
 
 function getFilteredOrders(status: OrderListFilterStatus) {
   return orderListPageData.value.orders.filter((order) => {
@@ -323,17 +324,17 @@ onBeforeUnmount(() => {
                     订单详情
                   </RouterLink>
 
-                  <template v-if="supportsOrderTransitions && order.status === 'pending-payment'">
-                    <button class="ghost-button" type="button" @click="handleCancelOrder(order.orderId)">取消订单</button>
-                    <RouterLink class="primary-button primary-link-button" :to="{ name: 'checkout' }">余额支付</RouterLink>
-                  </template>
+                <template v-if="supportsOrderCancelAndPay && order.status === 'pending-payment'">
+                  <button class="ghost-button" type="button" @click="handleCancelOrder(order.orderId)">取消订单</button>
+                  <RouterLink class="primary-button primary-link-button" :to="{ name: 'checkout' }">余额支付</RouterLink>
+                </template>
 
-                  <button
-                    v-else-if="supportsOrderTransitions && order.status === 'pending-receipt'"
-                    class="primary-button"
-                    type="button"
-                    @click="handleConfirmReceipt(order.orderId)"
-                  >
+                <button
+                  v-else-if="supportsOrderConfirmReceipt && order.status === 'pending-receipt'"
+                  class="primary-button"
+                  type="button"
+                  @click="handleConfirmReceipt(order.orderId)"
+                >
                     确认收货
                   </button>
                 </div>

@@ -48,7 +48,7 @@ function resolveOrderStatusHint(status: TradeOrderStatus) {
 function resolveOrderActions(status: TradeOrderStatus) {
   switch (status) {
     case 'pending-receipt':
-      return allowActions<TradeOrderAction>(['view-logistics', 'copy-order-no'])
+      return allowActions<TradeOrderAction>(['view-logistics', 'confirm-receipt', 'copy-order-no'])
     default:
       return allowActions<TradeOrderAction>(['copy-order-no'])
   }

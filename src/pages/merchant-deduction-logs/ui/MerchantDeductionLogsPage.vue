@@ -5,7 +5,9 @@ import {
   List as VanList,
   PullRefresh as VanPullRefresh,
   Tag as VanTag,
+  showConfirmDialog,
   showFailToast,
+  showSuccessToast,
 } from 'vant'
 
 import {
@@ -36,6 +38,7 @@ const isLoadingMore = ref(false)
 const hasMore = ref(false)
 const hasLoadedOnce = ref(false)
 const errorMessage = ref('')
+const refundingLogId = ref<string | null>(null)
 
 const stopAuthSubscription = memberAuthSession.subscribe((snapshot) => {
   authSnapshot.value = snapshot
@@ -108,8 +111,41 @@ function resolveStatusType(status: MerchantDeductionLogItem['status']) {
       return 'danger'
     case 'processing':
       return 'primary'
+    case 'refunded':
+      return 'warning'
     default:
       return 'default'
+  }
+}
+
+function canRefund(log: MerchantDeductionLogItem) {
+  return log.canRefund && log.status === 'success'
+}
+
+async function handleRefund(log: MerchantDeductionLogItem) {
+  if (!canRefund(log) || refundingLogId.value) {
+    return
+  }
+
+  try {
+    await showConfirmDialog({
+      title: '确认退款',
+      message: `确认退款 ¥${formatAmount(log.amount)} 吗？退款将按原支付来源原路返回。`,
+    })
+  } catch {
+    return
+  }
+
+  refundingLogId.value = log.id
+
+  try {
+    const result = await merchantDeductionService.refundDeduction(log.id)
+    await loadLogs('initial')
+    showSuccessToast(result.successMessage || '退款成功')
+  } catch (error) {
+    showFailToast(error instanceof Error ? error.message : '退款失败')
+  } finally {
+    refundingLogId.value = null
   }
 }
 
@@ -321,11 +357,29 @@ onMounted(() => {
                     <dd>{{ log.remark }}</dd>
                   </div>
 
+                  <div v-if="log.refundNo || log.refundedAt">
+                    <dt>退款信息</dt>
+                    <dd>
+                      {{ [log.refundNo ? `退款单号 ${log.refundNo}` : null, log.refundedAt ? `退款时间 ${formatDateTime(log.refundedAt)}` : null].filter(Boolean).join(' · ') }}
+                    </dd>
+                  </div>
+
                   <div v-if="log.failureReason">
                     <dt>失败原因</dt>
                     <dd class="log-detail-danger">{{ log.failureReason }}</dd>
                   </div>
                 </dl>
+
+                <div v-if="canRefund(log)" class="log-card-actions">
+                  <button
+                    class="refund-button"
+                    :disabled="refundingLogId === log.id"
+                    type="button"
+                    @click="handleRefund(log)"
+                  >
+                    {{ refundingLogId === log.id ? '退款中...' : '发起退款' }}
+                  </button>
+                </div>
               </article>
             </VanList>
           </section>
@@ -462,6 +516,11 @@ onMounted(() => {
   box-shadow: 0 14px 32px rgba(27, 25, 22, 0.08);
 }
 
+.log-card-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .log-card-head {
   display: flex;
   justify-content: space-between;
@@ -515,6 +574,21 @@ onMounted(() => {
   word-break: break-all;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.refund-button {
+  min-width: 96px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #ea580c;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.refund-button:disabled {
+  opacity: 0.56;
 }
 
 .log-detail-meta .log-detail-row dd {
