@@ -472,6 +472,8 @@ function formatCouponGroupValue(
 
 .address-icon {
   color: #d89575;
+  margin-right: 10px;
+  flex-shrink: 0;
 }
 
 .address-copy {
@@ -633,10 +635,6 @@ function formatCouponGroupValue(
 .address-card :deep(.van-cell__right-icon),
 .meta-card :deep(.van-cell__right-icon) {
   color: #a8a7a5;
-}
-
-.address-card :deep(.van-cell__left-icon) {
-  margin-right: 10px;
 }
 
 .address-card :deep(.van-cell__title),
