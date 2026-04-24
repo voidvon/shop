@@ -19,23 +19,30 @@ function parseAmount(value: string | null | undefined) {
 }
 
 function resolveOrderStatus(dto: BackendAOrderDto): TradeOrderStatus {
-  if (dto.status <= 0) {
-    return 'cancelled'
-  }
+  switch (dto.status) {
+    case 0:
+      return 'pending-payment'
+    case 10:
+      return 'pending-shipment'
+    case 20:
+      return 'pending-receipt'
+    case 30:
+      return 'completed'
+    case 40:
+      return 'cancelled'
+    case 50:
+      return dto.status_text?.includes('退货') ? 'returning' : 'refunding'
+    default:
+      if (dto.delivery_status === 1) {
+        return 'pending-receipt'
+      }
 
-  if (dto.payment_status !== 1) {
-    return 'pending-payment'
-  }
+      if (dto.delivery_status === 2) {
+        return 'completed'
+      }
 
-  if (dto.delivery_status <= 0) {
-    return 'pending-shipment'
+      return dto.payment_status === 1 ? 'pending-shipment' : 'cancelled'
   }
-
-  if (dto.delivery_status === 1) {
-    return 'pending-receipt'
-  }
-
-  return 'completed'
 }
 
 function resolveOrderStatusText(status: TradeOrderStatus) {
@@ -48,6 +55,10 @@ function resolveOrderStatusText(status: TradeOrderStatus) {
       return '待发货'
     case 'pending-receipt':
       return '待收货'
+    case 'refunding':
+      return '退款中'
+    case 'returning':
+      return '退货中'
     case 'completed':
       return '已完成'
     default:
@@ -84,6 +95,7 @@ function mapCheckoutCouponUsages(groups: CheckoutPreviewGroup[]): CheckoutCoupon
 
 export function mapBackendAOrderDto(dto: BackendAOrderDto): OrderRecord {
   const status = resolveOrderStatus(dto)
+  const statusText = dto.status_text?.trim() || resolveOrderStatusText(status)
 
   return {
     itemCount: dto.item_count,
@@ -100,7 +112,7 @@ export function mapBackendAOrderDto(dto: BackendAOrderDto): OrderRecord {
     paymentMethod: dto.payment_status === 1 ? '账户余额' : null,
     shippingAmount: 0,
     status,
-    statusText: resolveOrderStatusText(status),
+    statusText,
     storeName: dto.merchant?.short_name ?? dto.merchant?.name ?? `商户#${dto.merchant_id}`,
     totalAmount: parseAmount(dto.payable_amount || dto.total_amount),
   }

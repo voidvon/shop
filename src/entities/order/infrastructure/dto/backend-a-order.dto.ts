@@ -26,6 +26,7 @@ export interface BackendAOrderDto {
   coupon_amount: string
   created_at?: string | null
   delivery_status: number
+  delivery_status_text?: string | null
   district?: string | null
   id: number
   item_count: number
@@ -41,11 +42,16 @@ export interface BackendAOrderDto {
   phone?: string | null
   province?: string | null
   remark: string | null
+  refund_no?: string | null
+  refunded_at?: string | null
   shipped_at?: string | null
   status: number
+  status_text?: string | null
   street?: string | null
   submit_no: string | null
   total_amount: string
+  tracking_no?: string | null
+  shipping_remark?: string | null
   updated_at?: string | null
   user_address?: string | BackendAOrderAddressDto | null
   user_coupon_id: number | null

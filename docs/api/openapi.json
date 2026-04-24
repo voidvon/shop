@@ -983,7 +983,7 @@
                 "summary": "预结算",
                 "operationId": "af42f207a500d29321a9491c18774246",
                 "requestBody": {
-                    "description": "按购物车已选商品生成预结算结果，并根据 merchant_id + balance_type_id 自动拆单。coupon_usages 用于给指定分组绑定优惠券。",
+                    "description": "按购物车已选商品生成预结算结果，并根据 merchant_id + balance_type_id 自动拆单。扣款时会按商家支持的余额类型优先级从高到低组合扣款；coupon_usages 用于给指定分组绑定优惠券。",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -1071,7 +1071,7 @@
                 "summary": "提交订单",
                 "operationId": "6c3ea7c473f168a08dbc44a60f7ddc65",
                 "requestBody": {
-                    "description": "正式下单接口。会锁库存、校验余额、扣减余额并删除对应购物车项。",
+                    "description": "正式下单接口。会锁库存，并按商家支持的余额类型优先级组合扣减余额，扣减成功后删除对应购物车项。",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -2532,8 +2532,10 @@
                                         "example": 1
                                     },
                                     "balance_type_id": {
+                                        "description": "兼容旧版字段；payment_token 付款时后端会按商家支持余额类型优先级自动扣款，无需依赖该字段",
                                         "type": "integer",
-                                        "example": 1
+                                        "example": 1,
+                                        "nullable": true
                                     },
                                     "amount": {
                                         "type": "number",
@@ -3549,6 +3551,31 @@
                 },
                 "type": "object"
             },
+            "BalanceDeductionPreview": {
+                "properties": {
+                    "balance_type_id": {
+                        "description": "余额类型ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "balance_type_name": {
+                        "description": "余额类型名称",
+                        "type": "string",
+                        "example": "通用余额"
+                    },
+                    "available_amount": {
+                        "description": "该余额类型当前可用余额",
+                        "type": "string",
+                        "example": "100.00"
+                    },
+                    "deduct_amount": {
+                        "description": "预计扣款金额",
+                        "type": "string",
+                        "example": "80.00"
+                    }
+                },
+                "type": "object"
+            },
             "CheckoutPreviewGroup": {
                 "properties": {
                     "merchant_id": {
@@ -3562,7 +3589,7 @@
                         "example": "御欣堂"
                     },
                     "balance_type_id": {
-                        "description": "该订单使用的余额类型ID",
+                        "description": "订单分组原始余额类型ID；实际扣款会按商家支持的余额类型优先级组合扣款",
                         "type": "integer",
                         "example": 1
                     },
@@ -3605,9 +3632,16 @@
                         "nullable": true
                     },
                     "available_balance": {
-                        "description": "当前余额账户可用金额",
+                        "description": "商家支持余额类型的可用总额",
                         "type": "string",
                         "example": "500.00"
+                    },
+                    "balance_deductions": {
+                        "description": "按商家余额类型优先级预计扣款明细",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BalanceDeductionPreview"
+                        }
                     },
                     "items": {
                         "type": "array",
@@ -3778,12 +3812,17 @@
                         "example": "156.00"
                     },
                     "status": {
-                        "description": "订单状态",
+                        "description": "订单状态：0待付款，10待发货，20待收货，30已完成，40已取消，50退款/退货",
                         "type": "integer",
                         "example": 10
                     },
+                    "status_text": {
+                        "description": "订单状态中文文案",
+                        "type": "string",
+                        "example": "待发货"
+                    },
                     "delivery_status": {
-                        "description": "发货状态",
+                        "description": "发货状态：0待发货，1已发货，2已收货",
                         "type": "integer",
                         "example": 0
                     },
@@ -3807,6 +3846,30 @@
                         "description": "发货时间，未发货时为 null",
                         "type": "string",
                         "example": "2026-04-12 05:30:00",
+                        "nullable": true
+                    },
+                    "tracking_no": {
+                        "description": "物流编号",
+                        "type": "string",
+                        "example": "SF1234567890",
+                        "nullable": true
+                    },
+                    "shipping_remark": {
+                        "description": "发货备注",
+                        "type": "string",
+                        "example": "顺丰到付",
+                        "nullable": true
+                    },
+                    "refund_no": {
+                        "description": "退款流水号，未退款时为 null",
+                        "type": "string",
+                        "example": "REF202604240001",
+                        "nullable": true
+                    },
+                    "refunded_at": {
+                        "description": "退款时间，未退款时为 null",
+                        "type": "string",
+                        "example": "2026-04-24 15:30:00",
                         "nullable": true
                     },
                     "created_at": {
