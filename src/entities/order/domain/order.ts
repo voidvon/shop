@@ -35,9 +35,17 @@ export interface CheckoutAvailableCoupon {
   userCouponId: number
 }
 
+export interface CheckoutBalanceDeduction {
+  availableAmount: number
+  balanceTypeId: number
+  balanceTypeName: string
+  deductAmount: number
+}
+
 export interface CheckoutPreviewGroup {
   availableCoupons: CheckoutAvailableCoupon[]
   availableBalance: number
+  balanceDeductions: CheckoutBalanceDeduction[]
   balanceTypeId: number
   balanceTypeName: string
   couponAmount: number

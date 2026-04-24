@@ -92,8 +92,16 @@ export interface BackendACheckoutPreviewItemDto {
   sku_name: string
 }
 
+export interface BackendACheckoutBalanceDeductionDto {
+  available_amount: string
+  balance_type_id: number
+  balance_type_name: string
+  deduct_amount: string
+}
+
 export interface BackendACheckoutPreviewGroupDto {
   available_balance: string
+  balance_deductions?: BackendACheckoutBalanceDeductionDto[] | null
   balance_type_id: number
   balance_type_name: string
   coupon_amount: string

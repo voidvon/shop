@@ -1,11 +1,13 @@
 import {
   createCheckoutLine,
+  type CheckoutBalanceDeduction,
   type CheckoutPreviewGroup,
   type CheckoutCouponUsage,
   type CreateCheckoutPreviewCommand,
   type OrderRecord,
 } from '../../domain/order'
 import type {
+  BackendACheckoutBalanceDeductionDto,
   BackendACheckoutPreviewDto,
   BackendACheckoutPreviewGroupDto,
   BackendAOrderDto,
@@ -66,10 +68,22 @@ function resolveOrderStatusText(status: TradeOrderStatus) {
   }
 }
 
+function mapCheckoutBalanceDeduction(
+  dto: BackendACheckoutBalanceDeductionDto,
+): CheckoutBalanceDeduction {
+  return {
+    availableAmount: parseAmount(dto.available_amount),
+    balanceTypeId: dto.balance_type_id,
+    balanceTypeName: dto.balance_type_name,
+    deductAmount: parseAmount(dto.deduct_amount),
+  }
+}
+
 function mapCheckoutPreviewGroup(dto: BackendACheckoutPreviewGroupDto): CheckoutPreviewGroup {
   return {
     availableCoupons: [],
     availableBalance: parseAmount(dto.available_balance),
+    balanceDeductions: (dto.balance_deductions ?? []).map(mapCheckoutBalanceDeduction),
     balanceTypeId: dto.balance_type_id,
     balanceTypeName: dto.balance_type_name,
     couponAmount: parseAmount(dto.coupon_amount),

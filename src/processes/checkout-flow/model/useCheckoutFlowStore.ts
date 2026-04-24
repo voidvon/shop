@@ -96,8 +96,16 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     availableBalance.value = snapshot.balanceAmount
   }
 
+  function resolveGroupPlannedDeductionAmount(group: CheckoutPreviewGroup) {
+    if (group.balanceDeductions.length > 0) {
+      return group.balanceDeductions.reduce((sum, item) => sum + item.deductAmount, 0)
+    }
+
+    return group.availableBalance
+  }
+
   function findInsufficientBalanceGroups(targetPreview: CheckoutPreview | null) {
-    return (targetPreview?.groups ?? []).filter((group) => group.payableAmount > group.availableBalance)
+    return (targetPreview?.groups ?? []).filter((group) => group.payableAmount > resolveGroupPlannedDeductionAmount(group))
   }
 
   async function loadPreview(options?: { couponUsages?: CheckoutCouponUsage[] }) {
@@ -174,7 +182,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
 
       if (insufficientGroups.length > 0) {
         errorMessage.value = insufficientGroups
-          .map((group) => `${group.merchantName}-${group.balanceTypeName} 余额不足`)
+          .map((group) => `${group.merchantName}可用余额不足`)
           .join('；')
         throw new Error(errorMessage.value)
       }

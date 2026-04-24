@@ -19,6 +19,13 @@ interface CheckoutPaymentOption {
   availableAmount: number
   balanceTypeId: number
   balanceTypeName: string
+  deductAmount: number
+}
+
+interface MerchantSubtotalBreakdown {
+  merchantId: number
+  merchantName: string
+  totalAmount: number
 }
 
 const {
@@ -41,63 +48,54 @@ const payableAmountText = computed(() => formatAmount(preview.value?.payableAmou
 const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAmount ?? 0))
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
 const merchantTitle = computed(() => preview.value?.source === 'cart' ? '购物车商品' : '立即购买商品')
-const hasInsufficientBalance = computed(() => previewBalanceGroups.value.some((group) => group.payableAmount > group.availableBalance))
+const hasInsufficientBalance = computed(() => previewBalanceGroups.value.some((group) => group.payableAmount > resolveGroupPlannedDeductionAmount(group)))
 const insufficientBalanceMessage = computed(() => {
-  const insufficientBalanceTypes = new Set(
+  const insufficientMerchants = new Set(
     previewBalanceGroups.value
-      .filter((group) => group.payableAmount > group.availableBalance)
-      .map((group) => group.balanceTypeName.trim())
+      .filter((group) => group.payableAmount > resolveGroupPlannedDeductionAmount(group))
+      .map((group) => group.merchantName.trim())
       .filter(Boolean),
   )
 
-  return [...insufficientBalanceTypes]
-    .map((balanceTypeName) => `${balanceTypeName}余额不足`)
+  return [...insufficientMerchants]
+    .map((merchantName) => `${merchantName}可用余额不足`)
     .join('；')
 })
-
-function isGeneralBalanceType(balanceTypeName: string) {
-  const normalizedName = balanceTypeName.trim()
-  return normalizedName === '通用余额' || normalizedName === '账户余额' || normalizedName.includes('通用')
-}
 
 const paymentOptions = computed<CheckoutPaymentOption[]>(() => {
   const paymentOptionMap = new Map<number, CheckoutPaymentOption>()
 
   previewBalanceGroups.value.forEach((group) => {
-    const currentOption = paymentOptionMap.get(group.balanceTypeId)
+    group.balanceDeductions.forEach((deduction) => {
+      const currentOption = paymentOptionMap.get(deduction.balanceTypeId)
 
-    if (!currentOption) {
-      paymentOptionMap.set(group.balanceTypeId, {
-        availableAmount: group.availableBalance,
-        balanceTypeId: group.balanceTypeId,
-        balanceTypeName: group.balanceTypeName,
-      })
-      return
-    }
+      if (!currentOption) {
+        paymentOptionMap.set(deduction.balanceTypeId, {
+          availableAmount: deduction.availableAmount,
+          balanceTypeId: deduction.balanceTypeId,
+          balanceTypeName: deduction.balanceTypeName,
+          deductAmount: deduction.deductAmount,
+        })
+        return
+      }
 
-    currentOption.availableAmount = Math.max(currentOption.availableAmount, group.availableBalance)
+      currentOption.availableAmount = Math.max(currentOption.availableAmount, deduction.availableAmount)
+      currentOption.deductAmount += deduction.deductAmount
+    })
   })
 
-  return [...paymentOptionMap.values()].sort((left, right) => {
-    const leftPriority = isGeneralBalanceType(left.balanceTypeName) ? 1 : 0
-    const rightPriority = isGeneralBalanceType(right.balanceTypeName) ? 1 : 0
-
-    if (leftPriority !== rightPriority) {
-      return leftPriority - rightPriority
-    }
-
-    return left.balanceTypeId - right.balanceTypeId
-  })
+  return [...paymentOptionMap.values()].sort((left, right) => left.balanceTypeId - right.balanceTypeId)
 })
 const subtotalBreakdownText = computed(() => {
-  const subtotalBreakdownMap = new Map<number, { balanceTypeName: string; totalAmount: number }>()
+  const subtotalBreakdownMap = new Map<number, MerchantSubtotalBreakdown>()
 
   previewBalanceGroups.value.forEach((group) => {
-    const currentItem = subtotalBreakdownMap.get(group.balanceTypeId)
+    const currentItem = subtotalBreakdownMap.get(group.merchantId)
 
     if (!currentItem) {
-      subtotalBreakdownMap.set(group.balanceTypeId, {
-        balanceTypeName: group.balanceTypeName,
+      subtotalBreakdownMap.set(group.merchantId, {
+        merchantId: group.merchantId,
+        merchantName: group.merchantName,
         totalAmount: group.totalAmount,
       })
       return
@@ -106,22 +104,13 @@ const subtotalBreakdownText = computed(() => {
     currentItem.totalAmount += group.totalAmount
   })
 
-  return [...subtotalBreakdownMap.entries()]
-    .sort((left, right) => {
-      const leftPriority = isGeneralBalanceType(left[1].balanceTypeName) ? 1 : 0
-      const rightPriority = isGeneralBalanceType(right[1].balanceTypeName) ? 1 : 0
-
-      if (leftPriority !== rightPriority) {
-        return leftPriority - rightPriority
-      }
-
-      return left[0] - right[0]
-    })
-    .map(([, item]) => `${formatAmount(item.totalAmount)}(${item.balanceTypeName})`)
+  return [...subtotalBreakdownMap.values()]
+    .sort((left, right) => left.merchantId - right.merchantId)
+    .map((item) => `${formatAmount(item.totalAmount)}(${item.merchantName || `商户#${item.merchantId}`})`)
     .join('+')
 })
 const paymentMethodLabel = computed(() =>
-  paymentOptions.value.length > 1 ? '按余额类型自动扣款' : (paymentOptions.value[0]?.balanceTypeName ?? '余额账户支付'),
+  paymentOptions.value.length > 1 ? '按商家余额优先级组合扣款' : (paymentOptions.value[0]?.balanceTypeName ?? '余额账户支付'),
 )
 const buyerMessage = ref('')
 const selectedAddressQueryId = computed(() =>
@@ -246,6 +235,18 @@ function formatAmount(value: number) {
   return value.toFixed(2)
 }
 
+function resolveGroupPlannedDeductionAmount(group: (typeof previewBalanceGroups.value)[number]) {
+  if (group.balanceDeductions.length > 0) {
+    return group.balanceDeductions.reduce((sum, item) => sum + item.deductAmount, 0)
+  }
+
+  return group.availableBalance
+}
+
+function formatPaymentOptionValue(option: CheckoutPaymentOption) {
+  return `预计扣款 ¥${formatAmount(option.deductAmount)} / 可用 ¥${formatAmount(option.availableAmount)}`
+}
+
 function formatCouponGroupLabel(merchantName: string, balanceTypeName: string) {
   if (merchantName && balanceTypeName) {
     return `${merchantName}-${balanceTypeName}优惠券`
@@ -327,7 +328,7 @@ function formatCouponGroupValue(
               v-for="option in paymentOptions"
               :key="`payment-option-${option.balanceTypeId}`"
               :title="`${option.balanceTypeName}：`"
-              :value="`¥${formatAmount(option.availableAmount)}`"
+              :value="formatPaymentOptionValue(option)"
             />
             <van-cell v-if="isInvoiceEnabled" title="发票信息：" value="暂不支持" />
           </van-cell-group>
