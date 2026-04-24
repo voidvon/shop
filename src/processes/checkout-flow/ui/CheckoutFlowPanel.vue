@@ -110,7 +110,7 @@ const subtotalBreakdownText = computed(() => {
     .join('+')
 })
 const paymentMethodLabel = computed(() =>
-  paymentOptions.value.length > 1 ? '按商家余额优先级组合扣款' : (paymentOptions.value[0]?.balanceTypeName ?? '余额账户支付'),
+  paymentOptions.value.length > 1 ? '' : (paymentOptions.value[0]?.balanceTypeName ?? '余额账户支付'),
 )
 const buyerMessage = ref('')
 const selectedAddressQueryId = computed(() =>
@@ -323,7 +323,7 @@ function formatCouponGroupValue(
           </van-cell-group>
 
           <van-cell-group class="checkout-cell-group meta-card">
-            <van-cell title="支付方式：" :value="paymentMethodLabel" />
+            <van-cell v-if="paymentMethodLabel" title="支付方式：" :value="paymentMethodLabel" />
             <van-cell
               v-for="option in paymentOptions"
               :key="`payment-option-${option.balanceTypeId}`"
