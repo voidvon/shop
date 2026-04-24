@@ -635,6 +635,10 @@ function formatCouponGroupValue(
   color: #a8a7a5;
 }
 
+.address-card :deep(.van-cell__left-icon) {
+  margin-right: 10px;
+}
+
 .address-card :deep(.van-cell__title),
 .meta-card :deep(.van-cell__title) {
   color: #3c3b39;
