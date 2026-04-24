@@ -244,7 +244,7 @@ function resolveGroupPlannedDeductionAmount(group: (typeof previewBalanceGroups.
 }
 
 function formatPaymentOptionValue(option: CheckoutPaymentOption) {
-  return `预计扣款 ¥${formatAmount(option.deductAmount)} / 可用 ¥${formatAmount(option.availableAmount)}`
+  return `扣款¥${formatAmount(option.deductAmount)}/余额¥${formatAmount(option.availableAmount)}`
 }
 
 function formatCouponGroupLabel(merchantName: string, balanceTypeName: string) {
@@ -646,6 +646,7 @@ function formatCouponGroupValue(
   color: #6d6c6a;
   font-size: 14px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .merchant-note-field {
