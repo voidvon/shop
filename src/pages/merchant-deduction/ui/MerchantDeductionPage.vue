@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vu
 import { useRouter } from 'vue-router'
 import {
   showFailToast,
+  showDialog,
   showLoadingToast,
   showSuccessToast,
   showToast,
@@ -208,6 +209,15 @@ function showPersistentSuccessToast(message: string) {
   })
 }
 
+async function showDeductionFailureDialog(message: string) {
+  await showDialog({
+    title: '扣款失败',
+    message,
+    confirmButtonText: '确定',
+    closeOnClickOverlay: false,
+  })
+}
+
 function openImagePicker() {
   if (!canUploadImage.value) {
     return
@@ -356,7 +366,7 @@ async function handleSubmitDeduction() {
   createBlockingLoadingToast('扣款中...')
 
   try {
-    const result = await merchantDeductionService.submitDeduction({
+    await merchantDeductionService.submitDeduction({
       amount: parsedAmount.value,
       attachments: uploadedImages.value,
       balanceTypeId: selectedBalanceType.value?.id ?? '',
@@ -368,10 +378,10 @@ async function handleSubmitDeduction() {
 
     closeActiveLoadingToast()
     resetDraft()
-    showPersistentSuccessToast(result.successMessage || '操作成功')
+    await router.push({ name: 'merchant-deduction-logs' })
   } catch (error) {
     closeActiveLoadingToast()
-    showPersistentFailToast(error instanceof Error ? error.message : '扣款失败')
+    await showDeductionFailureDialog(error instanceof Error ? error.message : '扣款失败')
   } finally {
     closeActiveLoadingToast()
     isSubmitting.value = false

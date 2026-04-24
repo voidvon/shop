@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onActivated, onMounted } from 'vue'
+import { onActivated, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
 import { backendTarget } from '@/shared/config/backend'
+import ConfirmDialog from '@/shared/ui/ConfirmDialog.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
@@ -24,6 +25,12 @@ const {
 } = useOrderSearchResultsPageModel()
 const supportsOrderCancelAndPay = backendTarget === 'mock'
 const supportsOrderConfirmReceipt = backendTarget === 'mock' || backendTarget === 'backend-a'
+const confirmReceiptOrderId = ref<string | null>(null)
+const isConfirmingReceipt = ref(false)
+
+function closeConfirmReceiptDialog() {
+  confirmReceiptOrderId.value = null
+}
 
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
@@ -62,12 +69,25 @@ async function handleCancelOrder(orderId: string) {
 }
 
 async function handleConfirmReceipt(orderId: string) {
+  confirmReceiptOrderId.value = orderId
+}
+
+async function submitConfirmReceipt() {
+  if (!confirmReceiptOrderId.value || isConfirmingReceipt.value) {
+    return
+  }
+
+  isConfirmingReceipt.value = true
+
   try {
-    await confirmReceipt(orderId)
+    await confirmReceipt(confirmReceiptOrderId.value)
     await loadOrderListPage()
+    closeConfirmReceiptDialog()
     showSuccessToast('已确认收货')
   } catch {
     showFailToast('确认收货失败')
+  } finally {
+    isConfirmingReceipt.value = false
   }
 }
 
@@ -169,6 +189,17 @@ onActivated(() => {
         />
       </section>
     </div>
+
+    <ConfirmDialog
+      :model-value="Boolean(confirmReceiptOrderId)"
+      cancel-text="取消"
+      confirm-text="确认收货"
+      :loading="isConfirmingReceipt"
+      message="为保障售后权益，请检查后再确认收货"
+      title="确认收到货了吗？"
+      @confirm="submitConfirmReceipt"
+      @update:model-value="(visible) => { if (!visible) closeConfirmReceiptDialog() }"
+    />
   </section>
 </template>
 

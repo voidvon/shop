@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { useBackendRuntime } from '@/app/providers/backend'
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
+import ConfirmDialog from '@/shared/ui/ConfirmDialog.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
@@ -38,6 +39,8 @@ const {
 const orderId = computed(() => normalizeRouteParam(route.params.orderId))
 const isInvoiceEnabled = computed(() => runtime.capabilities.invoice)
 const isLogisticsEnabled = computed(() => runtime.capabilities.logistics)
+const confirmReceiptDialogVisible = ref(false)
+const isConfirmingReceipt = ref(false)
 
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
@@ -94,11 +97,24 @@ async function handleConfirmReceipt() {
     return
   }
 
+  confirmReceiptDialogVisible.value = true
+}
+
+async function submitConfirmReceipt() {
+  if (!orderDetailPageData.value || isConfirmingReceipt.value) {
+    return
+  }
+
+  isConfirmingReceipt.value = true
+
   try {
     await confirmReceipt(orderDetailPageData.value.orderId)
+    confirmReceiptDialogVisible.value = false
     showSuccessToast('已确认收货')
   } catch {
     showFailToast('确认收货失败')
+  } finally {
+    isConfirmingReceipt.value = false
   }
 }
 
@@ -347,6 +363,16 @@ onMounted(() => {
         余额支付
       </button>
     </footer>
+
+    <ConfirmDialog
+      v-model="confirmReceiptDialogVisible"
+      cancel-text="取消"
+      confirm-text="确认收货"
+      :loading="isConfirmingReceipt"
+      message="为保障售后权益，请检查后再确认收货"
+      title="确认收到货了吗？"
+      @confirm="submitConfirmReceipt"
+    />
   </section>
 </template>
 
