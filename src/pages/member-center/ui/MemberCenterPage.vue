@@ -9,12 +9,19 @@ import { useBackendRuntime } from '@/app/providers/backend'
 import { readAppVersion } from '@/shared/lib/app-version'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
+import LoadingState from '@/shared/ui/LoadingState.vue'
 
 import { useMemberCenterPageModel } from '../model/useMemberCenterPageModel'
 
 const router = useRouter()
 const runtime = useBackendRuntime()
-const { loadMemberCenterPage, memberCenterPageData } = useMemberCenterPageModel()
+const {
+  errorMessage,
+  hasLoadedOnce,
+  isLoading,
+  loadMemberCenterPage,
+  memberCenterPageData,
+} = useMemberCenterPageModel()
 const isCartEnabled = useModuleAvailability('cart')
 const isCouponEnabled = computed(() => runtime.capabilities.coupon)
 const canShowWechatLogout = computed(() => runtime.capabilities.wechatLogout)
@@ -22,6 +29,8 @@ const isReviewEnabled = useModuleAvailability('review')
 const appVersionText = `版本号：${readAppVersion()}`
 const isLoggedIn = computed(() => memberCenterPageData.value.profile.isLoggedIn)
 const shouldShowLogoutButton = computed(() => !isWechatBrowser() || canShowWechatLogout.value)
+const shouldShowInitialLoading = computed(() => isLoading.value && !hasLoadedOnce.value)
+const shouldShowInitialError = computed(() => !isLoading.value && !hasLoadedOnce.value && Boolean(errorMessage.value))
 const loginEntryRoute = computed<RouteLocationRaw>(() => ({
   name: 'member-login',
   query: { redirect: '/member' },
@@ -172,11 +181,24 @@ onMounted(() => {
 onActivated(() => {
   void loadMemberCenterPage()
 })
+
+function retryLoadMemberCenterPage() {
+  void loadMemberCenterPage()
+}
 </script>
 
 <template>
   <section class="member-page">
-    <div class="member-scroll">
+    <LoadingState v-if="shouldShowInitialLoading" fill text="正在加载我的页面..." />
+
+    <div v-else-if="shouldShowInitialError" class="page-state">
+      <p class="status-text">{{ errorMessage }}</p>
+      <button class="retry-button" type="button" @click="retryLoadMemberCenterPage">
+        重新加载
+      </button>
+    </div>
+
+    <div v-else class="member-scroll">
       <section class="top-section">
         <div class="top-background">
           <button
@@ -344,6 +366,35 @@ onActivated(() => {
 
 .member-scroll::-webkit-scrollbar {
   display: none;
+}
+
+.page-state {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 14px;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+}
+
+.status-text {
+  margin: 0;
+  color: #6b645d;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.retry-button {
+  min-width: 120px;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #44a08d;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .top-section {

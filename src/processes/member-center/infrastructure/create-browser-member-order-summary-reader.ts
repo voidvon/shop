@@ -14,6 +14,19 @@ const emptyMemberOrderSummary: MemberOrderSummary = {
   refundAndReturnCount: 0,
 }
 
+function isAfterSaleInProgress(order: Pick<OrderRecord, 'status' | 'statusText'>) {
+  if (order.status !== 'refunding' && order.status !== 'returning') {
+    return false
+  }
+
+  const statusText = order.statusText.trim()
+
+  return !statusText.includes('完成')
+    && !statusText.includes('成功')
+    && !statusText.includes('已退款')
+    && !statusText.includes('已退货')
+}
+
 export function createBrowserMemberOrderSummaryReader(
   options: CreateBrowserMemberOrderSummaryReaderOptions,
 ) {
@@ -34,7 +47,9 @@ export function createBrowserMemberOrderSummaryReader(
           break
         case 'refunding':
         case 'returning':
-          summary.refundAndReturnCount += 1
+          if (isAfterSaleInProgress(order)) {
+            summary.refundAndReturnCount += 1
+          }
           break
         default:
           break

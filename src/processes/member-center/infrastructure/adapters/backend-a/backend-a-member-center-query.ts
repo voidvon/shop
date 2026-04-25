@@ -32,6 +32,19 @@ const emptyMemberOrderSummary: MemberOrderSummary = {
   refundAndReturnCount: 0,
 }
 
+function isAfterSaleInProgress(order: { status: string; statusText: string }) {
+  if (order.status !== 'refunding' && order.status !== 'returning') {
+    return false
+  }
+
+  const statusText = order.statusText.trim()
+
+  return !statusText.includes('完成')
+    && !statusText.includes('成功')
+    && !statusText.includes('已退款')
+    && !statusText.includes('已退货')
+}
+
 function normalizeCandidateString(value: unknown) {
   if (typeof value !== 'string') {
     return null
@@ -162,7 +175,9 @@ export function createBackendAMemberCenterQuery(
           break
         case 'refunding':
         case 'returning':
-          summary.refundAndReturnCount += 1
+          if (isAfterSaleInProgress(order)) {
+            summary.refundAndReturnCount += 1
+          }
           break
         default:
           break

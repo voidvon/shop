@@ -55,6 +55,7 @@ export function useMemberCenterPageModel() {
   const basePageData = ref<MemberCenterPageData>(emptyMemberCenterPageData)
   const browsingCount = ref(0)
   const errorMessage = ref<string | null>(null)
+  const hasLoadedOnce = ref(false)
   const isLoading = ref(false)
 
   const stopAuthSubscription = memberAuthSession.subscribe((snapshot) => {
@@ -115,6 +116,7 @@ export function useMemberCenterPageModel() {
 
       basePageData.value = pageData
       browsingCount.value = nextBrowsingCount
+      hasLoadedOnce.value = true
 
       if (authSnapshot.value.authResult) {
         await Promise.all([
@@ -131,6 +133,7 @@ export function useMemberCenterPageModel() {
 
   return {
     errorMessage,
+    hasLoadedOnce,
     isLoading,
     loadMemberCenterPage,
     memberCenterPageData,

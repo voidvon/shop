@@ -35,6 +35,19 @@ const emptyOrderSummary: OrderSummary = {
   refundAndReturnCount: 0,
 }
 
+function isAfterSaleInProgress(order: OrderListPageData['orders'][number]) {
+  if (order.status !== 'refunding' && order.status !== 'returning') {
+    return false
+  }
+
+  const statusText = order.statusText.trim()
+
+  return !statusText.includes('完成')
+    && !statusText.includes('成功')
+    && !statusText.includes('已退款')
+    && !statusText.includes('已退货')
+}
+
 function createOrderSummary(orders: OrderListPageData['orders']): OrderSummary {
   return orders.reduce<OrderSummary>((summary, order) => {
     switch (order.status) {
@@ -52,7 +65,9 @@ function createOrderSummary(orders: OrderListPageData['orders']): OrderSummary {
         break
       case 'refunding':
       case 'returning':
-        summary.refundAndReturnCount += 1
+        if (isAfterSaleInProgress(order)) {
+          summary.refundAndReturnCount += 1
+        }
         break
       default:
         break
