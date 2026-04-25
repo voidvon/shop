@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed, onActivated, onMounted } from 'vue'
+import { computed, onActivated, onMounted, onUnmounted, watch } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { useRouter } from 'vue-router'
-import { showToast } from 'vant'
+import { showLoadingToast, showToast, type ToastWrapperInstance } from 'vant'
 
 import { MemberLogoutButton } from '@/features/member-logout'
 import { useBackendRuntime } from '@/app/providers/backend'
+import { backendTarget } from '@/shared/config/backend'
 import { readAppVersion } from '@/shared/lib/app-version'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
-import LoadingState from '@/shared/ui/LoadingState.vue'
 
 import { useMemberCenterPageModel } from '../model/useMemberCenterPageModel'
 
@@ -29,12 +29,12 @@ const isReviewEnabled = useModuleAvailability('review')
 const appVersionText = `版本号：${readAppVersion()}`
 const isLoggedIn = computed(() => memberCenterPageData.value.profile.isLoggedIn)
 const shouldShowLogoutButton = computed(() => !isWechatBrowser() || canShowWechatLogout.value)
-const shouldShowInitialLoading = computed(() => isLoading.value && !hasLoadedOnce.value)
 const shouldShowInitialError = computed(() => !isLoading.value && !hasLoadedOnce.value && Boolean(errorMessage.value))
 const loginEntryRoute = computed<RouteLocationRaw>(() => ({
   name: 'member-login',
   query: { redirect: '/member' },
 }))
+let loadingToast: ToastWrapperInstance | null = null
 
 type OrderListFilterStatus =
   | 'all'
@@ -117,7 +117,7 @@ const orderEntries = computed<OrderEntry[]>(() => [
       } satisfies OrderEntry]
     : []),
   {
-    count: memberCenterPageData.value.orderSummary.refundAndReturnCount,
+    count: backendTarget === 'backend-a' ? 0 : memberCenterPageData.value.orderSummary.refundAndReturnCount,
     key: 'refundAndReturnCount',
     label: '退款/退货',
     icon: 'replay',
@@ -185,13 +185,37 @@ onActivated(() => {
 function retryLoadMemberCenterPage() {
   void loadMemberCenterPage()
 }
+
+function closeLoadingToast() {
+  loadingToast?.close()
+  loadingToast = null
+}
+
+watch(isLoading, (loading) => {
+  if (loading) {
+    if (loadingToast) {
+      return
+    }
+
+    loadingToast = showLoadingToast({
+      duration: 0,
+      forbidClick: true,
+      message: '正在加载...',
+    })
+    return
+  }
+
+  closeLoadingToast()
+}, { immediate: true })
+
+onUnmounted(() => {
+  closeLoadingToast()
+})
 </script>
 
 <template>
   <section class="member-page">
-    <LoadingState v-if="shouldShowInitialLoading" fill text="正在加载我的页面..." />
-
-    <div v-else-if="shouldShowInitialError" class="page-state">
+    <div v-if="shouldShowInitialError" class="page-state">
       <p class="status-text">{{ errorMessage }}</p>
       <button class="retry-button" type="button" @click="retryLoadMemberCenterPage">
         重新加载
