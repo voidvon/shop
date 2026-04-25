@@ -20,7 +20,25 @@ function parseAmount(value: string | null | undefined) {
   return Number.isFinite(parsedValue) ? parsedValue : 0
 }
 
+function normalizeStatusText(value: string | null | undefined) {
+  return value?.trim() ?? ''
+}
+
+function isReturnFlowStatusText(statusText: string) {
+  return statusText.includes('退货')
+}
+
+function isRefundFlowStatusText(statusText: string) {
+  return statusText.includes('退款') || isReturnFlowStatusText(statusText)
+}
+
 function resolveOrderStatus(dto: BackendAOrderDto): TradeOrderStatus {
+  const statusText = normalizeStatusText(dto.status_text)
+
+  if (dto.refunded_at || isRefundFlowStatusText(statusText)) {
+    return isReturnFlowStatusText(statusText) ? 'returning' : 'refunding'
+  }
+
   switch (dto.status) {
     case 0:
       return 'pending-payment'
@@ -109,7 +127,7 @@ function mapCheckoutCouponUsages(groups: CheckoutPreviewGroup[]): CheckoutCoupon
 
 export function mapBackendAOrderDto(dto: BackendAOrderDto): OrderRecord {
   const status = resolveOrderStatus(dto)
-  const statusText = dto.status_text?.trim() || resolveOrderStatusText(status)
+  const statusText = normalizeStatusText(dto.status_text) || resolveOrderStatusText(status)
 
   return {
     itemCount: dto.item_count,

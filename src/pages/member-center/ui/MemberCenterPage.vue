@@ -112,7 +112,7 @@ const orderEntries = computed<OrderEntry[]>(() => [
     key: 'refundAndReturnCount',
     label: '退款/退货',
     icon: 'replay',
-    route: { name: 'member-after-sales' },
+    route: buildOrderRoute('after-sale'),
   },
 ] as const)
 

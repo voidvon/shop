@@ -40,7 +40,12 @@ function goBack() {
     return
   }
 
-  void router.push('/member/after-sales')
+  void router.push({
+    name: 'member-orders',
+    query: {
+      status: 'after-sale',
+    },
+  })
 }
 
 function formatAmount(value: number) {

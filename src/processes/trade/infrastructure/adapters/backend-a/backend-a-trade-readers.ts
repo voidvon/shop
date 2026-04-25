@@ -85,6 +85,14 @@ function normalizeText(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
 }
 
+function isReturnFlowStatusText(statusText: string) {
+  return statusText.includes('退货')
+}
+
+function isRefundFlowStatusText(statusText: string) {
+  return statusText.includes('退款') || isReturnFlowStatusText(statusText)
+}
+
 function buildAddressText(source: {
   address?: unknown
   city?: unknown
@@ -188,6 +196,8 @@ function mapOrderDetail(dto: BackendAOrderDto): OrderDetailPageData {
   const createdAt = dto.created_at ?? dto.paid_at ?? dto.shipped_at ?? new Date().toISOString()
   const paidAt = dto.paid_at ?? null
   const shippedAt = dto.shipped_at ?? null
+  const hasPaymentRecord = dto.payment_status === 1 || Boolean(paidAt) || Boolean(dto.refunded_at)
+    || isRefundFlowStatusText(record.statusText)
   const completedAt = record.status === 'completed'
     ? (shippedAt ?? paidAt ?? createdAt)
     : null
@@ -236,7 +246,7 @@ function mapOrderDetail(dto: BackendAOrderDto): OrderDetailPageData {
     timeline: {
       completedAt,
       createdAt,
-      paidAt: dto.payment_status === 1 ? paidAt : null,
+      paidAt: hasPaymentRecord ? (paidAt ?? createdAt) : null,
       shippedAt: dto.delivery_status > 0 ? shippedAt : null,
     },
   }

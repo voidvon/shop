@@ -71,6 +71,28 @@ function resolveAfterSaleQueryType(actions: { enabled: boolean; key: string }[])
   return canUseAction(actions, 'return') ? 'return' : 'refund'
 }
 
+function resolvePaymentStatus() {
+  if (!orderDetailPageData.value) {
+    return '待支付'
+  }
+
+  const statusText = orderDetailPageData.value.statusText.trim()
+
+  if (statusText.includes('已退款') || statusText.includes('退款成功') || statusText.includes('退款完成')) {
+    return '已退款'
+  }
+
+  if (statusText.includes('退款') || statusText.includes('退货')) {
+    return '退款中'
+  }
+
+  if (orderDetailPageData.value.timeline.paidAt) {
+    return '已支付'
+  }
+
+  return orderDetailPageData.value.status === 'cancelled' ? '未支付' : '待支付'
+}
+
 async function handleCancelOrder() {
   if (!orderDetailPageData.value) {
     return
@@ -230,7 +252,7 @@ onMounted(() => {
                 v-if="canApplyAfterSale(item.actions)"
                 class="item-action-button"
                 :to="item.afterSaleStatus
-                  ? { name: 'member-after-sales' }
+                  ? { name: 'member-orders', query: { status: 'after-sale' } }
                   : {
                     name: 'member-after-sale-apply',
                     params: { orderId: orderDetailPageData.orderId, orderItemId: item.orderItemId },
@@ -290,16 +312,12 @@ onMounted(() => {
               <strong>{{ orderDetailPageData.orderNo }}</strong>
             </div>
             <div class="info-row">
-              <span>支付方式</span>
-              <strong>{{ orderDetailPageData.paymentMethod ?? '待支付' }}</strong>
+              <span>支付状态</span>
+              <strong>{{ resolvePaymentStatus() }}</strong>
             </div>
             <div class="info-row">
               <span>买家留言</span>
               <strong>{{ orderDetailPageData.buyerMessage ?? '无' }}</strong>
-            </div>
-            <div class="info-row">
-              <span>配送备注</span>
-              <strong>{{ orderDetailPageData.deliveryRemark ?? '无' }}</strong>
             </div>
             <div v-if="isInvoiceEnabled" class="info-row">
               <span>发票信息</span>
