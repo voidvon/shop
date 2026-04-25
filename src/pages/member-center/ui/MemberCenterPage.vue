@@ -191,8 +191,8 @@ function closeLoadingToast() {
   loadingToast = null
 }
 
-watch(isLoading, (loading) => {
-  if (loading) {
+watch([isLoading, hasLoadedOnce], ([loading, loadedOnce]) => {
+  if (loading && !loadedOnce) {
     if (loadingToast) {
       return
     }
