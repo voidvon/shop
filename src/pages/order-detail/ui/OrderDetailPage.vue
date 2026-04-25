@@ -82,8 +82,13 @@ function resolvePaymentStatus() {
     return '已退款'
   }
 
-  if (statusText.includes('退款') || statusText.includes('退货')) {
-    return '退款中'
+  if (
+    orderDetailPageData.value.status === 'refunding'
+    || orderDetailPageData.value.status === 'returning'
+    || statusText.includes('退款')
+    || statusText.includes('退货')
+  ) {
+    return '已退款'
   }
 
   if (orderDetailPageData.value.timeline.paidAt) {

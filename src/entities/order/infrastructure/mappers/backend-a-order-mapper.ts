@@ -76,9 +76,9 @@ function resolveOrderStatusText(status: TradeOrderStatus) {
     case 'pending-receipt':
       return '待收货'
     case 'refunding':
-      return '退款中'
+      return '退款完成'
     case 'returning':
-      return '退货中'
+      return '退货完成'
     case 'completed':
       return '已完成'
     default:

@@ -36,6 +36,9 @@ function resolveOrderStatusHint(status: TradeOrderStatus) {
       return '订单已支付，商家正在备货。'
     case 'pending-receipt':
       return '商品已发出，请留意物流动态。'
+    case 'refunding':
+    case 'returning':
+      return '售后已完成。'
     case 'completed':
       return '订单已完成。'
     case 'cancelled':

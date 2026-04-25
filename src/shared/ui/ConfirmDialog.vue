@@ -50,13 +50,13 @@ function handleModelValueUpdate(value: boolean) {
 
 <template>
   <van-dialog
-    :model-value="modelValue"
+    :show="modelValue"
     class="confirm-dialog"
     :close-on-click-overlay="!loading"
     :show-cancel-button="false"
     :show-confirm-button="false"
     teleport="body"
-    @update:model-value="handleModelValueUpdate"
+    @update:show="handleModelValueUpdate"
     @closed="closeDialog"
   >
     <section class="dialog-content">
