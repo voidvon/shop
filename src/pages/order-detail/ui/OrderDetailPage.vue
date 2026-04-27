@@ -364,7 +364,7 @@ onMounted(() => {
               <div class="info-row-action">
                 <strong>{{ orderDetailPageData.trackingNo }}</strong>
                 <button class="icon-copy-button" type="button" @click="handleCopyTrackingNo">
-                  <Copy :size="16" :stroke-width="1.8" />
+                  <Copy :size="16" :stroke-width="2.4" />
                 </button>
               </div>
             </div>

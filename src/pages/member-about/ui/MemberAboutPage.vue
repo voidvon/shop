@@ -93,7 +93,7 @@ onMounted(() => {
               type="button"
               @click="handleCopyValue(item.value)"
             >
-              <Copy :size="16" :stroke-width="1.8" />
+              <Copy :size="16" :stroke-width="2.4" />
             </button>
           </strong>
         </template>
