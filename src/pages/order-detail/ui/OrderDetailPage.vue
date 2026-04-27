@@ -183,7 +183,7 @@ async function handleCopyTrackingNo() {
 
   try {
     await navigator.clipboard.writeText(trackingNo)
-    showSuccessToast('物流单号已复制')
+    showSuccessToast('已复制')
   } catch {
     showFailToast('复制失败')
   }
@@ -361,7 +361,7 @@ onMounted(() => {
             </div>
             <div v-if="orderDetailPageData.trackingNo" class="info-row">
               <span>物流单号</span>
-              <strong class="copyable-value">
+              <strong>
                 <span>{{ orderDetailPageData.trackingNo }}</span>
                 <button class="icon-copy-button" type="button" @click="handleCopyTrackingNo">
                   <Copy :size="16" :stroke-width="1.8" />
@@ -556,10 +556,6 @@ onMounted(() => {
   color: #3c3b39;
   font-size: 14px;
   font-weight: 600;
-}
-
-.copyable-value {
-  justify-content: flex-end;
 }
 
 .icon-copy-button {
