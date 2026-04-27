@@ -414,14 +414,14 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 
           <section class="explain-card">
             <div class="explain-row">
-              <span>商品小计</span>
+              <span class="explain-label">商品小计</span>
               <div class="explain-subtotal">
                 <span v-if="subtotalBreakdownText" class="explain-subtotal-breakdown">{{ subtotalBreakdownText }}</span>
                 <strong class="explain-subtotal-total">{{ subtotalAmountText }}</strong>
               </div>
             </div>
             <div class="explain-row">
-              <span>优惠减免</span>
+              <span class="explain-label">优惠减免</span>
               <strong class="explain-amount">{{ discountAmountText }}</strong>
             </div>
           </section>
@@ -488,12 +488,17 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 }
 
 .state-card-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(201, 90, 33, 0.18);
+  border-radius: 999px;
+  background: rgba(201, 90, 33, 0.12);
   color: #c95a21;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -585,11 +590,12 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 }
 
 .explain-subtotal {
-  display: inline-flex;
+  display: flex;
   align-items: baseline;
   justify-content: flex-end;
   gap: 8px;
   min-width: 0;
+  flex: 1;
   flex-wrap: wrap;
 }
 
@@ -648,6 +654,11 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
   color: #6d6c6a;
   font-size: 13px;
   font-weight: 500;
+}
+
+.explain-label {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .explain-value {
