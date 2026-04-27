@@ -42,6 +42,21 @@ const isLogisticsEnabled = computed(() => runtime.capabilities.logistics)
 const confirmReceiptDialogVisible = ref(false)
 const isConfirmingReceipt = ref(false)
 
+const shippingCompanyText = computed(() => {
+  const detail = orderDetailPageData.value
+  if (!detail) {
+    return null
+  }
+
+  const directCompany = detail.shippingCompany?.trim()
+  if (directCompany) {
+    return directCompany
+  }
+
+  const logisticsTitle = detail.logistics?.title?.trim() ?? ''
+  return logisticsTitle && logisticsTitle !== '物流信息待补充' ? logisticsTitle : null
+})
+
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
     router.back()
@@ -324,9 +339,9 @@ onMounted(() => {
               <span>买家留言</span>
               <strong>{{ orderDetailPageData.buyerMessage ?? '无' }}</strong>
             </div>
-            <div v-if="orderDetailPageData.shippingCompany" class="info-row">
+            <div v-if="shippingCompanyText" class="info-row">
               <span>物流公司</span>
-              <strong>{{ orderDetailPageData.shippingCompany }}</strong>
+              <strong>{{ shippingCompanyText }}</strong>
             </div>
             <div v-if="orderDetailPageData.trackingNo" class="info-row">
               <span>物流单号</span>
@@ -364,7 +379,7 @@ onMounted(() => {
         type="button"
         @click="handleCopyOrderNo"
       >
-        复制单号
+        复制订单号
       </button>
 
       <button
