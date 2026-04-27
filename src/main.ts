@@ -10,25 +10,6 @@ import 'vant/es/dialog/style'
 import 'vant/es/skeleton/style'
 import 'vant/es/toast/style'
 
-async function enableVConsole() {
-  if (typeof window === 'undefined' || !import.meta.env.DEV) {
-    return
-  }
-
-  const nextWindow = window as typeof window & {
-    __shopVConsole__?: object
-  }
-
-  if (nextWindow.__shopVConsole__) {
-    return
-  }
-
-  const { default: VConsole } = await import('vconsole')
-  nextWindow.__shopVConsole__ = new VConsole()
-}
-
-void enableVConsole()
-
 const app = createApp(App)
 
 provideBackendRuntime(app)
