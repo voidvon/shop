@@ -49,17 +49,14 @@ const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAm
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
 const merchantTitle = computed(() => preview.value?.source === 'cart' ? '购物车商品' : '立即购买商品')
 const hasInsufficientBalance = computed(() => previewBalanceGroups.value.some((group) => group.payableAmount > resolveGroupPlannedDeductionAmount(group)))
-const insufficientBalanceMessage = computed(() => {
-  const insufficientMerchants = new Set(
+const insufficientMerchantNames = computed(() => {
+  const merchantNames = new Set(
     previewBalanceGroups.value
       .filter((group) => group.payableAmount > resolveGroupPlannedDeductionAmount(group))
-      .map((group) => group.merchantName.trim())
-      .filter(Boolean),
+      .map((group) => group.merchantName.trim() || `商家#${group.merchantId}`),
   )
 
-  return [...insufficientMerchants]
-    .map((merchantName) => `${merchantName}可用余额不足`)
-    .join('；')
+  return [...merchantNames]
 })
 
 const paymentOptions = computed<CheckoutPaymentOption[]>(() => {
@@ -157,6 +154,12 @@ function openCouponSelector(merchantId: number, balanceTypeId: number) {
       balanceTypeId: String(balanceTypeId),
       merchantId: String(merchantId),
     },
+  })
+}
+
+function openCustomerService() {
+  void router.push({
+    name: 'member-customer-service',
   })
 }
 
@@ -292,6 +295,14 @@ function formatCouponGroupValue(
   return '无可用优惠券'
 }
 
+function formatInsufficientBalanceMessage(merchantNames: string[]) {
+  if (merchantNames.length === 0) {
+    return '当前商家可用余额不足'
+  }
+
+  return `${merchantNames.join('、')}可用余额不足`
+}
+
 </script>
 
 <template>
@@ -333,8 +344,11 @@ function formatCouponGroupValue(
             <van-cell v-if="isInvoiceEnabled" title="发票信息：" value="暂不支持" />
           </van-cell-group>
 
-          <p v-if="hasInsufficientBalance" class="state-card state-card-error">
-            余额不足：{{ insufficientBalanceMessage }}
+          <p v-if="hasInsufficientBalance" class="state-card state-card-error state-card-inline-action">
+            <span>余额不足：{{ formatInsufficientBalanceMessage(insufficientMerchantNames) }}</span>
+            <button class="state-card-action" type="button" @click="openCustomerService">
+              联系客服
+            </button>
           </p>
 
           <section class="merchant-card">
@@ -464,6 +478,23 @@ function formatCouponGroupValue(
 
 .state-card-error {
   color: #c95a21;
+}
+
+.state-card-inline-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.state-card-action {
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #c95a21;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .checkout-cell-group {

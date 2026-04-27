@@ -186,6 +186,10 @@ function retryLoadMemberCenterPage() {
   void loadMemberCenterPage()
 }
 
+function openCustomerService() {
+  void router.push({ name: 'member-customer-service' })
+}
+
 function closeLoadingToast() {
   loadingToast?.close()
   loadingToast = null
@@ -363,6 +367,9 @@ onUnmounted(() => {
           <p v-if="memberCenterPageData.servicePhone" class="service-phone">
             客服电话：{{ memberCenterPageData.servicePhone }}
           </p>
+          <button class="contact-button" type="button" @click="openCustomerService">
+            联系我们
+          </button>
         </section>
       </div>
     </div>
@@ -730,5 +737,18 @@ onUnmounted(() => {
   font-weight: 500;
   line-height: 1.3;
   white-space: pre-line;
+}
+
+.contact-button {
+  justify-self: center;
+  min-width: 132px;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #44a08d;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
 }
 </style>

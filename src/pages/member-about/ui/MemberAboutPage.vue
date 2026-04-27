@@ -13,6 +13,7 @@ const { errorMessage, isLoading, loadMemberAboutPage, memberAboutPageData } = us
 const { goBackToMemberSettings } = useMemberSettingsSubpageNavigation()
 const brandTapCount = ref(0)
 const isEnablingVConsole = ref(false)
+const copyableKeys = new Set(['customer-service-phone', 'customer-service-wechat', 'business-phone'])
 
 const infoRows = computed(() => [
   { key: 'company-name', label: '公司名称', value: memberAboutPageData.value.companyName },
@@ -46,6 +47,19 @@ async function handleBrandTap() {
   }
 }
 
+async function handleCopyValue(value: string) {
+  if (!value) {
+    return
+  }
+
+  try {
+    await navigator.clipboard.writeText(value)
+    showSuccessToast('已复制')
+  } catch {
+    showFailToast('复制失败')
+  }
+}
+
 onMounted(() => {
   void loadMemberAboutPage()
 })
@@ -61,12 +75,26 @@ onMounted(() => {
         v-for="item in infoRows"
         :key="item.key"
         :title="item.label"
-        :value="item.key === 'company-name' ? undefined : (item.value || '待补充')"
+        :value="item.key === 'company-name' || copyableKeys.has(item.key) ? undefined : (item.value || '待补充')"
       >
         <template v-if="item.key === 'company-name'" #value>
           <button class="company-trigger" type="button" @click="handleBrandTap">
             {{ item.value || '待补充' }}
           </button>
+        </template>
+
+        <template v-else-if="copyableKeys.has(item.key)" #value>
+          <strong class="copyable-value">
+            <span>{{ item.value || '待补充' }}</span>
+            <button
+              v-if="item.value"
+              class="icon-copy-button"
+              type="button"
+              @click="handleCopyValue(item.value)"
+            >
+              <van-icon name="copy-o" size="16" />
+            </button>
+          </strong>
         </template>
       </van-cell>
     </van-cell-group>
@@ -81,6 +109,27 @@ onMounted(() => {
   color: #8c8a86;
   font-size: 13px;
   line-height: 1.4;
+}
+
+.copyable-value {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  color: #8c8a86;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.icon-copy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #9c9b99;
 }
 
 .info-group {
