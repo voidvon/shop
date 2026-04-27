@@ -360,6 +360,21 @@ onUnmounted(() => {
 
             <van-icon class="service-arrow" name="arrow" size="16" />
           </RouterLink>
+
+          <button class="service-entry service-entry-button" type="button" @click="openCustomerService">
+            <div class="service-copy">
+              <div class="service-icon">
+                <van-icon name="service-o" size="18" />
+              </div>
+
+              <div class="service-text">
+                <strong>联系我们</strong>
+                <span>在线联系平台客服，反馈问题或咨询订单</span>
+              </div>
+            </div>
+
+            <van-icon class="service-arrow" name="arrow" size="16" />
+          </button>
         </section>
 
         <section class="tip-block">
@@ -367,9 +382,6 @@ onUnmounted(() => {
           <p v-if="memberCenterPageData.servicePhone" class="service-phone">
             客服电话：{{ memberCenterPageData.servicePhone }}
           </p>
-          <button class="contact-button" type="button" @click="openCustomerService">
-            联系我们
-          </button>
         </section>
       </div>
     </div>
@@ -672,6 +684,19 @@ onUnmounted(() => {
   text-decoration: none;
 }
 
+.service-entry + .service-entry {
+  border-top: 1px solid #e5e4e1;
+}
+
+.service-entry-button {
+  width: 100%;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  background: #fff;
+  text-align: left;
+}
+
 .service-copy {
   display: flex;
   gap: 12px;
@@ -739,16 +764,4 @@ onUnmounted(() => {
   white-space: pre-line;
 }
 
-.contact-button {
-  justify-self: center;
-  min-width: 132px;
-  min-height: 40px;
-  padding: 0 18px;
-  border: 0;
-  border-radius: 999px;
-  background: #44a08d;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-}
 </style>

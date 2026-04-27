@@ -361,12 +361,12 @@ onMounted(() => {
             </div>
             <div v-if="orderDetailPageData.trackingNo" class="info-row">
               <span>物流单号</span>
-              <strong>
-                <span>{{ orderDetailPageData.trackingNo }}</span>
+              <div class="info-row-action">
+                <strong>{{ orderDetailPageData.trackingNo }}</strong>
                 <button class="icon-copy-button" type="button" @click="handleCopyTrackingNo">
                   <Copy :size="16" :stroke-width="1.8" />
                 </button>
-              </strong>
+              </div>
             </div>
             <div v-if="isInvoiceEnabled" class="info-row">
               <span>发票信息</span>
@@ -566,6 +566,12 @@ onMounted(() => {
   border: 0;
   background: transparent;
   color: #9c9b99;
+}
+
+.info-row-action {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .address-copy p {
