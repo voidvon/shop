@@ -363,7 +363,7 @@ onMounted(() => {
               <strong class="copyable-value">
                 <span>{{ orderDetailPageData.trackingNo }}</span>
                 <button class="icon-copy-button" type="button" @click="handleCopyTrackingNo">
-                  <van-icon name="copy-o" size="16" />
+                  <van-icon name="description" size="16" />
                 </button>
               </strong>
             </div>

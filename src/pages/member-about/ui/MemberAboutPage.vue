@@ -92,7 +92,7 @@ onMounted(() => {
               type="button"
               @click="handleCopyValue(item.value)"
             >
-              <van-icon name="copy-o" size="16" />
+              <van-icon name="description" size="16" />
             </button>
           </strong>
         </template>
