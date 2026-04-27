@@ -142,6 +142,8 @@ export interface OrderDetailPageData {
   buyerMessage: string | null
   invoiceInfo: string | null
   paymentMethod: string | null
+  shippingCompany: string | null
+  trackingNo: string | null
   timeline: OrderTimeline
   actions: ActionPermission<TradeOrderAction>[]
 }

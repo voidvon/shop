@@ -3848,6 +3848,12 @@
                         "example": "2026-04-12 05:30:00",
                         "nullable": true
                     },
+                    "shipping_company": {
+                        "description": "快递公司，明文存储",
+                        "type": "string",
+                        "example": "顺丰速运",
+                        "nullable": true
+                    },
                     "tracking_no": {
                         "description": "物流编号",
                         "type": "string",

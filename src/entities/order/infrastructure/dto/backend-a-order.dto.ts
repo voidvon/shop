@@ -45,6 +45,7 @@ export interface BackendAOrderDto {
   refund_no?: string | null
   refunded_at?: string | null
   shipped_at?: string | null
+  shipping_company?: string | null
   status: number
   status_text?: string | null
   street?: string | null

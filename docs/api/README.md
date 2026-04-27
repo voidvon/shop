@@ -163,6 +163,7 @@
 - `2026-04-11` 已补入 `GET /api/v1/merchant/offline-payments`，用于合作商家员工查看线下支付流水
 - `2026-04-11` 已将线下支付与员工邀请接口文案统一为“合作商家”
 - `2026-04-24` 已补入 `POST /api/v1/orders/{order}/receive`，会员端订单现已在 Swagger 中提供确认收货接口
+- `2026-04-27` 已同步 `GET /api/v1/orders/{order}` 发货字段，当前文档包含 `shipping_company`、`tracking_no` 与 `shipping_remark`
 - `2026-04-24` 已补入 `POST /api/v1/merchant/offline-payments/{offlinePayment}/refund`，用于合作商家员工发起线下付款退款
 - `2026-04-24` 已将 `GET /api/v1/balance-accounts/logs` 的成功响应补充为 `BalanceAccountLogResponse`
 

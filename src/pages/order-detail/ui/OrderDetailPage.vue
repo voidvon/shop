@@ -324,6 +324,14 @@ onMounted(() => {
               <span>买家留言</span>
               <strong>{{ orderDetailPageData.buyerMessage ?? '无' }}</strong>
             </div>
+            <div v-if="orderDetailPageData.shippingCompany" class="info-row">
+              <span>物流公司</span>
+              <strong>{{ orderDetailPageData.shippingCompany }}</strong>
+            </div>
+            <div v-if="orderDetailPageData.trackingNo" class="info-row">
+              <span>物流单号</span>
+              <strong>{{ orderDetailPageData.trackingNo }}</strong>
+            </div>
             <div v-if="isInvoiceEnabled" class="info-row">
               <span>发票信息</span>
               <strong>{{ orderDetailPageData.invoiceInfo ?? '未开票' }}</strong>

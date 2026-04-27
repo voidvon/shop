@@ -163,11 +163,13 @@ function synthesizeOrderDetailPageData(
     paymentMethod: record.status === 'pending-payment' || record.status === 'cancelled' ? null : (record.paymentMethod ?? '账户余额'),
     promotions: [],
     shippingAmount: record.shippingAmount,
+    shippingCompany: null,
     status: record.status === 'all' ? 'pending-payment' : record.status,
     statusHint: resolveStatusHint(record.status),
     statusText: record.statusText,
     storeId: defaultStoreId,
     storeName: record.storeName,
+    trackingNo: null,
     timeline: resolveTimeline(record.status),
   }
 }

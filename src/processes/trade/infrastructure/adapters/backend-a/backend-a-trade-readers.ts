@@ -88,6 +88,10 @@ function normalizeText(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
 }
 
+function hasShippingInfo(dto: BackendAOrderDto) {
+  return Boolean(dto.shipped_at || normalizeText(dto.shipping_company) || normalizeText(dto.tracking_no))
+}
+
 function isReturnFlowStatusText(statusText: string) {
   return statusText.includes('退货')
 }
@@ -210,7 +214,7 @@ function mapOrderDetail(dto: BackendAOrderDto): OrderDetailPageData {
     address: resolveOrderAddress(dto),
     amountDetails: createAmountDetails(Number.parseFloat(dto.total_amount) || record.totalAmount, discountAmount),
     buyerMessage: dto.remark,
-    deliveryRemark: null,
+    deliveryRemark: dto.shipping_remark ?? null,
     gifts: [],
     invoiceInfo: null,
     items: dto.items.map((item) => ({
@@ -227,10 +231,12 @@ function mapOrderDetail(dto: BackendAOrderDto): OrderDetailPageData {
       subtotalAmount: Number.parseFloat(item.total_amount) || 0,
       unitPrice: Number.parseFloat(item.price) || 0,
     })),
-    logistics: record.status === 'pending-receipt'
+    logistics: hasShippingInfo(dto)
       ? {
-          description: '后端暂未提供物流轨迹详情。',
-          title: '物流信息待补充',
+          description: normalizeText(dto.tracking_no)
+            ? `物流单号：${normalizeText(dto.tracking_no)}`
+            : (dto.shipping_remark ?? '后端暂未提供物流轨迹详情。'),
+          title: normalizeText(dto.shipping_company) || '物流信息待补充',
           updatedAt: shippedAt ?? paidAt ?? createdAt,
         }
       : null,
@@ -241,11 +247,13 @@ function mapOrderDetail(dto: BackendAOrderDto): OrderDetailPageData {
     paymentMethod: record.paymentMethod,
     promotions: [],
     shippingAmount: 0,
+    shippingCompany: normalizeText(dto.shipping_company) || null,
     status: record.status === 'all' ? 'pending-payment' : record.status,
     statusHint: resolveOrderStatusHint(record.status),
     statusText: record.statusText,
     storeId: String(dto.merchant?.id ?? dto.merchant_id),
     storeName: record.storeName,
+    trackingNo: normalizeText(dto.tracking_no) || null,
     timeline: {
       completedAt,
       createdAt,
