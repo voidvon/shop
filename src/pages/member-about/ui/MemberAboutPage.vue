@@ -56,54 +56,31 @@ onMounted(() => {
     <p v-if="errorMessage" class="status-text">{{ errorMessage }}</p>
     <LoadingState v-else-if="isLoading" />
 
-    <template v-else>
-      <section class="brand-panel">
-        <button class="brand-trigger" type="button" @click="handleBrandTap">
-          优胜平台
-        </button>
-        <p>城市生活服务平台</p>
-      </section>
-
-      <van-cell-group inset class="info-group">
-        <van-cell
-          v-for="item in infoRows"
-          :key="item.key"
-          :title="item.label"
-          :value="item.value || '待补充'"
-        />
-      </van-cell-group>
-    </template>
+    <van-cell-group v-else inset class="info-group">
+      <van-cell
+        v-for="item in infoRows"
+        :key="item.key"
+        :title="item.label"
+        :value="item.key === 'company-name' ? undefined : (item.value || '待补充')"
+      >
+        <template v-if="item.key === 'company-name'" #value>
+          <button class="company-trigger" type="button" @click="handleBrandTap">
+            {{ item.value || '待补充' }}
+          </button>
+        </template>
+      </van-cell>
+    </van-cell-group>
   </MemberSettingsSubpageLayout>
 </template>
 
 <style scoped>
-.brand-panel {
-  display: grid;
-  gap: 8px;
-  justify-items: center;
-  margin-top: 12px;
-  padding: 28px 20px 24px;
-  border-radius: 20px;
-  background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.96)),
-    linear-gradient(135deg, #efe7d8 0%, #f7f3eb 100%);
-  box-shadow: 0 10px 24px rgba(42, 37, 32, 0.06);
-}
-
-.brand-trigger {
+.company-trigger {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #2d251d;
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-}
-
-.brand-panel p {
-  margin: 0;
   color: #8c8a86;
   font-size: 13px;
+  line-height: 1.4;
 }
 
 .info-group {

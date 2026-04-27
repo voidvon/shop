@@ -173,6 +173,21 @@ async function handleCopyOrderNo() {
   }
 }
 
+async function handleCopyTrackingNo() {
+  const trackingNo = orderDetailPageData.value?.trackingNo
+
+  if (!trackingNo) {
+    return
+  }
+
+  try {
+    await navigator.clipboard.writeText(trackingNo)
+    showSuccessToast('物流单号已复制')
+  } catch {
+    showFailToast('复制失败')
+  }
+}
+
 watch(
   orderId,
   (nextOrderId) => {
@@ -345,7 +360,12 @@ onMounted(() => {
             </div>
             <div v-if="orderDetailPageData.trackingNo" class="info-row">
               <span>物流单号</span>
-              <strong>{{ orderDetailPageData.trackingNo }}</strong>
+              <strong class="copyable-value">
+                <span>{{ orderDetailPageData.trackingNo }}</span>
+                <button class="icon-copy-button" type="button" @click="handleCopyTrackingNo">
+                  <van-icon name="copy-o" size="16" />
+                </button>
+              </strong>
             </div>
             <div v-if="isInvoiceEnabled" class="info-row">
               <span>发票信息</span>
@@ -529,9 +549,26 @@ onMounted(() => {
 .amount-total strong,
 .amount-row strong,
 .info-row strong {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
   color: #3c3b39;
   font-size: 14px;
   font-weight: 600;
+}
+
+.copyable-value {
+  justify-content: flex-end;
+}
+
+.icon-copy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #9c9b99;
 }
 
 .address-copy p {
