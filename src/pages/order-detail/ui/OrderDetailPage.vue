@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { Copy } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
@@ -363,7 +364,7 @@ onMounted(() => {
               <strong class="copyable-value">
                 <span>{{ orderDetailPageData.trackingNo }}</span>
                 <button class="icon-copy-button" type="button" @click="handleCopyTrackingNo">
-                  <van-icon name="description" size="16" />
+                  <Copy :size="16" :stroke-width="1.8" />
                 </button>
               </strong>
             </div>

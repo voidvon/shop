@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { Copy } from 'lucide-vue-next'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { useMemberSettingsSubpageNavigation } from '@/pages/member-settings/model/useMemberSettingsSubpageNavigation'
@@ -92,7 +93,7 @@ onMounted(() => {
               type="button"
               @click="handleCopyValue(item.value)"
             >
-              <van-icon name="description" size="16" />
+              <Copy :size="16" :stroke-width="1.8" />
             </button>
           </strong>
         </template>
