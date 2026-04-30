@@ -10,7 +10,6 @@ import type {
 } from '../../../domain/order'
 import type { OrderRepository } from '../../../domain/order-repository'
 import type {
-  BackendAApiResponseDto,
   BackendACheckoutPreviewDto,
   BackendAOrderDto,
   BackendAOrderRefundRequestPayloadDto,
@@ -201,14 +200,14 @@ export function createBackendAOrderRepository(
 
     async requestRefund(command) {
       const orderId = normalizeOrderId(command.orderId)
-      const response = await httpClient.post<BackendAApiResponseDto<BackendAOrderRefundRequestPayloadDto>>(
+      const response = await httpClient.post<BackendAOrderRefundRequestPayloadDto>(
         `/api/v1/orders/${orderId}/refund-request`,
         {
           reason: normalizeRefundReason(command.reason),
         },
       )
 
-      return mapRefundRequestResult(String(orderId), response.data)
+      return mapRefundRequestResult(String(orderId), response)
     },
 
     async submit(command) {
