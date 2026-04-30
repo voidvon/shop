@@ -1,5 +1,6 @@
 import {
   createCheckoutPreview,
+  requestOrderRefund,
   transitionOrderStatus,
   type CreateCheckoutPreviewCommand,
   type OrderConfirmation,
@@ -84,6 +85,23 @@ export function createBrowserOrderRepository(options: CreateBrowserOrderReposito
   return {
     async createPreview(command) {
       return Promise.resolve(createCheckoutPreview(command, options.resolveDiscount?.(command) ?? 0))
+    },
+
+    async requestRefund(command) {
+      const update = requestOrderRefund(command)
+      const records = readRecords()
+
+      writeRecords(records.map((record) =>
+        record.orderId === command.orderId
+          ? {
+              ...record,
+              status: update.status === 'all' ? record.status : update.status,
+              statusText: update.statusText,
+            }
+          : record,
+      ))
+
+      return Promise.resolve(update)
     },
 
     async submit(command) {

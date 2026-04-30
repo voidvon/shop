@@ -1,4 +1,5 @@
 export { createCheckoutPreviewUseCase } from './application/create-checkout-preview'
+export { requestOrderRefund } from './application/request-order-refund'
 export {
   cancelOrder,
   confirmOrderReceipt,
@@ -18,7 +19,10 @@ export {
   type OrderConfirmation,
   type OrderRecord,
   type OrderRecordItem,
+  type OrderRefundRequestResult,
   type OrderStatusUpdate,
+  isOrderRefundRequestable,
+  type RequestOrderRefundCommand,
   type SubmitOrderCommand,
   type TransitionOrderStatusCommand,
 } from './domain/order'
@@ -31,4 +35,5 @@ export {
 export { mockOrderRepository } from './infrastructure/adapters/mock/mock-order-repository'
 export { provideOrderRepository, useOrderRepository } from './infrastructure/order-repository-provider'
 export { default as OrderProductRow } from './ui/OrderProductRow.vue'
+export { default as OrderRefundRequestSheet } from './ui/OrderRefundRequestSheet.vue'
 export { default as OrderStoreHeader } from './ui/OrderStoreHeader.vue'

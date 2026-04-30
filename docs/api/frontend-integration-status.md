@@ -6,7 +6,7 @@
 - 当前运行时装配：[`src/app/providers/backend/create-backend-runtime.ts`](/root/shop/src/app/providers/backend/create-backend-runtime.ts)
 - 现有 `backend-a` 适配层与浏览器仓储实现
 
-更新时间：`2026-04-10`
+更新时间：`2026-04-30`
 
 ## 1. 先看结论
 
@@ -19,7 +19,7 @@
 - 会员登录、资料刷新、昵称更新、地址 CRUD 已改为真实 HTTP
 - 购物车、预结算、提交订单、订单列表、订单详情已改为真实 HTTP
 - 会员中心已接平台配置、余额、余额流水、储值卡充值与付款码查询
-- 售后目前仍主要落在浏览器本地仓储
+- 售后目前仍主要落在浏览器本地仓储，虽然后端 Swagger 已新增会员端退单申请接口
 
 ## 2. 当前真实 HTTP 接入点
 
@@ -134,7 +134,7 @@
 - 商品详情页 SKU 选择已改为使用真实后端 SKU，而不是前端伪造默认规格
 - checkout 提交时会把已选 cart item、收货地址、买家备注提交给真实后端
 - 下单成功后，订单列表、订单详情和会员中心订单角标都会从真实 `/api/v1/orders` 刷新
-- 当前仍保留部分显式能力裁剪：Swagger 里仍没有订单取消、支付接口，因此 `backend-a` 仍会显式提示不支持这两个动作；确认收货已接入 `POST /api/v1/orders/{order}/receive`
+- 当前仍保留部分显式能力裁剪：Swagger 里仍没有订单取消、支付接口，因此 `backend-a` 仍会对这两类动作保留显式提示；确认收货已接入 `POST /api/v1/orders/{order}/receive`，退款申请接口已出现在 Swagger，订单结构也新增 `latest_refund_request`，但当前售后流程仍主要走本地仓储
 
 对应 Swagger：
 
@@ -144,6 +144,7 @@
 - `GET /api/v1/orders`
 - `GET /api/v1/orders/{order}`
 - `POST /api/v1/orders/{order}/receive`
+- `POST /api/v1/orders/{order}/refund-request`
 
 ### 4.3 会员登录、资料、地址
 
@@ -233,6 +234,7 @@
 
 以下能力在 Swagger 中存在，但当前仓库里没有清晰的页面或数据接入层：
 
+- 会员端订单退单申请 `POST /api/v1/orders/{order}/refund-request`
 - 合作商家列表 / 详情 / 地区 / 门店类型
 - 客服会话、消息、增量拉取
 - 商户员工邀请查看与绑定

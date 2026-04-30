@@ -6,6 +6,7 @@ import {
   cancelOrder as cancelMemberOrder,
   confirmOrderReceipt,
   payOrder,
+  requestOrderRefund,
   useOrderRepository,
   type CheckoutPreview,
   type OrderConfirmation,
@@ -168,6 +169,23 @@ export const useTradeStore = defineStore('trade', () => {
     return update
   }
 
+  async function applyOrderRefund(orderId: string, reason: string) {
+    const targetOrder = orderListPageData.value.orders.find((order) => order.orderId === orderId)
+
+    if (!targetOrder) {
+      throw new Error('订单不存在')
+    }
+
+    const update = await requestOrderRefund(orderRepository, {
+      currentStatus: targetOrder.status,
+      orderId,
+      reason,
+    })
+
+    await loadOrderList({ force: true })
+    return update
+  }
+
   function resetForScope(scopeKey: string) {
     currentScopeKey.value = scopeKey
     orderListPageData.value = emptyOrderListPageData
@@ -195,6 +213,7 @@ export const useTradeStore = defineStore('trade', () => {
     isOrderListStale,
     cancelOrder,
     confirmReceipt,
+    applyOrderRefund,
     loadOrderList,
     markOrderListStale,
     orderListPageData,

@@ -3,7 +3,12 @@ import { onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
-import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
+import {
+  isOrderRefundRequestable,
+  OrderProductRow,
+  OrderRefundRequestSheet,
+  OrderStoreHeader,
+} from '@/entities/order'
 import { useCustomerServiceUnreadStore } from '@/processes/customer-service'
 import { backendTarget } from '@/shared/config/backend'
 import { useModuleAvailability } from '@/shared/lib/modules'
@@ -28,6 +33,7 @@ const TAB_ROUTE_SYNC_DELAY_MS = 280
 const route = useRoute()
 const router = useRouter()
 const {
+  applyOrderRefund,
   cancelOrder,
   confirmReceipt,
   loadOrderListPage,
@@ -70,9 +76,15 @@ const supportsOrderCancelAndPay = backendTarget === 'mock'
 const supportsOrderConfirmReceipt = backendTarget === 'mock' || backendTarget === 'backend-a'
 const confirmReceiptOrderId = ref<string | null>(null)
 const isConfirmingReceipt = ref(false)
+const refundRequestOrderId = ref<string | null>(null)
+const isSubmittingRefund = ref(false)
 
 function closeConfirmReceiptDialog() {
   confirmReceiptOrderId.value = null
+}
+
+function closeRefundRequestDialog() {
+  refundRequestOrderId.value = null
 }
 
 function getFilteredOrders(status: OrderListFilterStatus) {
@@ -143,6 +155,10 @@ async function handleConfirmReceipt(orderId: string) {
   confirmReceiptOrderId.value = orderId
 }
 
+function handleRefundRequest(orderId: string) {
+  refundRequestOrderId.value = orderId
+}
+
 async function submitConfirmReceipt() {
   if (!confirmReceiptOrderId.value || isConfirmingReceipt.value) {
     return
@@ -158,6 +174,24 @@ async function submitConfirmReceipt() {
     showFailToast('确认收货失败')
   } finally {
     isConfirmingReceipt.value = false
+  }
+}
+
+async function submitRefundRequest(reason: string) {
+  if (!refundRequestOrderId.value || isSubmittingRefund.value) {
+    return
+  }
+
+  isSubmittingRefund.value = true
+
+  try {
+    await applyOrderRefund(refundRequestOrderId.value, reason)
+    closeRefundRequestDialog()
+    showSuccessToast('退款申请已提交')
+  } catch (error) {
+    showFailToast(error instanceof Error ? error.message : '申请退款失败')
+  } finally {
+    isSubmittingRefund.value = false
   }
 }
 
@@ -349,14 +383,25 @@ onBeforeUnmount(() => {
                     <RouterLink class="primary-button primary-link-button" :to="{ name: 'checkout' }">余额支付</RouterLink>
                   </template>
 
-                  <button
-                    v-else-if="supportsOrderConfirmReceipt && order.status === 'pending-receipt'"
-                    class="primary-button"
-                    type="button"
-                    @click="handleConfirmReceipt(order.orderId)"
-                  >
-                    确认收货
-                  </button>
+                  <template v-else>
+                    <button
+                      v-if="isOrderRefundRequestable(order.status)"
+                      class="ghost-button"
+                      type="button"
+                      @click="handleRefundRequest(order.orderId)"
+                    >
+                      申请退款
+                    </button>
+
+                    <button
+                      v-if="supportsOrderConfirmReceipt && order.status === 'pending-receipt'"
+                      class="primary-button"
+                      type="button"
+                      @click="handleConfirmReceipt(order.orderId)"
+                    >
+                      确认收货
+                    </button>
+                  </template>
                 </div>
               </footer>
             </section>
@@ -382,6 +427,13 @@ onBeforeUnmount(() => {
       title="确认收到货了吗？"
       @confirm="submitConfirmReceipt"
       @update:model-value="(visible) => { if (!visible) closeConfirmReceiptDialog() }"
+    />
+
+    <OrderRefundRequestSheet
+      :model-value="Boolean(refundRequestOrderId)"
+      :loading="isSubmittingRefund"
+      @submit="submitRefundRequest"
+      @update:model-value="(visible) => { if (!visible) closeRefundRequestDialog() }"
     />
   </section>
 </template>

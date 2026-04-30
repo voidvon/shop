@@ -120,6 +120,20 @@ export interface OrderStatusUpdate {
   updatedAt: string
 }
 
+export interface RequestOrderRefundCommand {
+  currentStatus: TradeOrderStatus
+  orderId: string
+  reason: string
+}
+
+export interface OrderRefundRequestResult {
+  orderId: string
+  reason: string
+  status: TradeOrderStatus
+  statusText: string
+  updatedAt: string
+}
+
 export function createCheckoutLine(input: Omit<CheckoutLine, 'lineTotal'> & { lineTotal?: number }): CheckoutLine {
   const quantity = Number.isFinite(input.quantity) && input.quantity > 0 ? Math.floor(input.quantity) : 1
   const lineTotal = input.lineTotal ?? input.unitPrice * quantity
@@ -161,6 +175,34 @@ export function transitionOrderStatus(command: TransitionOrderStatusCommand): Or
     orderId: command.orderId,
     status: resolveNextOrderStatus(command.action, command.currentStatus),
     statusText: resolveOrderStatusText(resolveNextOrderStatus(command.action, command.currentStatus)),
+    updatedAt: new Date().toISOString(),
+  }
+}
+
+export function isOrderRefundRequestable(status: TradeOrderStatus) {
+  return status === 'pending-shipment' || status === 'pending-receipt'
+}
+
+export function requestOrderRefund(command: RequestOrderRefundCommand): OrderRefundRequestResult {
+  const reason = command.reason.trim()
+
+  if (!isOrderRefundRequestable(command.currentStatus)) {
+    throw new Error('当前订单不可申请退款')
+  }
+
+  if (reason.length < 2) {
+    throw new Error('请填写退款原因')
+  }
+
+  if (reason.length > 1000) {
+    throw new Error('退款原因不能超过 1000 个字')
+  }
+
+  return {
+    orderId: command.orderId,
+    reason,
+    status: 'refunding',
+    statusText: '退款待审核',
     updatedAt: new Date().toISOString(),
   }
 }

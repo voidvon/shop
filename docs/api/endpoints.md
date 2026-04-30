@@ -1,7 +1,7 @@
 # API 接口明细索引
 
 来源：[`openapi.json`](/root/shop/docs/api/openapi.json)  
-抓取时间：`2026-04-24`
+抓取时间：`2026-04-30`
 
 说明：
 
@@ -26,6 +26,7 @@
 | GET | /api/v1/orders | Bearer | query:per_page | - | object | 订单列表 |
 | GET | /api/v1/orders/{order} | Bearer | path:order | - | object | 订单详情 |
 | POST | /api/v1/orders/{order}/receive | Bearer | path:order | - | object | 确认收货 |
+| POST | /api/v1/orders/{order}/refund-request | Bearer | path:order | object | object | 申请退单，提交后进入待审核 |
 
 ## 分类
 

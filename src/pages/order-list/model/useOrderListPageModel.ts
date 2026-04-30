@@ -25,7 +25,12 @@ export function useOrderListPageModel() {
     return tradeStore.confirmReceipt(orderId)
   }
 
+  async function applyOrderRefund(orderId: string, reason: string) {
+    return tradeStore.applyOrderRefund(orderId, reason)
+  }
+
   return {
+    applyOrderRefund,
     cancelOrder,
     confirmReceipt,
     errorMessage,

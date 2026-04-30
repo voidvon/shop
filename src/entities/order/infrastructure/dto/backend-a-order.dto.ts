@@ -5,6 +5,22 @@ export interface BackendAMerchantSimpleDto {
   short_name: string | null
 }
 
+export interface BackendAOrderRefundRequestPayloadDto {
+  audit_remark?: string | null
+  created_at?: string | null
+  id: number
+  merchant_id: number
+  order_id: number
+  reason: string
+  refund_no?: string | null
+  reviewed_at?: string | null
+  reviewed_by?: number | null
+  status: number
+  status_text?: string | null
+  updated_at?: string | null
+  user_id: number
+}
+
 export interface BackendAOrderItemDto {
   id: number
   image: string | null
@@ -31,6 +47,7 @@ export interface BackendAOrderDto {
   id: number
   item_count: number
   items: BackendAOrderItemDto[]
+  latest_refund_request?: BackendAOrderRefundRequestPayloadDto | null
   merchant?: BackendAMerchantSimpleDto
   merchant_id: number
   mobile?: string | null
@@ -80,6 +97,12 @@ export interface BackendAOrderCollectionDto {
   data: BackendAOrderDto[]
   per_page: number
   total: number
+}
+
+export interface BackendAApiResponseDto<T> {
+  code: number
+  data: T
+  message: string
 }
 
 export interface BackendACheckoutPreviewItemDto {

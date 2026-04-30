@@ -78,6 +78,10 @@ export function useOrderSearchResultsPageModel() {
     return tradeStore.confirmReceipt(orderId)
   }
 
+  async function applyOrderRefund(orderId: string, reason: string) {
+    return tradeStore.applyOrderRefund(orderId, reason)
+  }
+
   watch(
     () => route.query.keyword,
     (value) => {
@@ -88,6 +92,7 @@ export function useOrderSearchResultsPageModel() {
 
   return {
     applyKeyword,
+    applyOrderRefund,
     cancelOrder,
     confirmReceipt,
     errorMessage,

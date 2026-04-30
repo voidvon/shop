@@ -52,7 +52,14 @@ export function useOrderDetailPageModel() {
     await loadOrderDetailPage(orderId)
   }
 
+  async function applyOrderRefund(orderId: string, reason: string) {
+    await tradeStore.loadOrderList()
+    await tradeStore.applyOrderRefund(orderId, reason)
+    await loadOrderDetailPage(orderId)
+  }
+
   return {
+    applyOrderRefund,
     cancelOrder,
     confirmReceipt,
     errorMessage,

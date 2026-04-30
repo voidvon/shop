@@ -35,8 +35,10 @@ function resolveOrderActions(status: TradeOrderStatus) {
   switch (status) {
     case 'pending-payment':
       return allowActions<TradeOrderAction>(['pay', 'cancel', 'copy-order-no'])
+    case 'pending-shipment':
+      return allowActions<TradeOrderAction>(['refund', 'copy-order-no'])
     case 'pending-receipt':
-      return allowActions<TradeOrderAction>(['view-logistics', 'confirm-receipt', 'copy-order-no'])
+      return allowActions<TradeOrderAction>(['view-logistics', 'confirm-receipt', 'refund', 'copy-order-no'])
     case 'pending-review':
       return allowActions<TradeOrderAction>(['review', 'copy-order-no'])
     default:
@@ -52,6 +54,10 @@ function resolveStatusHint(status: TradeOrderStatus) {
       return '商家正在备货，请耐心等待发货。'
     case 'pending-receipt':
       return '商品已发出，请注意查收。'
+    case 'refunding':
+      return '退款申请已提交，等待商家审核。'
+    case 'returning':
+      return '售后申请处理中，请留意处理进度。'
     case 'pending-review':
       return '订单已签收，欢迎评价商品。'
     case 'cancelled':

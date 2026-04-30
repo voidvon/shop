@@ -1337,6 +1337,100 @@
                 ]
             }
         },
+        "/api/v1/orders/{order}/refund-request": {
+            "post": {
+                "tags": [
+                    "订单"
+                ],
+                "summary": "申请退单",
+                "description": "当前登录用户对自己的已支付且未退款订单提交退单申请。提交后状态为待审核，需要后台审核；后台同意后会触发订单退款。",
+                "operationId": "523de414abc0dcfe58568aaf0d3295fd",
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "description": "订单ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "reason"
+                                ],
+                                "properties": {
+                                    "reason": {
+                                        "description": "退单原因",
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "minLength": 2,
+                                        "example": "商品不需要了，申请退单"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "退单申请已提交",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "退单申请已提交"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/OrderRefundRequestPayload"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "订单不存在或不属于当前用户",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "参数错误、订单不可申请或已有退单申请",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/v1/balance-accounts": {
             "get": {
                 "tags": [
@@ -3747,6 +3841,82 @@
                 },
                 "type": "object"
             },
+            "OrderRefundRequestPayload": {
+                "properties": {
+                    "id": {
+                        "description": "退单申请ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "order_id": {
+                        "description": "订单ID",
+                        "type": "integer",
+                        "example": 1001
+                    },
+                    "user_id": {
+                        "description": "申请用户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "merchant_id": {
+                        "description": "商户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "reason": {
+                        "description": "退单原因",
+                        "type": "string",
+                        "example": "商品不需要了，申请退单"
+                    },
+                    "status": {
+                        "description": "审核状态：0待审核，1已同意，2已拒绝",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "status_text": {
+                        "description": "审核状态中文文案",
+                        "type": "string",
+                        "example": "待审核"
+                    },
+                    "audit_remark": {
+                        "description": "后台审核意见",
+                        "type": "string",
+                        "example": "同意退单",
+                        "nullable": true
+                    },
+                    "reviewed_at": {
+                        "description": "审核时间",
+                        "type": "string",
+                        "example": "2026-04-28 10:00:00",
+                        "nullable": true
+                    },
+                    "reviewed_by": {
+                        "description": "审核人员ID",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "refund_no": {
+                        "description": "审核同意后生成的退款流水号",
+                        "type": "string",
+                        "example": "REF202604280001",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "申请时间",
+                        "type": "string",
+                        "example": "2026-04-28 09:30:00",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "description": "更新时间",
+                        "type": "string",
+                        "example": "2026-04-28 10:00:00",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "OrderPayload": {
                 "properties": {
                     "id": {
@@ -3898,6 +4068,15 @@
                     },
                     "shipping_address": {
                         "$ref": "#/components/schemas/OrderShippingAddressPayload"
+                    },
+                    "latest_refund_request": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/OrderRefundRequestPayload"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "最近一次退单申请；没有申请时为 null"
                     },
                     "merchant": {
                         "$ref": "#/components/schemas/MerchantSimple"

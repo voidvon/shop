@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { useBackendRuntime } from '@/app/providers/backend'
-import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
+import { OrderProductRow, OrderRefundRequestSheet, OrderStoreHeader } from '@/entities/order'
 import ConfirmDialog from '@/shared/ui/ConfirmDialog.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
@@ -29,6 +29,7 @@ const route = useRoute()
 const router = useRouter()
 const runtime = useBackendRuntime()
 const {
+  applyOrderRefund,
   cancelOrder,
   confirmReceipt,
   errorMessage,
@@ -42,6 +43,8 @@ const isInvoiceEnabled = computed(() => runtime.capabilities.invoice)
 const isLogisticsEnabled = computed(() => runtime.capabilities.logistics)
 const confirmReceiptDialogVisible = ref(false)
 const isConfirmingReceipt = ref(false)
+const refundRequestDialogVisible = ref(false)
+const isSubmittingRefund = ref(false)
 
 const shippingCompanyText = computed(() => {
   const detail = orderDetailPageData.value
@@ -104,7 +107,7 @@ function resolvePaymentStatus() {
     || statusText.includes('退款')
     || statusText.includes('退货')
   ) {
-    return '已退款'
+    return '退款中'
   }
 
   if (orderDetailPageData.value.timeline.paidAt) {
@@ -143,6 +146,14 @@ async function handleConfirmReceipt() {
   confirmReceiptDialogVisible.value = true
 }
 
+function handleRefundRequest() {
+  if (!orderDetailPageData.value) {
+    return
+  }
+
+  refundRequestDialogVisible.value = true
+}
+
 async function submitConfirmReceipt() {
   if (!orderDetailPageData.value || isConfirmingReceipt.value) {
     return
@@ -158,6 +169,24 @@ async function submitConfirmReceipt() {
     showFailToast('确认收货失败')
   } finally {
     isConfirmingReceipt.value = false
+  }
+}
+
+async function submitRefundRequest(reason: string) {
+  if (!orderDetailPageData.value || isSubmittingRefund.value) {
+    return
+  }
+
+  isSubmittingRefund.value = true
+
+  try {
+    await applyOrderRefund(orderDetailPageData.value.orderId, reason)
+    refundRequestDialogVisible.value = false
+    showSuccessToast('退款申请已提交')
+  } catch (error) {
+    showFailToast(error instanceof Error ? error.message : '申请退款失败')
+  } finally {
+    isSubmittingRefund.value = false
   }
 }
 
@@ -413,6 +442,15 @@ onMounted(() => {
       </button>
 
       <button
+        v-if="canUseAction(orderDetailPageData.actions, 'refund')"
+        class="ghost-button"
+        type="button"
+        @click="handleRefundRequest"
+      >
+        申请退款
+      </button>
+
+      <button
         v-if="canUseAction(orderDetailPageData.actions, 'confirm-receipt')"
         class="primary-button"
         type="button"
@@ -430,6 +468,12 @@ onMounted(() => {
         余额支付
       </button>
     </footer>
+
+    <OrderRefundRequestSheet
+      v-model="refundRequestDialogVisible"
+      :loading="isSubmittingRefund"
+      @submit="submitRefundRequest"
+    />
 
     <ConfirmDialog
       v-model="confirmReceiptDialogVisible"

@@ -2,6 +2,7 @@ import { createBackendAHttpClient } from '@/shared/api/backend-a/backend-a-http-
 import type { MemberAuthSession } from '@/entities/member-auth'
 
 import type {
+  OrderRefundRequestResult,
   CheckoutCouponUsage,
   CheckoutPreview,
   OrderConfirmation,
@@ -9,8 +10,10 @@ import type {
 } from '../../../domain/order'
 import type { OrderRepository } from '../../../domain/order-repository'
 import type {
+  BackendAApiResponseDto,
   BackendACheckoutPreviewDto,
   BackendAOrderDto,
+  BackendAOrderRefundRequestPayloadDto,
 } from '../../dto/backend-a-order.dto'
 import {
   mapBackendAOrderDto,
@@ -57,6 +60,20 @@ function normalizeOrderId(orderId: string) {
 
 function createUnsupportedOrderActionError() {
   return new Error('当前后端文档未提供订单取消或支付接口')
+}
+
+function normalizeRefundReason(reason: string) {
+  const normalizedReason = reason.trim()
+
+  if (normalizedReason.length < 2) {
+    throw new Error('请填写退款原因')
+  }
+
+  if (normalizedReason.length > 1000) {
+    throw new Error('退款原因不能超过 1000 个字')
+  }
+
+  return normalizedReason
 }
 
 function parseNumber(value: unknown) {
@@ -134,6 +151,23 @@ function mapTransitionStatusResult(
   }
 }
 
+function mapRefundRequestResult(
+  orderId: string,
+  payload: BackendAOrderRefundRequestPayloadDto,
+): OrderRefundRequestResult {
+  const statusText = payload.status_text?.trim()
+
+  return {
+    orderId,
+    reason: payload.reason,
+    status: payload.status === 2 ? 'pending-shipment' : 'refunding',
+    statusText: statusText
+      ? (statusText.includes('退款') ? statusText : `退款${statusText}`)
+      : '退款待审核',
+    updatedAt: payload.updated_at ?? payload.created_at ?? new Date().toISOString(),
+  }
+}
+
 export function getBackendAOrderSeedRecords(): OrderRecord[] {
   return []
 }
@@ -163,6 +197,18 @@ export function createBackendAOrderRepository(
 
       const preview = await requestCheckoutPreview(undefined, couponUsages)
       return mapBackendACheckoutPreviewDto(command, preview)
+    },
+
+    async requestRefund(command) {
+      const orderId = normalizeOrderId(command.orderId)
+      const response = await httpClient.post<BackendAApiResponseDto<BackendAOrderRefundRequestPayloadDto>>(
+        `/api/v1/orders/${orderId}/refund-request`,
+        {
+          reason: normalizeRefundReason(command.reason),
+        },
+      )
+
+      return mapRefundRequestResult(String(orderId), response.data)
     },
 
     async submit(command) {

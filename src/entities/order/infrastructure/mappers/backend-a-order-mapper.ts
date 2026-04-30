@@ -7,6 +7,7 @@ import {
   type OrderRecord,
 } from '../../domain/order'
 import type {
+  BackendAOrderRefundRequestPayloadDto,
   BackendACheckoutBalanceDeductionDto,
   BackendACheckoutPreviewDto,
   BackendACheckoutPreviewGroupDto,
@@ -32,11 +33,26 @@ function isRefundFlowStatusText(statusText: string) {
   return statusText.includes('退款') || isReturnFlowStatusText(statusText)
 }
 
+function resolveRefundRequestStatusText(refundRequest: BackendAOrderRefundRequestPayloadDto | null | undefined) {
+  const statusText = normalizeStatusText(refundRequest?.status_text)
+
+  if (!statusText) {
+    return ''
+  }
+
+  return isRefundFlowStatusText(statusText) ? statusText : `退款${statusText}`
+}
+
 function resolveOrderStatus(dto: BackendAOrderDto): TradeOrderStatus {
   const statusText = normalizeStatusText(dto.status_text)
+  const refundRequest = dto.latest_refund_request ?? null
 
   if (dto.refunded_at || isRefundFlowStatusText(statusText)) {
     return isReturnFlowStatusText(statusText) ? 'returning' : 'refunding'
+  }
+
+  if (refundRequest && refundRequest.status !== 2) {
+    return 'refunding'
   }
 
   switch (dto.status) {
@@ -76,9 +92,9 @@ function resolveOrderStatusText(status: TradeOrderStatus) {
     case 'pending-receipt':
       return '待收货'
     case 'refunding':
-      return '退款完成'
+      return '退款处理中'
     case 'returning':
-      return '退货完成'
+      return '退货处理中'
     case 'completed':
       return '已完成'
     default:
@@ -127,7 +143,15 @@ function mapCheckoutCouponUsages(groups: CheckoutPreviewGroup[]): CheckoutCoupon
 
 export function mapBackendAOrderDto(dto: BackendAOrderDto): OrderRecord {
   const status = resolveOrderStatus(dto)
-  const statusText = normalizeStatusText(dto.status_text) || resolveOrderStatusText(status)
+  const rawStatusText = normalizeStatusText(dto.status_text)
+  const refundStatusText = resolveRefundRequestStatusText(dto.latest_refund_request)
+  const statusText = status === 'refunding' || status === 'returning'
+    ? (
+        isRefundFlowStatusText(rawStatusText)
+          ? rawStatusText
+          : (refundStatusText || resolveOrderStatusText(status))
+      )
+    : (rawStatusText || resolveOrderStatusText(status))
 
   return {
     itemCount: dto.item_count,

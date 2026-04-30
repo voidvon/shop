@@ -4,7 +4,7 @@
 
 - Swagger 页面：`https://api.qzxys.com/api/documentation`
 - OpenAPI JSON：`https://api.qzxys.com/docs?api-docs.json`
-- 最近一次抓取时间：`2026-04-24`
+- 最近一次抓取时间：`2026-04-30`
 - 原始文件：[`openapi.json`](/root/shop/docs/api/openapi.json)
 
 说明：
@@ -24,11 +24,11 @@
 
 | 项 | 数量 |
 | --- | ---: |
-| Path 数 | 42 |
-| Operation 数 | 49 |
+| Path 数 | 43 |
+| Operation 数 | 50 |
 | Tag 数 | 17 |
 | 公开接口 | 13 |
-| 需鉴权接口 | 36 |
+| 需鉴权接口 | 37 |
 
 后端文档信息：
 
@@ -106,6 +106,7 @@
 - `GET /api/v1/orders` 订单列表
 - `GET /api/v1/orders/{order}` 订单详情
 - `POST /api/v1/orders/{order}/receive` 确认收货
+- `POST /api/v1/orders/{order}/refund-request` 申请退单；请求体必填 `reason`，提交后进入待审核
 
 ### 余额
 
@@ -154,6 +155,7 @@
 - 以 [`endpoints.md`](/root/shop/docs/api/endpoints.md) 作为方法、路径、鉴权、参数、请求体和响应模型的速查表
 - 以 [`frontend-integration-status.md`](/root/shop/docs/api/frontend-integration-status.md) 作为“当前代码已经接了什么、哪些还没接、哪些与 Swagger 不一致”的对照清单
 - 后续如果后端 Swagger 变更，优先重新抓取 `openapi.json`，再同步更新本文件中的统计与分组
+- `2026-04-30` 已重新抓取 Swagger，并补入 `POST /api/v1/orders/{order}/refund-request`；当前登录用户可对自己的已支付且未退款订单提交退单申请，订单结构也新增 `latest_refund_request`
 - `GET /api/v1/home` 已在本次抓取中更新为 `query:product_limit, category_limit`，响应商品字段改为 `products`
 - `2026-04-04` 已补入 `POST /api/v1/stored-value-cards/lookup`、`GET /api/v1/stored-value-cards/recharge-logs`、`GET /api/v1/merchant-coupons`
 - `2026-04-10` 已补充 `POST /api/v1/stored-value-cards/recharge` 请求体中的 `mobile` 字段说明

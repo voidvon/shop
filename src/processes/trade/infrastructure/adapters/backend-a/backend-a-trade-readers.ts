@@ -37,8 +37,9 @@ function resolveOrderStatusHint(status: TradeOrderStatus) {
     case 'pending-receipt':
       return '商品已发出，请留意物流动态。'
     case 'refunding':
+      return '退款申请已提交，等待商家审核。'
     case 'returning':
-      return '售后已完成。'
+      return '售后申请处理中，请留意处理进度。'
     case 'completed':
       return '订单已完成。'
     case 'cancelled':
@@ -50,8 +51,10 @@ function resolveOrderStatusHint(status: TradeOrderStatus) {
 
 function resolveOrderActions(status: TradeOrderStatus) {
   switch (status) {
+    case 'pending-shipment':
+      return allowActions<TradeOrderAction>(['refund', 'copy-order-no'])
     case 'pending-receipt':
-      return allowActions<TradeOrderAction>(['view-logistics', 'confirm-receipt', 'copy-order-no'])
+      return allowActions<TradeOrderAction>(['view-logistics', 'confirm-receipt', 'refund', 'copy-order-no'])
     default:
       return allowActions<TradeOrderAction>(['copy-order-no'])
   }
