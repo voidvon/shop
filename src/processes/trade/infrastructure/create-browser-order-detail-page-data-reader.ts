@@ -46,7 +46,15 @@ function resolveOrderActions(status: TradeOrderStatus) {
   }
 }
 
-function resolveStatusHint(status: TradeOrderStatus) {
+function resolveStatusHint(status: TradeOrderStatus, statusText?: string) {
+  if (status === 'refunding' && statusText?.includes('已完成')) {
+    return '退款已完成。'
+  }
+
+  if (status === 'returning' && statusText?.includes('已完成')) {
+    return '售后已完成。'
+  }
+
   switch (status) {
     case 'pending-payment':
       return '订单已提交，请尽快完成支付。'
@@ -171,7 +179,7 @@ function synthesizeOrderDetailPageData(
     shippingAmount: record.shippingAmount,
     shippingCompany: null,
     status: record.status === 'all' ? 'pending-payment' : record.status,
-    statusHint: resolveStatusHint(record.status),
+    statusHint: resolveStatusHint(record.status, record.statusText),
     statusText: record.statusText,
     storeId: defaultStoreId,
     storeName: record.storeName,
@@ -212,7 +220,9 @@ export function createBrowserOrderDetailPageDataReader(
           : record.paymentMethod ?? seedDetail.paymentMethod ?? '账户余额',
       shippingAmount: record.shippingAmount,
       status: record.status === 'all' ? seedDetail.status : record.status,
-      statusHint: seedDetail.status === record.status ? seedDetail.statusHint : resolveStatusHint(record.status),
+      statusHint: seedDetail.status === record.status
+        ? seedDetail.statusHint
+        : resolveStatusHint(record.status, record.statusText),
       statusText: record.statusText,
       storeId: seedDetail.storeId || options.defaultStoreId,
       storeName: record.storeName,

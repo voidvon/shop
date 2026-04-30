@@ -32,7 +32,7 @@ function createScope(options: CreateBrowserAfterSaleRepositoryOptions) {
 
 function resolveInitialStatus(type: SubmitAfterSaleApplicationCommand['type']) {
   return type === 'refund'
-    ? { status: 'processing', statusText: '退款处理中' }
+    ? { status: 'processing', statusText: '退款中' }
     : { status: 'awaiting-shipment', statusText: '待退货发货' }
 }
 

@@ -453,7 +453,7 @@ export const mockAfterSaleListPageData: AfterSaleListPageData = {
       refundId: 'refund-001',
       skuDescription: cartProductB.skuList[0]?.specText ?? null,
       status: 'processing',
-      statusText: '退款处理中',
+      statusText: '退款中',
       storeId: cartStoreB.storeId,
       storeName: cartStoreB.storeName,
       unitPrice: cartProductB.price,
@@ -501,7 +501,7 @@ export const mockRefundDetailPageDataById: Record<string, RefundDetailPageData> 
     refundAmount: cartProductB.price,
     refundId: 'refund-001',
     status: 'processing',
-    statusText: '退款处理中',
+    statusText: '退款中',
   },
 }
 

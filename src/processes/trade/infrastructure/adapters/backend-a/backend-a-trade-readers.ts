@@ -28,7 +28,15 @@ function createBackendATradeHttpClient(memberAuthSession: MemberAuthSession) {
   })
 }
 
-function resolveOrderStatusHint(status: TradeOrderStatus) {
+function resolveOrderStatusHint(status: TradeOrderStatus, statusText?: string) {
+  if (status === 'refunding' && statusText?.includes('已完成')) {
+    return '退款已完成。'
+  }
+
+  if (status === 'returning' && statusText?.includes('已完成')) {
+    return '售后已完成。'
+  }
+
   switch (status) {
     case 'pending-payment':
       return '订单已创建，等待支付。'
@@ -252,7 +260,7 @@ function mapOrderDetail(dto: BackendAOrderDto): OrderDetailPageData {
     shippingAmount: 0,
     shippingCompany: normalizeText(dto.shipping_company) || null,
     status: record.status === 'all' ? 'pending-payment' : record.status,
-    statusHint: resolveOrderStatusHint(record.status),
+    statusHint: resolveOrderStatusHint(record.status, record.statusText),
     statusText: record.statusText,
     storeId: String(dto.merchant?.id ?? dto.merchant_id),
     storeName: record.storeName,

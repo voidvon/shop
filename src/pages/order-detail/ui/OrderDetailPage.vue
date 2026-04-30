@@ -97,8 +97,19 @@ function resolvePaymentStatus() {
 
   const statusText = orderDetailPageData.value.statusText.trim()
 
-  if (statusText.includes('已退款') || statusText.includes('退款成功') || statusText.includes('退款完成')) {
-    return '已退款'
+  if (
+    (orderDetailPageData.value.status === 'refunding' || orderDetailPageData.value.status === 'returning')
+    && statusText.includes('已完成')
+  ) {
+    return '已完成'
+  }
+
+  if (
+    statusText.includes('已退款')
+    || statusText.includes('退款成功')
+    || statusText.includes('退款完成')
+  ) {
+    return '已完成'
   }
 
   if (
@@ -182,7 +193,7 @@ async function submitRefundRequest(reason: string) {
   try {
     await applyOrderRefund(orderDetailPageData.value.orderId, reason)
     refundRequestDialogVisible.value = false
-    showSuccessToast('退款申请已提交')
+    showSuccessToast('申请已提交')
   } catch (error) {
     showFailToast(error instanceof Error ? error.message : '申请退款失败')
   } finally {

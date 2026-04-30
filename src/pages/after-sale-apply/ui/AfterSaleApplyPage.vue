@@ -122,7 +122,7 @@ async function handleSubmit() {
     type: activeType.value,
   })
 
-  showSuccessToast(activeType.value === 'refund' ? '退款申请已提交' : '退货申请已提交')
+  showSuccessToast(activeType.value === 'refund' ? '申请已提交' : '退货申请已提交')
 
   await router.replace({
     name: activeType.value === 'refund' ? 'member-refund-detail' : 'member-return-detail',

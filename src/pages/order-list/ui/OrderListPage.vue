@@ -187,7 +187,7 @@ async function submitRefundRequest(reason: string) {
   try {
     await applyOrderRefund(refundRequestOrderId.value, reason)
     closeRefundRequestDialog()
-    showSuccessToast('退款申请已提交')
+    showSuccessToast('申请已提交')
   } catch (error) {
     showFailToast(error instanceof Error ? error.message : '申请退款失败')
   } finally {

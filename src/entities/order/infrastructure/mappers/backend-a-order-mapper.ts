@@ -33,6 +33,25 @@ function isRefundFlowStatusText(statusText: string) {
   return statusText.includes('退款') || isReturnFlowStatusText(statusText)
 }
 
+function isCompletedAfterSaleStatusText(statusText: string) {
+  return statusText.includes('完成')
+    || statusText.includes('成功')
+    || statusText.includes('已退款')
+    || statusText.includes('已退货')
+}
+
+function normalizeAfterSaleStatusText(statusText: string, type: 'refund' | 'return') {
+  if (!statusText) {
+    return ''
+  }
+
+  if (isCompletedAfterSaleStatusText(statusText)) {
+    return '已完成'
+  }
+
+  return type === 'return' ? '退货处理中' : '退款中'
+}
+
 function resolveRefundRequestStatusText(refundRequest: BackendAOrderRefundRequestPayloadDto | null | undefined) {
   const statusText = normalizeStatusText(refundRequest?.status_text)
 
@@ -40,7 +59,7 @@ function resolveRefundRequestStatusText(refundRequest: BackendAOrderRefundReques
     return ''
   }
 
-  return isRefundFlowStatusText(statusText) ? statusText : `退款${statusText}`
+  return normalizeAfterSaleStatusText(statusText, 'refund')
 }
 
 function resolveOrderStatus(dto: BackendAOrderDto): TradeOrderStatus {
@@ -92,7 +111,7 @@ function resolveOrderStatusText(status: TradeOrderStatus) {
     case 'pending-receipt':
       return '待收货'
     case 'refunding':
-      return '退款处理中'
+      return '退款中'
     case 'returning':
       return '退货处理中'
     case 'completed':
@@ -145,11 +164,18 @@ export function mapBackendAOrderDto(dto: BackendAOrderDto): OrderRecord {
   const status = resolveOrderStatus(dto)
   const rawStatusText = normalizeStatusText(dto.status_text)
   const refundStatusText = resolveRefundRequestStatusText(dto.latest_refund_request)
+  const isAfterSaleCompleted = Boolean(dto.refunded_at)
+    || isCompletedAfterSaleStatusText(rawStatusText)
+    || isCompletedAfterSaleStatusText(refundStatusText)
   const statusText = status === 'refunding' || status === 'returning'
     ? (
-        isRefundFlowStatusText(rawStatusText)
-          ? rawStatusText
-          : (refundStatusText || resolveOrderStatusText(status))
+        isAfterSaleCompleted
+          ? '已完成'
+          : (
+              isRefundFlowStatusText(rawStatusText)
+                ? normalizeAfterSaleStatusText(rawStatusText, status === 'returning' ? 'return' : 'refund')
+                : (refundStatusText || resolveOrderStatusText(status))
+            )
       )
     : (rawStatusText || resolveOrderStatusText(status))
 

@@ -155,14 +155,21 @@ function mapRefundRequestResult(
   payload: BackendAOrderRefundRequestPayloadDto,
 ): OrderRefundRequestResult {
   const statusText = payload.status_text?.trim()
+  const normalizedStatusText = !statusText
+    ? '退款中'
+    : (
+        statusText.includes('完成')
+          || statusText.includes('成功')
+          || statusText.includes('已退款')
+          ? '已完成'
+          : '退款中'
+      )
 
   return {
     orderId,
     reason: payload.reason,
     status: payload.status === 2 ? 'pending-shipment' : 'refunding',
-    statusText: statusText
-      ? (statusText.includes('退款') ? statusText : `退款${statusText}`)
-      : '退款待审核',
+    statusText: normalizedStatusText,
     updatedAt: payload.updated_at ?? payload.created_at ?? new Date().toISOString(),
   }
 }

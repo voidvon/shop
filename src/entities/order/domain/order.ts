@@ -202,7 +202,7 @@ export function requestOrderRefund(command: RequestOrderRefundCommand): OrderRef
     orderId: command.orderId,
     reason,
     status: 'refunding',
-    statusText: '退款待审核',
+    statusText: '退款中',
     updatedAt: new Date().toISOString(),
   }
 }
