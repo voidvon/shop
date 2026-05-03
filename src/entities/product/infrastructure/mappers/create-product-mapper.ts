@@ -14,6 +14,7 @@ export interface ProductSummaryFieldMap<TSource> {
   monthlySales: FieldResolver<TSource, number>
   name: FieldResolver<TSource, string>
   price: FieldResolver<TSource, number>
+  subtitle?: FieldResolver<TSource, string | null>
   summary: FieldResolver<TSource, string>
   tags: FieldResolver<TSource, string[]>
 }
@@ -58,6 +59,7 @@ export function createProductSummaryMapper<TSource>(fieldMap: ProductSummaryFiel
     monthlySales: resolveField(source, fieldMap.monthlySales),
     name: resolveField(source, fieldMap.name),
     price: resolveField(source, fieldMap.price),
+    subtitle: fieldMap.subtitle ? resolveField(source, fieldMap.subtitle) : null,
     summary: resolveField(source, fieldMap.summary),
     tags: cloneTextList(resolveField(source, fieldMap.tags)),
   })

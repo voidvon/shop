@@ -100,6 +100,7 @@ const backendAProductSummaryFieldMap = {
   monthlySales: 'sales_count',
   name: 'title',
   price: resolveLowestSkuPrice,
+  subtitle: (dto: BackendAProductSummaryDto) => dto.subtitle ?? null,
   summary: (dto: BackendAProductSummaryDto) => dto.subtitle ?? dto.detail ?? '',
   tags: mapProductTags,
 } satisfies ProductSummaryFieldMap<BackendAProductSummaryDto>

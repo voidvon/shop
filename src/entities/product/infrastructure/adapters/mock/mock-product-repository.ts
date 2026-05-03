@@ -23,6 +23,7 @@ function createProductSummary(productId: string): ProductSummary | null {
     monthlySales: product.monthlySales,
     name: product.productName,
     price: product.price,
+    subtitle: product.subtitle,
     summary: product.summary,
     tags: [...product.sellingPoints],
   }

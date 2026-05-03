@@ -6,6 +6,7 @@ export interface ProductSummary {
   categoryId: string
   name: string
   category: string
+  subtitle: string | null
   summary: string
   price: number
   inventory: number

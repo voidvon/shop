@@ -503,7 +503,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
         <div class="detail-content">
           <section class="summary-block">
             <h1>{{ product.name }}</h1>
-            <p v-if="product.summary.trim()" class="subtitle">{{ product.summary }}</p>
+            <p v-if="product.subtitle?.trim()" class="subtitle">{{ product.subtitle }}</p>
             <div v-if="product.balanceTypeName" class="balance-badge-row">
               <span class="balance-badge">适用{{ product.balanceTypeName }}</span>
             </div>
