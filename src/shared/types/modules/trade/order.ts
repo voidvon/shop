@@ -139,6 +139,7 @@ export interface OrderDetailPageData {
   shippingAmount: number
   amountDetails: AmountDetail[]
   deliveryRemark: string | null
+  virtualDeliveryInfo: string | null
   buyerMessage: string | null
   invoiceInfo: string | null
   paymentMethod: string | null

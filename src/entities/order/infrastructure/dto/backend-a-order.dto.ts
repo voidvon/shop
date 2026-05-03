@@ -70,6 +70,7 @@ export interface BackendAOrderDto {
   total_amount: string
   tracking_no?: string | null
   shipping_remark?: string | null
+  virtual_delivery_info?: string | null
   updated_at?: string | null
   user_address?: string | BackendAOrderAddressDto | null
   user_coupon_id: number | null

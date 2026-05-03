@@ -6,7 +6,7 @@
 - 当前运行时装配：[`src/app/providers/backend/create-backend-runtime.ts`](/root/shop/src/app/providers/backend/create-backend-runtime.ts)
 - 现有 `backend-a` 适配层与浏览器仓储实现
 
-更新时间：`2026-04-30`
+更新时间：`2026-05-03`
 
 ## 1. 先看结论
 
@@ -101,6 +101,7 @@
 | 余额/储值卡 | 是 | 是 | 部分直连 | 已接 `/api/v1/balance-accounts`、`/api/v1/balance-accounts/logs`、`/api/v1/stored-value-cards/recharge`、`/api/v1/stored-value-cards/recharge-logs`、`/api/v1/stored-value-cards/lookup`；二维码仍未接 |
 | 优惠券 | 是 | 页面能力弱 | 部分直连 | 商家页已接 `/api/v1/merchant-coupons` 与 `/api/v1/coupons/{couponTemplate}/claim`；“我的优惠券”仍未直连 |
 | 合作商家 | 是 | 否 | 未接入 | 当前没有对应页面或 query |
+| 线上商户 | 是 | 是 | 未接入 | Swagger 新增 `/api/v1/merchants` 与 `/api/v1/merchants/{merchant}`；当前店铺页仍主要通过 `/api/v1/partner-merchants/{partnerMerchant}` 与 `/api/v1/products?merchant_id=` 组装 |
 | 客服 | 是 | 否 | 未接入 | 当前没有客服会话页面和消息数据层 |
 | 线下付款 | 是 | 是 | 已直连 | 用户付款码页已接 `/api/v1/offline-payments/payment-code`；商户扣款页已接 `/api/v1/merchant/offline-payments/scan`、`/api/v1/merchant/offline-payments/pay`、`/api/v1/merchant/offline-payments/{offlinePayment}/refund`，并依赖 `/api/v1/auth/profile` 返回 `merchant.supported_balance_types` |
 | 上传 | 是 | 间接可能需要 | 未接入 | 当前没有统一上传 gateway |
@@ -135,6 +136,7 @@
 - checkout 提交时会把已选 cart item、收货地址、买家备注提交给真实后端
 - 下单成功后，订单列表、订单详情和会员中心订单角标都会从真实 `/api/v1/orders` 刷新
 - 当前仍保留部分显式能力裁剪：Swagger 里仍没有订单取消、支付接口，因此 `backend-a` 仍会对这两类动作保留显式提示；确认收货已接入 `POST /api/v1/orders/{order}/receive`，退款申请接口已出现在 Swagger，订单结构也新增 `latest_refund_request`，但当前售后流程仍主要走本地仓储
+- 最新 Swagger 已为订单详情补入 `virtual_delivery_info`，并为结算/订单金额结构补入 `shipping_amount`；当前前端尚未消费这几个新增字段
 
 对应 Swagger：
 
@@ -235,6 +237,7 @@
 以下能力在 Swagger 中存在，但当前仓库里没有清晰的页面或数据接入层：
 
 - 会员端订单退单申请 `POST /api/v1/orders/{order}/refund-request`
+- 线上商户列表 / 详情 `GET /api/v1/merchants`、`GET /api/v1/merchants/{merchant}`
 - 合作商家列表 / 详情 / 地区 / 门店类型
 - 客服会话、消息、增量拉取
 - 商户员工邀请查看与绑定

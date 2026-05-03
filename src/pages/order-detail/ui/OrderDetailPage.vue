@@ -10,6 +10,7 @@ import ConfirmDialog from '@/shared/ui/ConfirmDialog.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
+import { sanitizeRichTextHtml } from '@/shared/lib/safe-rich-text'
 
 import { useOrderDetailPageModel } from '../model/useOrderDetailPageModel'
 
@@ -59,6 +60,11 @@ const shippingCompanyText = computed(() => {
 
   const logisticsTitle = detail.logistics?.title?.trim() ?? ''
   return logisticsTitle && logisticsTitle !== '物流信息待补充' ? logisticsTitle : null
+})
+
+const virtualDeliveryInfoHtml = computed(() => {
+  const source = orderDetailPageData.value?.virtualDeliveryInfo?.trim() ?? ''
+  return source ? sanitizeRichTextHtml(source) : null
 })
 
 function goBack() {
@@ -305,6 +311,15 @@ onMounted(() => {
           </div>
         </section>
 
+        <section v-if="virtualDeliveryInfoHtml" class="virtual-delivery-card">
+          <header class="card-header">
+            <van-icon name="description" size="18" />
+            <strong>虚拟商品提货信息</strong>
+          </header>
+
+          <div class="virtual-delivery-copy" v-html="virtualDeliveryInfoHtml" />
+        </section>
+
         <section class="goods-card">
           <OrderStoreHeader
             :status-text="orderDetailPageData.statusText"
@@ -529,6 +544,7 @@ onMounted(() => {
 
 .status-card,
 .address-card,
+.virtual-delivery-card,
 .goods-card,
 .amount-card,
 .info-card {
@@ -594,6 +610,7 @@ onMounted(() => {
 }
 
 .address-copy,
+.virtual-delivery-copy,
 .amount-list,
 .info-list {
   display: grid;
@@ -634,6 +651,86 @@ onMounted(() => {
   color: #6d6c6a;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.virtual-delivery-copy {
+  color: #3c3b39;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.virtual-delivery-copy :deep(*) {
+  max-width: 100%;
+}
+
+.virtual-delivery-copy :deep(p),
+.virtual-delivery-copy :deep(blockquote),
+.virtual-delivery-copy :deep(pre),
+.virtual-delivery-copy :deep(ul),
+.virtual-delivery-copy :deep(ol),
+.virtual-delivery-copy :deep(table) {
+  margin: 0;
+}
+
+.virtual-delivery-copy :deep(p + p),
+.virtual-delivery-copy :deep(p + ul),
+.virtual-delivery-copy :deep(p + ol),
+.virtual-delivery-copy :deep(ul + p),
+.virtual-delivery-copy :deep(ol + p),
+.virtual-delivery-copy :deep(blockquote + p),
+.virtual-delivery-copy :deep(p + blockquote),
+.virtual-delivery-copy :deep(pre + p),
+.virtual-delivery-copy :deep(p + pre),
+.virtual-delivery-copy :deep(table + p),
+.virtual-delivery-copy :deep(p + table) {
+  margin-top: 10px;
+}
+
+.virtual-delivery-copy :deep(ul),
+.virtual-delivery-copy :deep(ol) {
+  padding-left: 18px;
+}
+
+.virtual-delivery-copy :deep(li + li) {
+  margin-top: 6px;
+}
+
+.virtual-delivery-copy :deep(a) {
+  color: #c2410c;
+  text-decoration: underline;
+}
+
+.virtual-delivery-copy :deep(img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+.virtual-delivery-copy :deep(pre) {
+  overflow-x: auto;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f7f4ef;
+}
+
+.virtual-delivery-copy :deep(blockquote) {
+  padding-left: 12px;
+  border-left: 3px solid #f3d5b8;
+  color: #6d6c6a;
+}
+
+.virtual-delivery-copy :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.virtual-delivery-copy :deep(th),
+.virtual-delivery-copy :deep(td) {
+  padding: 8px;
+  border: 1px solid #efe7dc;
+  text-align: left;
+  vertical-align: top;
 }
 
 .gift-list,

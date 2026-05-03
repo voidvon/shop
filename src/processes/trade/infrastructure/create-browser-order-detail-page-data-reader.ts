@@ -184,6 +184,7 @@ function synthesizeOrderDetailPageData(
     storeId: defaultStoreId,
     storeName: record.storeName,
     trackingNo: null,
+    virtualDeliveryInfo: null,
     timeline: resolveTimeline(record.status),
   }
 }

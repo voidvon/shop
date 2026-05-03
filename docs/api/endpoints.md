@@ -1,7 +1,7 @@
 # API 接口明细索引
 
 来源：[`openapi.json`](/root/shop/docs/api/openapi.json)  
-抓取时间：`2026-04-30`
+抓取时间：`2026-05-03`
 
 说明：
 
@@ -51,6 +51,13 @@
 | GET | /api/v1/partner-store-types | 公开 | - | - | ApiResponse | 合作门店类型列表 |
 | GET | /api/v1/partner-merchants | 公开 | query:region_id, query:store_type_id, query:keyword, query:per_page | - | ApiResponse | 合作商家列表 |
 | GET | /api/v1/partner-merchants/{partnerMerchant} | 公开 | path:partnerMerchant | - | ApiResponse | 合作商家详情 |
+
+## 商户
+
+| 方法 | 路径 | 鉴权 | 参数 | 请求体 | 成功响应 | 说明 |
+| --- | --- | --- | --- | --- | --- | --- |
+| GET | /api/v1/merchants | 公开 | query:keyword, query:per_page | - | object | 线上商户列表 |
+| GET | /api/v1/merchants/{merchant} | 公开 | path:merchant | - | object | 线上商户详情 |
 
 ## 结算
 

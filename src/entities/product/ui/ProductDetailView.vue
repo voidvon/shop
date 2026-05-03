@@ -18,7 +18,7 @@ const demandLabel = computed(() => (isHighDemandProduct(props.product) ? '高需
       <div class="headline">
         <p class="category">{{ product.category }}</p>
         <h1>{{ product.name }}</h1>
-        <p class="summary">{{ product.summary }}</p>
+        <p v-if="product.summary.trim()" class="summary">{{ product.summary }}</p>
 
         <div class="hero-meta">
           <van-tag round type="primary">{{ demandLabel }}</van-tag>

@@ -4,7 +4,7 @@
 
 - Swagger 页面：`https://api.qzxys.com/api/documentation`
 - OpenAPI JSON：`https://api.qzxys.com/docs?api-docs.json`
-- 最近一次抓取时间：`2026-04-30`
+- 最近一次抓取时间：`2026-05-03`
 - 原始文件：[`openapi.json`](/root/shop/docs/api/openapi.json)
 
 说明：
@@ -24,10 +24,10 @@
 
 | 项 | 数量 |
 | --- | ---: |
-| Path 数 | 43 |
-| Operation 数 | 50 |
-| Tag 数 | 17 |
-| 公开接口 | 13 |
+| Path 数 | 45 |
+| Operation 数 | 52 |
+| Tag 数 | 18 |
+| 公开接口 | 15 |
 | 需鉴权接口 | 37 |
 
 后端文档信息：
@@ -41,7 +41,7 @@
 - 安全方案：`sanctum`
 - 类型：`http bearer`
 - 文档描述：`Laravel Sanctum Bearer Token`
-- 公开接口主要集中在登录、首页、分类、商品、平台配置、合作商家、员工邀请查看
+- 公开接口主要集中在登录、首页、分类、商品、平台配置、合作商家、线上商户、员工邀请查看
 - 购物车、结算、订单、余额、储值卡、优惠券、地址、客服、上传、线下付款等接口均要求 Bearer Token
 
 ## 4. 接口分组总览
@@ -83,6 +83,11 @@
 - `GET /api/v1/partner-store-types` 合作门店类型列表
 - `GET /api/v1/partner-merchants` 合作商家列表
 - `GET /api/v1/partner-merchants/{partnerMerchant}` 合作商家详情
+
+### 商户
+
+- `GET /api/v1/merchants` 线上商户列表
+- `GET /api/v1/merchants/{merchant}` 线上商户详情
 
 ### 商品
 
@@ -155,6 +160,7 @@
 - 以 [`endpoints.md`](/root/shop/docs/api/endpoints.md) 作为方法、路径、鉴权、参数、请求体和响应模型的速查表
 - 以 [`frontend-integration-status.md`](/root/shop/docs/api/frontend-integration-status.md) 作为“当前代码已经接了什么、哪些还没接、哪些与 Swagger 不一致”的对照清单
 - 后续如果后端 Swagger 变更，优先重新抓取 `openapi.json`，再同步更新本文件中的统计与分组
+- `2026-05-03` 已重新抓取 Swagger；订单详情结构新增 `virtual_delivery_info`，结算与订单相关结构补充 `shipping_amount`，并新增 `GET /api/v1/merchants`、`GET /api/v1/merchants/{merchant}`
 - `2026-04-30` 已重新抓取 Swagger，并补入 `POST /api/v1/orders/{order}/refund-request`；当前登录用户可对自己的已支付且未退款订单提交退单申请，订单结构也新增 `latest_refund_request`
 - `GET /api/v1/home` 已在本次抓取中更新为 `query:product_limit, category_limit`，响应商品字段改为 `products`
 - `2026-04-04` 已补入 `POST /api/v1/stored-value-cards/lookup`、`GET /api/v1/stored-value-cards/recharge-logs`、`GET /api/v1/merchant-coupons`

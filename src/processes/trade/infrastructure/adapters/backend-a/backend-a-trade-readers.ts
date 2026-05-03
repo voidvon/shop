@@ -265,6 +265,7 @@ function mapOrderDetail(dto: BackendAOrderDto): OrderDetailPageData {
     storeId: String(dto.merchant?.id ?? dto.merchant_id),
     storeName: record.storeName,
     trackingNo: normalizeText(dto.tracking_no) || null,
+    virtualDeliveryInfo: normalizeText(dto.virtual_delivery_info) || null,
     timeline: {
       completedAt,
       createdAt,

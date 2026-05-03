@@ -386,6 +386,7 @@ export const mockOrderDetailPageDataById: Record<string, OrderDetailPageData> = 
     storeId: cartStoreA.storeId,
     storeName: cartStoreA.storeName,
     trackingNo: null,
+    virtualDeliveryInfo: null,
     timeline: {
       completedAt: null,
       createdAt: '2026-03-19 10:00:00',
@@ -425,6 +426,7 @@ export const mockOrderDetailPageDataById: Record<string, OrderDetailPageData> = 
     storeId: cartStoreB.storeId,
     storeName: cartStoreB.storeName,
     trackingNo: 'SF20260318002',
+    virtualDeliveryInfo: null,
     timeline: {
       completedAt: null,
       createdAt: '2026-03-18 09:00:00',

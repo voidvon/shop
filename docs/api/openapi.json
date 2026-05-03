@@ -564,6 +564,160 @@
                 }
             }
         },
+        "/api/v1/merchants": {
+            "get": {
+                "tags": [
+                    "商户"
+                ],
+                "summary": "线上商户列表",
+                "operationId": "3f1099464db150707a988cfcefa956b6",
+                "parameters": [
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "description": "按商户名称、简称或联系电话模糊搜索",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "from": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "to": {
+                                                    "type": "integer",
+                                                    "example": 10,
+                                                    "nullable": true
+                                                },
+                                                "path": {
+                                                    "type": "string",
+                                                    "example": "https://mall.example.com/api/v1/merchants"
+                                                },
+                                                "first_page_url": {
+                                                    "type": "string",
+                                                    "example": "https://mall.example.com/api/v1/merchants?page=1",
+                                                    "nullable": true
+                                                },
+                                                "last_page_url": {
+                                                    "type": "string",
+                                                    "example": "https://mall.example.com/api/v1/merchants?page=2",
+                                                    "nullable": true
+                                                },
+                                                "next_page_url": {
+                                                    "type": "string",
+                                                    "example": "https://mall.example.com/api/v1/merchants?page=2",
+                                                    "nullable": true
+                                                },
+                                                "prev_page_url": {
+                                                    "type": "string",
+                                                    "example": null,
+                                                    "nullable": true
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/MerchantPayload"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/merchants/{merchant}": {
+            "get": {
+                "tags": [
+                    "商户"
+                ],
+                "summary": "线上商户详情",
+                "operationId": "7364119b49786dfef78ffcebfff3230a",
+                "parameters": [
+                    {
+                        "name": "merchant",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/MerchantPayload"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/products": {
             "get": {
                 "tags": [
@@ -1034,6 +1188,11 @@
                                                     "description": "所有商品原始总金额",
                                                     "type": "string",
                                                     "example": "206.00"
+                                                },
+                                                "shipping_amount": {
+                                                    "description": "所有订单组运费合计",
+                                                    "type": "string",
+                                                    "example": "12.00"
                                                 },
                                                 "payable_amount": {
                                                     "description": "优惠后应付总金额",
@@ -3226,6 +3385,85 @@
                 },
                 "type": "object"
             },
+            "MerchantPayload": {
+                "properties": {
+                    "id": {
+                        "description": "商户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "商户名称",
+                        "type": "string",
+                        "example": "御欣堂"
+                    },
+                    "short_name": {
+                        "description": "商户简称",
+                        "type": "string",
+                        "example": "御欣堂",
+                        "nullable": true
+                    },
+                    "logo": {
+                        "description": "商户Logo",
+                        "type": "string",
+                        "example": "uploads/merchants/logo.png",
+                        "nullable": true
+                    },
+                    "contact_name": {
+                        "description": "联系人",
+                        "type": "string",
+                        "example": "李四",
+                        "nullable": true
+                    },
+                    "contact_phone": {
+                        "description": "联系电话",
+                        "type": "string",
+                        "example": "13800138000",
+                        "nullable": true
+                    },
+                    "address": {
+                        "description": "商户地址",
+                        "type": "string",
+                        "example": "泉州市晋江市世纪大道 100 号",
+                        "nullable": true
+                    },
+                    "description": {
+                        "description": "商户简介",
+                        "type": "string",
+                        "example": "线上商城商户",
+                        "nullable": true
+                    },
+                    "free_shipping_amount": {
+                        "description": "满额包邮门槛；为空表示未配置",
+                        "type": "string",
+                        "example": "99.00",
+                        "nullable": true
+                    },
+                    "express_fee": {
+                        "description": "基础快递费用",
+                        "type": "string",
+                        "example": "12.00"
+                    },
+                    "status": {
+                        "description": "状态：1启用 0禁用",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "description": "创建时间",
+                        "type": "string",
+                        "example": "2026-05-01 10:00:00",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "description": "更新时间",
+                        "type": "string",
+                        "example": "2026-05-01 10:00:00",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "BalanceTypeSimple": {
                 "properties": {
                     "id": {
@@ -3697,6 +3935,11 @@
                         "type": "string",
                         "example": "176.00"
                     },
+                    "shipping_amount": {
+                        "description": "当前商户分组运费；按商品原价小计判断是否达到包邮门槛",
+                        "type": "string",
+                        "example": "12.00"
+                    },
                     "coupon_amount": {
                         "description": "优惠金额",
                         "type": "string",
@@ -3971,6 +4214,11 @@
                         "type": "string",
                         "example": "20.00"
                     },
+                    "shipping_amount": {
+                        "description": "订单运费；按商品原价小计判断是否达到商户包邮门槛",
+                        "type": "string",
+                        "example": "12.00"
+                    },
                     "payable_amount": {
                         "description": "应付金额",
                         "type": "string",
@@ -4065,6 +4313,11 @@
                         "type": "string",
                         "example": "请尽快发货",
                         "nullable": true
+                    },
+                    "virtual_delivery_info": {
+                        "description": "虚拟商品发货信息文本；订单详情接口返回。固定内容直接返回配置内容，卡券池直接返回已分配卡券内容，多条内容用换行分隔；无虚拟商品时为空字符串",
+                        "type": "string",
+                        "example": "CARD-A\\nhttps://pan.example.com/s/course 提取码 8888"
                     },
                     "shipping_address": {
                         "$ref": "#/components/schemas/OrderShippingAddressPayload"
@@ -4870,6 +5123,10 @@
         {
             "name": "上传",
             "description": "图片上传"
+        },
+        {
+            "name": "商户",
+            "description": "商户"
         }
     ]
 }
