@@ -24,14 +24,15 @@ const backendADefaultSecurity: AuthResult['security'] = {
 }
 
 function resolveBackendAUsername(profile: BackendAUserProfileDto) {
-  const preferredName = profile.name.trim() || profile.nickname.trim()
+  const preferredName = normalizeString(profile.name) ?? normalizeString(profile.nickname)
+  const normalizedMobile = normalizeString(profile.mobile)
 
   if (preferredName) {
     return preferredName
   }
 
-  if (profile.mobile) {
-    return `wx_${profile.mobile.slice(-4)}`
+  if (normalizedMobile) {
+    return `wx_${normalizedMobile.slice(-4)}`
   }
 
   return `wx_user_${profile.id}`
@@ -104,14 +105,16 @@ function resolveBackendAMerchantSupportedBalanceTypes(
 }
 
 export function mapBackendAUserProfileDto(profile: BackendAUserProfileDto): AuthUserInfo {
+  const nickname = normalizeString(profile.nickname) ?? normalizeString(profile.name)
+
   return {
     avatarUrl: profile.avatar,
     email: null,
     merchantId: resolveBackendAMerchantId(profile),
     merchantName: resolveBackendAMerchantName(profile),
     merchantSupportedBalanceTypes: resolveBackendAMerchantSupportedBalanceTypes(profile),
-    mobile: profile.mobile,
-    nickname: profile.nickname.trim() || profile.name.trim() || null,
+    mobile: normalizeString(profile.mobile),
+    nickname,
     userId: String(profile.id),
     username: resolveBackendAUsername(profile),
   }
@@ -129,7 +132,7 @@ export function mapBackendAUserProfileToAuthResult(
       ...backendADefaultSecurity,
       ...previousAuthResult?.security,
       canResetPassword: false,
-      hasBoundMobile: Boolean(profile.mobile),
+      hasBoundMobile: Boolean(normalizeString(profile.mobile)),
     },
     session,
     userInfo: mapBackendAUserProfileDto(profile),

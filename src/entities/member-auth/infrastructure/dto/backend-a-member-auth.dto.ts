@@ -21,9 +21,9 @@ export interface BackendAUserProfileDto {
   merchant?: BackendAMerchantSimpleDto | null
   merchant_id?: number | string | null
   merchantId?: number | string | null
-  name: string
-  nickname: string
-  openid: string
+  name: string | null
+  nickname: string | null
+  openid: string | null
   status: number
   unionid: string | null
   updated_at: string | null
