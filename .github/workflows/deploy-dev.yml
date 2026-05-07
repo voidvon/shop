@@ -29,8 +29,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Type check
+        run: npm run type-check
+
       - name: Build
-        run: npm run build
+        run: npm run build-only -- --mode development
 
       - name: Deploy dist via SSH
         uses: easingthemes/ssh-deploy@v5.1.0
@@ -41,5 +44,5 @@ jobs:
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           SOURCE: ${{ env.LOCAL_DIR }}
           TARGET: ${{ secrets.REMOTE_TARGET_DEV }}
-          ARGS: "-rlgoDzvc -i --delete"
+          ARGS: "-rlDzvc -i --delete"
           EXCLUDE: "/.git*/, /node_modules/, .user.ini, .htaccess, .well-known/"
