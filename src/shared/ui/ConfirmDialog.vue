@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = withDefaults(defineProps<{
   cancelText?: string
+  closeOnClickOverlay?: boolean
   confirmText?: string
   loading?: boolean
   message: string
@@ -8,6 +9,7 @@ const props = withDefaults(defineProps<{
   title: string
 }>(), {
   cancelText: '取消',
+  closeOnClickOverlay: true,
   confirmText: '确认',
   loading: false,
 })
@@ -52,7 +54,7 @@ function handleModelValueUpdate(value: boolean) {
   <van-dialog
     :show="modelValue"
     class="confirm-dialog"
-    :close-on-click-overlay="!loading"
+    :close-on-click-overlay="closeOnClickOverlay && !loading"
     :show-cancel-button="false"
     :show-confirm-button="false"
     teleport="body"

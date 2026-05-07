@@ -21,6 +21,7 @@ import {
 } from '@/processes/merchant-deduction'
 import { ensureWechatJsApiReady, scanWechatQRCode } from '@/shared/lib/wechat-js-sdk'
 import { isWechatBrowser } from '@/shared/lib/wechat-browser'
+import ConfirmDialog from '@/shared/ui/ConfirmDialog.vue'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
@@ -34,7 +35,9 @@ const remarkInput = ref('')
 const uploadedImages = ref<MerchantDeductionUploadedImage[]>([])
 const scanResult = ref<MerchantDeductionScanResult | null>(null)
 const submitPopupVisible = ref(false)
+const profileCompletionDialogVisible = ref(false)
 const lastResolvedDisplayName = ref('')
+const isHydratingAuthSession = ref(true)
 const isUploading = ref(false)
 const isScanning = ref(false)
 const isSubmitting = ref(false)
@@ -61,6 +64,15 @@ const supportedBalanceTypes = computed(() =>
 const selectedBalanceType = computed(() =>
   supportedBalanceTypes.value[0] ?? null,
 )
+const shouldRequireProfileCompletion = computed(() => {
+  const userInfo = authSnapshot.value.authResult?.userInfo
+
+  if (!isMerchantStaff.value || !userInfo) {
+    return false
+  }
+
+  return !userInfo.nickname?.trim() || !userInfo.mobile?.trim()
+})
 const currentDisplayName = computed(() => {
   const userInfo = authSnapshot.value.authResult?.userInfo
   const nextDisplayName = userInfo?.nickname?.trim() || userInfo?.username?.trim() || ''
@@ -144,7 +156,7 @@ const submitButtonLabel = computed(() => {
 })
 
 onMounted(() => {
-  void hydrateBackendAMemberAuthSession(memberAuthSession)
+  void hydrateMemberAuthSession()
 })
 
 watch(
@@ -159,8 +171,51 @@ watch(
   { immediate: true },
 )
 
+watch(
+  [shouldRequireProfileCompletion, isHydratingAuthSession],
+  ([requiresProfileCompletion, hydratingAuthSession]) => {
+    profileCompletionDialogVisible.value = !hydratingAuthSession && requiresProfileCompletion
+  },
+  { immediate: true },
+)
+
+async function hydrateMemberAuthSession() {
+  try {
+    await hydrateBackendAMemberAuthSession(memberAuthSession)
+  } finally {
+    isHydratingAuthSession.value = false
+  }
+}
+
 function goToDeductionLogs() {
   void router.push({ name: 'merchant-deduction-logs' })
+}
+
+function closeCurrentPage() {
+  if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
+    router.back()
+    return
+  }
+
+  if (typeof globalThis.window?.close === 'function') {
+    globalThis.window.close()
+  }
+
+  void router.replace({ name: 'member' })
+}
+
+function handleProfileCompletionCancel() {
+  profileCompletionDialogVisible.value = false
+  closeCurrentPage()
+}
+
+function handleProfileCompletionConfirm() {
+  profileCompletionDialogVisible.value = false
+  void router.push({ name: 'member-settings' })
+}
+
+function handleProfileCompletionDialogVisibilityUpdate(visible: boolean) {
+  profileCompletionDialogVisible.value = visible
 }
 
 function normalizeAmountInput(rawValue: string) {
@@ -547,6 +602,18 @@ async function handleSubmitDeduction() {
         </button>
       </section>
     </van-dialog>
+
+    <ConfirmDialog
+      :model-value="profileCompletionDialogVisible"
+      cancel-text="取消"
+      :close-on-click-overlay="false"
+      confirm-text="确定"
+      message="请先设置姓名和手机号"
+      title="提示"
+      @cancel="handleProfileCompletionCancel"
+      @confirm="handleProfileCompletionConfirm"
+      @update:model-value="handleProfileCompletionDialogVisibilityUpdate"
+    />
   </section>
 </template>
 

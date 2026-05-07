@@ -1,7 +1,9 @@
-name: Build And Deploy To Prod
+name: Build And Deploy To Dev
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 env:
   NODE_VERSION: '22'
@@ -38,6 +40,6 @@ jobs:
           REMOTE_PORT: ${{ secrets.REMOTE_PORT || env.DEPLOY_PORT }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           SOURCE: ${{ env.LOCAL_DIR }}
-          TARGET: ${{ secrets.REMOTE_TARGET }}
+          TARGET: ${{ secrets.REMOTE_TARGET_DEV }}
           ARGS: "-rlgoDzvc -i --delete"
           EXCLUDE: "/.git*/, /node_modules/, .user.ini, .htaccess, .well-known/"
