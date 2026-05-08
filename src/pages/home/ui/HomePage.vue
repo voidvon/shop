@@ -624,7 +624,7 @@ watch(promoVideoUrl, () => {
 .category-card img {
   width: 60px;
   height: 60px;
-  border-radius: 14px;
+  border-radius: 10px;
   background: #edecea;
   object-fit: cover;
 }
