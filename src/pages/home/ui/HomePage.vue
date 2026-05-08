@@ -142,7 +142,9 @@ watch(
       </van-sticky>
 
       <div class="content-wrapper">
-        <ImageCarousel v-if="carouselItems.length > 0" :bleed-x="'48px'" :items="carouselItems" />
+        <div v-if="carouselItems.length > 0" class="home-hero-carousel">
+          <ImageCarousel :items="carouselItems" variant="gallery" />
+        </div>
 
         <section class="category-grid">
           <RouterLink
@@ -260,6 +262,22 @@ watch(
   display: grid;
   gap: 24px;
   padding: 12px 24px calc(24px + var(--app-bottom-nav-offset, 0px));
+}
+
+.home-hero-carousel {
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(17, 17, 17, 0.14);
+}
+
+.home-hero-carousel :deep(.image-carousel) {
+  width: 100%;
+  margin-inline: 0;
+}
+
+.home-hero-carousel :deep(.slide-link) {
+  aspect-ratio: 16 / 9;
+  min-height: 0;
 }
 
 .sticky-search {
