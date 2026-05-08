@@ -309,6 +309,7 @@ watch(promoVideoUrl, () => {
               >
                 <van-icon name="chat-o" size="22" />
               </van-badge>
+              <span class="message-entry-label">客服</span>
             </button>
           </div>
         </div>
@@ -559,12 +560,14 @@ watch(promoVideoUrl, () => {
 
 .message-entry-button {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 0 0 48px;
-  width: 48px;
-  height: 48px;
-  padding: 0;
+  gap: 2px;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  padding: 4px 0 3px;
   border: 0;
   border-radius: 12px;
   background: #fff;
@@ -597,6 +600,12 @@ watch(promoVideoUrl, () => {
   text-align: center;
 }
 
+.message-entry-label {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+}
+
 .category-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -615,7 +624,7 @@ watch(promoVideoUrl, () => {
 .category-card img {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+  border-radius: 14px;
   background: #edecea;
   object-fit: cover;
 }
