@@ -74,7 +74,7 @@ export function createBackendAStorefrontQuery(memberAuthSession: MemberAuthSessi
   async function fetchBackendAStoreMerchantDto(storeId: string) {
     try {
       return await publicHttpClient.get<BackendAPartnerMerchantDto>(
-        `/api/v1/partner-merchants/${encodeURIComponent(storeId)}`,
+        `/api/v1/merchants/${encodeURIComponent(storeId)}`,
       )
     } catch (error) {
       if (error instanceof BackendAHttpError && error.status === 404) {
