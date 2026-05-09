@@ -181,6 +181,44 @@ function pickNumberFromSources(sources: Array<Record<string, unknown> | null>, k
   return null
 }
 
+function formatAmountLabel(value: number) {
+  const fixed = value.toFixed(2)
+  return fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed.replace(/0$/, '')
+}
+
+function buildShippingTip(sources: Array<Record<string, unknown> | null>) {
+  const expressFee = pickNumberFromSources(sources, [
+    'express_fee',
+    'expressFee',
+    'shipping_fee',
+    'shippingFee',
+    'postage',
+    'freight',
+  ])
+  const freeShippingAmount = pickNumberFromSources(sources, [
+    'free_shipping_amount',
+    'freeShippingAmount',
+    'free_shipping_fee',
+    'freeShippingFee',
+    'free_shipping_threshold',
+    'freeShippingThreshold',
+  ])
+
+  if (expressFee === null && freeShippingAmount === null) {
+    return null
+  }
+
+  if (expressFee !== null && freeShippingAmount !== null) {
+    return `运费${formatAmountLabel(expressFee)}元，满${formatAmountLabel(freeShippingAmount)}包邮`
+  }
+
+  if (expressFee !== null) {
+    return `运费${formatAmountLabel(expressFee)}元`
+  }
+
+  return `满${formatAmountLabel(freeShippingAmount ?? 0)}包邮`
+}
+
 function pickBooleanFromSources(sources: Array<Record<string, unknown> | null>, keys: string[]) {
   for (const source of sources) {
     if (!source) {
@@ -635,6 +673,7 @@ export function mapBackendAStoreHomePageData(
     sources,
     ['benefit_tips', 'benefitTips', 'service_tags', 'serviceTags', 'tags', 'advantages'],
   )
+  const shippingTip = buildShippingTip(sources)
 
   return {
     address,
@@ -644,6 +683,7 @@ export function mapBackendAStoreHomePageData(
     isFavorited: pickBooleanFromSources(sources, ['is_favorited', 'isFavorited', 'favorited']) ?? false,
     phone,
     products: input.products,
+    shippingTip,
     storeId:
       pickStringFromSources(sources, ['store_id', 'storeId', 'merchant_id', 'merchantId', 'id'])
       ?? input.storeId,

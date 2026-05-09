@@ -33,6 +33,7 @@ export function useStoreProfile(
   const storePhone = ref<string | null>(null)
   const storeProducts = ref<ProductSummary[]>([])
   const storeResolvedName = ref<string | null>(null)
+  const storeShippingTip = ref<string | null>(null)
   const storeSummary = ref<string | null>(null)
   const tabs = ref<StoreHomeTabKey[]>([])
   let latestRequestId = 0
@@ -68,6 +69,7 @@ export function useStoreProfile(
       storePhone.value = null
       storeProducts.value = []
       storeResolvedName.value = null
+      storeShippingTip.value = null
       storeSummary.value = null
       tabs.value = []
       return
@@ -97,6 +99,7 @@ export function useStoreProfile(
         storePhone.value = null
         storeProducts.value = []
         storeResolvedName.value = null
+        storeShippingTip.value = null
         storeSummary.value = null
         tabs.value = []
         return
@@ -114,6 +117,7 @@ export function useStoreProfile(
       storePhone.value = storePageData.phone
       storeProducts.value = storePageData.products
       storeResolvedName.value = storePageData.storeName
+      storeShippingTip.value = storePageData.shippingTip
       storeSummary.value = storePageData.summary
       tabs.value = storePageData.tabs
     } catch (error) {
@@ -134,6 +138,7 @@ export function useStoreProfile(
       storePhone.value = null
       storeProducts.value = []
       storeResolvedName.value = null
+      storeShippingTip.value = null
       storeSummary.value = null
       tabs.value = []
     } finally {
@@ -164,6 +169,7 @@ export function useStoreProfile(
     storeName,
     storePhone,
     storeProducts,
+    storeShippingTip,
     storeStats,
     storeSummary,
     tabs,

@@ -182,6 +182,7 @@ export function mapMockStoreHomePageData(
     isFavorited: true,
     phone: store.phone,
     products,
+    shippingTip: store.benefitTips[0] ?? null,
     storeId: store.storeId,
     storeLogoUrl: store.logoUrl,
     storeName: store.storeName,

@@ -140,6 +140,7 @@ export function useStorePageModel(
     storeLogoUrl: storeProfile.storeLogoUrl,
     storeName: storeProfile.storeName,
     storePhone: storeProfile.storePhone,
+    storeShippingTip: storeProfile.storeShippingTip,
     storeStats: storeProfile.storeStats,
     storeSummary: storeProfile.storeSummary,
     tabs,

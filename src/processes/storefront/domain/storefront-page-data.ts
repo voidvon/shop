@@ -103,6 +103,7 @@ export interface StoreHomePageData {
   isFavorited: boolean
   phone: string | null
   products: ProductSummary[]
+  shippingTip: string | null
   storeId: string
   storeLogoUrl: string | null
   storeName: string

@@ -69,12 +69,10 @@ const {
   selectedCategoryId,
   setSelectedCategory,
   resetSortOption,
-  storeAddress,
   storeBenefits,
-  storeBusinessHours,
-  storeFollowerCount,
   storeLogoUrl,
   storeName,
+  storeShippingTip,
   storeStats,
   resetProductFilters,
   selectTab,
@@ -86,7 +84,7 @@ const {
   visibleProducts,
 } = useStorePageModel(storeId, preferredStoreName)
 
-const primaryBenefit = computed(() => storeBenefits.value[0] ?? '支持售后无忧')
+const primaryBenefit = computed(() => storeShippingTip.value ?? storeBenefits.value[0] ?? '')
 const isCouponEnabled = computed(() => runtime.capabilities.coupon)
 const footerActions = computed(() =>
   allFooterActions.filter((action) => action.key !== 'coupon' || isCouponEnabled.value),
@@ -128,28 +126,7 @@ const priceSortValue = computed({
     handleSortChange('price', String(value))
   },
 })
-const storeMetaItems = computed(() => [
-  {
-    key: 'followers',
-    label: '关注数',
-    value: storeFollowerCount.value > 0 ? `${storeFollowerCount.value} 人` : '暂无',
-  },
-  {
-    key: 'hours',
-    label: '营业时间',
-    value: storeBusinessHours.value ?? '待补充',
-  },
-  {
-    key: 'address',
-    label: '店铺地址',
-    value: storeAddress.value ?? '待补充',
-  },
-])
 const storeSummary = computed(() => {
-  if (storeFollowerCount.value > 0) {
-    return `${storeStats.value.productCount} 款商品 · ${storeFollowerCount.value} 人关注`
-  }
-
   if (storeStats.value.productCount === 0) {
     return '店铺正在整理上新中'
   }
@@ -516,7 +493,7 @@ watch(
             <div class="store-copy">
               <h1>{{ storeName }}</h1>
               <p>{{ storeSummary }}</p>
-              <span class="store-benefit">{{ primaryBenefit }}</span>
+              <span v-if="primaryBenefit" class="store-benefit">{{ primaryBenefit }}</span>
             </div>
 
             <van-button class="follow-button" round size="small" type="default" @click="handleToggleStoreFavorite">
@@ -525,12 +502,6 @@ watch(
           </div>
         </div>
 
-        <div class="store-meta-grid">
-          <article v-for="item in storeMetaItems" :key="item.key" class="store-meta-item">
-            <span>{{ item.label }}</span>
-            <strong>{{ item.value }}</strong>
-          </article>
-        </div>
       </section>
       <section id="store-products-panel" class="store-panel">
         <div class="store-tabs-shell">
@@ -883,44 +854,7 @@ watch(
   z-index: 1;
   display: flex;
   align-items: flex-start;
-  padding: 16px 16px 6px;
-}
-
-.store-meta-grid {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  gap: 10px;
-  padding: 0 16px 16px;
-}
-
-.store-meta-item {
-  flex: 1;
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-  padding: 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(8px);
-}
-
-.store-meta-item span {
-  color: rgba(255, 233, 214, 0.8);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.store-meta-item strong {
-  overflow: hidden;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.5;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  padding: 16px;
 }
 
 .store-identity {
@@ -1483,10 +1417,6 @@ watch(
 
   .follow-button {
     width: auto;
-  }
-
-  .store-meta-grid {
-    display: flex;
   }
 }
 </style>
