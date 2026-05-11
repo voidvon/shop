@@ -54,6 +54,7 @@ export interface CheckoutPreviewGroup {
   merchantId: number
   merchantName: string
   payableAmount: number
+  shippingAmount: number
   totalAmount: number
   userCouponId: number | null
 }
@@ -64,6 +65,7 @@ export interface CheckoutPreview {
   groups: CheckoutPreviewGroup[]
   lines: CheckoutLine[]
   payableAmount: number
+  shippingAmount: number
   source: 'cart' | 'instant'
   subtotalAmount: number
 }
@@ -164,6 +166,7 @@ export function createCheckoutPreview(
     groups: [],
     lines,
     payableAmount: Math.max(subtotalAmount - discountAmount, 0),
+    shippingAmount: 0,
     source: command.source,
     subtotalAmount,
   }

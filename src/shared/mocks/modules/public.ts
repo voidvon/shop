@@ -46,7 +46,6 @@ export const mockHomePageData: HomePageData = {
 
 export const mockSearchPageData: SearchPageData = {
   historyKeywords: ['礼盒', '陶瓷杯', '台灯'],
-  hotKeywords: ['文惠卡', '春日礼盒', '办公好物', '城市文创'],
 }
 
 export const mockStoreAreaPageData: StoreAreaPageData = {

@@ -1,7 +1,6 @@
 import { onActivated, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { defaultHotSearchKeywords } from '@/shared/config/search'
 import {
   clearSearchHistoryKeywords,
   normalizeSearchKeyword,
@@ -23,7 +22,6 @@ export function useSearchPageModel() {
   const router = useRouter()
 
   const keyword = ref(normalizeRouteKeyword(route.query.keyword))
-  const hotKeywords = ref([...defaultHotSearchKeywords])
   const historyKeywords = ref<string[]>([])
 
   function syncHistoryKeywords() {
@@ -69,7 +67,6 @@ export function useSearchPageModel() {
     applyKeyword,
     clearHistory,
     historyKeywords,
-    hotKeywords,
     keyword,
     removeHistory,
     submitSearch,

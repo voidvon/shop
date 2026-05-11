@@ -100,12 +100,21 @@ defineExpose({
   padding: 0;
   border: 0;
   background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
   color: var(--color-text);
   outline: none;
 }
 
 .search-field-input::placeholder {
   color: var(--van-field-placeholder-text-color);
+}
+
+.search-field-input::-webkit-search-decoration,
+.search-field-input::-webkit-search-cancel-button,
+.search-field-input::-webkit-search-results-button,
+.search-field-input::-webkit-search-results-decoration {
+  display: none;
 }
 
 .search-field-filled {

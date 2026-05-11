@@ -1,7 +1,6 @@
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { defaultHotSearchKeywords } from '@/shared/config/search'
 import {
   normalizeSearchKeyword,
   saveSearchHistoryKeyword,
@@ -22,7 +21,6 @@ export function useSearchResultsPageModel() {
   const storefrontQuery = useStorefrontQuery()
 
   const errorMessage = ref<string | null>(null)
-  const hotKeywords = ref([...defaultHotSearchKeywords])
   const isLoading = ref(false)
   const keyword = ref(normalizeRouteKeyword(route.query.keyword))
   const results = ref<CategoryPageProductCard[]>([])
@@ -74,10 +72,6 @@ export function useSearchResultsPageModel() {
     return true
   }
 
-  function applyKeyword(nextKeyword: string) {
-    keyword.value = normalizeSearchKeyword(nextKeyword)
-  }
-
   watch(
     () => route.query.keyword,
     (value) => {
@@ -88,9 +82,7 @@ export function useSearchResultsPageModel() {
   )
 
   return {
-    applyKeyword,
     errorMessage,
-    hotKeywords,
     isLoading,
     keyword,
     results,

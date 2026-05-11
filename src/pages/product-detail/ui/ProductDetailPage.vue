@@ -952,7 +952,6 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   width: 100%;
   height: auto;
   margin-top: 12px;
-  border-radius: 12px;
   object-fit: cover;
 }
 
@@ -1169,7 +1168,10 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   font-weight: 600;
 }
 
-.detail-copy,
+.detail-copy {
+  margin-inline: -20px;
+}
+
 .attribute-list {
   padding: 16px;
   border-radius: 16px;

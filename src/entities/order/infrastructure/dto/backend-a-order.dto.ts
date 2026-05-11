@@ -136,6 +136,7 @@ export interface BackendACheckoutPreviewGroupDto {
   merchant_id: number
   merchant_name: string
   payable_amount: string
+  shipping_amount: string
   total_amount: string
   user_coupon_id: number | null
 }
@@ -144,5 +145,6 @@ export interface BackendACheckoutPreviewDto {
   groups: BackendACheckoutPreviewGroupDto[]
   order_count: number
   payable_amount: string
+  shipping_amount: string
   total_amount: string
 }

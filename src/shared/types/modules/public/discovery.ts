@@ -30,7 +30,6 @@ export interface HomePageData {
 }
 
 export interface SearchPageData {
-  hotKeywords: string[]
   historyKeywords: string[]
 }
 

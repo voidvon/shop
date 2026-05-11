@@ -45,6 +45,7 @@ const isCouponEnabled = computed(() => runtime.capabilities.coupon)
 const isInvoiceEnabled = computed(() => runtime.capabilities.invoice)
 const previewCouponGroups = computed(() => (isCouponEnabled.value ? previewBalanceGroups.value : []))
 const payableAmountText = computed(() => formatAmount(preview.value?.payableAmount ?? 0))
+const shippingAmountText = computed(() => formatShippingAmount(preview.value?.shippingAmount ?? 0))
 const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAmount ?? 0))
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
 const merchantTitle = computed(() => preview.value?.source === 'cart' ? '购物车商品' : '立即购买商品')
@@ -238,6 +239,10 @@ function formatAmount(value: number) {
   return value.toFixed(2)
 }
 
+function formatShippingAmount(value: number) {
+  return value > 0 ? `运费¥${formatAmount(value)}` : '包邮'
+}
+
 function resolveGroupPlannedDeductionAmount(group: (typeof previewBalanceGroups.value)[number]) {
   if (group.balanceDeductions.length > 0) {
     return group.balanceDeductions.reduce((sum, item) => sum + item.deductAmount, 0)
@@ -367,7 +372,7 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 
             <div class="merchant-row">
               <span class="merchant-row-label">物流配送</span>
-              <span class="merchant-row-value">运费0.00</span>
+              <span class="merchant-row-value">{{ shippingAmountText }}</span>
             </div>
 
             <button

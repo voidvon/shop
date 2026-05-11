@@ -145,6 +145,7 @@ function mapCheckoutPreviewGroup(dto: BackendACheckoutPreviewGroupDto): Checkout
     merchantId: dto.merchant_id,
     merchantName: dto.merchant_name,
     payableAmount: parseAmount(dto.payable_amount),
+    shippingAmount: parseAmount(dto.shipping_amount),
     totalAmount: parseAmount(dto.total_amount),
     userCouponId: dto.user_coupon_id,
   }
@@ -215,6 +216,7 @@ export function mapBackendACheckoutPreviewDto(
     groups,
     lines: command.lines.map((line) => createCheckoutLine(line)),
     payableAmount,
+    shippingAmount: parseAmount(dto.shipping_amount),
     source: command.source,
     subtotalAmount,
   }

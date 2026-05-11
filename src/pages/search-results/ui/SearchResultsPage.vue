@@ -10,9 +10,7 @@ import { useSearchResultsPageModel } from '../model/useSearchResultsPageModel'
 
 const router = useRouter()
 const {
-  applyKeyword,
   errorMessage,
-  hotKeywords,
   isLoading,
   keyword,
   results,
@@ -30,11 +28,6 @@ function goBack() {
 
 function handleSubmit() {
   void submitSearch()
-}
-
-function handleKeywordSelect(nextKeyword: string) {
-  applyKeyword(nextKeyword)
-  void submitSearch(nextKeyword)
 }
 </script>
 
@@ -94,23 +87,11 @@ function handleKeywordSelect(nextKeyword: string) {
 
       <section v-else class="empty-wrap">
         <EmptyState
-          description="换个关键词试试，也可以从下面热门搜索里继续浏览。"
+          description="换个关键词试试。"
           description-width="240px"
           icon="search"
           title="没有找到相关商品"
         />
-
-        <div class="keyword-grid">
-          <button
-            v-for="item in hotKeywords"
-            :key="item"
-            class="keyword-chip"
-            type="button"
-            @click="handleKeywordSelect(item)"
-          >
-            {{ item }}
-          </button>
-        </div>
       </section>
     </div>
   </section>
@@ -136,8 +117,7 @@ function handleKeywordSelect(nextKeyword: string) {
 }
 
 .header-button,
-.search-submit,
-.keyword-chip {
+.search-submit {
   padding: 0;
   border: 0;
   background: transparent;
@@ -261,24 +241,6 @@ function handleKeywordSelect(nextKeyword: string) {
 }
 
 .empty-wrap {
-  display: grid;
-  gap: 20px;
   padding-top: 48px;
-}
-
-.keyword-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-}
-
-.keyword-chip {
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: #fff2e8;
-  color: #c2410c;
-  font-size: 13px;
-  font-weight: 600;
 }
 </style>

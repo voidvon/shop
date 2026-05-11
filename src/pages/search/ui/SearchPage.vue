@@ -11,7 +11,6 @@ const {
   applyKeyword,
   clearHistory,
   historyKeywords,
-  hotKeywords,
   keyword,
   removeHistory,
   submitSearch,
@@ -66,24 +65,6 @@ onMounted(async () => {
     <div class="search-body">
       <section class="keyword-section">
         <header class="section-header">
-          <strong>热门搜索</strong>
-        </header>
-
-        <div class="keyword-grid">
-          <button
-            v-for="item in hotKeywords"
-            :key="item"
-            class="keyword-chip keyword-chip-hot"
-            type="button"
-            @click="handleKeywordSelect(item)"
-          >
-            {{ item }}
-          </button>
-        </div>
-      </section>
-
-      <section class="keyword-section">
-        <header class="section-header">
           <strong>搜索历史</strong>
           <button
             v-if="historyKeywords.length > 0"
@@ -96,7 +77,7 @@ onMounted(async () => {
         </header>
 
         <p v-if="historyKeywords.length === 0" class="empty-text">
-          暂无搜索历史，试试热门关键词快速进入独立搜索结果页。
+          暂无搜索历史。
         </p>
 
         <div v-else class="history-list">
@@ -137,7 +118,6 @@ onMounted(async () => {
 .search-submit,
 .history-remove,
 .section-action,
-.keyword-chip,
 .history-keyword {
   padding: 0;
   border: 0;
@@ -189,24 +169,6 @@ onMounted(async () => {
 .section-action {
   color: #9c8e7f;
   font-size: 13px;
-}
-
-.keyword-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.keyword-chip {
-  padding: 10px 14px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.keyword-chip-hot {
-  background: #fff2e8;
-  color: #c2410c;
 }
 
 .empty-text {
