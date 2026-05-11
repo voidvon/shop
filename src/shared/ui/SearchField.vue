@@ -92,7 +92,7 @@ defineExpose({
   display: flex;
   gap: 12px;
   align-items: center;
-  color: #9c9b99;
+  color: var(--color-text-muted);
 }
 
 .search-field-input {
@@ -100,7 +100,7 @@ defineExpose({
   padding: 0;
   border: 0;
   background: transparent;
-  color: #3c3b39;
+  color: var(--color-text);
   outline: none;
 }
 
@@ -112,7 +112,7 @@ defineExpose({
   height: 48px;
   padding: 0 16px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .search-field-filled .search-field-input {
@@ -123,10 +123,10 @@ defineExpose({
 .search-field-outlined {
   min-height: 48px;
   padding: 14px 16px;
-  border: 1px solid #e7e5e4;
+  border: 1px solid var(--color-line-contrast);
   border-radius: 14px;
-  background: #fff;
-  color: #a8a29e;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-faint);
 }
 
 .search-field-outlined .search-field-input {
@@ -138,7 +138,7 @@ defineExpose({
   height: 36px;
   padding: 0 12px;
   border-radius: 18px;
-  background: #f5f4f1;
+  background: var(--color-surface-muted);
 }
 
 .search-field-soft .search-field-input {

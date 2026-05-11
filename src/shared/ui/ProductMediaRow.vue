@@ -40,7 +40,7 @@ defineProps<{
   justify-content: space-between;
   gap: 12px;
   padding: 12px 16px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .product-main {
@@ -60,12 +60,12 @@ defineProps<{
   height: 84px;
   overflow: hidden;
   border-radius: 10px;
-  background: #f1ece6;
-  color: #c9bdaf;
+  background: var(--color-bg-strong);
+  color: var(--color-text-disabled);
 }
 
 .product-image-empty {
-  background: linear-gradient(135deg, #efe9e1 0%, #f7f3ee 100%);
+  background: linear-gradient(135deg, var(--color-bg-strong) 0%, var(--color-surface-soft) 100%);
 }
 
 .product-image img {
@@ -85,7 +85,7 @@ defineProps<{
 .product-info strong {
   display: -webkit-box;
   overflow: hidden;
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 14px;
   font-weight: 600;
   line-height: 1.35;
@@ -98,7 +98,7 @@ defineProps<{
   gap: 6px;
   align-items: center;
   width: fit-content;
-  color: #ea580c;
+  color: var(--color-primary);
   font-size: 18px;
   font-weight: 700;
 }
@@ -111,7 +111,7 @@ defineProps<{
 
 .product-meta {
   overflow: hidden;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 500;
   text-overflow: ellipsis;
@@ -121,7 +121,7 @@ defineProps<{
 .product-trailing {
   display: flex;
   align-items: flex-end;
-  color: #6d6c6a;
+  color: var(--color-text-subtle);
   font-size: 13px;
   font-weight: 500;
 }

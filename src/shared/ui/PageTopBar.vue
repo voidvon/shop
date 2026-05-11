@@ -93,12 +93,12 @@ const usesRightMenu = computed(() => {
   gap: 16px;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #eeeae5;
-  background: #fff;
+  border-bottom: 1px solid var(--color-line-soft);
+  background: var(--color-surface-elevated);
 }
 
 .page-top-bar strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 16px;
   font-weight: 600;
   text-align: center;
@@ -118,14 +118,14 @@ const usesRightMenu = computed(() => {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #9c9b99;
+  color: var(--color-text-muted);
 }
 
 .icon-button-dark {
-  color: #3c3b39;
+  color: var(--color-text);
 }
 
 .icon-button-default {
-  color: #6d6c6a;
+  color: var(--color-text-subtle);
 }
 </style>

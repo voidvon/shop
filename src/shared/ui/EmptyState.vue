@@ -70,19 +70,19 @@ const rootStyle = computed(() => ({
   justify-content: center;
   width: var(--empty-box-size);
   height: var(--empty-box-size);
-  border: 1px solid #ece8e3;
+  border: 1px solid var(--color-line-contrast);
   border-radius: 24px;
-  background: #fff;
-  color: #ff9f66;
-  box-shadow: 0 2px 8px rgba(26, 25, 24, 0.03);
+  background: var(--color-surface-elevated);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .empty-icon {
-  color: #d6d3d1;
+  color: var(--color-text-disabled);
 }
 
 .empty-state strong {
-  color: #6d6c6a;
+  color: var(--color-text-subtle);
 }
 
 .empty-state p {
@@ -96,20 +96,20 @@ const rootStyle = computed(() => ({
 }
 
 .empty-state-default p {
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   font-weight: 500;
   line-height: 1.5;
 }
 
 .empty-state-compact strong {
-  color: #a8a29e;
+  color: var(--color-text-faint);
   font-size: 14px;
   font-weight: 600;
 }
 
 .empty-state-compact p {
-  color: #d6d3d1;
+  color: var(--color-text-disabled);
   font-size: 12px;
   font-weight: 500;
 }

@@ -105,7 +105,7 @@ async function handleNavigation(item: (typeof visibleItems.value)[number]) {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #a8a7a5;
+  color: var(--color-text-faint);
   line-height: 1;
 }
 
@@ -121,11 +121,11 @@ async function handleNavigation(item: (typeof visibleItems.value)[number]) {
   transform: translateX(-50%);
   width: min(360px, calc(100vw - 40px));
   padding: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--color-surface-glass-border);
   border-radius: 999px;
-  background: rgba(250, 250, 248, 0.82);
+  background: var(--color-surface-glass);
   backdrop-filter: blur(18px);
-  box-shadow: 0 8px 24px rgba(26, 25, 24, 0.08);
+  box-shadow: var(--shadow-floating);
 }
 
 .main-bottom-nav-floating .main-bottom-nav-item {
@@ -135,16 +135,16 @@ async function handleNavigation(item: (typeof visibleItems.value)[number]) {
 }
 
 .main-bottom-nav-floating .main-bottom-nav-item-active {
-  background: #c8f0d8;
-  color: #3d8a5a;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-soft-text);
 }
 
 .main-bottom-nav-bar {
   width: 100%;
   height: 72px;
   padding: 8px 24px calc(12px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid #e5e4e1;
-  background: #fff;
+  border-top: 1px solid var(--color-line-contrast);
+  background: var(--color-surface-elevated);
 }
 
 .main-bottom-nav-bar .main-bottom-nav-item {
@@ -153,6 +153,6 @@ async function handleNavigation(item: (typeof visibleItems.value)[number]) {
 }
 
 .main-bottom-nav-bar .main-bottom-nav-item-active {
-  color: #6d6c6a;
+  color: var(--color-text-subtle);
 }
 </style>

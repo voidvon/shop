@@ -76,10 +76,12 @@ const props = withDefaults(defineProps<{
   align-items: center;
   width: 100%;
   padding: 16px;
-  border: 1px solid rgba(240, 138, 62, 0.16);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.16);
   border-radius: 20px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 238, 0.98));
-  box-shadow: 0 10px 24px rgba(188, 119, 60, 0.08);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(var(--color-primary-rgb), 0.08)),
+    var(--color-surface-elevated);
+  box-shadow: var(--shadow-card);
   color: inherit;
   text-align: left;
 }
@@ -91,13 +93,13 @@ const props = withDefaults(defineProps<{
 }
 
 .coupon-card-neutral {
-  border-color: #efe3d6;
-  background: #fff;
+  border-color: var(--color-line-contrast);
+  background: var(--color-surface-elevated);
   box-shadow: none;
 }
 
 .coupon-card-highlighted {
-  border-color: rgba(240, 138, 62, 0.2);
+  border-color: rgba(var(--color-primary-rgb), 0.2);
 }
 
 .coupon-card-muted {
@@ -105,7 +107,7 @@ const props = withDefaults(defineProps<{
 }
 
 .coupon-card-selected {
-  outline: 2px solid #f97316;
+  outline: 2px solid var(--color-primary);
   outline-offset: -2px;
 }
 
@@ -115,7 +117,7 @@ const props = withDefaults(defineProps<{
 
 .coupon-card-title {
   margin: 0;
-  color: #47362c;
+  color: var(--color-text-heading);
   font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
@@ -123,18 +125,18 @@ const props = withDefaults(defineProps<{
 
 .coupon-card-subtitle {
   margin: 6px 0 0;
-  color: #8a6f5b;
+  color: var(--color-text-soft);
   font-size: 12px;
   line-height: 1.5;
 }
 
 .coupon-card-neutral .coupon-card-title {
-  color: #2f2a24;
+  color: var(--color-text);
   font-weight: 700;
 }
 
 .coupon-card-neutral .coupon-card-subtitle {
-  color: #887d70;
+  color: var(--color-text-subtle);
 }
 
 .coupon-card-side {
@@ -155,11 +157,11 @@ const props = withDefaults(defineProps<{
   gap: 2px;
   align-items: baseline;
   justify-content: center;
-  color: #c25b0a;
+  color: var(--color-primary-deep);
 }
 
 .coupon-card-neutral .coupon-card-value {
-  color: #2f2a24;
+  color: var(--color-text);
 }
 
 .coupon-card-value strong {

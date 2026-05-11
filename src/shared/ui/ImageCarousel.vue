@@ -35,7 +35,7 @@ withDefaults(
       '--image-carousel-height': height,
     }"
     :autoplay="items.length > 1 ? autoplay : 0"
-    indicator-color="#ffffff"
+    indicator-color="var(--color-text-inverse)"
     lazy-render
   >
     <van-swipe-item v-for="(item, index) in items" :key="`${item.linkUrl ?? 'slide'}-${index}`">
@@ -72,9 +72,7 @@ withDefaults(
   display: block;
   width: 100%;
   min-height: var(--image-carousel-height);
-  background:
-    linear-gradient(135deg, rgba(29, 85, 54, 0.9), rgba(61, 138, 90, 0.72)),
-    #3d8a5a;
+  background: var(--color-carousel-overlay);
 }
 
 .slide-image {
@@ -94,7 +92,7 @@ withDefaults(
   min-height: var(--image-carousel-height);
   align-content: end;
   padding: 24px 20px;
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 .slide-eyebrow {
@@ -118,7 +116,7 @@ withDefaults(
 }
 
 .image-carousel-gallery .slide-link {
-  background: #f7f2eb;
+  background: var(--color-surface-soft);
 }
 
 .image-carousel-gallery .slide-image {
@@ -136,11 +134,11 @@ withDefaults(
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.42);
+  background: var(--color-overlay-indicator);
 }
 
 :deep(.van-swipe__indicator--active) {
   width: 18px;
-  background: #fff;
+  background: var(--color-overlay-indicator-active);
 }
 </style>

@@ -81,14 +81,14 @@ onActivated(() => {
 }
 
 .content-scroll :deep(.van-cell-group--inset) {
-  border: 1px solid #e7e0d7;
-  box-shadow: 0 1px 2px rgba(60, 59, 57, 0.04);
+  border: 1px solid var(--color-line-contrast);
+  box-shadow: var(--shadow-sm);
 }
 
 .status-text {
   margin: 0;
   padding: 18px 0;
-  color: #8c8a86;
+  color: var(--color-text-muted);
   font-size: 13px;
   text-align: center;
 }

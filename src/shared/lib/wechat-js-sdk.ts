@@ -1,7 +1,7 @@
 import { getBackendRuntime } from '@/app/providers/backend/backend-runtime-provider'
 import { resolveBackendABaseUrl } from '@/shared/api/backend-a/backend-a-config'
 
-import { isWechatBrowser } from './wechat-browser'
+import { isWechatBrowser, resolveWechatJsSdkSignatureUrl } from './wechat-browser'
 
 interface WechatJsApiConfig {
   appId: string
@@ -105,13 +105,7 @@ function normalizeWechatJsApiConfig(value: unknown): WechatJsApiConfig {
   }
 }
 
-function getWechatScanSignatureUrl() {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  return window.location.href.split('#')[0]
-}
+const getWechatScanSignatureUrl = resolveWechatJsSdkSignatureUrl
 
 function getWechatScanConfigCacheKey(jsApiList: string[]) {
   const pageUrl = getWechatScanSignatureUrl()

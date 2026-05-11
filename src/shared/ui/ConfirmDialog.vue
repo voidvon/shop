@@ -88,7 +88,7 @@ function handleModelValueUpdate(value: boolean) {
 }
 
 .confirm-dialog :deep(.van-dialog__content) {
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .dialog-content {
@@ -103,7 +103,7 @@ function handleModelValueUpdate(value: boolean) {
 }
 
 .dialog-head strong {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 18px;
   font-weight: 700;
   line-height: 1.4;
@@ -112,7 +112,7 @@ function handleModelValueUpdate(value: boolean) {
 
 .dialog-message {
   margin: 0;
-  color: #7b746d;
+  color: var(--color-text-soft);
   font-size: 14px;
   line-height: 1.6;
   text-align: center;
@@ -133,13 +133,13 @@ function handleModelValueUpdate(value: boolean) {
 }
 
 .dialog-button-muted {
-  background: #f5f1ec;
-  color: #665f58;
+  background: var(--color-surface-muted);
+  color: var(--color-text-subtle);
 }
 
 .dialog-button-danger {
-  background: #fff3f1;
-  color: #d14343;
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
 }
 
 .dialog-button:disabled {

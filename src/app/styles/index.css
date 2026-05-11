@@ -1,36 +1,136 @@
-:root {
+:root,
+:root.theme-warm,
+.theme-warm {
   color-scheme: light;
   --color-bg: #f5efe5;
   --color-bg-strong: #f0e4d4;
   --color-surface: rgba(255, 251, 245, 0.88);
   --color-surface-strong: #fffaf2;
+  --color-surface-elevated: #fff;
+  --color-surface-soft: #f7f4ef;
+  --color-surface-muted: #f5f1ec;
+  --color-surface-glass: rgba(250, 250, 248, 0.82);
+  --color-surface-glass-border: rgba(255, 255, 255, 0.6);
+  --color-surface-accent: #fff2e8;
+  --color-surface-accent-strong: #fff8f2;
+  --color-surface-accent-contrast: #fff1e6;
+  --color-surface-accent-positive: #c8f0d8;
+  --color-surface-danger: #fff3f1;
   --color-surface-dark: #1f2937;
   --color-line: rgba(76, 54, 36, 0.12);
   --color-line-strong: rgba(76, 54, 36, 0.2);
+  --color-line-soft: #eeeae5;
+  --color-line-contrast: #e5e4e1;
   --color-text: #2e241d;
+  --color-text-strong: #1a1918;
+  --color-text-heading: #1f1d1a;
   --color-text-soft: #6b5a4d;
+  --color-text-subtle: #6d6c6a;
+  --color-text-muted: #9c9b99;
+  --color-text-faint: #a8a7a5;
+  --color-text-disabled: #d6d3d1;
+  --color-text-inverse: #fff;
   --color-primary: #b85c38;
   --color-primary-deep: #8f3d24;
+  --color-primary-rgb: 184, 92, 56;
   --color-accent: #2f6b5f;
+  --color-accent-rgb: 47, 107, 95;
+  --color-accent-soft: #c8f0d8;
+  --color-accent-soft-text: #3d8a5a;
   --color-success: #2e8b57;
   --color-warning: #b7791f;
-  --shadow-lg: 0 20px 60px rgba(59, 38, 24, 0.12);
-  --shadow-md: 0 12px 32px rgba(59, 38, 24, 0.08);
+  --color-danger: #d14343;
+  --color-danger-soft: #fff3f1;
+  --shadow-rgb: 59, 38, 24;
+  --shadow-lg: 0 20px 60px rgba(var(--shadow-rgb), 0.12);
+  --shadow-md: 0 12px 32px rgba(var(--shadow-rgb), 0.08);
+  --shadow-sm: 0 2px 8px rgba(var(--shadow-rgb), 0.03);
+  --shadow-card: 0 10px 24px rgba(var(--shadow-rgb), 0.08);
+  --shadow-floating: 0 8px 24px rgba(var(--shadow-rgb), 0.08);
   --radius-xl: 28px;
   --radius-lg: 22px;
   --radius-md: 16px;
   --radius-sm: 12px;
   --content-width: 1180px;
+  --color-body-start: #fcf8f1;
+  --color-body-end: #efe4d5;
+  --color-body-glow-primary: rgba(184, 92, 56, 0.18);
+  --color-body-glow-accent: rgba(47, 107, 95, 0.14);
+  --color-grid-line: rgba(255, 255, 255, 0.1);
+  --color-carousel-overlay:
+    linear-gradient(135deg, rgba(29, 85, 54, 0.9), rgba(61, 138, 90, 0.72)),
+    #3d8a5a;
+  --color-overlay-indicator: rgba(255, 255, 255, 0.42);
+  --color-overlay-indicator-active: #fff;
   --van-primary-color: var(--color-primary);
   --van-success-color: var(--color-success);
   --van-warning-color: var(--color-warning);
+  --van-danger-color: var(--color-danger);
   --van-text-color: var(--color-text);
   --van-text-color-2: var(--color-text-soft);
-  --van-background-2: rgba(255, 255, 255, 0.84);
+  --van-text-color-3: var(--color-text-muted);
+  --van-background: var(--color-surface-elevated);
+  --van-background-2: var(--color-surface);
+  --van-active-color: var(--color-surface-accent);
   --van-border-color: var(--color-line);
+  --van-cell-background: var(--color-surface-elevated);
+  --van-dialog-background: var(--color-surface-elevated);
+  --van-popup-background: var(--color-surface-elevated);
+  --van-search-content-background: var(--color-surface-elevated);
+  --van-field-placeholder-text-color: var(--color-text-muted);
   --van-radius-lg: var(--radius-lg);
   --van-radius-md: var(--radius-md);
   --van-radius-sm: var(--radius-sm);
+}
+
+:root.theme-ocean,
+.theme-ocean {
+  --color-bg: #e8f2f5;
+  --color-bg-strong: #dae9ee;
+  --color-surface: rgba(247, 252, 253, 0.9);
+  --color-surface-strong: #fbfeff;
+  --color-surface-elevated: #fff;
+  --color-surface-soft: #eef6f8;
+  --color-surface-muted: #edf3f5;
+  --color-surface-glass: rgba(245, 251, 252, 0.84);
+  --color-surface-glass-border: rgba(255, 255, 255, 0.72);
+  --color-surface-accent: #e7f3ff;
+  --color-surface-accent-strong: #f2f9ff;
+  --color-surface-accent-contrast: #dff0ff;
+  --color-surface-accent-positive: #d9f3ea;
+  --color-surface-danger: #fff0f0;
+  --color-line: rgba(37, 74, 92, 0.12);
+  --color-line-strong: rgba(37, 74, 92, 0.2);
+  --color-line-soft: #e1ebef;
+  --color-line-contrast: #d8e5ea;
+  --color-text: #1e3138;
+  --color-text-strong: #16262d;
+  --color-text-heading: #16262d;
+  --color-text-soft: #5e7680;
+  --color-text-subtle: #6b8189;
+  --color-text-muted: #8ca0a8;
+  --color-text-faint: #9bacb3;
+  --color-text-disabled: #c5d3d8;
+  --color-primary: #287ba7;
+  --color-primary-deep: #1e6286;
+  --color-primary-rgb: 40, 123, 167;
+  --color-accent: #1f8a70;
+  --color-accent-rgb: 31, 138, 112;
+  --color-accent-soft: #d9f3ea;
+  --color-accent-soft-text: #1d715d;
+  --color-success: #2f855a;
+  --color-warning: #c0822f;
+  --color-danger: #cc5a59;
+  --color-danger-soft: #fff0f0;
+  --shadow-rgb: 34, 76, 88;
+  --color-body-start: #f7fcfd;
+  --color-body-end: #dcecf0;
+  --color-body-glow-primary: rgba(40, 123, 167, 0.16);
+  --color-body-glow-accent: rgba(31, 138, 112, 0.12);
+  --color-grid-line: rgba(255, 255, 255, 0.12);
+  --color-carousel-overlay:
+    linear-gradient(135deg, rgba(24, 82, 115, 0.92), rgba(31, 138, 112, 0.72)),
+    #287ba7;
 }
 
 *,
@@ -55,9 +155,9 @@ body {
     'Microsoft YaHei',
     sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(184, 92, 56, 0.18), transparent 28%),
-    radial-gradient(circle at top right, rgba(47, 107, 95, 0.14), transparent 24%),
-    linear-gradient(180deg, #fcf8f1 0%, var(--color-bg) 46%, #efe4d5 100%);
+    radial-gradient(circle at top left, var(--color-body-glow-primary), transparent 28%),
+    radial-gradient(circle at top right, var(--color-body-glow-accent), transparent 24%),
+    linear-gradient(180deg, var(--color-body-start) 0%, var(--color-bg) 46%, var(--color-body-end) 100%);
 }
 
 body::before {
@@ -65,8 +165,8 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    linear-gradient(var(--color-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid-line) 1px, transparent 1px);
   background-size: 32px 32px;
   pointer-events: none;
   opacity: 0.35;
@@ -89,11 +189,11 @@ input {
 #nprogress .bar {
   height: 3px;
   background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
-  box-shadow: 0 0 14px rgba(47, 107, 95, 0.24);
+  box-shadow: 0 0 14px rgba(var(--color-accent-rgb), 0.24);
 }
 
 #nprogress .peg {
   box-shadow:
-    0 0 10px rgba(184, 92, 56, 0.35),
-    0 0 5px rgba(47, 107, 95, 0.3);
+    0 0 10px rgba(var(--color-primary-rgb), 0.35),
+    0 0 5px rgba(var(--color-accent-rgb), 0.3);
 }

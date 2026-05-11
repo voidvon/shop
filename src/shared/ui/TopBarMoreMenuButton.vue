@@ -91,15 +91,15 @@ async function handleSelect(action: TopBarPopoverAction) {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #9c9b99;
+  color: var(--color-text-muted);
 }
 
 .icon-button-dark {
-  color: #3c3b39;
+  color: var(--color-text);
 }
 
 .icon-button-default {
-  color: #6d6c6a;
+  color: var(--color-text-subtle);
 }
 
 .menu-icon-badge {

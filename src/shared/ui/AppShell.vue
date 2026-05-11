@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
+import { useThemeRuntime } from '@/app/providers/theme'
 import {
   hasMainNavigation,
   resolveActiveMainNavigationKey,
@@ -10,14 +11,14 @@ import {
 import MainBottomNav from './MainBottomNav.vue'
 
 const route = useRoute()
+const themeRuntime = useThemeRuntime()
 
 const activeNavKey = computed(() => resolveActiveMainNavigationKey(route))
-
 const showBottomNav = computed(() => hasMainNavigation(route))
 </script>
 
 <template>
-  <div class="shell">
+  <div class="shell" :class="themeRuntime.currentThemeClass">
     <div class="app-frame">
       <main class="content">
         <slot />

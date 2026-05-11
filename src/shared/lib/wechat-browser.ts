@@ -7,6 +7,8 @@ import { getBackendRuntime } from '@/app/providers/backend/backend-runtime-provi
 import { backendTarget } from '@/shared/config/backend'
 
 const wechatBrowserPattern = /MicroMessenger/i
+const wechatIosBrowserPattern = /iPad|iPhone|iPod/i
+const wechatEntryUrlStorageKey = 'shop.wechat-browser.entry-url'
 const wechatLoginRedirectStorageKey = 'shop.member-auth.wechat-redirect'
 const wechatLoginStateStorageKey = 'shop.member-auth.wechat-state'
 const wechatAutoLoginAttemptedStorageKey = 'shop.member-auth.wechat-auto-login-attempted'
@@ -24,6 +26,18 @@ function canUseSessionStorage() {
   return typeof window !== 'undefined'
 }
 
+function normalizeWechatBrowserUrl(value: string) {
+  return value.split('#')[0]
+}
+
+function getCurrentWechatBrowserUrl() {
+  if (!canUseSessionStorage()) {
+    return null
+  }
+
+  return normalizeWechatBrowserUrl(window.location.href)
+}
+
 function normalizeRedirectPath(value: string | null | undefined) {
   return typeof value === 'string' && value.startsWith('/') ? value : null
 }
@@ -31,6 +45,38 @@ function normalizeRedirectPath(value: string | null | undefined) {
 export function isWechatBrowser(userAgent = globalThis.navigator?.userAgent ?? '') {
   return wechatBrowserPattern.test(userAgent)
 }
+
+export function isWechatIosBrowser(userAgent = globalThis.navigator?.userAgent ?? '') {
+  return isWechatBrowser(userAgent) && wechatIosBrowserPattern.test(userAgent)
+}
+
+function rememberWechatEntryUrl() {
+  const currentUrl = getCurrentWechatBrowserUrl()
+
+  if (!currentUrl) {
+    return
+  }
+
+  window.sessionStorage.setItem(wechatEntryUrlStorageKey, currentUrl)
+}
+
+export function resolveWechatJsSdkSignatureUrl() {
+  const currentUrl = getCurrentWechatBrowserUrl()
+
+  if (!currentUrl) {
+    return null
+  }
+
+  if (!isWechatIosBrowser()) {
+    return currentUrl
+  }
+
+  const entryUrl = window.sessionStorage.getItem(wechatEntryUrlStorageKey)
+
+  return entryUrl ? normalizeWechatBrowserUrl(entryUrl) : currentUrl
+}
+
+rememberWechatEntryUrl()
 
 export function readPendingWechatLoginRedirectPath() {
   if (!canUseSessionStorage()) {

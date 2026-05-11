@@ -5,7 +5,7 @@ withDefaults(defineProps<{
   size?: string | number
   text?: string
 }>(), {
-  color: '#ea580c',
+  color: 'var(--color-primary)',
   fill: false,
   size: 24,
   text: '加载中...',
@@ -43,7 +43,7 @@ withDefaults(defineProps<{
 
 .loading-state-text {
   margin: 0;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   line-height: 1;
 }
