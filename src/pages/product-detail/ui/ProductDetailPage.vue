@@ -949,9 +949,10 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
 .detail-copy :deep(img) {
   display: block;
-  width: 100%;
+  width: calc(100% + 40px);
+  max-width: none;
   height: auto;
-  margin-top: 12px;
+  margin: 12px -20px 0;
   object-fit: cover;
 }
 
@@ -1166,10 +1167,6 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   color: #9c9b99;
   font-size: 14px;
   font-weight: 600;
-}
-
-.detail-copy {
-  margin-inline: -20px;
 }
 
 .attribute-list {

@@ -1,18 +1,53 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { RouterView } from 'vue-router'
+import { RouterView, useRoute } from 'vue-router'
 
 import { useBackendRuntime } from '@/app/providers/backend'
 import { hydrateBackendAMemberAuthSession } from '@/entities/member-auth'
 import { useCustomerServiceUnreadStore } from '@/processes/customer-service'
+import { useStorefrontQuery } from '@/processes/storefront'
 import AppShell from '@/shared/ui/AppShell.vue'
 
 const runtime = useBackendRuntime()
 const customerServiceUnreadStore = useCustomerServiceUnreadStore()
+const storefrontQuery = useStorefrontQuery()
+const route = useRoute()
+const platformCompanyName = ref('')
+const defaultDocumentTitle = typeof document === 'undefined'
+  ? '商城'
+  : (document.title.trim() || '商城')
+const routeTitle = computed(() => typeof route.meta.title === 'string' ? route.meta.title.trim() : '')
 
 function resolveRouteViewKey(route: RouteLocationNormalizedLoaded) {
   return String(route.name ?? route.path)
+}
+
+function resolveDocumentTitle() {
+  const companyName = platformCompanyName.value.trim() || defaultDocumentTitle
+
+  if (!routeTitle.value || routeTitle.value === '商城首页' || routeTitle.value === companyName) {
+    return companyName
+  }
+
+  return `${routeTitle.value} - ${companyName}`
+}
+
+function syncDocumentTitle() {
+  if (typeof document === 'undefined') {
+    return
+  }
+
+  document.title = resolveDocumentTitle()
+}
+
+async function loadPlatformCompanyName() {
+  try {
+    const platformSettings = await storefrontQuery.getPlatformSettingsData()
+    platformCompanyName.value = platformSettings.companyName.trim()
+  } catch {
+    platformCompanyName.value = ''
+  }
 }
 
 function handleVisibilityChange() {
@@ -29,6 +64,8 @@ function handleVisibilityChange() {
 
 onMounted(() => {
   customerServiceUnreadStore.startPolling()
+  syncDocumentTitle()
+  void loadPlatformCompanyName()
 
   if (typeof document !== 'undefined') {
     document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -42,6 +79,10 @@ onBeforeUnmount(() => {
     document.removeEventListener('visibilitychange', handleVisibilityChange)
   }
 })
+
+watch([routeTitle, platformCompanyName], () => {
+  syncDocumentTitle()
+}, { immediate: true })
 </script>
 
 <template>
