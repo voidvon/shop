@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import { showFailToast, showLoadingToast, showSuccessToast } from 'vant'
+import { showFailToast, showSuccessToast } from 'vant'
 
 import { useBackendRuntime } from '@/app/providers/backend'
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
@@ -165,19 +165,11 @@ function openCustomerService() {
 }
 
 async function consumeSelectedAddressQuery(addressId: string) {
-  const loadingToast = showLoadingToast({
-    duration: 0,
-    forbidClick: true,
-    message: '正在刷新运费...',
-  })
-
   try {
     await checkoutStore.selectAddress(addressId)
   } catch {
     showFailToast(errorMessage.value ?? '地址选择失败')
   } finally {
-    loadingToast.close()
-
     const nextQuery = { ...route.query }
 
     delete nextQuery.selectedAddressId
@@ -226,7 +218,7 @@ async function navigateAfterSubmit(
 }
 
 onMounted(() => {
-  if (isCheckoutEnabled.value) {
+  if (isCheckoutEnabled.value && !selectedAddressQueryId.value) {
     void checkoutStore.loadPreview()
   }
 })
@@ -327,7 +319,7 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 
       <template v-else>
         <LoadingState v-if="isLoading" class="state-card" />
-        <p v-else-if="errorMessage" class="state-card state-card-error">
+        <p v-else-if="errorMessage && !preview" class="state-card state-card-error">
           {{ errorMessage }}
         </p>
 
