@@ -13,7 +13,6 @@ import TopBarMoreMenuButton from '@/shared/ui/TopBarMoreMenuButton.vue'
 import { clearInstantCheckoutDraft } from '@/processes/checkout-flow/model/instant-checkout-draft'
 
 import { useProductDetailPageModel } from '../model/useProductDetailPageModel'
-import detailHeroImage from '../../../../design-ui/images/generated-1773915971397.png'
 
 const props = defineProps<{
   productId: string
@@ -62,6 +61,7 @@ const detailPageData = computed(() => detailPage.value)
 const isSpecActionPending = computed(() => pendingSpecAction.value !== null)
 const buyNowButtonText = computed(() => pendingSpecAction.value === 'buy' ? '正在前往结算...' : '立即购买')
 const addToCartButtonText = computed(() => pendingSpecAction.value === 'cart' ? '正在加入购物车...' : '加入购物车')
+const defaultProductImageUrl = '/images/image-placeholder.svg'
 
 watch(
   detailPageData,
@@ -135,7 +135,7 @@ const detailDescriptionHtml = computed(() => sanitizeRichTextHtml(product.value?
 
 function resolveProductImage(imageUrl: string | null | undefined) {
   if (!imageUrl) {
-    return detailHeroImage
+    return defaultProductImageUrl
   }
 
   return imageUrl
