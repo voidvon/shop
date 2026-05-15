@@ -75,6 +75,12 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
       throw new Error('当前地址不存在')
     }
 
+    await loadPreview({
+      couponUsages: selectedCouponUsages.value,
+      preferredAddressId: nextSelectedAddress.id,
+      throwOnError: true,
+    })
+
     return nextSelectedAddress
   }
 
@@ -108,7 +114,11 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     return (targetPreview?.groups ?? []).filter((group) => group.payableAmount > resolveGroupPlannedDeductionAmount(group))
   }
 
-  async function loadPreview(options?: { couponUsages?: CheckoutCouponUsage[] }) {
+  async function loadPreview(options?: {
+    couponUsages?: CheckoutCouponUsage[]
+    preferredAddressId?: string | null
+    throwOnError?: boolean
+  }) {
     if (!isCheckoutEnabled.value) {
       preview.value = null
       selectedCouponUsages.value = []
@@ -122,22 +132,31 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     try {
       const instantCheckoutDraft = readInstantCheckoutDraft()
       const nextCouponUsages = options?.couponUsages ?? selectedCouponUsages.value
+      const nextSelectedAddress = await syncSelectedAddress({
+        preferredAddressId: options?.preferredAddressId ?? undefined,
+      })
 
       if (instantCheckoutDraft) {
         preview.value = createCheckoutPreview(instantCheckoutDraft)
         selectedCouponUsages.value = []
       } else {
-        preview.value = await checkoutFlowPort.getPreview(nextCouponUsages)
+        preview.value = await checkoutFlowPort.getPreview({
+          addressId: nextSelectedAddress?.id ?? null,
+          couponUsages: nextCouponUsages,
+        })
         selectedCouponUsages.value = preview.value.couponUsages
       }
 
       syncBalanceSnapshot(await getMemberAssetsSnapshot(memberAssetsService))
-      await syncSelectedAddress()
       confirmation.value = null
       submissionMessage.value = null
       hasLoaded.value = true
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '结算预览加载失败'
+
+      if (options?.throwOnError) {
+        throw error
+      }
     } finally {
       isLoading.value = false
     }

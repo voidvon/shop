@@ -146,9 +146,12 @@ async function resolveCheckoutCommand(
 
 export function createCheckoutFlowPort(options: CreateCheckoutFlowPortOptions): CheckoutFlowPort {
   return {
-    async getPreview(couponUsages?: CheckoutCouponUsage[]) {
+    async getPreview(previewOptions) {
       const command = await resolveCheckoutCommand(options)
-      return createCheckoutPreviewUseCase(options.orderRepository, command, couponUsages)
+      return createCheckoutPreviewUseCase(options.orderRepository, {
+        ...command,
+        addressId: previewOptions?.addressId ?? null,
+      }, previewOptions?.couponUsages)
     },
 
     async submit(submitCommand?: SubmitCheckoutOrderCommand): Promise<SubmitCheckoutOrderResult> {
@@ -165,7 +168,10 @@ export function createCheckoutFlowPort(options: CreateCheckoutFlowPortOptions): 
         await clearSubmittedCartLines(options.cartRepository, command)
       }
 
-      const preview = await rebuildPostSubmitPreview(options, command)
+      const preview = await rebuildPostSubmitPreview(options, {
+        ...command,
+        addressId: submitCommand?.addressId ?? null,
+      })
 
       return {
         confirmation,

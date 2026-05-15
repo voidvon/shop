@@ -6,12 +6,17 @@ export interface SubmitCheckoutOrderCommand {
   remark?: string | null
 }
 
+export interface GetCheckoutPreviewOptions {
+  addressId?: string | null
+  couponUsages?: CheckoutCouponUsage[]
+}
+
 export interface SubmitCheckoutOrderResult {
   confirmation: OrderConfirmation
   preview: CheckoutPreview
 }
 
 export interface CheckoutFlowPort {
-  getPreview(couponUsages?: CheckoutCouponUsage[]): Promise<CheckoutPreview>
+  getPreview(options?: GetCheckoutPreviewOptions): Promise<CheckoutPreview>
   submit(command?: SubmitCheckoutOrderCommand): Promise<SubmitCheckoutOrderResult>
 }

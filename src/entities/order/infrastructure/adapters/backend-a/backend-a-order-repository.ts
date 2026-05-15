@@ -184,10 +184,12 @@ export function createBackendAOrderRepository(
   const httpClient = createBackendAOrderHttpClient(memberAuthSession)
 
   async function requestCheckoutPreview(
+    addressId?: string | null,
     cartItemIds?: number[],
     couponUsages?: CheckoutCouponUsage[],
   ) {
     return httpClient.post<BackendACheckoutPreviewDto>('/api/v1/checkout/preview', {
+      ...(addressId ? { address_id: normalizeAddressId(addressId) } : {}),
       ...(cartItemIds && cartItemIds.length > 0 ? { cart_item_ids: cartItemIds } : {}),
       ...(couponUsages && couponUsages.length > 0
         ? { coupon_usages: normalizeCouponUsages(couponUsages) }
@@ -201,7 +203,7 @@ export function createBackendAOrderRepository(
         throw new Error('当前后端仅支持从购物车发起结算')
       }
 
-      const preview = await requestCheckoutPreview(undefined, couponUsages)
+      const preview = await requestCheckoutPreview(command.addressId, undefined, couponUsages)
       return mapBackendACheckoutPreviewDto(command, preview)
     },
 

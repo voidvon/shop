@@ -1,7 +1,7 @@
 # API 接口明细索引
 
 来源：[`openapi.json`](/root/shop/docs/api/openapi.json)  
-抓取时间：`2026-05-03`
+抓取时间：`2026-05-15`
 
 说明：
 
@@ -63,7 +63,7 @@
 
 | 方法 | 路径 | 鉴权 | 参数 | 请求体 | 成功响应 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| POST | /api/v1/checkout/preview | Bearer | - | object | object | 预结算 |
+| POST | /api/v1/checkout/preview | Bearer | - | object | object | 预结算；支持可选 `address_id` 按当前收货地址重算省内/省外运费 |
 | POST | /api/v1/checkout/submit | Bearer | - | object | object | 提交订单 |
 
 ## 客服

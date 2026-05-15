@@ -13,6 +13,7 @@ export interface CheckoutLine {
 }
 
 export interface CreateCheckoutPreviewCommand {
+  addressId?: string | null
   lines: CheckoutLine[]
   source: 'cart' | 'instant'
 }

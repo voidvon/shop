@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import { showFailToast, showSuccessToast } from 'vant'
+import { showFailToast, showLoadingToast, showSuccessToast } from 'vant'
 
 import { useBackendRuntime } from '@/app/providers/backend'
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
@@ -165,11 +165,19 @@ function openCustomerService() {
 }
 
 async function consumeSelectedAddressQuery(addressId: string) {
+  const loadingToast = showLoadingToast({
+    duration: 0,
+    forbidClick: true,
+    message: '正在刷新运费...',
+  })
+
   try {
     await checkoutStore.selectAddress(addressId)
   } catch {
     showFailToast(errorMessage.value ?? '地址选择失败')
   } finally {
+    loadingToast.close()
+
     const nextQuery = { ...route.query }
 
     delete nextQuery.selectedAddressId

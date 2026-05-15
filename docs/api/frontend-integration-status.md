@@ -6,7 +6,7 @@
 - 当前运行时装配：[`src/app/providers/backend/create-backend-runtime.ts`](/root/shop/src/app/providers/backend/create-backend-runtime.ts)
 - 现有 `backend-a` 适配层与浏览器仓储实现
 
-更新时间：`2026-05-03`
+更新时间：`2026-05-15`
 
 ## 1. 先看结论
 
@@ -94,7 +94,7 @@
 | 分类 | 是 | 是 | 已直连 | 已调用 `/api/v1/product-categories` 与 `/api/v1/products` |
 | 商品列表/商品详情 | 是 | 是 | 已直连 | `backendAProductRepository` 已调用 `/api/v1/products` 与 `/api/v1/products/{product}` |
 | 购物车 | 是 | 是 | 已直连 | runtime 已装配真实 `createBackendACartRepository(...)` |
-| 结算 | 是 | 是 | 已直连 | 已调用 `/api/v1/checkout/preview` 与 `/api/v1/checkout/submit` |
+| 结算 | 是 | 是 | 已直连 | 已调用 `/api/v1/checkout/preview` 与 `/api/v1/checkout/submit`；预结算会随当前选中地址传 `address_id`，用于实时刷新运费 |
 | 订单 | 是 | 是 | 已直连 | 订单列表、详情与提交结果均改为真实 HTTP |
 | 用户资料 | 是 | 是 | 部分直连 | 微信登录、资料刷新、昵称更新已直连，密码/手机号绑定仍未接 Swagger |
 | 地址管理 | 是 | 是 | 已直连 | runtime 已装配真实 `backend-a` 地址仓储 |
@@ -134,6 +134,7 @@
 - runtime 已对 `backend-a` 装配真实购物车仓储、真实订单仓储与真实交易 reader
 - 商品详情页 SKU 选择已改为使用真实后端 SKU，而不是前端伪造默认规格
 - checkout 提交时会把已选 cart item、收货地址、买家备注提交给真实后端
+- checkout 预结算现在也会随当前选中地址传 `address_id`，用于在切换收货地址后实时重算省内/省外运费
 - 下单成功后，订单列表、订单详情和会员中心订单角标都会从真实 `/api/v1/orders` 刷新
 - 当前仍保留部分显式能力裁剪：Swagger 里仍没有订单取消、支付接口，因此 `backend-a` 仍会对这两类动作保留显式提示；确认收货已接入 `POST /api/v1/orders/{order}/receive`，退款申请接口已出现在 Swagger，订单结构也新增 `latest_refund_request`，但当前售后流程仍主要走本地仓储
 - 最新 Swagger 已为订单详情补入 `virtual_delivery_info`，并为结算/订单金额结构补入 `shipping_amount`；当前前端尚未消费这几个新增字段
