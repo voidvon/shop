@@ -323,6 +323,7 @@ watch(
 }
 
 .search-logo-entry {
+  display: none;
   box-sizing: border-box;
   padding: 6px;
   overflow: hidden;
