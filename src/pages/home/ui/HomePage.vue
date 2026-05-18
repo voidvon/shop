@@ -311,9 +311,9 @@ watch(
   align-items: center;
   justify-content: center;
   gap: 2px;
-  flex: 0 0 52px;
-  width: 52px;
-  height: 52px;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
   padding: 4px 0 3px;
   border: 0;
   border-radius: 12px;
