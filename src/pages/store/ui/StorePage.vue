@@ -72,7 +72,6 @@ const {
   storeBenefits,
   storeLogoUrl,
   storeName,
-  storeShippingTip,
   storeStats,
   resetProductFilters,
   selectTab,
@@ -84,7 +83,13 @@ const {
   visibleProducts,
 } = useStorePageModel(storeId, preferredStoreName)
 
-const primaryBenefit = computed(() => storeShippingTip.value ?? storeBenefits.value[0] ?? '')
+function isShippingBenefitText(value: string) {
+  return /(包邮|运费|快递|配送费)/.test(value)
+}
+
+const primaryBenefit = computed(() =>
+  storeBenefits.value.find((benefit) => !isShippingBenefitText(benefit)) ?? '',
+)
 const isCouponEnabled = computed(() => runtime.capabilities.coupon)
 const footerActions = computed(() =>
   allFooterActions.filter((action) => action.key !== 'coupon' || isCouponEnabled.value),

@@ -114,6 +114,14 @@ watch(
       <van-sticky>
         <div class="sticky-search">
           <div class="sticky-search-inner">
+            <div class="search-logo-entry" aria-hidden="true">
+              <img
+                class="search-logo-entry-image"
+                src="/images/home-search-logo.png"
+                alt=""
+              >
+            </div>
+
             <SearchField
               class="sticky-search-field"
               placeholder="搜索商品"
@@ -296,6 +304,7 @@ watch(
   min-width: 0;
 }
 
+.search-logo-entry,
 .message-entry-button {
   display: inline-flex;
   flex-direction: column;
@@ -311,6 +320,19 @@ watch(
   background: #fff;
   color: #3c3b39;
   box-shadow: 0 8px 18px rgba(60, 59, 57, 0.08);
+}
+
+.search-logo-entry {
+  box-sizing: border-box;
+  padding: 6px;
+  overflow: hidden;
+}
+
+.search-logo-entry-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .message-entry-badge {
