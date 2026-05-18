@@ -68,6 +68,7 @@ export interface ProductSkuSnapshot {
   marketPrice: number | null
   stock: number
   available: boolean
+  imageUrl: string | null
 }
 
 export interface ProductReviewSnippet {

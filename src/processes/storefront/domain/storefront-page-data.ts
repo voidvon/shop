@@ -113,6 +113,7 @@ export interface StoreHomePageData {
 
 export interface ProductSkuOption {
   available: boolean
+  imageUrl: string | null
   marketPrice: number | null
   price: number
   skuId: string

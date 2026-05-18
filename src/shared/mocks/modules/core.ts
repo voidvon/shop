@@ -31,6 +31,7 @@ export interface MockProductSpecGroupSeed {
 }
 
 export interface MockSkuSeed {
+  imageUrl?: string | null
   skuId: string
   specText: string
   price: number

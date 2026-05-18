@@ -701,6 +701,7 @@ export function mapBackendAProductDetailPageData(
   const product = mapBackendAProductDetailDto(productDto)
   const skuList = resolveActiveSkus(productDto).map((sku) => ({
     available: sku.stock > 0,
+    imageUrl: resolveBackendAMediaUrl(sku.image),
     marketPrice: null,
     price: Number.parseFloat(sku.price) || 0,
     skuId: String(sku.id),

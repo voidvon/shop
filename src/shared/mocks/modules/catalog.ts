@@ -130,6 +130,7 @@ export const mockProductDetailPageDataById: Record<string, ProductDetailPageData
         sellingPoints: [...product.sellingPoints],
         skuList: product.skuList.map((sku) => ({
           available: sku.stock > 0,
+          imageUrl: sku.imageUrl ?? product.imageUrl,
           marketPrice: sku.marketPrice,
           price: sku.price,
           skuId: sku.skuId,

@@ -107,6 +107,9 @@ const currentStock = computed(() => currentSku.value?.stock ?? product.value?.in
 const currentCartLineId = computed(() => currentSku.value?.skuId ?? product.value?.id ?? '')
 const isCartPending = computed(() => (currentCartLineId.value ? cartStore.isLinePending(currentCartLineId.value) : false))
 const isCurrentSelectionSoldOut = computed(() => currentStock.value <= 0)
+const currentSkuImageUrl = computed(() =>
+  resolveProductImage(currentSku.value?.imageUrl ?? product.value?.gallery[0] ?? product.value?.coverImageUrl),
+)
 
 const reviewRateText = computed(() => {
   const rate = detailPageData.value?.review.rate
@@ -125,8 +128,13 @@ const recommendProducts = computed(() => detailPageData.value?.recommendations ?
 const storeInfo = computed(() => detailPageData.value?.store ?? null)
 const canOpenStorePage = computed(() => Boolean(storeInfo.value?.storeId))
 const galleryItems = computed(() =>
-  (product.value?.gallery.length ? product.value.gallery : [product.value?.coverImageUrl ?? null])
+  [
+    currentSku.value?.imageUrl ?? null,
+    ...(product.value?.gallery ?? []),
+    product.value?.coverImageUrl ?? null,
+  ]
     .filter((imageUrl): imageUrl is string => Boolean(imageUrl))
+    .filter((imageUrl, index, imageUrls) => imageUrls.indexOf(imageUrl) === index)
     .map((imageUrl) => ({
       imageUrl: resolveProductImage(imageUrl),
     })),
@@ -695,7 +703,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
             <div class="spec-sheet-header">
               <div class="spec-image-box">
-                <img :src="resolveProductImage(product.gallery[0] ?? product.coverImageUrl)" :alt="product.name">
+                <img :src="currentSkuImageUrl" :alt="product.name">
               </div>
 
               <div class="spec-meta">
