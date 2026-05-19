@@ -72,6 +72,7 @@ const {
   storeBenefits,
   storeLogoUrl,
   storeName,
+  storeSummary: storeDescription,
   storeStats,
   resetProductFilters,
   selectTab,
@@ -498,6 +499,7 @@ watch(
             <div class="store-copy">
               <h1>{{ storeName }}</h1>
               <p>{{ storeSummary }}</p>
+              <p v-if="storeDescription" class="store-description">{{ storeDescription }}</p>
               <span v-if="primaryBenefit" class="store-benefit">{{ primaryBenefit }}</span>
             </div>
 
@@ -912,6 +914,18 @@ watch(
   color: #f4eee8;
   font-size: 13px;
   font-weight: 500;
+}
+
+.store-description {
+  display: -webkit-box;
+  overflow: hidden;
+  color: rgba(244, 238, 232, 0.92);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .store-benefit {
