@@ -917,15 +917,13 @@ watch(
 }
 
 .store-description {
-  display: -webkit-box;
-  overflow: hidden;
+  display: block;
   color: rgba(244, 238, 232, 0.92);
   font-size: 12px;
   font-weight: 400;
   line-height: 1.35;
-  text-overflow: ellipsis;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .store-benefit {
