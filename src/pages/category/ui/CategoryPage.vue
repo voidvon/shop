@@ -149,7 +149,7 @@ onActivated(() => {
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  background: #fafaf9;
+  background: var(--color-bg);
 }
 
 .header {
@@ -163,10 +163,10 @@ onActivated(() => {
   gap: 10px;
   overflow-x: auto;
   padding: 6px;
-  border: 1px solid #ece5db;
+  border: 1px solid var(--color-line-warm);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 6px 18px rgba(26, 25, 24, 0.04);
+  background: var(--color-surface-glass-solid);
+  box-shadow: 0 6px 18px rgba(var(--shadow-rgb), 0.04);
   scrollbar-width: none;
 }
 
@@ -179,18 +179,18 @@ onActivated(() => {
   padding: 8px 12px;
   border: 1px solid transparent;
   border-radius: 999px;
-  background: #f7f3ee;
-  color: #6d6c6a;
+  background: var(--color-surface-soft);
+  color: var(--color-text-soft);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .chip-active {
-  background: #fff;
-  border-color: #f3cfb5;
-  color: #ea580c;
-  box-shadow: 0 4px 10px rgba(234, 88, 12, 0.08);
+  background: var(--color-surface-elevated);
+  border-color: var(--color-primary-soft-border);
+  color: var(--color-primary);
+  box-shadow: 0 4px 10px rgba(var(--color-primary-rgb), 0.08);
 }
 
 .main-panel {
@@ -210,9 +210,9 @@ onActivated(() => {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  border: 1px solid #ece4da;
+  border: 1px solid var(--color-line-warm);
   border-radius: 6px;
-  background: linear-gradient(180deg, #f4efe8 0%, #f9f6f2 100%);
+  background: linear-gradient(180deg, var(--color-surface-muted) 0%, var(--color-surface-strong) 100%);
   scrollbar-width: none;
 }
 
@@ -229,7 +229,7 @@ onActivated(() => {
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: #7b746d;
+  color: var(--color-text-subtle);
   font-size: 13px;
   font-weight: 600;
   line-height: 1.2;
@@ -237,8 +237,8 @@ onActivated(() => {
 }
 
 .category-pill-active {
-  background: #fff;
-  color: #ea580c;
+  background: var(--color-surface-elevated);
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -267,24 +267,24 @@ onActivated(() => {
   justify-content: space-between;
   gap: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #f1ece6;
+  border-bottom: 1px solid var(--color-line-soft);
 }
 
 .content-header strong {
-  color: #1f1d1b;
+  color: var(--color-text-heading);
   font-size: 18px;
   font-weight: 700;
 }
 
 .content-header span {
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
 .status-text {
   margin: 0;
   padding: 20px 4px;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   text-align: center;
 }

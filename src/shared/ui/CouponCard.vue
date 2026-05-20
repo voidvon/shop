@@ -79,7 +79,7 @@ const props = withDefaults(defineProps<{
   border: 1px solid rgba(var(--color-primary-rgb), 0.16);
   border-radius: 20px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(var(--color-primary-rgb), 0.08)),
+    linear-gradient(135deg, var(--color-surface-glass-solid), rgba(var(--color-primary-rgb), 0.08)),
     var(--color-surface-elevated);
   box-shadow: var(--shadow-card);
   color: inherit;

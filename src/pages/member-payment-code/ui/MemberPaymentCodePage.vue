@@ -119,8 +119,8 @@ onActivated(() => {
   height: 100vh;
   height: 100dvh;
   background:
-    radial-gradient(circle at top, rgba(255, 132, 61, 0.22), transparent 34%),
-    linear-gradient(180deg, #fff8f2 0%, #f3efe8 100%);
+    radial-gradient(circle at top, rgba(var(--color-primary-rgb), 0.22), transparent 34%),
+    linear-gradient(180deg, var(--color-surface-accent-strong) 0%, var(--color-surface-muted) 100%);
   overflow: hidden;
 }
 
@@ -138,8 +138,8 @@ onActivated(() => {
 .hero-card,
 .code-card {
   border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 14px 32px rgba(27, 25, 22, 0.08);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 14px 32px rgba(var(--shadow-rgb), 0.08);
 }
 
 .hero-card {
@@ -150,14 +150,14 @@ onActivated(() => {
 }
 
 .eyebrow {
-  color: #c2410c;
+  color: var(--color-primary-deep);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
 
 .hero-card strong {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 22px;
   line-height: 1.2;
 }
@@ -165,7 +165,7 @@ onActivated(() => {
 .hero-card p,
 .status-text {
   margin: 0;
-  color: #8c8a86;
+  color: var(--color-text-subtle);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -186,7 +186,7 @@ onActivated(() => {
   place-items: center;
   padding: 18px;
   border-radius: 18px;
-  background: linear-gradient(180deg, #fff6ef 0%, #fff 100%);
+  background: linear-gradient(180deg, var(--color-surface-accent-strong) 0%, var(--color-surface-elevated) 100%);
 }
 
 .code-image {
@@ -202,13 +202,13 @@ onActivated(() => {
 }
 
 .code-copy span {
-  color: #8c8a86;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
 .code-copy strong {
   word-break: break-all;
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 18px;
   line-height: 1.5;
 }

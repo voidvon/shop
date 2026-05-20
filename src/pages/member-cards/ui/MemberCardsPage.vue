@@ -415,7 +415,7 @@ onMounted(async () => {
   grid-template-rows: 56px 40px minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
-  background: #fafaf8;
+  background: var(--color-bg);
   overflow: hidden;
 }
 
@@ -425,7 +425,7 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 12px;
   padding: 0 16px;
-  background: #ff6a1a;
+  background: var(--color-primary);
 }
 
 .balance-left {
@@ -437,7 +437,7 @@ onMounted(async () => {
 }
 
 .balance-label {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-inverse-muted);
   font-size: 13px;
   font-weight: 500;
 }
@@ -446,14 +446,14 @@ onMounted(async () => {
   padding: 4px 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 18px;
   font-weight: 700;
   line-height: 1;
 }
 
 .balance-meta {
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--color-text-inverse-muted);
   font-size: 12px;
 }
 
@@ -461,7 +461,7 @@ onMounted(async () => {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
@@ -479,8 +479,8 @@ onMounted(async () => {
 .records-card {
   padding: 16px;
   border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 10px 28px rgba(26, 25, 24, 0.06);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-md);
 }
 
 .intro-card {
@@ -491,7 +491,7 @@ onMounted(async () => {
 .intro-card strong,
 .records-header strong,
 .record-main strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 16px;
 }
 
@@ -499,7 +499,7 @@ onMounted(async () => {
 .record-main p,
 .record-meta {
   margin: 6px 0 0;
-  color: #8a7f78;
+  color: var(--color-text-subtle);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -508,15 +508,15 @@ onMounted(async () => {
   height: 44px;
   border: 0;
   border-radius: 14px;
-  background: #ff6a1a;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
   font-size: 15px;
   font-weight: 600;
 }
 
 .status-text {
   margin: 0;
-  color: #8a7f78;
+  color: var(--color-text-subtle);
   font-size: 14px;
 }
 
@@ -525,14 +525,14 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  color: #8a7f78;
+  color: var(--color-text-subtle);
   font-size: 13px;
 }
 
 .record-row + .record-row {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #f1ece7;
+  border-top: 1px solid var(--color-line-warm);
 }
 
 .record-main {
@@ -543,7 +543,7 @@ onMounted(async () => {
 }
 
 .record-amount {
-  color: #ff6a1a;
+  color: var(--color-primary);
   font-size: 18px;
   font-weight: 700;
   white-space: nowrap;
@@ -566,7 +566,7 @@ onMounted(async () => {
   max-height: none;
   border-radius: 0;
   overflow: hidden;
-  background: #fafaf8;
+  background: var(--color-bg);
 }
 
 .bind-drawer-body {
@@ -574,7 +574,7 @@ onMounted(async () => {
   grid-template-rows: 56px minmax(0, 1fr);
   width: 100%;
   height: 100%;
-  background: #fafaf8;
+  background: var(--color-bg);
 }
 
 .bind-preview-popup {
@@ -586,7 +586,7 @@ onMounted(async () => {
   display: grid;
   gap: 16px;
   padding: 20px 16px calc(24px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(180deg, #fffaf5 0%, #fff 100%);
+  background: linear-gradient(180deg, var(--color-surface-accent-strong) 0%, var(--color-surface-elevated) 100%);
 }
 
 .preview-header {
@@ -597,13 +597,13 @@ onMounted(async () => {
 }
 
 .preview-header strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 18px;
 }
 
 .preview-header p {
   margin: 6px 0 0;
-  color: #8a7f78;
+  color: var(--color-text-subtle);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -612,7 +612,7 @@ onMounted(async () => {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #8a7f78;
+  color: var(--color-text-subtle);
   font-size: 14px;
 }
 
@@ -621,8 +621,8 @@ onMounted(async () => {
   gap: 14px;
   padding: 16px;
   border-radius: 18px;
-  background: #fff7f0;
-  box-shadow: inset 0 0 0 1px rgba(255, 106, 26, 0.08);
+  background: var(--color-surface-accent-strong);
+  box-shadow: inset 0 0 0 1px rgba(var(--color-primary-rgb), 0.08);
 }
 
 .lookup-header {
@@ -633,7 +633,7 @@ onMounted(async () => {
 }
 
 .lookup-header strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 15px;
   font-weight: 600;
 }
@@ -641,15 +641,15 @@ onMounted(async () => {
 .lookup-status {
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(255, 106, 26, 0.12);
-  color: #d15a15;
+  background: rgba(var(--color-primary-rgb), 0.12);
+  color: var(--color-primary-deep);
   font-size: 12px;
   font-weight: 600;
 }
 
 .lookup-status-disabled {
-  background: rgba(127, 120, 114, 0.12);
-  color: #7f7872;
+  background: rgba(var(--shadow-rgb), 0.08);
+  color: var(--color-text-subtle);
 }
 
 .lookup-grid {
@@ -665,13 +665,13 @@ onMounted(async () => {
 }
 
 .lookup-grid dt {
-  color: #8a7f78;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
 .lookup-grid dd {
   margin: 0;
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 14px;
   font-weight: 600;
 }
@@ -681,12 +681,12 @@ onMounted(async () => {
   gap: 10px;
   padding: 14px 16px;
   border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 10px 24px rgba(26, 25, 24, 0.05);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-card);
 }
 
 .mobile-field span {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 14px;
   font-weight: 600;
 }
@@ -695,25 +695,25 @@ onMounted(async () => {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 16px;
   font-weight: 500;
   outline: none;
 }
 
 .mobile-field input::placeholder {
-  color: #a69d95;
+  color: var(--color-text-faint);
 }
 
 .mobile-hint {
   margin: -6px 2px 0;
-  color: #8a7f78;
+  color: var(--color-text-subtle);
   font-size: 12px;
   line-height: 1.5;
 }
 
 .mobile-hint-error {
-  color: #d15a15;
+  color: var(--color-primary-deep);
 }
 
 .preview-actions {
@@ -731,15 +731,15 @@ onMounted(async () => {
 }
 
 .preview-cancel {
-  border: 1px solid #eadfd5;
-  background: #fff;
-  color: #7b7068;
+  border: 1px solid var(--color-line-warm);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-subtle);
 }
 
 .preview-confirm {
   border: 0;
-  background: #ff6a1a;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
 }
 
 .preview-confirm:disabled {

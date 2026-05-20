@@ -198,8 +198,8 @@ onMounted(async () => {
   height: 100vh;
   height: 100dvh;
   background:
-    radial-gradient(circle at top right, rgba(255, 122, 36, 0.18), transparent 28%),
-    linear-gradient(180deg, #fcf7f1 0%, #f5eee4 100%);
+    radial-gradient(circle at top right, rgba(var(--color-primary-rgb), 0.18), transparent 28%),
+    linear-gradient(180deg, var(--color-surface-strong) 0%, var(--color-surface-muted) 100%);
   overflow: hidden;
 }
 
@@ -216,19 +216,19 @@ onMounted(async () => {
 .group-summary {
   border: 0;
   border-radius: 18px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .state-card {
   margin: 0;
   padding: 16px;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 14px;
   line-height: 1.6;
 }
 
 .state-card-error {
-  color: #c95a21;
+  color: var(--color-primary-deep);
 }
 
 .group-summary {
@@ -237,14 +237,14 @@ onMounted(async () => {
 
 .group-summary strong {
   display: block;
-  color: #2f2a24;
+  color: var(--color-text-strong);
   font-size: 17px;
   font-weight: 700;
 }
 
 .group-summary p {
   margin: 8px 0 0;
-  color: #7a7267;
+  color: var(--color-text-subtle);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -258,8 +258,8 @@ onMounted(async () => {
   flex: none;
   padding: 8px 14px;
   border-radius: 999px;
-  background: #f97316;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
   font-size: 13px;
   font-weight: 700;
 }

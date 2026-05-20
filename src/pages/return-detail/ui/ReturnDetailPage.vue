@@ -331,7 +331,7 @@ onMounted(() => {
   grid-template-rows: 49px minmax(0, 1fr) auto;
   height: 100vh;
   height: 100dvh;
-  background: #fafaf8;
+  background: var(--color-bg);
   overflow: hidden;
 }
 
@@ -349,7 +349,7 @@ onMounted(() => {
 .status-text {
   margin: 0;
   padding: 20px 0;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   text-align: center;
 }
@@ -360,17 +360,17 @@ onMounted(() => {
   gap: 14px;
   margin-bottom: 12px;
   border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 10px 24px rgba(26, 25, 24, 0.05);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 10px 24px rgba(var(--shadow-rgb), 0.05);
 }
 
 .status-card {
   padding: 18px 16px;
-  background: linear-gradient(135deg, #fff1e6 0%, #fff8f2 100%);
+  background: linear-gradient(135deg, var(--color-surface-accent) 0%, var(--color-surface-accent-strong) 100%);
 }
 
 .status-card strong {
-  color: #c2410c;
+  color: var(--color-primary-deep);
   font-size: 20px;
   font-weight: 700;
 }
@@ -381,7 +381,7 @@ onMounted(() => {
 .address-block p,
 .empty-copy {
   margin: 0;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -391,13 +391,13 @@ onMounted(() => {
   gap: 8px;
   align-items: center;
   padding: 16px 16px 0;
-  color: #d97706;
+  color: var(--color-warning);
 }
 
 .card-header strong,
 .process-row strong,
 .address-block strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 15px;
   font-weight: 700;
 }
@@ -421,25 +421,25 @@ onMounted(() => {
 }
 
 .info-row span {
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
 .info-row strong,
 .process-row span {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 13px;
   font-weight: 600;
 }
 
 .refund-amount {
-  color: #ea580c;
+  color: var(--color-primary);
 }
 
 .process-row {
   padding: 12px;
   border-radius: 14px;
-  background: #faf7f2;
+  background: var(--color-surface-strong);
 }
 
 .action-footer {
@@ -447,8 +447,8 @@ onMounted(() => {
   justify-content: flex-end;
   gap: 10px;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-  border-top: 1px solid #eee7dc;
-  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--color-line-warm);
+  background: var(--color-surface-glass);
 }
 
 .ghost-button,
@@ -462,14 +462,14 @@ onMounted(() => {
 }
 
 .ghost-button {
-  border: 1px solid #e5e4e1;
-  background: #fff;
-  color: #6d6c6a;
+  border: 1px solid var(--color-line-contrast);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-soft);
 }
 
 .primary-button {
   border: 0;
-  background: #ea580c;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
 }
 </style>

@@ -519,7 +519,7 @@ onMounted(() => {
   grid-template-rows: 49px minmax(0, 1fr) auto;
   height: 100vh;
   height: 100dvh;
-  background: #f7f4ef;
+  background: var(--color-surface-soft);
   overflow: hidden;
 }
 
@@ -537,7 +537,7 @@ onMounted(() => {
 .status-text {
   margin: 0;
   padding: 20px 0;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   text-align: center;
 }
@@ -552,13 +552,13 @@ onMounted(() => {
   gap: 14px;
   margin-bottom: 12px;
   border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 10px 24px rgba(26, 25, 24, 0.05);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-card);
 }
 
 .status-card {
   padding: 18px 16px;
-  background: linear-gradient(135deg, #fff1e6 0%, #fff8f2 100%);
+  background: linear-gradient(135deg, var(--color-surface-accent) 0%, var(--color-surface-accent-strong) 100%);
 }
 
 .status-copy {
@@ -567,7 +567,7 @@ onMounted(() => {
 }
 
 .status-copy strong {
-  color: #c2410c;
+  color: var(--color-primary-deep);
   font-size: 20px;
   font-weight: 700;
 }
@@ -575,7 +575,7 @@ onMounted(() => {
 .status-copy p,
 .logistics-summary p {
   margin: 0;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -585,19 +585,19 @@ onMounted(() => {
   gap: 6px;
   padding: 14px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-surface-glass);
 }
 
 .logistics-summary span,
 .card-header strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 15px;
   font-weight: 700;
 }
 
 .logistics-summary small,
 .gift-row small {
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
@@ -606,7 +606,7 @@ onMounted(() => {
   gap: 8px;
   align-items: center;
   padding: 16px 16px 0;
-  color: #d97706;
+  color: var(--color-warning);
 }
 
 .address-copy,
@@ -625,7 +625,7 @@ onMounted(() => {
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 14px;
   font-weight: 600;
 }
@@ -637,7 +637,7 @@ onMounted(() => {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #9c9b99;
+  color: var(--color-text-muted);
 }
 
 .info-row-action {
@@ -648,13 +648,13 @@ onMounted(() => {
 
 .address-copy p {
   margin: 0;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
   line-height: 1.5;
 }
 
 .virtual-delivery-copy {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 13px;
   line-height: 1.7;
 }
@@ -696,7 +696,7 @@ onMounted(() => {
 }
 
 .virtual-delivery-copy :deep(a) {
-  color: #c2410c;
+  color: var(--color-primary-deep);
   text-decoration: underline;
 }
 
@@ -711,13 +711,13 @@ onMounted(() => {
   overflow-x: auto;
   padding: 12px;
   border-radius: 12px;
-  background: #f7f4ef;
+  background: var(--color-surface-soft);
 }
 
 .virtual-delivery-copy :deep(blockquote) {
   padding-left: 12px;
-  border-left: 3px solid #f3d5b8;
-  color: #6d6c6a;
+  border-left: 3px solid var(--color-primary-soft-border);
+  color: var(--color-text-soft);
 }
 
 .virtual-delivery-copy :deep(table) {
@@ -728,7 +728,7 @@ onMounted(() => {
 .virtual-delivery-copy :deep(th),
 .virtual-delivery-copy :deep(td) {
   padding: 8px;
-  border: 1px solid #efe7dc;
+  border: 1px solid var(--color-line-warm);
   text-align: left;
   vertical-align: top;
 }
@@ -741,7 +741,7 @@ onMounted(() => {
 }
 
 .order-item-block + .order-item-block {
-  border-top: 1px solid #f5f0ea;
+  border-top: 1px solid var(--color-surface-muted);
 }
 
 .item-action-row {
@@ -753,7 +753,7 @@ onMounted(() => {
 }
 
 .item-after-sale-status {
-  color: #d97706;
+  color: var(--color-warning);
   font-size: 12px;
   font-weight: 600;
 }
@@ -762,10 +762,10 @@ onMounted(() => {
   min-width: 84px;
   height: 30px;
   padding: 0 14px;
-  border: 1px solid #efe0d0;
+  border: 1px solid var(--color-line-warm);
   border-radius: 999px;
-  background: #fff8f2;
-  color: #c2410c;
+  background: var(--color-surface-accent-strong);
+  color: var(--color-primary-deep);
   font-size: 12px;
   font-weight: 600;
   line-height: 30px;
@@ -788,13 +788,13 @@ onMounted(() => {
 .promotion-row,
 .amount-row,
 .info-row {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
 }
 
 .promotion-row p {
   margin: 0;
-  color: #c2410c;
+  color: var(--color-primary-deep);
   text-align: right;
 }
 
@@ -804,26 +804,26 @@ onMounted(() => {
 
 .amount-total {
   padding: 16px;
-  border-top: 1px solid #f2ede6;
+  border-top: 1px solid var(--color-surface-muted);
 }
 
 .amount-total span {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 14px;
 }
 
 .amount-total strong {
-  color: #ea580c;
+  color: var(--color-primary);
   font-size: 20px;
 }
 
 .amount-decrease {
-  color: #ea580c;
+  color: var(--color-primary);
 }
 
 .info-row span {
   flex: 0 0 72px;
-  color: #9c9b99;
+  color: var(--color-text-muted);
 }
 
 .info-row strong {
@@ -836,8 +836,8 @@ onMounted(() => {
   justify-content: flex-end;
   gap: 10px;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-  border-top: 1px solid #eee7dc;
-  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--color-line-warm);
+  background: var(--color-surface-glass);
 }
 
 .ghost-button,
@@ -851,14 +851,14 @@ onMounted(() => {
 }
 
 .ghost-button {
-  border: 1px solid #e5e4e1;
-  background: #fff;
-  color: #6d6c6a;
+  border: 1px solid var(--color-line-contrast);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-soft);
 }
 
 .primary-button {
   border: 0;
-  background: #ea580c;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
 }
 </style>

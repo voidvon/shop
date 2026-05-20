@@ -30,8 +30,8 @@ function goBack() {
   height: 100vh;
   height: 100dvh;
   background:
-    radial-gradient(circle at top left, rgba(255, 138, 31, 0.14), transparent 32%),
-    linear-gradient(180deg, #fbf7f2 0%, #f6efe5 100%);
+    radial-gradient(circle at top left, rgba(var(--color-primary-rgb), 0.14), transparent 32%),
+    linear-gradient(180deg, var(--color-surface-strong) 0%, var(--color-surface-soft) 100%);
   overflow: hidden;
 }
 

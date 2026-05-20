@@ -444,7 +444,7 @@ onBeforeUnmount(() => {
   grid-template-rows: 56px 52px minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
-  background: #fafaf8;
+  background: var(--color-bg);
   overflow: hidden;
 }
 
@@ -453,7 +453,7 @@ onBeforeUnmount(() => {
   gap: 12px;
   align-items: center;
   padding: 8px 12px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .search-box {
@@ -467,7 +467,7 @@ onBeforeUnmount(() => {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #d89575;
+  color: var(--color-warning);
   font-size: 13px;
   font-weight: 600;
 }
@@ -478,12 +478,12 @@ onBeforeUnmount(() => {
   min-height: 0;
   min-width: 0;
   width: 100%;
-  background: #fff;
+  background: var(--color-surface-elevated);
   overflow: hidden;
 }
 
 .tabs-row :deep(.van-tabs__wrap) {
-  border-bottom: 1px solid #ede9e3;
+  border-bottom: 1px solid var(--color-line-soft);
 }
 
 .tabs-row :deep(.van-tabs__content) {
@@ -534,7 +534,7 @@ onBeforeUnmount(() => {
 
 .store-section {
   display: grid;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .coin-dot-small {
@@ -546,7 +546,7 @@ onBeforeUnmount(() => {
   display: grid;
   gap: 12px;
   padding: 0 16px 16px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .store-footer-actions {
@@ -559,14 +559,14 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
   gap: 6px;
   align-items: center;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
   font-weight: 500;
   text-align: right;
 }
 
 .total-row strong {
-  color: #ea580c;
+  color: var(--color-primary);
   font-size: 18px;
   font-weight: 700;
 }
@@ -585,10 +585,10 @@ onBeforeUnmount(() => {
   min-width: 92px;
   height: 34px;
   padding: 0 14px;
-  border: 1px solid #e5e4e1;
+  border: 1px solid var(--color-line-contrast);
   border-radius: 8px;
-  background: #fff;
-  color: #9c9b99;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-muted);
   font-size: 13px;
   font-weight: 500;
 }
@@ -606,8 +606,8 @@ onBeforeUnmount(() => {
   padding: 0 14px;
   border: 0;
   border-radius: 8px;
-  background: #ea580c;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
   font-size: 13px;
   font-weight: 600;
 }

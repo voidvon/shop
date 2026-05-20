@@ -134,7 +134,7 @@ onActivated(() => {
               <div class="store-left">
                 <van-checkbox
                   :model-value="isGroupSelected(group)"
-                  checked-color="#ff8a1f"
+                  checked-color="var(--color-primary-alt)"
                   :disabled="isSelectionPending"
                   @update:model-value="handleGroupCheckedChange(group.storeId, $event)"
                 />
@@ -149,7 +149,7 @@ onActivated(() => {
                   <van-checkbox
                     class="item-check"
                     :model-value="isLineSelected(item.lineId)"
-                    checked-color="#ff8a1f"
+                    checked-color="var(--color-primary-alt)"
                     :disabled="isSelectionPending"
                     @update:model-value="handleLineCheckedChange(item.lineId, $event)"
                   />
@@ -212,7 +212,7 @@ onActivated(() => {
       >
         <van-checkbox
           :model-value="isAllSelected"
-          checked-color="#ff8a1f"
+          checked-color="var(--color-primary-alt)"
           :disabled="isSelectionPending || isCartEmpty"
           @update:model-value="handleAllCheckedChange"
         >
@@ -227,7 +227,7 @@ onActivated(() => {
 .cart-page {
   height: calc(100vh - var(--app-bottom-nav-offset, 0px) - 12px);
   height: calc(100dvh - var(--app-bottom-nav-offset, 0px) - 12px);
-  background: #fafaf8;
+  background: var(--color-bg);
   overflow: hidden;
 }
 
@@ -235,14 +235,14 @@ onActivated(() => {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   height: 100%;
-  background: #fff;
-  border-bottom: 1px solid #ede9e3;
+  background: var(--color-surface-elevated);
+  border-bottom: 1px solid var(--color-line-soft);
 }
 
 .cart-scroll {
   min-height: 0;
   overflow-y: auto;
-  background: #fff;
+  background: var(--color-surface-elevated);
   scrollbar-width: none;
 }
 
@@ -252,16 +252,16 @@ onActivated(() => {
 
 .page-state {
   padding: 48px 24px;
-  color: #8a8884;
+  color: var(--color-text-subtle);
   text-align: center;
 }
 
 .page-state-error {
-  color: #c95a21;
+  color: var(--color-primary-deep);
 }
 
 .merchant-section {
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .store-row {
@@ -279,11 +279,11 @@ onActivated(() => {
 }
 
 .store-icon {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
 }
 
 .store-name {
-  color: #4b4a48;
+  color: var(--color-text);
   font-size: 15px;
   font-weight: 500;
 }
@@ -298,8 +298,8 @@ onActivated(() => {
   gap: 12px;
   align-items: start;
   padding: 12px 16px;
-  border-bottom: 1px solid #f1eeea;
-  background: #fff;
+  border-bottom: 1px solid var(--color-line-soft);
+  background: var(--color-surface-elevated);
 }
 
 .item-check {
@@ -321,10 +321,10 @@ onActivated(() => {
 .thumb {
   width: 74px;
   height: 74px;
-  border: 1px solid #e6ded3;
+  border: 1px solid var(--color-line-warm);
   border-radius: 8px;
   object-fit: cover;
-  background: #f6f1ea;
+  background: var(--color-surface-soft);
 }
 
 .right-col {
@@ -341,7 +341,7 @@ onActivated(() => {
 
 .name-row strong {
   flex: 1;
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 14px;
   font-weight: 500;
   line-height: 1.35;
@@ -352,15 +352,15 @@ onActivated(() => {
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
-  color: #8a8884;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
 .balance-tag {
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(234, 88, 12, 0.1);
-  color: #c2410c;
+  background: rgba(var(--color-primary-rgb), 0.1);
+  color: var(--color-primary-deep);
 }
 
 .price-wrap {
@@ -371,7 +371,7 @@ onActivated(() => {
 
 .price-symbol,
 .price-value {
-  color: #ff8a1f;
+  color: var(--color-primary-alt);
   font-weight: 700;
 }
 
@@ -394,8 +394,8 @@ onActivated(() => {
   width: 72px;
   height: 100%;
   border: 0;
-  background: #ee4d2d;
-  color: #fff;
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
   font-size: 14px;
 }
 

@@ -127,7 +127,7 @@ onActivated(() => {
   grid-template-rows: auto minmax(0, 1fr);
   min-height: 100vh;
   min-height: 100dvh;
-  background: #f7f4ef;
+  background: var(--color-bg-strong);
 }
 
 .search-header {
@@ -136,8 +136,8 @@ onActivated(() => {
   gap: 12px;
   align-items: center;
   padding: 12px 16px;
-  background: #fff;
-  border-bottom: 1px solid #eee7dc;
+  background: var(--color-surface-elevated);
+  border-bottom: 1px solid var(--color-line-warm);
 }
 
 .header-button,
@@ -148,7 +148,7 @@ onActivated(() => {
 }
 
 .header-button {
-  color: #3c3b39;
+  color: var(--color-text);
 }
 
 .search-input {
@@ -156,7 +156,7 @@ onActivated(() => {
 }
 
 .search-submit {
-  color: #ea580c;
+  color: var(--color-primary);
   font-size: 14px;
   font-weight: 600;
 }
@@ -175,7 +175,7 @@ onActivated(() => {
 .status-text {
   margin: 0;
   padding: 20px 0;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   text-align: center;
 }
@@ -186,12 +186,12 @@ onActivated(() => {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
 }
 
 .summary-row strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 15px;
 }
 

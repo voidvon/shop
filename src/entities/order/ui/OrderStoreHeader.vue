@@ -31,12 +31,12 @@ defineProps<{
   gap: 8px;
   align-items: center;
   min-width: 0;
-  color: #d89575;
+  color: var(--color-warning);
 }
 
 .store-name-wrap strong {
   overflow: hidden;
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 15px;
   font-weight: 600;
   text-overflow: ellipsis;
@@ -44,7 +44,7 @@ defineProps<{
 }
 
 .store-status {
-  color: #d89575;
+  color: var(--color-warning);
   font-size: 14px;
   font-weight: 600;
 }

@@ -159,8 +159,8 @@ watch(storeTypeId, () => {
   height: 100dvh;
   overflow: hidden;
   background:
-    radial-gradient(circle at top, rgba(219, 168, 85, 0.16), transparent 28%),
-    linear-gradient(180deg, #f7f1e6 0%, #f3efe8 100%);
+    radial-gradient(circle at top, rgba(var(--color-primary-rgb), 0.16), transparent 28%),
+    linear-gradient(180deg, var(--color-surface-soft) 0%, var(--color-surface-muted) 100%);
 }
 
 .region-item {
@@ -181,7 +181,7 @@ watch(storeTypeId, () => {
   grid-template-rows: auto minmax(0, 1fr);
   min-height: 0;
   overflow: hidden;
-  border-right: 1px solid rgba(151, 113, 55, 0.12);
+  border-right: 1px solid rgba(var(--color-primary-rgb), 0.12);
   background: rgba(255, 252, 247, 0.76);
 }
 
@@ -192,7 +192,7 @@ watch(storeTypeId, () => {
 
 .region-panel-head strong,
 .merchant-panel-head strong {
-  color: #4d3924;
+  color: var(--color-text-strong);
   font-size: 14px;
   font-weight: 700;
 }
@@ -215,7 +215,7 @@ watch(storeTypeId, () => {
   margin-bottom: 10px;
   padding: 12px 8px;
   border-radius: 12px;
-  color: #70563a;
+  color: var(--color-text-soft);
   font-size: 13px;
   font-weight: 600;
   line-height: 1.25;
@@ -223,14 +223,14 @@ watch(storeTypeId, () => {
 }
 
 .region-item-active {
-  background: linear-gradient(180deg, #b78347 0%, #966733 100%);
-  color: #fffaf2;
-  box-shadow: 0 10px 24px rgba(150, 103, 51, 0.22);
+  background: linear-gradient(180deg, var(--color-primary-alt) 0%, var(--color-primary-deep) 100%);
+  color: var(--color-text-inverse);
+  box-shadow: 0 10px 24px rgba(var(--color-primary-rgb), 0.22);
 }
 
 .region-empty {
   padding: 12px;
-  color: #9d8b75;
+  color: var(--color-text-subtle);
   font-size: 12px;
   text-align: center;
 }
@@ -249,13 +249,13 @@ watch(storeTypeId, () => {
 }
 
 .merchant-panel-intro strong {
-  color: #2f2418;
+  color: var(--color-text-strong);
   font-size: 18px;
   font-weight: 700;
 }
 
 .merchant-panel-intro span {
-  color: #8a7458;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
@@ -275,14 +275,14 @@ watch(storeTypeId, () => {
 }
 
 .merchant-panel-head span {
-  color: #9d8668;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
 .status-text {
   margin: 0;
   padding: 28px 0;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   text-align: center;
 }
@@ -300,7 +300,7 @@ watch(storeTypeId, () => {
   padding: 12px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.84);
-  box-shadow: 0 12px 28px rgba(80, 56, 28, 0.08);
+  box-shadow: 0 12px 28px rgba(var(--shadow-rgb), 0.08);
   text-align: left;
 }
 
@@ -310,7 +310,7 @@ watch(storeTypeId, () => {
   height: 48px;
   border-radius: 10px;
   object-fit: cover;
-  background: #ece4d6;
+  background: var(--color-surface-soft);
 }
 
 .merchant-copy {
@@ -328,7 +328,7 @@ watch(storeTypeId, () => {
 
 .merchant-title-row strong {
   min-width: 0;
-  color: #332618;
+  color: var(--color-text-strong);
   font-size: 15px;
   font-weight: 700;
   overflow: hidden;
@@ -341,15 +341,15 @@ watch(storeTypeId, () => {
   flex-shrink: 0;
   padding: 3px 8px;
   border-radius: 999px;
-  background: rgba(183, 131, 71, 0.12);
-  color: #9c6930;
+  background: rgba(var(--color-primary-rgb), 0.12);
+  color: var(--color-warning);
   font-size: 11px;
   font-weight: 600;
 }
 
 .merchant-copy > p {
   margin: 0;
-  color: #85715a;
+  color: var(--color-text-soft);
   font-size: 12px;
   line-height: 1.4;
 }
@@ -367,13 +367,13 @@ watch(storeTypeId, () => {
 }
 
 .merchant-meta dt {
-  color: #b49a79;
+  color: var(--color-text-faint);
   font-size: 11px;
 }
 
 .merchant-meta dd {
   margin: 0;
-  color: #5f4d39;
+  color: var(--color-text);
   font-size: 12px;
   line-height: 1.4;
   word-break: break-all;

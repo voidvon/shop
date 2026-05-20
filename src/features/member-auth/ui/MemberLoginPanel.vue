@@ -175,9 +175,9 @@ async function handleSubmit() {
   padding: 28px 22px 24px;
   border-radius: 28px;
   background:
-    linear-gradient(135deg, rgba(184, 92, 56, 0.92), rgba(143, 61, 36, 0.9)),
-    #b85c38;
-  color: #fffaf5;
+    linear-gradient(135deg, rgba(var(--color-primary-rgb), 0.92), rgba(var(--color-primary-rgb), 0.82)),
+    var(--color-primary);
+  color: var(--color-text-inverse);
   box-shadow: var(--shadow-md);
 }
 
@@ -196,16 +196,16 @@ async function handleSubmit() {
 
 .hero-text {
   margin: 12px 0 0;
-  color: rgba(255, 250, 245, 0.86);
+  color: rgba(255, 255, 255, 0.86);
   font-size: 14px;
   line-height: 1.6;
 }
 
 .form-card {
   padding: 18px 14px 20px;
-  border: 1px solid rgba(143, 61, 36, 0.08);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.08);
   border-radius: 24px;
-  background: rgba(255, 250, 242, 0.9);
+  background: var(--color-surface-glass);
   box-shadow: var(--shadow-md);
   backdrop-filter: blur(12px);
 }
@@ -218,7 +218,7 @@ async function handleSubmit() {
 :deep(.field-group .van-cell) {
   padding-top: 14px;
   padding-bottom: 14px;
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-surface-glass);
 }
 
 .meta-row {
@@ -233,7 +233,7 @@ async function handleSubmit() {
 
 .minor-action {
   min-width: 92px;
-  border-color: rgba(184, 92, 56, 0.18);
+  border-color: rgba(var(--color-primary-rgb), 0.18);
   color: var(--color-primary);
 }
 
@@ -249,8 +249,8 @@ async function handleSubmit() {
 
 .wechat-button {
   height: 44px;
-  border-color: rgba(47, 107, 95, 0.18);
-  background: rgba(47, 107, 95, 0.08);
+  border-color: rgba(var(--color-accent-rgb), 0.18);
+  background: rgba(var(--color-accent-rgb), 0.08);
 }
 
 .switch-row {

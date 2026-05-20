@@ -91,7 +91,7 @@ const demandLabel = computed(() => (isHighDemandProduct(props.product) ? '高需
   padding: 20px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-line);
-  background: rgba(255, 251, 245, 0.75);
+  background: var(--color-surface-glass);
 }
 
 .category {
@@ -134,7 +134,7 @@ h2 {
 .hero-meta strong {
   padding: 8px 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
+  background: var(--color-surface-glass);
 }
 
 .service-title {

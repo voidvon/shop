@@ -157,8 +157,8 @@ watch(
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
-  color: #d9b8bb;
+  background: var(--color-surface-glass-strong);
+  color: var(--color-text-faint);
 }
 
 .member-favorite-button:disabled {
@@ -166,6 +166,6 @@ watch(
 }
 
 .member-favorite-button :deep(.van-icon-like) {
-  color: #ea580c;
+  color: var(--color-primary);
 }
 </style>

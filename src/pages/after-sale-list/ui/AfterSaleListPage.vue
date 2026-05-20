@@ -144,16 +144,16 @@ onMounted(() => {
   grid-template-rows: 49px 44px minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
-  background: #fafaf8;
+  background: var(--color-bg);
   overflow: hidden;
 }
 
 .after-sale-tabs {
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .after-sale-tabs :deep(.van-tabs__wrap) {
-  border-bottom: 1px solid #eee7dc;
+  border-bottom: 1px solid var(--color-line-warm);
 }
 
 .content-scroll {
@@ -170,7 +170,7 @@ onMounted(() => {
 .status-text {
   margin: 0;
   padding: 20px 0;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   text-align: center;
 }
@@ -184,8 +184,8 @@ onMounted(() => {
   display: grid;
   gap: 14px;
   border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 10px 24px rgba(26, 25, 24, 0.05);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 10px 24px rgba(var(--shadow-rgb), 0.05);
 }
 
 .record-header,
@@ -205,17 +205,17 @@ onMounted(() => {
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  color: #d89575;
+  color: var(--color-warning);
 }
 
 .store-wrap strong {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 15px;
   font-weight: 600;
 }
 
 .record-header span {
-  color: #d89575;
+  color: var(--color-warning);
   font-size: 13px;
   font-weight: 600;
 }
@@ -227,18 +227,18 @@ onMounted(() => {
 }
 
 .meta-row span {
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
 .meta-row strong {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 13px;
   font-weight: 600;
 }
 
 .refund-amount {
-  color: #ea580c;
+  color: var(--color-primary);
 }
 
 .action-row {
@@ -250,10 +250,10 @@ onMounted(() => {
   min-width: 88px;
   height: 32px;
   padding: 0 14px;
-  border: 1px solid #e5e4e1;
+  border: 1px solid var(--color-line-contrast);
   border-radius: 999px;
-  background: #fff;
-  color: #6d6c6a;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-soft);
   font-size: 12px;
   font-weight: 500;
 }

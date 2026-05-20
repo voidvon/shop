@@ -371,8 +371,8 @@ watch(
   min-height: 100vh;
   min-height: 100dvh;
   background:
-    radial-gradient(circle at top left, rgba(245, 158, 11, 0.16), transparent 32%),
-    linear-gradient(180deg, #fcf8f1 0%, #f3ece2 100%);
+    radial-gradient(circle at top left, rgba(var(--color-primary-rgb), 0.16), transparent 32%),
+    linear-gradient(180deg, var(--color-surface-strong) 0%, var(--color-surface-muted) 100%);
   overflow: hidden;
 }
 
@@ -386,10 +386,10 @@ watch(
 .info-card,
 .notice-card,
 .success-card {
-  border: 1px solid rgba(140, 112, 82, 0.12);
+  border: 1px solid var(--color-line);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 14px 30px rgba(68, 48, 32, 0.06);
+  box-shadow: 0 14px 30px rgba(var(--shadow-rgb), 0.06);
 }
 
 .invite-hero {
@@ -406,8 +406,8 @@ watch(
   min-width: 72px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(245, 158, 11, 0.12);
-  color: #b45309;
+  background: rgba(var(--color-primary-rgb), 0.12);
+  color: var(--color-warning);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -415,14 +415,14 @@ watch(
 
 .invite-hero h1 {
   margin: 0;
-  color: #29211b;
+  color: var(--color-text-strong);
   font-size: 28px;
   line-height: 1.15;
 }
 
 .invite-hero p {
   margin: 0;
-  color: #6b5b4d;
+  color: var(--color-text-soft);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -443,18 +443,18 @@ watch(
 .info-row + .info-row {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid #f1ebe4;
+  border-top: 1px solid var(--color-line-soft);
 }
 
 .info-row span {
-  color: #8c7c6f;
+  color: var(--color-text-subtle);
   font-size: 13px;
 }
 
 .info-row strong,
 .notice-card strong,
 .success-card strong {
-  color: #2d241d;
+  color: var(--color-text-strong);
   font-size: 15px;
   font-weight: 700;
 }
@@ -462,7 +462,7 @@ watch(
 .notice-card p,
 .success-card p {
   margin: 10px 0 0;
-  color: #7a6a5d;
+  color: var(--color-text-soft);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -484,9 +484,9 @@ watch(
 
 .primary-button {
   border: 0;
-  background: linear-gradient(135deg, #c97b2a 0%, #ea580c 100%);
-  color: #fff;
-  box-shadow: 0 12px 24px rgba(201, 123, 42, 0.24);
+  background: linear-gradient(135deg, var(--color-primary-alt) 0%, var(--color-primary) 100%);
+  color: var(--color-text-inverse);
+  box-shadow: 0 12px 24px rgba(var(--color-primary-rgb), 0.24);
 }
 
 .primary-button:disabled {
@@ -495,9 +495,9 @@ watch(
 }
 
 .secondary-button {
-  border: 1px solid #e9ddd0;
-  background: #fff;
-  color: #7a5a42;
+  border: 1px solid var(--color-line-warm);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-soft);
 }
 
 .success-card {
@@ -515,8 +515,8 @@ watch(
   width: 68px;
   height: 68px;
   border-radius: 999px;
-  background: rgba(34, 197, 94, 0.12);
-  color: #16a34a;
+  background: rgba(var(--color-accent-rgb), 0.12);
+  color: var(--color-success);
 }
 
 .success-actions {

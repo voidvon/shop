@@ -234,7 +234,7 @@ onMounted(() => {
   grid-template-rows: 56px auto minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
-  background: #fafaf8;
+  background: var(--color-bg);
   overflow: hidden;
 }
 
@@ -244,18 +244,18 @@ onMounted(() => {
   margin: 16px 16px 0;
   padding: 16px;
   border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 10px 28px rgba(26, 25, 24, 0.06);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 10px 28px rgba(var(--shadow-rgb), 0.06);
 }
 
 .bind-intro strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 16px;
 }
 
 .bind-intro p {
   margin: 0;
-  color: #8a7f78;
+  color: var(--color-text-subtle);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -266,8 +266,8 @@ onMounted(() => {
   margin: 16px;
   padding: 16px;
   border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 10px 28px rgba(26, 25, 24, 0.06);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 10px 28px rgba(var(--shadow-rgb), 0.06);
 }
 
 .preview-head {
@@ -278,13 +278,13 @@ onMounted(() => {
 }
 
 .preview-head strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 16px;
 }
 
 .preview-head p {
   margin: 6px 0 0;
-  color: #8a7f78;
+  color: var(--color-text-subtle);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -292,16 +292,16 @@ onMounted(() => {
 .preview-status {
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(255, 106, 26, 0.12);
-  color: #ff6a1a;
+  background: rgba(var(--color-primary-rgb), 0.12);
+  color: var(--color-primary-alt);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .preview-status-disabled {
-  background: rgba(140, 138, 134, 0.12);
-  color: #8c8a86;
+  background: rgba(var(--shadow-rgb), 0.08);
+  color: var(--color-text-subtle);
 }
 
 .preview-grid {
@@ -317,13 +317,13 @@ onMounted(() => {
 }
 
 .preview-grid dt {
-  color: #8a7f78;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
 .preview-grid dd {
   margin: 0;
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 14px;
   font-weight: 600;
 }
@@ -334,7 +334,7 @@ onMounted(() => {
 }
 
 .mobile-field span {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 14px;
   font-weight: 500;
 }
@@ -342,15 +342,15 @@ onMounted(() => {
 .mobile-field input {
   height: 44px;
   padding: 0 14px;
-  border: 1px solid #e5e4e1;
+  border: 1px solid var(--color-line-contrast);
   border-radius: 14px;
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 14px;
   outline: none;
 }
 
 .mobile-field input::placeholder {
-  color: #9c9b99;
+  color: var(--color-text-muted);
 }
 
 .mobile-hint {
@@ -359,15 +359,15 @@ onMounted(() => {
 }
 
 .mobile-hint-error {
-  color: #d14b4b;
+  color: var(--color-danger);
 }
 
 .submit-button {
   height: 48px;
   border: 0;
   border-radius: 14px;
-  background: #ff6a1a;
-  color: #fff;
+  background: var(--color-primary-alt);
+  color: var(--color-text-inverse);
   font-size: 16px;
   font-weight: 600;
 }

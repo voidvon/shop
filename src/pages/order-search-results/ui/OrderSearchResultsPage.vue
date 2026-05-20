@@ -262,7 +262,7 @@ onActivated(() => {
   grid-template-rows: auto minmax(0, 1fr);
   min-height: 100vh;
   min-height: 100dvh;
-  background: #f7f4ef;
+  background: var(--color-bg-strong);
 }
 
 .search-header {
@@ -271,8 +271,8 @@ onActivated(() => {
   gap: 12px;
   align-items: center;
   padding: 8px 12px;
-  background: #fff;
-  border-bottom: 1px solid #ede9e3;
+  background: var(--color-surface-elevated);
+  border-bottom: 1px solid var(--color-line-soft);
 }
 
 .header-button,
@@ -283,7 +283,7 @@ onActivated(() => {
 }
 
 .header-button {
-  color: #3c3b39;
+  color: var(--color-text);
 }
 
 .search-box {
@@ -291,7 +291,7 @@ onActivated(() => {
 }
 
 .search-submit {
-  color: #d89575;
+  color: var(--color-warning);
   font-size: 13px;
   font-weight: 600;
 }
@@ -310,7 +310,7 @@ onActivated(() => {
 .status-text {
   margin: 0;
   padding: 20px 16px;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   text-align: center;
 }
@@ -322,12 +322,12 @@ onActivated(() => {
   gap: 12px;
   padding: 0 16px;
   margin-bottom: 14px;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
 }
 
 .summary-row strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 15px;
 }
 
@@ -338,7 +338,7 @@ onActivated(() => {
 
 .store-section {
   display: grid;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .coin-dot-small {
@@ -350,7 +350,7 @@ onActivated(() => {
   display: grid;
   gap: 12px;
   padding: 0 16px 16px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .store-footer-actions {
@@ -363,14 +363,14 @@ onActivated(() => {
   justify-content: flex-end;
   gap: 6px;
   align-items: center;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
   font-weight: 500;
   text-align: right;
 }
 
 .total-row strong {
-  color: #ea580c;
+  color: var(--color-primary);
   font-size: 18px;
   font-weight: 700;
 }
@@ -389,10 +389,10 @@ onActivated(() => {
   min-width: 92px;
   height: 34px;
   padding: 0 14px;
-  border: 1px solid #e5e4e1;
+  border: 1px solid var(--color-line-contrast);
   border-radius: 8px;
-  background: #fff;
-  color: #9c9b99;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-muted);
   font-size: 13px;
   font-weight: 500;
 }
@@ -410,8 +410,8 @@ onActivated(() => {
   padding: 0 14px;
   border: 0;
   border-radius: 8px;
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary-alt), var(--color-primary));
+  color: var(--color-text-inverse);
   font-size: 13px;
   font-weight: 600;
 }

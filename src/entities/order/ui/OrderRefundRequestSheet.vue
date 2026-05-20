@@ -149,7 +149,7 @@ watch(
   display: grid;
   gap: 18px;
   padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
-  background: #fffaf4;
+  background: var(--color-surface-strong);
 }
 
 .sheet-header {
@@ -160,7 +160,7 @@ watch(
 }
 
 .sheet-header strong {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 18px;
   font-weight: 700;
 }
@@ -174,8 +174,8 @@ watch(
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: #f6efe7;
-  color: #8c857d;
+  background: var(--color-surface-soft);
+  color: var(--color-text-subtle);
 }
 
 .sheet-body,
@@ -185,7 +185,7 @@ watch(
 }
 
 .field-title {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 14px;
   font-weight: 600;
 }
@@ -200,18 +200,18 @@ watch(
   min-width: 88px;
   min-height: 36px;
   padding: 0 16px;
-  border: 1px solid #eadbc8;
+  border: 1px solid var(--color-line-warm);
   border-radius: 999px;
-  background: #fff;
-  color: #6d6c6a;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-soft);
   font-size: 13px;
   font-weight: 500;
 }
 
 .reason-chip-active {
-  border-color: #ea580c;
-  background: #fff2e8;
-  color: #c2410c;
+  border-color: var(--color-primary);
+  background: var(--color-surface-accent);
+  color: var(--color-primary-deep);
 }
 
 .reason-textarea {
@@ -238,13 +238,13 @@ watch(
 }
 
 .footer-button-muted {
-  background: #f6efe7;
-  color: #6d6c6a;
+  background: var(--color-surface-soft);
+  color: var(--color-text-soft);
 }
 
 .footer-button-primary {
-  background: #ea580c;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
 }
 
 .sheet-close-button:disabled,

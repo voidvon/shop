@@ -395,7 +395,7 @@ onMounted(() => {
   grid-template-rows: 49px minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
-  background: #fff;
+  background: var(--color-surface-elevated);
   overflow: hidden;
 }
 
@@ -429,7 +429,7 @@ onMounted(() => {
 }
 
 .merchant-staff-empty-state strong {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 22px;
   font-weight: 600;
   line-height: 1.4;
@@ -450,12 +450,12 @@ onMounted(() => {
 }
 
 .log-detail-grid dt {
-  color: #8b7768;
+  color: var(--color-text-subtle);
 }
 
 .log-card-title strong,
 .log-detail-grid dd {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
 }
 
 .list-section {
@@ -471,7 +471,7 @@ onMounted(() => {
 
 .error-message {
   margin: 0;
-  color: #b45309;
+  color: var(--color-warning);
   font-size: 13px;
   text-align: center;
 }
@@ -481,8 +481,8 @@ onMounted(() => {
   padding: 10px 18px;
   border: 0;
   border-radius: 999px;
-  background: #ea580c;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
   font-size: 14px;
   font-weight: 600;
 }
@@ -496,7 +496,7 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   padding-top: 4px;
-  color: #b8b2aa;
+  color: var(--color-text-faint);
   text-align: center;
 }
 
@@ -505,15 +505,15 @@ onMounted(() => {
 }
 
 .log-list :deep(.van-list__loading .van-loading) {
-  color: #b8b2aa;
+  color: var(--color-text-faint);
 }
 
 .log-card {
   gap: 12px;
   padding: 16px;
   border-radius: 22px;
-  background: #fff;
-  box-shadow: 0 14px 32px rgba(27, 25, 22, 0.08);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 14px 32px rgba(var(--shadow-rgb), 0.08);
 }
 
 .log-card-actions {
@@ -548,7 +548,7 @@ onMounted(() => {
   min-width: 0;
   padding: 10px 14px;
   border-radius: 16px;
-  background: #f7f7f7;
+  background: var(--color-surface-soft);
 }
 
 .log-detail-meta {
@@ -581,8 +581,8 @@ onMounted(() => {
   padding: 9px 14px;
   border: 0;
   border-radius: 999px;
-  background: #ea580c;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
   font-size: 13px;
   font-weight: 600;
 }
@@ -597,7 +597,7 @@ onMounted(() => {
 }
 
 .log-detail-danger {
-  color: #b91c1c;
+  color: var(--color-danger);
 }
 
 @media (max-width: 420px) {

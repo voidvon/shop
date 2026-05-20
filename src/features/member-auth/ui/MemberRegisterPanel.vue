@@ -214,7 +214,7 @@ async function handleSubmit() {
 .mode-tabs {
   overflow: hidden;
   border-radius: 22px;
-  background: rgba(255, 250, 242, 0.82);
+  background: var(--color-surface-glass);
   box-shadow: var(--shadow-md);
 }
 
@@ -234,9 +234,9 @@ async function handleSubmit() {
 
 .form-card {
   padding: 22px 14px 20px;
-  border: 1px solid rgba(143, 61, 36, 0.08);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.08);
   border-radius: 24px;
-  background: rgba(255, 250, 242, 0.9);
+  background: var(--color-surface-glass);
   box-shadow: var(--shadow-md);
 }
 
@@ -262,7 +262,7 @@ async function handleSubmit() {
 :deep(.field-group .van-cell) {
   padding-top: 14px;
   padding-bottom: 14px;
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-surface-glass);
 }
 
 .agreement-row {

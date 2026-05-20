@@ -101,7 +101,7 @@ onMounted(async () => {
 .search-page {
   min-height: 100vh;
   min-height: 100dvh;
-  background: #f7f4ef;
+  background: var(--color-bg-strong);
 }
 
 .search-header {
@@ -110,8 +110,8 @@ onMounted(async () => {
   gap: 12px;
   align-items: center;
   padding: 12px 16px;
-  background: #fff;
-  border-bottom: 1px solid #eee7dc;
+  background: var(--color-surface-elevated);
+  border-bottom: 1px solid var(--color-line-warm);
 }
 
 .header-button,
@@ -125,7 +125,7 @@ onMounted(async () => {
 }
 
 .header-button {
-  color: #3c3b39;
+  color: var(--color-text);
 }
 
 .search-input {
@@ -133,7 +133,7 @@ onMounted(async () => {
 }
 
 .search-submit {
-  color: #ea580c;
+  color: var(--color-primary);
   font-size: 14px;
   font-weight: 600;
 }
@@ -150,7 +150,7 @@ onMounted(async () => {
   padding: 16px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 24px rgba(26, 25, 24, 0.05);
+  box-shadow: 0 10px 24px rgba(var(--shadow-rgb), 0.05);
 }
 
 .section-header {
@@ -161,19 +161,19 @@ onMounted(async () => {
 }
 
 .section-header strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 15px;
   font-weight: 700;
 }
 
 .section-action {
-  color: #9c8e7f;
+  color: var(--color-text-subtle);
   font-size: 13px;
 }
 
 .empty-text {
   margin: 0;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
 }
 
@@ -189,18 +189,18 @@ onMounted(async () => {
   gap: 12px;
   padding: 12px 14px;
   border-radius: 14px;
-  background: #faf7f2;
+  background: var(--color-surface-strong);
 }
 
 .history-keyword {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 14px;
 }
 
 .history-remove {
-  color: #b4b2ae;
+  color: var(--color-text-faint);
 }
 </style>

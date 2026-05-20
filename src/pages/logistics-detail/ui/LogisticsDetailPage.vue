@@ -38,7 +38,7 @@ function goBack() {
   grid-template-rows: 49px minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
-  background: linear-gradient(180deg, #f8f3ec 0%, #f4ede3 100%);
+  background: linear-gradient(180deg, var(--color-surface-soft) 0%, var(--color-surface-muted) 100%);
 }
 
 .content-wrap {

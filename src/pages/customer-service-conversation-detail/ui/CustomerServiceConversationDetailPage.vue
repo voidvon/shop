@@ -483,7 +483,7 @@ onBeforeUnmount(() => {
         />
       </div>
       <van-button
-        color="#07c160"
+        color="var(--color-chat-send)"
         :disabled="!canReply || !draftMessage.trim() || isUploadingImage"
         :loading="isSending"
         round
@@ -502,7 +502,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: #ededed;
+  background: var(--color-chat-bg);
   overflow: hidden;
 }
 
@@ -512,8 +512,8 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 12px;
   padding: 10px 16px;
-  border-bottom: 1px solid rgba(33, 33, 33, 0.06);
-  background: rgba(245, 245, 245, 0.96);
+  border-bottom: 1px solid var(--color-chat-border);
+  background: var(--color-chat-panel);
 }
 
 .chat-status-copy {
@@ -523,7 +523,7 @@ onBeforeUnmount(() => {
 .chat-status-copy strong {
   display: block;
   overflow: hidden;
-  color: #1f2329;
+  color: var(--color-text-heading);
   font-size: 14px;
   font-weight: 600;
   text-overflow: ellipsis;
@@ -533,7 +533,7 @@ onBeforeUnmount(() => {
 .chat-status-copy p {
   margin: 2px 0 0;
   overflow: hidden;
-  color: #7b7f86;
+  color: var(--color-text-subtle);
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -543,8 +543,8 @@ onBeforeUnmount(() => {
   flex: none;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(7, 193, 96, 0.12);
-  color: #07c160;
+  background: rgba(var(--color-accent-rgb), 0.12);
+  color: var(--color-chat-send);
   font-size: 12px;
   font-weight: 600;
 }
@@ -553,13 +553,13 @@ onBeforeUnmount(() => {
   margin: 10px 16px 0;
   padding: 12px 14px;
   border-radius: 12px;
-  border: 1px solid rgba(184, 72, 62, 0.14);
-  background: #fff8f6;
+  border: 1px solid rgba(var(--color-danger-rgb), 0.14);
+  background: var(--color-danger-soft);
 }
 
 .error-card p {
   margin: 0;
-  color: #b8483e;
+  color: var(--color-danger);
   font-size: 13px;
 }
 
@@ -577,7 +577,7 @@ onBeforeUnmount(() => {
 .message-time-separator {
   align-self: center;
   padding: 2px 10px;
-  color: #999;
+  color: var(--color-chat-meta);
   font-size: 12px;
 }
 
@@ -599,17 +599,21 @@ onBeforeUnmount(() => {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 14px;
   font-weight: 700;
 }
 
 .message-avatar-member {
-  background: linear-gradient(135deg, #22c55e, #07c160);
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-chat-send) 100%);
 }
 
 .message-avatar-service {
-  background: linear-gradient(135deg, #7c8aa5, #5b677d);
+  background: linear-gradient(
+    135deg,
+    var(--color-chat-service-avatar-start) 0%,
+    var(--color-chat-service-avatar-end) 100%
+  );
 }
 
 .message-content {
@@ -628,7 +632,7 @@ onBeforeUnmount(() => {
 .message-meta {
   display: flex;
   gap: 8px;
-  color: #999;
+  color: var(--color-chat-meta);
   font-size: 12px;
 }
 
@@ -653,13 +657,13 @@ onBeforeUnmount(() => {
 }
 
 .message-bubble-member {
-  background: #95ec69;
-  color: #1f2329;
+  background: var(--color-chat-member-bubble);
+  color: var(--color-text-heading);
 }
 
 .message-bubble-service {
-  background: #fff;
-  color: #1f2329;
+  background: var(--color-chat-service-bubble);
+  color: var(--color-text-heading);
 }
 
 .message-image {
@@ -667,7 +671,7 @@ onBeforeUnmount(() => {
   width: 100%;
   max-width: 232px;
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.08);
+  background: var(--color-chat-image-placeholder);
   object-fit: cover;
 }
 
@@ -690,8 +694,8 @@ onBeforeUnmount(() => {
   gap: 10px;
   align-items: center;
   padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid rgba(33, 33, 33, 0.06);
-  background: #f7f7f7;
+  border-top: 1px solid var(--color-chat-border);
+  background: var(--color-chat-panel-strong);
 }
 
 .composer-file-input {
@@ -709,7 +713,7 @@ onBeforeUnmount(() => {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #6b7280;
+  color: var(--color-text-subtle);
 }
 
 .attachment-button:disabled {
@@ -723,7 +727,7 @@ onBeforeUnmount(() => {
   width: 100%;
   min-height: 30px;
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface-elevated);
   cursor: text;
 }
 
@@ -772,7 +776,7 @@ onBeforeUnmount(() => {
   align-self: center;
   height: 34px;
   min-width: 70px;
-  --van-button-primary-border-color: #07c160;
+  --van-button-primary-border-color: var(--color-chat-send);
 }
 
 @media (max-width: 360px) {

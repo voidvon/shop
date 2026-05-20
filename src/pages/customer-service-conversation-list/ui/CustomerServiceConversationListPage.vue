@@ -351,7 +351,7 @@ onActivated(() => {
 
         <van-button
           block
-          color="#07c160"
+          color="var(--color-chat-send)"
           :loading="isSubmitting"
           round
           type="primary"
@@ -368,7 +368,7 @@ onActivated(() => {
 .customer-service-page {
   min-height: 100vh;
   min-height: 100dvh;
-  background: #ededed;
+  background: var(--color-chat-bg);
 }
 
 .customer-service-scroll {
@@ -382,7 +382,7 @@ onActivated(() => {
 .source-card,
 .conversation-section,
 .error-card {
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .service-entry-card {
@@ -400,8 +400,12 @@ onActivated(() => {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #7c8aa5, #5b677d);
-  color: #fff;
+  background: linear-gradient(
+    135deg,
+    var(--color-chat-service-avatar-start) 0%,
+    var(--color-chat-service-avatar-end) 100%
+  );
+  color: var(--color-text-inverse);
   font-size: 18px;
   font-weight: 700;
 }
@@ -417,9 +421,9 @@ onActivated(() => {
   top: -2px;
   width: 10px;
   height: 10px;
-  border: 2px solid #fff;
+  border: 2px solid var(--color-text-inverse);
   border-radius: 50%;
-  background: #fa5151;
+  background: var(--color-danger);
 }
 
 .service-entry-copy {
@@ -432,7 +436,7 @@ onActivated(() => {
 .section-head strong,
 .conversation-head strong,
 .conversation-section-head strong {
-  color: #111;
+  color: var(--color-text-heading);
   font-size: 16px;
   font-weight: 600;
 }
@@ -441,7 +445,7 @@ onActivated(() => {
 .source-card p,
 .error-card p {
   margin: 4px 0 0;
-  color: #888;
+  color: var(--color-text-subtle);
   font-size: 13px;
 }
 
@@ -451,8 +455,8 @@ onActivated(() => {
   height: 32px;
   border: 0;
   border-radius: 999px;
-  background: rgba(7, 193, 96, 0.12);
-  color: #07c160;
+  background: rgba(var(--color-accent-rgb), 0.12);
+  color: var(--color-chat-send);
   font-size: 13px;
   font-weight: 600;
 }
@@ -464,7 +468,7 @@ onActivated(() => {
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  color: #999;
+  color: var(--color-chat-meta);
 }
 
 .source-card {
@@ -478,7 +482,7 @@ onActivated(() => {
 }
 
 .source-label {
-  color: #999;
+  color: var(--color-chat-meta);
   font-size: 12px;
 }
 
@@ -502,28 +506,28 @@ onActivated(() => {
 .composer-field {
   margin-bottom: 12px;
   border-radius: 12px;
-  background: #f7f7f7;
+  background: var(--color-chat-panel-strong);
 }
 
 .text-button {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #07c160;
+  color: var(--color-chat-send);
   font-size: 13px;
 }
 
 .error-card {
   margin: 0 16px;
   padding: 12px 16px;
-  border-color: rgba(184, 72, 62, 0.14);
-  background: #fff8f6;
+  border: 1px solid rgba(var(--color-danger-rgb), 0.14);
+  background: var(--color-danger-soft);
   border-radius: 12px;
 }
 
 .error-card p {
   margin: 0;
-  color: #b8483e;
+  color: var(--color-danger);
 }
 
 .conversation-card {
@@ -533,8 +537,8 @@ onActivated(() => {
   width: 100%;
   padding: 12px 16px;
   border: 0;
-  border-bottom: 1px solid #f0f0f0;
-  background: #fff;
+  border-bottom: 1px solid var(--color-line-soft);
+  background: var(--color-surface-elevated);
   text-align: left;
 }
 
@@ -562,7 +566,7 @@ onActivated(() => {
 
 .conversation-time {
   flex: none;
-  color: #999;
+  color: var(--color-chat-meta);
   font-size: 12px;
 }
 
@@ -570,7 +574,7 @@ onActivated(() => {
   flex: 1;
   margin: 0;
   overflow: hidden;
-  color: #7a7a7a;
+  color: var(--color-text-subtle);
   font-size: 13px;
   line-height: 1.5;
   text-overflow: ellipsis;
@@ -578,11 +582,11 @@ onActivated(() => {
 }
 
 .conversation-status {
-  color: #07c160;
+  color: var(--color-chat-send);
 }
 
 .conversation-source {
-  color: #999;
+  color: var(--color-chat-meta);
 }
 
 .empty-state {

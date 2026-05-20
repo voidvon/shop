@@ -219,7 +219,7 @@ onMounted(() => {
   grid-template-rows: 49px minmax(0, 1fr) auto;
   height: 100vh;
   height: 100dvh;
-  background: #fafaf8;
+  background: var(--color-bg);
   overflow: hidden;
 }
 
@@ -237,7 +237,7 @@ onMounted(() => {
 .status-text {
   margin: 0;
   padding: 20px 0;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   text-align: center;
 }
@@ -249,17 +249,17 @@ onMounted(() => {
   gap: 12px;
   margin-bottom: 12px;
   border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 10px 24px rgba(26, 25, 24, 0.05);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 10px 24px rgba(var(--shadow-rgb), 0.05);
 }
 
 .summary-card {
   padding: 18px 16px;
-  background: linear-gradient(135deg, #fff1e6 0%, #fff8f2 100%);
+  background: linear-gradient(135deg, var(--color-surface-accent) 0%, var(--color-surface-accent-strong) 100%);
 }
 
 .summary-card strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 17px;
   font-weight: 700;
 }
@@ -268,7 +268,7 @@ onMounted(() => {
 .summary-card span,
 .tips-card p {
   margin: 0;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -283,7 +283,7 @@ onMounted(() => {
 
 .form-card :deep(.van-field__label) {
   width: 72px;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
 }
 
 .tips-card {
@@ -294,19 +294,19 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   align-items: center;
-  color: #d97706;
+  color: var(--color-warning);
 }
 
 .tips-header strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 15px;
   font-weight: 700;
 }
 
 .action-footer {
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-  border-top: 1px solid #eee7dc;
-  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--color-line-warm);
+  background: var(--color-surface-glass);
 }
 
 .primary-button {
@@ -314,8 +314,8 @@ onMounted(() => {
   height: 42px;
   border: 0;
   border-radius: 999px;
-  background: #ea580c;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
   font-size: 14px;
   font-weight: 600;
 }

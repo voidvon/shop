@@ -90,14 +90,14 @@ const canPreview = computed(() => !isBusy.value)
   align-items: center;
   height: 48px;
   padding: 0 16px;
-  border-bottom: 1px solid #e5e4e1;
-  background: #fff;
+  border-bottom: 1px solid var(--color-line-contrast);
+  background: var(--color-surface-elevated);
 }
 
 .card-input-row span {
   flex: none;
   white-space: nowrap;
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 14px;
   font-weight: 500;
 }
@@ -107,14 +107,14 @@ const canPreview = computed(() => !isBusy.value)
   padding: 0;
   border: 0;
   background: transparent;
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 14px;
   font-weight: 500;
   outline: none;
 }
 
 .card-input-row input::placeholder {
-  color: #9c9b99;
+  color: var(--color-text-muted);
 }
 
 .bind-body {
@@ -140,8 +140,8 @@ const canPreview = computed(() => !isBusy.value)
   height: 168px;
   border: 0;
   border-radius: 28px;
-  background: linear-gradient(180deg, #fff3eb 0%, #ffe5d3 100%);
-  color: #ff6a1a;
+  background: linear-gradient(180deg, var(--color-surface-accent) 0%, var(--color-primary-soft-strong) 100%);
+  color: var(--color-primary-alt);
 }
 
 .scan-button:disabled {
@@ -149,7 +149,7 @@ const canPreview = computed(() => !isBusy.value)
 }
 
 .scan-section strong {
-  color: #d89575;
+  color: var(--color-warning);
   font-size: 18px;
   font-weight: 600;
 }
@@ -157,7 +157,7 @@ const canPreview = computed(() => !isBusy.value)
 .scan-section p {
   margin: 0;
   max-width: 240px;
-  color: #9c7f70;
+  color: var(--color-text-subtle);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -171,10 +171,10 @@ const canPreview = computed(() => !isBusy.value)
 .secondary-button {
   width: 100%;
   height: 52px;
-  border: 1px solid rgba(255, 106, 26, 0.2);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.2);
   border-radius: 14px;
-  background: #fff;
-  color: #ff6a1a;
+  background: var(--color-surface-elevated);
+  color: var(--color-primary-alt);
   font-size: 16px;
   font-weight: 600;
 }
@@ -188,11 +188,11 @@ const canPreview = computed(() => !isBusy.value)
   height: 52px;
   border: 0;
   border-radius: 14px;
-  background: #ff6a1a;
-  color: #fff;
+  background: var(--color-primary-alt);
+  color: var(--color-text-inverse);
   font-size: 16px;
   font-weight: 600;
-  box-shadow: 0 1px 6px rgba(26, 25, 24, 0.08);
+  box-shadow: 0 1px 6px rgba(var(--shadow-rgb), 0.08);
 }
 
 .primary-button:disabled {

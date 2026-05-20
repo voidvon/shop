@@ -151,8 +151,8 @@ onMounted(() => {
   height: 100vh;
   height: 100dvh;
   background:
-    radial-gradient(circle at top left, rgba(184, 92, 56, 0.16), transparent 34%),
-    linear-gradient(180deg, #fcf7f0 0%, #f6ede0 100%);
+    radial-gradient(circle at top left, var(--color-body-glow-primary), transparent 34%),
+    linear-gradient(180deg, var(--color-surface-strong) 0%, var(--color-surface-muted) 100%);
   overflow: hidden;
 }
 

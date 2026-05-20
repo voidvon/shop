@@ -59,7 +59,7 @@ const demandLabel = computed(() => (isHighDemandProduct(props.product) ? '高需
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-line);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 248, 240, 0.84) 100%);
+    linear-gradient(180deg, var(--color-surface-glass-strong) 0%, var(--color-surface-accent-strong) 100%);
   box-shadow: var(--shadow-md);
 }
 
@@ -98,7 +98,7 @@ h3 {
 .meta div {
   padding: 12px;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-surface-glass);
 }
 
 .meta span,

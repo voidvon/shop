@@ -51,7 +51,7 @@ const resolvedImageUrl = computed(() => props.imageUrl || '/images/image-placeho
   padding: 0 0 8px;
   border-radius: 12px;
   overflow: hidden;
-  background: #fff;
+  background: var(--color-surface-elevated);
   color: inherit;
   text-decoration: none;
 }
@@ -66,8 +66,8 @@ const resolvedImageUrl = computed(() => props.imageUrl || '/images/image-placeho
   gap: 4px;
   padding: 5px 8px;
   border-radius: 999px;
-  background: rgba(255, 247, 237, 0.96);
-  color: #c2410c;
+  background: rgba(var(--color-primary-rgb), 0.08);
+  color: var(--color-primary-deep);
   font-size: 11px;
   font-weight: 600;
   line-height: 1;
@@ -78,7 +78,7 @@ const resolvedImageUrl = computed(() => props.imageUrl || '/images/image-placeho
   height: 140px;
   border-radius: 8px;
   object-fit: cover;
-  background: #edecea;
+  background: var(--color-surface-muted);
 }
 
 .name-wrapper,
@@ -89,7 +89,7 @@ const resolvedImageUrl = computed(() => props.imageUrl || '/images/image-placeho
 .name-wrapper strong {
   display: -webkit-box;
   overflow: hidden;
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 14px;
   font-weight: 500;
   line-height: 1.35;
@@ -105,7 +105,7 @@ const resolvedImageUrl = computed(() => props.imageUrl || '/images/image-placeho
 
 .sales-inline {
   margin-left: auto;
-  color: #8a8885;
+  color: var(--color-text-subtle);
   font-size: 12px;
   font-weight: 500;
   line-height: 1;
@@ -113,13 +113,13 @@ const resolvedImageUrl = computed(() => props.imageUrl || '/images/image-placeho
 }
 
 .price-row span {
-  color: #d08068;
+  color: var(--color-warning);
   font-size: 16px;
   font-weight: 600;
 }
 
 .price-row small {
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   text-decoration: line-through;
 }

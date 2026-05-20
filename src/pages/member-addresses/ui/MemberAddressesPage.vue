@@ -481,7 +481,7 @@ onActivated(() => {
 .status-text {
   margin: 0;
   padding: 20px 16px;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   text-align: center;
 }
@@ -493,7 +493,7 @@ onActivated(() => {
   max-height: none;
   border-radius: 0;
   overflow: hidden;
-  background: #fafaf8;
+  background: var(--color-bg);
 }
 
 .address-editor-page {
@@ -501,7 +501,7 @@ onActivated(() => {
   grid-template-rows: 49px minmax(0, 1fr);
   width: 100%;
   height: 100%;
-  background: #fafaf8;
+  background: var(--color-bg);
 }
 
 .address-editor-scroll {

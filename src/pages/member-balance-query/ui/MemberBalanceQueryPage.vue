@@ -182,8 +182,8 @@ watch([cardNumber, cardSecret], () => {
   height: 100vh;
   height: 100dvh;
   background:
-    radial-gradient(circle at top, rgba(255, 140, 66, 0.14), transparent 38%),
-    linear-gradient(180deg, #fff8f1 0%, #f6f1ea 100%);
+    radial-gradient(circle at top, var(--color-body-glow-primary), transparent 38%),
+    linear-gradient(180deg, var(--color-surface-accent-strong) 0%, var(--color-surface-soft) 100%);
   overflow: hidden;
 }
 
@@ -200,8 +200,8 @@ watch([cardNumber, cardSecret], () => {
 .hero-card,
 .detail-grid {
   border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 12px 28px rgba(26, 25, 24, 0.06);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 12px 28px rgba(var(--shadow-rgb), 0.06);
 }
 
 .intro-card {
@@ -212,7 +212,7 @@ watch([cardNumber, cardSecret], () => {
 }
 
 .intro-card strong {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 17px;
 }
 
@@ -240,8 +240,8 @@ watch([cardNumber, cardSecret], () => {
   height: 168px;
   border: 0;
   border-radius: 30px;
-  background: linear-gradient(180deg, #fff3ea 0%, #ffe1cb 100%);
-  color: #ef6b22;
+  background: linear-gradient(180deg, var(--color-surface-accent) 0%, var(--color-primary-soft-strong) 100%);
+  color: var(--color-primary-alt);
 }
 
 .scan-button:disabled {
@@ -249,7 +249,7 @@ watch([cardNumber, cardSecret], () => {
 }
 
 .scan-panel strong {
-  color: #ca6a32;
+  color: var(--color-primary-deep);
   font-size: 18px;
   font-weight: 600;
 }
@@ -257,7 +257,7 @@ watch([cardNumber, cardSecret], () => {
 .scan-panel p {
   margin: 0;
   max-width: 260px;
-  color: #907b70;
+  color: var(--color-text-subtle);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -266,7 +266,7 @@ watch([cardNumber, cardSecret], () => {
   display: grid;
   gap: 14px;
   padding: 18px 16px calc(20px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(180deg, #fff8f1 0%, #f8f4ee 100%);
+  background: linear-gradient(180deg, var(--color-surface-accent-strong) 0%, var(--color-surface-soft) 100%);
 }
 
 .result-header {
@@ -277,13 +277,13 @@ watch([cardNumber, cardSecret], () => {
 }
 
 .result-header strong {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 18px;
 }
 
 .result-header p {
   margin: 6px 0 0;
-  color: #8b8078;
+  color: var(--color-text-subtle);
   font-size: 13px;
 }
 
@@ -291,7 +291,7 @@ watch([cardNumber, cardSecret], () => {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #8b8078;
+  color: var(--color-text-subtle);
   font-size: 14px;
 }
 
@@ -299,7 +299,7 @@ watch([cardNumber, cardSecret], () => {
   display: grid;
   gap: 8px;
   padding: 18px;
-  background: linear-gradient(135deg, #ff7a1a 0%, #ea580c 100%);
+  background: linear-gradient(135deg, var(--color-primary-alt) 0%, var(--color-primary) 100%);
 }
 
 .hero-card span {
@@ -308,7 +308,7 @@ watch([cardNumber, cardSecret], () => {
 }
 
 .hero-card strong {
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 34px;
   line-height: 1;
 }
@@ -326,17 +326,17 @@ watch([cardNumber, cardSecret], () => {
 }
 
 .detail-grid div + div {
-  border-top: 1px solid #f1ece6;
+  border-top: 1px solid var(--color-line-soft);
 }
 
 .detail-grid dt {
-  color: #8b8078;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
 .detail-grid dd {
   margin: 0;
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 15px;
   font-weight: 600;
   word-break: break-all;

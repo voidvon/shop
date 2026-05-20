@@ -114,7 +114,7 @@ onMounted(() => {
   padding: 14px 16px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-line);
-  background: rgba(255, 255, 255, 0.76);
+  background: var(--color-surface-glass);
 }
 
 .stats strong,
@@ -154,7 +154,7 @@ onMounted(() => {
   margin: 0;
   padding: 16px;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--color-surface-glass);
   color: var(--color-text-soft);
 }
 

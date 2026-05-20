@@ -624,8 +624,8 @@ async function handleSubmitDeduction() {
   height: 100vh;
   height: 100dvh;
   background:
-    radial-gradient(circle at top, rgba(231, 111, 81, 0.18), transparent 32%),
-    linear-gradient(180deg, #fff9f4 0%, #f2ede7 100%);
+    radial-gradient(circle at top, rgba(var(--color-primary-rgb), 0.18), transparent 32%),
+    linear-gradient(180deg, var(--color-surface-accent-strong) 0%, var(--color-surface-muted) 100%);
   overflow: hidden;
 }
 
@@ -646,8 +646,8 @@ async function handleSubmitDeduction() {
   gap: 10px;
   padding: 18px;
   border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 14px 32px rgba(27, 25, 22, 0.08);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-md);
 }
 
 .hero-card,
@@ -659,7 +659,7 @@ async function handleSubmitDeduction() {
 .hero-card strong,
 .identity-item strong,
 .section-head strong {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
 }
 
 .merchant-staff-empty-state {
@@ -672,7 +672,7 @@ async function handleSubmitDeduction() {
 }
 
 .merchant-staff-empty-state strong {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 22px;
   font-weight: 600;
   line-height: 1.4;
@@ -680,7 +680,7 @@ async function handleSubmitDeduction() {
 
 .section-head p {
   margin: 0;
-  color: #78716c;
+  color: var(--color-text-subtle);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -704,7 +704,7 @@ async function handleSubmitDeduction() {
 .submit-amount-block span,
 .submit-summary span,
 .scan-result-grid dt {
-  color: #8c847d;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
@@ -721,9 +721,9 @@ async function handleSubmitDeduction() {
 
 .flow-entry-button {
   margin-bottom: 12px;
-  --van-button-default-background: #fff;
-  --van-button-default-border-color: #ece6df;
-  --van-button-default-color: #4b5563;
+  --van-button-default-background: var(--color-surface-elevated);
+  --van-button-default-border-color: var(--color-line-warm);
+  --van-button-default-color: var(--color-text-soft);
   --van-button-border-width: 1px;
   --van-button-normal-font-size: 15px;
 }
@@ -735,13 +735,13 @@ async function handleSubmitDeduction() {
 
 .deduction-field {
   overflow: hidden;
-  border: 1px solid #efe7de;
+  border: 1px solid var(--color-line-warm);
   border-radius: 18px;
-  background: #fffaf5;
-  --van-cell-background: #fffaf5;
-  --van-field-label-color: #8c847d;
-  --van-field-placeholder-text-color: #b8aea5;
-  --van-field-word-limit-color: #9c8f84;
+  background: var(--color-surface-accent-strong);
+  --van-cell-background: var(--color-surface-accent-strong);
+  --van-field-label-color: var(--color-text-subtle);
+  --van-field-placeholder-text-color: var(--color-text-faint);
+  --van-field-word-limit-color: var(--color-text-muted);
 }
 
 .deduction-field :deep(.van-cell) {
@@ -750,16 +750,16 @@ async function handleSubmitDeduction() {
 
 .deduction-field :deep(.van-field__label) {
   width: 84px;
-  color: #8c847d;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
 .deduction-field :deep(.van-field__value) {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
 }
 
 .deduction-field :deep(.van-field__control) {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -785,7 +785,7 @@ async function handleSubmitDeduction() {
 }
 
 .field-hint-error {
-  color: #d14343;
+  color: var(--color-danger);
 }
 
 .upload-section {
@@ -812,8 +812,8 @@ async function handleSubmitDeduction() {
 .upload-button,
 .image-remove {
   padding: 9px 14px;
-  background: #f5ede6;
-  color: #7a5c49;
+  background: var(--color-surface-muted);
+  color: var(--color-text-subtle);
   font-size: 13px;
 }
 
@@ -844,7 +844,7 @@ async function handleSubmitDeduction() {
   aspect-ratio: 1;
   border-radius: 16px;
   object-fit: cover;
-  background: #f6f0ea;
+  background: var(--color-surface-muted);
 }
 
 .scan-button {
@@ -854,8 +854,8 @@ async function handleSubmitDeduction() {
   gap: 12px;
   width: 100%;
   padding: 16px 18px;
-  background: linear-gradient(180deg, #fff0e6 0%, #ffd9c2 100%);
-  color: #cf5f1f;
+  background: linear-gradient(180deg, var(--color-primary-soft) 0%, var(--color-primary-soft-strong) 100%);
+  color: var(--color-primary-deep);
   font-size: 16px;
 }
 
@@ -863,9 +863,9 @@ async function handleSubmitDeduction() {
   display: grid;
   gap: 12px;
   padding: 14px 16px;
-  border: 1px solid #f1e6dc;
+  border: 1px solid var(--color-line-warm);
   border-radius: 18px;
-  background: #fffaf6;
+  background: var(--color-surface-strong);
 }
 
 .scan-result-head {
@@ -876,7 +876,7 @@ async function handleSubmitDeduction() {
 }
 
 .scan-result-head span {
-  color: #b5653b;
+  color: var(--color-warning);
   font-size: 12px;
 }
 
@@ -893,7 +893,7 @@ async function handleSubmitDeduction() {
 
 .scan-result-grid dd {
   margin: 4px 0 0;
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 14px;
   line-height: 1.5;
   word-break: break-all;
@@ -905,8 +905,8 @@ async function handleSubmitDeduction() {
   padding: 9px 14px;
   border: 0;
   border-radius: 14px;
-  background: #f5ede6;
-  color: #7a5c49;
+  background: var(--color-surface-muted);
+  color: var(--color-text-subtle);
   font-size: 13px;
   font-weight: 600;
 }
@@ -915,7 +915,7 @@ async function handleSubmitDeduction() {
   width: min(92vw, 360px);
   overflow: hidden;
   border-radius: 24px;
-  background: #fffdfa;
+  background: var(--color-surface-strong);
 }
 
 .submit-dialog :deep(.van-dialog__content) {
@@ -927,8 +927,8 @@ async function handleSubmitDeduction() {
   gap: 16px;
   padding: 22px 18px 18px;
   background:
-    radial-gradient(circle at top, rgba(231, 111, 81, 0.12), transparent 40%),
-    linear-gradient(180deg, #fffaf6 0%, #fff 100%);
+    radial-gradient(circle at top, rgba(var(--color-primary-rgb), 0.12), transparent 40%),
+    linear-gradient(180deg, var(--color-surface-strong) 0%, var(--color-surface-elevated) 100%);
 }
 
 .submit-dialog-head {
@@ -939,7 +939,7 @@ async function handleSubmitDeduction() {
 }
 
 .submit-dialog-head strong {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 18px;
 }
 
@@ -952,7 +952,7 @@ async function handleSubmitDeduction() {
 }
 
 .submit-amount-block strong {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 32px;
   font-weight: 700;
   line-height: 1.15;
@@ -963,11 +963,11 @@ async function handleSubmitDeduction() {
   gap: 6px;
   padding: 14px 16px;
   border-radius: 18px;
-  background: #fff7f1;
+  background: var(--color-surface-accent-strong);
 }
 
 .submit-summary strong {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 14px;
   line-height: 1.6;
   word-break: break-all;
@@ -976,8 +976,8 @@ async function handleSubmitDeduction() {
 .submit-button {
   width: 100%;
   padding: 15px 18px;
-  background: linear-gradient(180deg, #d4642f 0%, #b94d1d 100%);
-  color: #fff;
+  background: linear-gradient(180deg, var(--color-primary-alt) 0%, var(--color-primary-deep) 100%);
+  color: var(--color-text-inverse);
   font-size: 16px;
 }
 

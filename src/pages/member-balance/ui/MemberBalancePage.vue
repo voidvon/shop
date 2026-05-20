@@ -103,7 +103,7 @@ onActivated(() => {
   grid-template-rows: 49px minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
-  background: linear-gradient(180deg, #fff7ef 0%, #f7f1e9 100%);
+  background: linear-gradient(180deg, var(--color-surface-accent-strong) 0%, var(--color-surface-soft) 100%);
   overflow: hidden;
 }
 
@@ -122,8 +122,8 @@ onActivated(() => {
 .accounts-card,
 .log-card {
   border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 12px 28px rgba(26, 25, 24, 0.06);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 12px 28px rgba(var(--shadow-rgb), 0.06);
 }
 
 .hero-card {
@@ -131,7 +131,7 @@ onActivated(() => {
   gap: 8px;
   margin-bottom: 12px;
   padding: 20px 18px;
-  background: linear-gradient(135deg, #ff7a1a 0%, #ea580c 100%);
+  background: linear-gradient(135deg, var(--color-primary-alt) 0%, var(--color-primary) 100%);
 }
 
 .hero-label {
@@ -140,7 +140,7 @@ onActivated(() => {
 }
 
 .hero-card strong {
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 32px;
   line-height: 1;
 }
@@ -148,7 +148,7 @@ onActivated(() => {
 .status-text {
   margin: 0;
   padding: 18px 0;
-  color: #8c8a86;
+  color: var(--color-text-subtle);
   font-size: 13px;
   text-align: center;
 }
@@ -162,12 +162,12 @@ onActivated(() => {
 }
 
 .card-head strong {
-  color: #1f1d1a;
+  color: var(--color-text-heading);
   font-size: 16px;
 }
 
 .card-head span {
-  color: #8c8a86;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
@@ -184,7 +184,7 @@ onActivated(() => {
 }
 
 .account-row + .account-row {
-  border-top: 1px solid #f3ede6;
+  border-top: 1px solid var(--color-line-soft);
 }
 
 .account-copy {
@@ -193,17 +193,17 @@ onActivated(() => {
 }
 
 .account-copy strong {
-  color: #2b2926;
+  color: var(--color-text-strong);
   font-size: 14px;
 }
 
 .account-copy span {
-  color: #8c8a86;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
 .account-amount {
-  color: #ea580c;
+  color: var(--color-primary);
   font-size: 16px;
 }
 
@@ -216,7 +216,7 @@ onActivated(() => {
 }
 
 .log-row + .log-row {
-  border-top: 1px solid #f3ede6;
+  border-top: 1px solid var(--color-line-soft);
 }
 
 .log-copy {
@@ -225,12 +225,12 @@ onActivated(() => {
 }
 
 .log-copy strong {
-  color: #2b2926;
+  color: var(--color-text-strong);
   font-size: 14px;
 }
 
 .log-copy span {
-  color: #8c8a86;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
@@ -239,11 +239,11 @@ onActivated(() => {
 }
 
 .log-income {
-  color: #15803d;
+  color: var(--color-success);
 }
 
 .log-expense {
-  color: #c2410c;
+  color: var(--color-primary-deep);
 }
 
 .empty-state {

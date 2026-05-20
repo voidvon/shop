@@ -104,7 +104,7 @@ onMounted(() => {
   grid-template-rows: 49px minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
-  background: #fafaf8;
+  background: var(--color-bg);
   overflow: hidden;
 }
 
@@ -122,7 +122,7 @@ onMounted(() => {
 .status-text {
   margin: 0;
   padding: 20px 16px;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 13px;
   text-align: center;
 }
@@ -135,7 +135,7 @@ onMounted(() => {
 .product-list article {
   overflow: hidden;
   border-radius: 14px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .product-link {
@@ -148,17 +148,17 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   padding: 0 16px 14px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .ghost-action-button {
   min-width: 88px;
   height: 32px;
   padding: 0 14px;
-  border: 1px solid #e5e4e1;
+  border: 1px solid var(--color-line-contrast);
   border-radius: 999px;
-  background: #fff;
-  color: #9c9b99;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 500;
 }

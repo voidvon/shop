@@ -392,7 +392,7 @@ onUnmounted(() => {
 .member-page {
   height: 100vh;
   height: 100dvh;
-  background: #fafaf8;
+  background: var(--color-bg);
   overflow: hidden;
 }
 
@@ -423,7 +423,7 @@ onUnmounted(() => {
 
 .status-text {
   margin: 0;
-  color: #6b645d;
+  color: var(--color-text-soft);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -434,8 +434,8 @@ onUnmounted(() => {
   padding: 0 18px;
   border: 0;
   border-radius: 999px;
-  background: #44a08d;
-  color: #fff;
+  background: var(--color-accent-strong);
+  color: var(--color-text-inverse);
   font-size: 14px;
   font-weight: 600;
 }
@@ -452,7 +452,7 @@ onUnmounted(() => {
   justify-content: center;
   width: 100%;
   min-height: 180px;
-  background: linear-gradient(180deg, #44a08d 0%, #4ecdc4 30%, #fafaf8 100%);
+  background: linear-gradient(180deg, var(--color-accent-strong) 0%, var(--color-accent) 30%, var(--color-bg) 100%);
 }
 
 .profile-area {
@@ -487,9 +487,9 @@ onUnmounted(() => {
   height: 72px;
   overflow: hidden;
   border-radius: 50%;
-  background: #fff;
-  color: #44a08d;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: var(--color-surface-elevated);
+  color: var(--color-accent-strong);
+  box-shadow: var(--shadow-md);
 }
 
 .avatar img {
@@ -505,7 +505,7 @@ onUnmounted(() => {
 }
 
 .text-area strong {
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 20px;
   font-weight: 600;
   line-height: 1.2;
@@ -529,22 +529,22 @@ onUnmounted(() => {
   gap: 6px;
   justify-items: center;
   padding: 18px 12px;
-  border: 1px solid #ece8e3;
+  border: 1px solid var(--color-line-warm);
   border-radius: 16px;
-  background: #fff;
+  background: var(--color-surface-elevated);
   color: inherit;
   text-decoration: none;
 }
 
 .count-card strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 28px;
   font-weight: 700;
   line-height: 1;
 }
 
 .count-card span {
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 11px;
   font-weight: 500;
 }
@@ -560,10 +560,10 @@ onUnmounted(() => {
 .shortcut-card,
 .service-card {
   overflow: hidden;
-  border: 1px solid #e5e4e1;
+  border: 1px solid var(--color-line-contrast);
   border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(26, 25, 24, 0.03);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-sm);
 }
 
 .order-card {
@@ -578,7 +578,7 @@ onUnmounted(() => {
 }
 
 .section-head strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 16px;
   font-weight: 600;
 }
@@ -589,7 +589,7 @@ onUnmounted(() => {
   align-items: center;
   border: 0;
   background: transparent;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 500;
 }
@@ -610,7 +610,7 @@ onUnmounted(() => {
   padding: 10px 4px;
   border: 0;
   background: transparent;
-  color: #3d8a5a;
+  color: var(--color-accent);
 }
 
 .order-entry-badge {
@@ -625,9 +625,9 @@ onUnmounted(() => {
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  border: 1px solid #fff;
-  background: #ea580c;
-  color: #fff;
+  border: 1px solid var(--color-text-inverse);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
   font-size: 11px;
   font-weight: 700;
   line-height: 16px;
@@ -635,7 +635,7 @@ onUnmounted(() => {
 }
 
 .order-entry-label {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 10px;
   font-weight: 500;
   line-height: 1.2;
@@ -651,7 +651,7 @@ onUnmounted(() => {
 }
 
 .shortcut-row-bordered {
-  border-top: 1px solid #e5e4e1;
+  border-top: 1px solid var(--color-line-contrast);
 }
 
 .shortcut-entry {
@@ -660,18 +660,18 @@ onUnmounted(() => {
   align-items: center;
   padding: 16px 14px;
   border: 0;
-  background: #fff;
-  color: #1a1918;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-strong);
   font-size: 15px;
   font-weight: 600;
 }
 
 .shortcut-entry + .shortcut-entry {
-  border-left: 1px solid #e5e4e1;
+  border-left: 1px solid var(--color-line-contrast);
 }
 
 .shortcut-entry :deep(.van-icon) {
-  color: #3d8a5a;
+  color: var(--color-accent);
 }
 
 .service-entry {
@@ -685,7 +685,7 @@ onUnmounted(() => {
 }
 
 .service-entry + .service-entry {
-  border-top: 1px solid #e5e4e1;
+  border-top: 1px solid var(--color-line-contrast);
 }
 
 .service-entry-button {
@@ -693,7 +693,7 @@ onUnmounted(() => {
   border-right: 0;
   border-bottom: 0;
   border-left: 0;
-  background: #fff;
+  background: var(--color-surface-elevated);
   text-align: left;
 }
 
@@ -711,8 +711,8 @@ onUnmounted(() => {
   width: 42px;
   height: 42px;
   border-radius: 14px;
-  background: rgba(61, 138, 90, 0.12);
-  color: #3d8a5a;
+  background: rgba(var(--color-accent-rgb), 0.12);
+  color: var(--color-accent);
 }
 
 .service-text {
@@ -722,19 +722,19 @@ onUnmounted(() => {
 }
 
 .service-text strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 15px;
   font-weight: 600;
 }
 
 .service-text span {
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 12px;
   line-height: 1.4;
 }
 
 .service-arrow {
-  color: #b4b2ad;
+  color: var(--color-text-faint);
 }
 
 .tip-block {
@@ -750,14 +750,14 @@ onUnmounted(() => {
 }
 
 .tip-text {
-  color: #d89575;
+  color: var(--color-warning);
   font-size: 10px;
   font-weight: 500;
   line-height: 1.4;
 }
 
 .service-phone {
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 10px;
   font-weight: 500;
   line-height: 1.3;

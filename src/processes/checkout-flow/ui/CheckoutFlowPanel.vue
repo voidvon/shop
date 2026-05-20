@@ -470,19 +470,19 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 .merchant-card,
 .feedback-card,
 .explain-card {
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .state-card {
   margin: 0;
   padding: 18px 16px;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 14px;
   line-height: 1.6;
 }
 
 .state-card-error {
-  color: #c95a21;
+  color: var(--color-primary-deep);
 }
 
 .state-card-inline-action {
@@ -499,20 +499,20 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
   flex-shrink: 0;
   min-height: 28px;
   padding: 0 10px;
-  border: 1px solid rgba(201, 90, 33, 0.18);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.18);
   border-radius: 999px;
-  background: rgba(201, 90, 33, 0.12);
-  color: #c95a21;
+  background: rgba(var(--color-primary-rgb), 0.12);
+  color: var(--color-primary-deep);
   font-size: 12px;
   font-weight: 600;
 }
 
 .checkout-cell-group {
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .address-icon {
-  color: #d89575;
+  color: var(--color-warning);
   margin-right: 10px;
   flex-shrink: 0;
 }
@@ -524,13 +524,13 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 }
 
 .address-copy strong {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 15px;
   font-weight: 600;
 }
 
 .address-copy span {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
   line-height: 1.4;
 }
@@ -549,7 +549,7 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
   justify-content: space-between;
   min-height: 44px;
   padding: 0 16px;
-  border-top: 1px solid #f1eeea;
+  border-top: 1px solid var(--color-surface-muted);
 }
 
 .merchant-row-button {
@@ -568,28 +568,28 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 }
 
 .merchant-row-label {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 14px;
   font-weight: 500;
 }
 
 .merchant-row-value {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 14px;
   font-weight: 500;
 }
 
 .merchant-row-value-error {
-  color: #c95a21;
+  color: var(--color-primary-deep);
 }
 
 .merchant-row-arrow {
-  color: #b9b2a8;
+  color: var(--color-text-faint);
   font-size: 14px;
 }
 
 .explain-amount {
-  color: #ea580c;
+  color: var(--color-primary);
   font-size: 18px;
   font-weight: 700;
 }
@@ -605,14 +605,14 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 }
 
 .explain-subtotal-breakdown {
-  color: #8c867e;
+  color: var(--color-text-subtle);
   font-size: 12px;
   font-weight: 500;
   text-align: right;
 }
 
 .explain-subtotal-total {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 16px;
   font-weight: 700;
 }
@@ -631,11 +631,11 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 }
 
 .feedback-message {
-  color: #2f7d55;
+  color: var(--color-accent);
 }
 
 .feedback-time {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
 }
 
 .explain-card {
@@ -652,11 +652,11 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 }
 
 .explain-row + .explain-row {
-  border-top: 1px solid #f1eeea;
+  border-top: 1px solid var(--color-surface-muted);
 }
 
 .explain-row span {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
   font-weight: 500;
 }
@@ -667,7 +667,7 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 }
 
 .explain-value {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 14px;
   font-weight: 600;
 }
@@ -675,50 +675,50 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 .address-card :deep(.van-cell),
 .meta-card :deep(.van-cell) {
   padding: 14px 16px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .address-card :deep(.van-cell__left-icon),
 .address-card :deep(.van-cell__right-icon),
 .meta-card :deep(.van-cell__right-icon) {
-  color: #a8a7a5;
+  color: var(--color-text-faint);
 }
 
 .address-card :deep(.van-cell__title),
 .meta-card :deep(.van-cell__title) {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 14px;
   font-weight: 500;
 }
 
 .meta-card :deep(.van-cell__value) {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
 }
 
 .merchant-note-field {
-  --van-field-label-color: #6d6c6a;
-  --van-field-placeholder-text-color: #b4b1ac;
-  --van-field-word-limit-color: #b4b1ac;
-  --van-cell-background: #f5f4f1;
+  --van-field-label-color: var(--color-text-soft);
+  --van-field-placeholder-text-color: var(--color-text-faint);
+  --van-field-word-limit-color: var(--color-text-faint);
+  --van-cell-background: var(--color-surface-muted);
 }
 
 .merchant-note-field :deep(.van-field__label) {
   width: 104px;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
   font-weight: 500;
 }
 
 .merchant-note-field :deep(.van-field__value) {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 13px;
 }
 
 .merchant-note-field :deep(.van-field__control) {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 13px;
   line-height: 1.5;
 }

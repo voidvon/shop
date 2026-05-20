@@ -148,8 +148,8 @@ function goBack() {
   min-height: 100vh;
   min-height: 100dvh;
   background:
-    radial-gradient(circle at top, rgba(214, 120, 48, 0.18), transparent 34%),
-    linear-gradient(180deg, #f6f1ea 0%, #f2eee9 100%);
+    radial-gradient(circle at top, rgba(var(--color-primary-rgb), 0.18), transparent 34%),
+    linear-gradient(180deg, var(--color-surface-soft) 0%, var(--color-surface-muted) 100%);
   overflow: hidden;
 }
 
@@ -167,8 +167,8 @@ function goBack() {
 .status-card {
   width: 100%;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 18px 40px rgba(69, 44, 18, 0.08);
+  background: var(--color-surface-glass-solid);
+  box-shadow: 0 18px 40px rgba(var(--shadow-rgb), 0.08);
 }
 
 .store-profile-card {
@@ -190,8 +190,8 @@ function goBack() {
   width: 68px;
   height: 68px;
   border-radius: 24px;
-  background: linear-gradient(180deg, #d7602e 0%, #9f3f16 100%);
-  color: #fff;
+  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-deep) 100%);
+  color: var(--color-text-inverse);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
@@ -210,7 +210,7 @@ function goBack() {
 
 .store-eyebrow {
   margin: 0;
-  color: #b06a33;
+  color: var(--color-warning);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -218,7 +218,7 @@ function goBack() {
 
 .store-copy h1 {
   margin: 0;
-  color: #261d17;
+  color: var(--color-text-strong);
   font-size: 24px;
   font-weight: 700;
   line-height: 1.2;
@@ -226,7 +226,7 @@ function goBack() {
 
 .store-status {
   margin: 0;
-  color: #756b63;
+  color: var(--color-text-soft);
   font-size: 13px;
   line-height: 1.7;
 }
@@ -240,8 +240,8 @@ function goBack() {
 .benefit-chip {
   padding: 6px 10px;
   border-radius: 999px;
-  background: #fff2e5;
-  color: #b45a1c;
+  background: var(--color-surface-accent);
+  color: var(--color-primary-deep);
   font-size: 12px;
   font-weight: 600;
 }
@@ -256,7 +256,7 @@ function goBack() {
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  color: #2d261f;
+  color: var(--color-text-strong);
   font-size: 16px;
 }
 
@@ -264,7 +264,7 @@ function goBack() {
   width: 4px;
   height: 18px;
   border-radius: 999px;
-  background: linear-gradient(180deg, #f08a3e 0%, #d65628 100%);
+  background: linear-gradient(180deg, var(--color-primary-alt) 0%, var(--color-primary-deep) 100%);
 }
 
 .store-info-grid {
@@ -277,19 +277,19 @@ function goBack() {
   gap: 6px;
   padding: 13px 14px;
   border-radius: 16px;
-  background: #faf6f1;
+  background: var(--color-surface-strong);
 }
 
 .store-info-label {
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  color: #8c857f;
+  color: var(--color-text-subtle);
   font-size: 12px;
 }
 
 .store-info-item strong {
-  color: #2f2a26;
+  color: var(--color-text);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -297,7 +297,7 @@ function goBack() {
 .status-card {
   margin: 0;
   padding: 18px 16px;
-  color: #726a63;
+  color: var(--color-text-soft);
   font-size: 13px;
   line-height: 1.7;
   text-align: center;

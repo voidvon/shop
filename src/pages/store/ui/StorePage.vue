@@ -486,7 +486,7 @@ watch(
       <section class="store-hero">
         <div
           class="store-hero-backdrop"
-          :style="heroImageUrl ? { backgroundImage: `linear-gradient(90deg, rgba(43, 37, 33, 0.56), rgba(43, 37, 33, 0.56)), url(${heroImageUrl})` } : undefined"
+          :style="heroImageUrl ? { backgroundImage: `linear-gradient(90deg, var(--color-hero-overlay-strong), var(--color-hero-overlay-strong)), url(${heroImageUrl})` } : undefined"
         />
 
         <div class="store-hero-content">
@@ -531,7 +531,7 @@ watch(
         <div class="store-panel-content">
           <section v-if="isAllProductsTab" class="filter-toolbar" aria-label="全部商品筛选">
             <div class="sort-dropdown-shell">
-              <van-dropdown-menu active-color="#c25b0a" class="sort-dropdown">
+              <van-dropdown-menu active-color="var(--color-primary-deep)" class="sort-dropdown">
                 <van-dropdown-item v-model="comprehensiveSortValue" title="综合" :options="comprehensiveSortOptions" />
                 <van-dropdown-item v-model="salesSortValue" title="销量" :options="salesSortOptions" />
                 <van-dropdown-item v-model="priceSortValue" title="价格" :options="priceSortOptions" />
@@ -787,7 +787,7 @@ watch(
   margin: 0 auto;
   min-height: 100vh;
   min-height: 100dvh;
-  background: #f5f4f1;
+  background: var(--color-surface-muted);
   overflow-x: clip;
 }
 
@@ -805,8 +805,8 @@ watch(
   gap: 10px;
   align-items: center;
   padding: 8px 12px;
-  border-bottom: 1px solid #eeeae5;
-  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--color-line-soft);
+  background: var(--color-surface-glass-solid);
   backdrop-filter: blur(12px);
 }
 
@@ -820,11 +820,11 @@ watch(
   padding: 0;
   border: 0;
   background: transparent;
-  color: #7e7a76;
+  color: var(--color-text-subtle);
 }
 
 .nav-button-accent {
-  color: #f08a3e;
+  color: var(--color-primary-alt);
 }
 
 .store-scroll {
@@ -845,7 +845,7 @@ watch(
   width: calc(100% - 32px);
   margin: 0 16px;
   border-radius: 18px;
-  background: linear-gradient(180deg, #5a4033 0%, #2b2521 100%);
+  background: linear-gradient(180deg, var(--color-surface-dark) 0%, var(--color-text-strong) 100%);
 }
 
 .store-hero-backdrop {
@@ -878,10 +878,10 @@ watch(
   justify-content: center;
   width: 58px;
   height: 58px;
-  border: 3px solid rgba(255, 255, 255, 0.8);
+  border: 3px solid var(--color-surface-glass-border);
   border-radius: 999px;
-  background: #d93a2f;
-  color: #fff;
+  background: var(--color-brand-store-logo);
+  color: var(--color-text-inverse);
 }
 
 .store-logo-image {
@@ -901,7 +901,7 @@ watch(
 .store-copy h1 {
   margin: 0;
   overflow: hidden;
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 24px;
   font-weight: 700;
   line-height: 1.2;
@@ -911,14 +911,14 @@ watch(
 
 .store-copy p {
   margin: 0;
-  color: #f4eee8;
+  color: var(--color-text-inverse-soft);
   font-size: 13px;
   font-weight: 500;
 }
 
 .store-description {
   display: block;
-  color: rgba(244, 238, 232, 0.92);
+  color: var(--color-text-inverse-soft);
   font-size: 12px;
   font-weight: 400;
   line-height: 1.35;
@@ -927,7 +927,7 @@ watch(
 }
 
 .store-benefit {
-  color: #ffd7b3;
+  color: var(--color-primary-soft);
   font-size: 12px;
   font-weight: 600;
 }
@@ -944,9 +944,9 @@ watch(
   font-weight: 600;
   --van-button-small-height: 30px;
   --van-button-small-padding: 0 10px;
-  --van-button-default-border-color: rgba(255, 255, 255, 0.92);
-  --van-button-default-color: #2b2521;
-  --van-button-default-background: rgba(255, 255, 255, 0.92);
+  --van-button-default-border-color: var(--color-surface-glass-strong);
+  --van-button-default-color: var(--color-text-strong);
+  --van-button-default-background: var(--color-surface-glass-strong);
   --van-button-border-width: 1px;
   font-size: 12px;
 }
@@ -988,7 +988,7 @@ watch(
 .sort-dropdown :deep(.van-dropdown-menu__bar) {
   height: 44px;
   border-radius: 16px;
-  background: #faf8f5;
+  background: var(--color-bg-strong);
   box-shadow: none;
 }
 
@@ -997,7 +997,7 @@ watch(
 }
 
 .sort-dropdown :deep(.van-dropdown-menu__title) {
-  color: #40372f;
+  color: var(--color-text);
   font-size: 13px;
   font-weight: 700;
 }
@@ -1019,15 +1019,15 @@ watch(
   min-height: 44px;
   padding: 0 16px;
   border-radius: 16px;
-  background: #faf8f5;
-  color: #52483f;
+  background: var(--color-bg-strong);
+  color: var(--color-text);
   font-size: 13px;
   font-weight: 700;
 }
 
 .filter-trigger-button-active {
-  background: #fff1e5;
-  color: #c25b0a;
+  background: var(--color-surface-accent);
+  color: var(--color-primary-deep);
 }
 
 .price-field {
@@ -1036,7 +1036,7 @@ watch(
 }
 
 .price-field span {
-  color: #857f79;
+  color: var(--color-text-subtle);
   font-size: 12px;
   font-weight: 600;
 }
@@ -1045,10 +1045,10 @@ watch(
   width: 100%;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid #e7dfd6;
+  border: 1px solid var(--color-line-warm);
   border-radius: 12px;
-  background: #fff;
-  color: #2f2a26;
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
   font-size: 13px;
 }
 
@@ -1056,15 +1056,15 @@ watch(
   min-height: 42px;
   padding: 0 14px;
   border-radius: 12px;
-  background: #ece7e1;
-  color: #6c655f;
+  background: var(--color-surface-muted);
+  color: var(--color-text-soft);
   font-size: 12px;
   font-weight: 700;
 }
 
 .filter-action-button-primary {
-  background: #f08a3e;
-  color: #fff;
+  background: var(--color-primary-alt);
+  color: var(--color-text-inverse);
 }
 
 .filter-drawer {
@@ -1077,7 +1077,7 @@ watch(
   display: grid;
   grid-template-rows: auto 1fr auto;
   height: 100%;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .filter-drawer-head {
@@ -1085,11 +1085,11 @@ watch(
   align-items: center;
   justify-content: space-between;
   padding: 18px 16px;
-  border-bottom: 1px solid #f0ebe5;
+  border-bottom: 1px solid var(--color-line-warm);
 }
 
 .filter-drawer-head strong {
-  color: #2f2a26;
+  color: var(--color-text);
   font-size: 16px;
   font-weight: 700;
 }
@@ -1101,7 +1101,7 @@ watch(
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  color: #867d75;
+  color: var(--color-text-subtle);
 }
 
 .filter-drawer-body {
@@ -1117,7 +1117,7 @@ watch(
 }
 
 .filter-section-head strong {
-  color: #2f2a26;
+  color: var(--color-text);
   font-size: 14px;
   font-weight: 700;
 }
@@ -1130,18 +1130,18 @@ watch(
 
 .category-chip {
   padding: 9px 14px;
-  border: 1px solid #ece3d8;
+  border: 1px solid var(--color-line-warm);
   border-radius: 999px;
-  background: #faf8f5;
-  color: #62574d;
+  background: var(--color-bg-strong);
+  color: var(--color-text-soft);
   font-size: 12px;
   font-weight: 600;
 }
 
 .category-chip-active {
-  border-color: #f0b27b;
-  background: #fff1e5;
-  color: #c25b0a;
+  border-color: var(--color-primary-soft-border);
+  background: var(--color-surface-accent);
+  color: var(--color-primary-deep);
 }
 
 .filter-drawer-actions {
@@ -1149,14 +1149,14 @@ watch(
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   padding: 14px 16px calc(18px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid #f0ebe5;
+  border-top: 1px solid var(--color-line-warm);
 }
 
 .store-tabs-shell {
   overflow: hidden;
   padding-top: 6px;
   border-radius: 18px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .store-tabs-shell :deep(.van-tabs__nav--line) {
@@ -1187,17 +1187,17 @@ watch(
   width: 3px;
   height: 20px;
   border-radius: 2px;
-  background: #4ea7ff;
+  background: var(--color-accent);
 }
 
 .section-head strong {
-  color: #2f2a26;
+  color: var(--color-text);
   font-size: 24px;
   font-weight: 700;
 }
 
 .section-count {
-  color: #8a847f;
+  color: var(--color-text-subtle);
   font-size: 12px;
   font-weight: 600;
 }
@@ -1206,7 +1206,7 @@ watch(
   margin: 0;
   padding: 16px 0;
   background: transparent;
-  color: #8a3b12;
+  color: var(--color-primary-deep);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -1218,7 +1218,7 @@ watch(
 .store-empty {
   min-height: 240px;
   border-radius: 18px;
-  background: #faf8f6;
+  background: var(--color-surface-strong);
 }
 
 .product-grid {
@@ -1236,13 +1236,13 @@ watch(
   width: 100%;
   height: 140px;
   border-radius: 8px;
-  background: linear-gradient(90deg, #f2f0ed 25%, #f8f6f3 37%, #f2f0ed 63%);
+  background: linear-gradient(90deg, var(--color-surface-muted) 25%, var(--color-surface-strong) 37%, var(--color-surface-muted) 63%);
 }
 
 .product-skeleton-line {
   height: 14px;
   border-radius: 999px;
-  background: #f1eeea;
+  background: var(--color-surface-muted);
 }
 
 .product-skeleton-line-name {
@@ -1258,7 +1258,7 @@ watch(
   align-items: center;
   justify-content: center;
   min-height: 48px;
-  color: #8a847f;
+  color: var(--color-text-subtle);
   font-size: 12px;
   font-weight: 600;
 }
@@ -1270,7 +1270,7 @@ watch(
 }
 
 .load-more-trigger-finished {
-  color: #b1aba5;
+  color: var(--color-text-faint);
 }
 
 .store-action-bar {
@@ -1282,8 +1282,8 @@ watch(
   justify-content: space-evenly;
   width: 100%;
   padding: 8px 10px calc(12px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid #eeeae5;
-  background: rgba(255, 255, 255, 0.98);
+  border-top: 1px solid var(--color-line-soft);
+  background: var(--color-surface-glass-solid);
   backdrop-filter: blur(12px);
 }
 
@@ -1298,8 +1298,8 @@ watch(
   max-height: min(72vh, 620px);
   padding: 20px 16px calc(24px + env(safe-area-inset-bottom, 0px));
   background:
-    radial-gradient(circle at top left, rgba(240, 138, 62, 0.12), transparent 42%),
-    linear-gradient(180deg, #fffaf3 0%, #fff 42%);
+    radial-gradient(circle at top left, rgba(var(--color-primary-rgb), 0.12), transparent 42%),
+    linear-gradient(180deg, var(--color-surface-accent-strong) 0%, var(--color-surface-elevated) 42%);
 }
 
 .coupon-sheet-head {
@@ -1312,13 +1312,13 @@ watch(
 .coupon-sheet-head strong {
   display: block;
   font-size: 18px;
-  color: #2f2924;
+  color: var(--color-text-heading);
 }
 
 .coupon-sheet-head p {
   margin: 4px 0 0;
   font-size: 12px;
-  color: #8d7868;
+  color: var(--color-text-subtle);
 }
 
 .coupon-sheet-close {
@@ -1330,8 +1330,8 @@ watch(
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #8d7868;
+  background: var(--color-surface-glass-strong);
+  color: var(--color-text-subtle);
 }
 
 .coupon-sheet-body {
@@ -1349,10 +1349,10 @@ watch(
   gap: 12px;
   align-items: center;
   padding: 16px;
-  border: 1px solid rgba(240, 138, 62, 0.16);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.16);
   border-radius: 20px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 238, 0.98));
-  box-shadow: 0 10px 24px rgba(188, 119, 60, 0.08);
+  background: linear-gradient(135deg, var(--color-surface-glass-solid), var(--color-surface-accent-strong));
+  box-shadow: var(--shadow-card);
 }
 
 .coupon-card-skeleton-main {
@@ -1365,27 +1365,27 @@ watch(
   padding: 0 14px;
   border: 0;
   border-radius: 999px;
-  background: linear-gradient(135deg, #f08a3e, #cf6111);
-  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary-alt), var(--color-primary-deep));
+  color: var(--color-text-inverse);
   font-size: 13px;
   font-weight: 600;
 }
 
 .coupon-claim-button-disabled {
-  background: #efe4db;
-  color: #9f8877;
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
 }
 
 .coupon-card-skeleton-shell {
-  border-color: rgba(222, 214, 205, 0.7);
-  background: #fff;
+  border-color: var(--color-line-contrast);
+  background: var(--color-surface-elevated);
   box-shadow: none;
 }
 
 .coupon-skeleton-line,
 .coupon-skeleton-button {
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(233, 227, 220, 0.72), rgba(244, 240, 235, 0.92));
+  background: linear-gradient(90deg, var(--color-surface-muted), var(--color-surface-strong));
 }
 
 .coupon-skeleton-line {
@@ -1421,7 +1421,7 @@ watch(
   padding: 6px 0 0;
   border: 0;
   background: transparent;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 10px;
   font-weight: 500;
 }

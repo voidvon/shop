@@ -71,8 +71,8 @@ async function handleSubmitted() {
   height: 100vh;
   height: 100dvh;
   background:
-    radial-gradient(circle at top right, rgba(47, 107, 95, 0.14), transparent 30%),
-    linear-gradient(180deg, #fcf7f0 0%, #f4ecdf 100%);
+    radial-gradient(circle at top right, var(--color-body-glow-accent), transparent 30%),
+    linear-gradient(180deg, var(--color-surface-strong) 0%, var(--color-surface-muted) 100%);
   overflow: hidden;
 }
 

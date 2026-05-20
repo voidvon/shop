@@ -107,7 +107,7 @@ onMounted(() => {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #8c8a86;
+  color: var(--color-text-subtle);
   font-size: 13px;
   line-height: 1.4;
 }
@@ -117,7 +117,7 @@ onMounted(() => {
   gap: 8px;
   align-items: center;
   justify-content: flex-end;
-  color: #8c8a86;
+  color: var(--color-text-subtle);
   font-size: 13px;
   font-weight: 400;
   line-height: 1.4;
@@ -130,7 +130,7 @@ onMounted(() => {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #9c9b99;
+  color: var(--color-text-muted);
 }
 
 .info-group {
@@ -139,7 +139,7 @@ onMounted(() => {
 
 .status-text {
   margin: 0;
-  color: #8c8a86;
+  color: var(--color-text-subtle);
   font-size: 13px;
   line-height: 1.6;
 }

@@ -214,7 +214,7 @@ onActivated(() => {
   grid-template-rows: 49px minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
-  background: linear-gradient(180deg, #fff7ef 0%, #f7f1e9 100%);
+  background: linear-gradient(180deg, var(--color-surface-accent-strong) 0%, var(--color-surface-soft) 100%);
   overflow: hidden;
 }
 
@@ -232,7 +232,7 @@ onActivated(() => {
 .status-text {
   margin: 0;
   padding: 18px 0;
-  color: #8c8a86;
+  color: var(--color-text-subtle);
   font-size: 13px;
   text-align: center;
 }
@@ -253,7 +253,7 @@ onActivated(() => {
   gap: 2px;
   align-items: baseline;
   justify-content: center;
-  color: #c25b0a;
+  color: var(--color-primary-deep);
 }
 
 .coupon-card-amount strong {
@@ -271,7 +271,7 @@ onActivated(() => {
 }
 
 .coupon-card-condition {
-  color: #8a6f5b;
+  color: var(--color-text-subtle);
   font-size: 12px;
   line-height: 1.4;
   text-align: center;
@@ -283,16 +283,16 @@ onActivated(() => {
   min-width: 64px;
   padding: 8px 12px;
   border-radius: 999px;
-  background: #fff4ec;
-  color: #c2410c;
+  background: var(--color-surface-accent);
+  color: var(--color-primary-deep);
   font-size: 12px;
   font-weight: 600;
   text-align: center;
 }
 
 .coupon-card-status-muted {
-  background: #f3f0eb;
-  color: #8c8a86;
+  background: var(--color-surface-muted);
+  color: var(--color-text-subtle);
 }
 
 .empty-state {

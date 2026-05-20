@@ -800,7 +800,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   grid-template-rows: auto minmax(0, 1fr) auto;
   height: 100vh;
   height: 100dvh;
-  background: #fff;
+  background: var(--color-surface-elevated);
   overflow: hidden;
 }
 
@@ -811,8 +811,8 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   align-items: center;
   min-height: 56px;
   padding: 12px 16px;
-  border-bottom: 1px solid #eeeae5;
-  background: #fff;
+  border-bottom: 1px solid var(--color-line-soft);
+  background: var(--color-surface-elevated);
 }
 
 .icon-button {
@@ -824,7 +824,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #9c9b99;
+  color: var(--color-text-muted);
 }
 
 .tab-wrap {
@@ -838,13 +838,13 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 15px;
   font-weight: 500;
 }
 
 .tab-button-active {
-  color: #ea580c;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -852,7 +852,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  background: #fff;
+  background: var(--color-surface-elevated);
   scrollbar-width: none;
 }
 
@@ -893,7 +893,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
 .summary-block h1 {
   margin: 0;
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 28px;
   font-weight: 700;
   line-height: 1.2;
@@ -901,14 +901,14 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
 .subtitle {
   margin: 0;
-  color: #78716c;
+  color: var(--color-text-subtle);
   font-size: 14px;
   font-weight: 500;
   line-height: 1.6;
 }
 
 .detail-copy {
-  color: #78716c;
+  color: var(--color-text-subtle);
   font-size: 14px;
   font-weight: 500;
   line-height: 1.7;
@@ -951,7 +951,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 }
 
 .detail-copy :deep(a) {
-  color: #c2410c;
+  color: var(--color-primary-deep);
   word-break: break-all;
 }
 
@@ -968,14 +968,14 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   overflow-x: auto;
   padding: 12px;
   border-radius: 12px;
-  background: #f5f5f4;
+  background: var(--color-surface-muted);
   font-size: 12px;
 }
 
 .detail-copy :deep(blockquote) {
   padding-left: 12px;
-  border-left: 3px solid #fed7aa;
-  color: #57534e;
+  border-left: 3px solid var(--color-primary-soft-border);
+  color: var(--color-text-subtle);
 }
 
 .detail-copy :deep(table) {
@@ -986,7 +986,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 .detail-copy :deep(th),
 .detail-copy :deep(td) {
   padding: 8px 10px;
-  border: 1px solid #eee7da;
+  border: 1px solid var(--color-line-warm);
   text-align: left;
   vertical-align: top;
 }
@@ -1006,14 +1006,14 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   align-items: center;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(234, 88, 12, 0.1);
-  color: #c2410c;
+  background: rgba(var(--color-primary-rgb), 0.1);
+  color: var(--color-primary-deep);
   font-size: 12px;
   font-weight: 600;
 }
 
 .price-value {
-  color: #ea580c;
+  color: var(--color-primary);
   font-size: 30px;
   font-weight: 600;
 }
@@ -1027,10 +1027,10 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   width: 100%;
   min-height: 50px;
   padding: 14px 16px;
-  border: 1px solid #eeeae5;
+  border: 1px solid var(--color-line-soft);
   border-radius: 14px;
-  background: #fff;
-  color: #6d6c6a;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-soft);
   text-align: left;
 }
 
@@ -1050,16 +1050,16 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 }
 
 .review-left strong {
-  color: #ea580c;
+  color: var(--color-primary);
   font-size: 14px;
   font-weight: 700;
 }
 
 .merchant-card {
   padding: 16px;
-  border: 1px solid #eeeae5;
+  border: 1px solid var(--color-line-soft);
   border-radius: 18px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .merchant-head {
@@ -1070,7 +1070,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 }
 
 .merchant-head strong {
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 16px;
   font-weight: 700;
 }
@@ -1083,14 +1083,14 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 15px;
   font-weight: 600;
   text-align: left;
 }
 
 .merchant-store :deep(.van-icon) {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
 }
 
 .metric-row {
@@ -1104,13 +1104,13 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   display: flex;
   gap: 4px;
   align-items: center;
-  color: #a8a29e;
+  color: var(--color-text-faint);
   font-size: 12px;
   font-weight: 500;
 }
 
 .metric-item strong {
-  color: #ea580c;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -1121,7 +1121,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
 .recommend-section h2 {
   margin: 0;
-  color: #3c3b39;
+  color: var(--color-text);
   font-size: 16px;
   font-weight: 700;
 }
@@ -1143,14 +1143,14 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   aspect-ratio: 1;
   border-radius: 10px;
   object-fit: cover;
-  background: #f7f2eb;
+  background: var(--color-surface-soft);
 }
 
 .recommend-card strong {
   display: -webkit-box;
   overflow: hidden;
   min-height: 32px;
-  color: #4b4a48;
+  color: var(--color-text);
   font-size: 12px;
   font-weight: 500;
   line-height: 1.35;
@@ -1159,7 +1159,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 }
 
 .recommend-card span {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 12px;
   font-weight: 500;
 }
@@ -1172,7 +1172,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 14px;
   font-weight: 600;
 }
@@ -1180,7 +1180,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 .attribute-list {
   padding: 16px;
   border-radius: 16px;
-  background: #fafaf8;
+  background: var(--color-bg);
 }
 
 .attribute-list {
@@ -1191,12 +1191,12 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 }
 
 .attribute-list dt {
-  color: #9c9b99;
+  color: var(--color-text-muted);
 }
 
 .attribute-list dd {
   margin: 0;
-  color: #3c3b39;
+  color: var(--color-text);
   font-weight: 600;
 }
 
@@ -1207,8 +1207,8 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   align-items: center;
   min-height: 82px;
   padding: 12px 12px calc(20px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid #eeeae5;
-  background: #fff;
+  border-top: 1px solid var(--color-line-soft);
+  background: var(--color-surface-elevated);
 }
 
 .detail-scroll-skeleton {
@@ -1231,7 +1231,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 }
 
 .hero-image-box-skeleton {
-  background: #f7f2eb;
+  background: var(--color-surface-soft);
 }
 
 .summary-title-skeleton :deep(.van-skeleton__title) {
@@ -1245,7 +1245,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   height: 14px;
   margin: 0;
   border-radius: 8px;
-  background: #efe7dc;
+  background: var(--color-surface-muted);
 }
 
 .summary-subtitle-skeleton-first :deep(.van-skeleton__title) {
@@ -1261,7 +1261,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   height: 30px;
   margin: 0;
   border-radius: 10px;
-  background: #efe7dc;
+  background: var(--color-surface-muted);
 }
 
 .info-row-skeleton-wrap {
@@ -1290,7 +1290,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 .tool-button-skeleton :deep(.van-skeleton__title),
 .action-button-skeleton :deep(.van-skeleton__title) {
   margin: 0;
-  background: #efe7dc;
+  background: var(--color-surface-muted);
 }
 
 .info-value-skeleton-group {
@@ -1421,28 +1421,28 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 .detail-copy-skeleton {
   padding: 16px;
   border-radius: 16px;
-  background: #faf6f1;
+  background: var(--color-surface-accent-strong);
 }
 
 .detail-copy-body-skeleton :deep(.van-skeleton__title) {
   width: 68%;
   height: 14px;
   border-radius: 8px;
-  background: #efe7dc;
+  background: var(--color-surface-muted);
 }
 
 .detail-copy-body-skeleton :deep(.van-skeleton__row:first-of-type) {
   width: 100%;
-  background: #efe7dc;
+  background: var(--color-surface-muted);
 }
 
 .detail-copy-body-skeleton :deep(.van-skeleton__row:last-of-type) {
   width: 74%;
-  background: #efe7dc;
+  background: var(--color-surface-muted);
 }
 
 .action-bar-skeleton {
-  border-top-color: #f3eee8;
+  border-top-color: var(--color-surface-muted);
 }
 
 .tool-button-skeleton :deep(.van-skeleton__title) {
@@ -1464,7 +1464,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   max-height: none;
   border-radius: 0;
   overflow: hidden;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .spec-popup {
@@ -1488,7 +1488,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   padding: 8px 14px;
   border-radius: 999px;
   background: rgba(17, 17, 17, 0.8);
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 13px;
   font-weight: 600;
   transform: translateX(-50%);
@@ -1501,7 +1501,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   gap: 18px;
   padding: 18px 16px 20px;
   border-radius: 24px 24px 0 0;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .spec-close-button {
@@ -1514,10 +1514,10 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   width: 32px;
   height: 32px;
   padding: 0;
-  border: 1px solid #d6d3d1;
+  border: 1px solid var(--color-text-disabled);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.96);
-  color: #9c9b99;
+  background: var(--color-surface-glass-solid);
+  color: var(--color-text-muted);
 }
 
 .spec-sheet-header {
@@ -1531,7 +1531,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   height: 88px;
   overflow: hidden;
   border-radius: 12px;
-  background: #f7f2eb;
+  background: var(--color-surface-soft);
 }
 
 .spec-image-box img {
@@ -1550,28 +1550,28 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 }
 
 .spec-meta strong {
-  color: #1a1918;
+  color: var(--color-text-strong);
   font-size: 18px;
   font-weight: 700;
   line-height: 1.35;
 }
 
 .spec-price {
-  color: #ea580c;
+  color: var(--color-primary);
   font-size: 28px;
   font-weight: 700;
   line-height: 1;
 }
 
 .spec-stock {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 13px;
   font-weight: 500;
 }
 
 .spec-divider {
   height: 1px;
-  background: #f0eeea;
+  background: var(--color-surface-muted);
 }
 
 .spec-section {
@@ -1581,13 +1581,13 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
 .spec-section-label,
 .qty-label {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 15px;
   font-weight: 500;
 }
 
 .spec-balance-note {
-  color: #c2410c;
+  color: var(--color-primary-deep);
   font-size: 12px;
 }
 
@@ -1601,16 +1601,16 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   padding: 10px 14px;
   border: 0;
   border-radius: 12px;
-  background: #f5f5f4;
-  color: #6d6c6a;
+  background: var(--color-surface-muted);
+  color: var(--color-text-soft);
   font-size: 13px;
   font-weight: 600;
 }
 
 .spec-tag-active {
-  border: 1px solid #fdba74;
-  background: #ffedd5;
-  color: #ea580c;
+  border: 1px solid var(--color-primary-soft-border);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -1626,16 +1626,16 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   gap: 18px;
   align-items: center;
   padding: 8px 12px;
-  border: 1px solid #e5e4e1;
+  border: 1px solid var(--color-line-contrast);
   border-radius: 10px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .qty-button {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #9c9b99;
+  color: var(--color-text-muted);
   font-size: 22px;
   font-weight: 500;
   line-height: 1;
@@ -1643,7 +1643,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
 .qty-button-plus,
 .qty-value {
-  color: #6d6c6a;
+  color: var(--color-text-soft);
 }
 
 .qty-value {
@@ -1654,7 +1654,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 }
 
 .spec-action-bar {
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .review-drawer-body {
@@ -1662,11 +1662,11 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   grid-template-rows: auto minmax(0, 1fr);
   width: 100%;
   height: 100%;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .review-drawer-top-bar {
-  border-bottom: 1px solid #eeeae5;
+  border-bottom: 1px solid var(--color-line-soft);
 }
 
 .review-drawer-content {
@@ -1675,7 +1675,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   gap: 20px;
   min-height: 0;
   padding: 16px 20px 20px;
-  background: #fff;
+  background: var(--color-surface-elevated);
 }
 
 .review-chip-row {
@@ -1688,15 +1688,15 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   padding: 8px 12px;
   border: 0;
   border-radius: 8px;
-  background: #f3f4f6;
-  color: #6d6c6a;
+  background: var(--color-surface-muted);
+  color: var(--color-text-soft);
   font-size: 12px;
   font-weight: 600;
 }
 
 .review-chip-active {
-  background: #ffedd5;
-  color: #ea580c;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -1712,7 +1712,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #6d6c6a;
+  color: var(--color-text-soft);
   font-size: 11px;
   font-weight: 500;
 }
@@ -1721,7 +1721,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   height: 46px;
   border: 0;
   border-radius: 30px;
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 15px;
   font-weight: 700;
 }
@@ -1735,11 +1735,11 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 }
 
 .action-button-light {
-  background: #fb923c;
+  background: var(--color-primary-alt);
 }
 
 .action-button-primary {
-  background: #ea580c;
+  background: var(--color-primary);
 }
 
 .spec-pending-tip {
@@ -1747,7 +1747,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   align-items: center;
   gap: 8px;
   margin: 12px 0 0;
-  color: #7c6753;
+  color: var(--color-text-subtle);
   font-size: 13px;
   font-weight: 500;
 }
@@ -1759,8 +1759,8 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   margin: 20px;
   padding: 18px;
   border-radius: 18px;
-  background: #faf6f0;
-  color: #78716c;
+  background: var(--color-surface-accent-strong);
+  color: var(--color-text-subtle);
 }
 
 .state-card p {
@@ -1768,11 +1768,11 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 }
 
 .error-state {
-  color: #c2410c;
+  color: var(--color-primary-deep);
 }
 
 .state-link {
-  color: #ea580c;
+  color: var(--color-primary);
   font-weight: 600;
 }
 </style>

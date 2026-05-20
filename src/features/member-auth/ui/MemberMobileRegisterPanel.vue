@@ -329,7 +329,7 @@ onBeforeUnmount(() => {
 .mode-tabs {
   overflow: hidden;
   border-radius: 22px;
-  background: rgba(255, 250, 242, 0.82);
+  background: var(--color-surface-glass);
   box-shadow: var(--shadow-md);
 }
 
@@ -349,9 +349,9 @@ onBeforeUnmount(() => {
 
 .form-card {
   padding: 22px 14px 20px;
-  border: 1px solid rgba(47, 107, 95, 0.1);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.1);
   border-radius: 24px;
-  background: rgba(255, 250, 242, 0.9);
+  background: var(--color-surface-glass);
   box-shadow: var(--shadow-md);
 }
 
@@ -377,7 +377,7 @@ onBeforeUnmount(() => {
 :deep(.field-group .van-cell) {
   padding-top: 14px;
   padding-bottom: 14px;
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-surface-glass);
 }
 
 .captcha-box,
@@ -387,12 +387,12 @@ onBeforeUnmount(() => {
 }
 
 .captcha-box {
-  border-color: rgba(47, 107, 95, 0.18);
+  border-color: rgba(var(--color-accent-rgb), 0.18);
   letter-spacing: 0.22em;
 }
 
 .sms-button {
-  border-color: rgba(184, 92, 56, 0.18);
+  border-color: rgba(var(--color-primary-rgb), 0.18);
 }
 
 .tip-group {
@@ -402,7 +402,7 @@ onBeforeUnmount(() => {
 }
 
 :deep(.tip-group .van-cell) {
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-surface-glass);
   color: var(--color-text-soft);
 }
 
