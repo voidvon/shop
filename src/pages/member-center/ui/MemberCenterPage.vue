@@ -452,7 +452,7 @@ onUnmounted(() => {
   justify-content: center;
   width: 100%;
   min-height: 180px;
-  background: linear-gradient(180deg, var(--color-accent-strong) 0%, var(--color-accent) 30%, var(--color-bg) 100%);
+  background: linear-gradient(180deg, #4ecdc4 0%, #44a08d 30%, var(--color-bg) 100%);
 }
 
 .profile-area {
