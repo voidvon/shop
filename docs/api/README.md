@@ -2,14 +2,14 @@
 
 ## 1. 文档来源
 
-- Swagger 页面：`https://api.qzxys.com/api/documentation`
-- OpenAPI JSON：`https://api.qzxys.com/docs?api-docs.json`
-- 最近一次抓取时间：`2026-05-15`
+- Swagger 页面：`https://dev.qzxys.com/api/documentation`
+- OpenAPI JSON：`https://dev.qzxys.com/docs?api-docs.json`
+- 最近一次抓取时间：`2026-05-21`
 - 原始文件：[`openapi.json`](/root/shop/docs/api/openapi.json)
 
 说明：
 
-- Swagger UI 实际加载的是 `https://api.qzxys.com/docs?api-docs.json`
+- Swagger UI 实际加载的是 `https://dev.qzxys.com/docs?api-docs.json`
 - 当前导出格式为 `OpenAPI 3.0.0`
 - 文档 `servers[0].url` 为 `/`，前端接入时仍应以项目环境变量中的后端基地址为准
 
@@ -160,6 +160,7 @@
 - 以 [`endpoints.md`](/root/shop/docs/api/endpoints.md) 作为方法、路径、鉴权、参数、请求体和响应模型的速查表
 - 以 [`frontend-integration-status.md`](/root/shop/docs/api/frontend-integration-status.md) 作为“当前代码已经接了什么、哪些还没接、哪些与 Swagger 不一致”的对照清单
 - 后续如果后端 Swagger 变更，优先重新抓取 `openapi.json`，再同步更新本文件中的统计与分组
+- `2026-05-21` 已切换为抓取 `dev.qzxys.com` 的 Swagger；接口总数未变，但新增 `CheckoutVirtualAccountInput` schema，并为结算入参、预结算结果和商品/SKU 结构补入虚拟商品直充账号相关字段
 - `2026-05-15` 已重新抓取 Swagger；`POST /api/v1/checkout/preview` 请求体新增可选 `address_id`，用于根据当前收货地址实时重算省内/省外运费；结算页切换地址后前端应重新调用预结算接口
 - `2026-05-03` 已重新抓取 Swagger；订单详情结构新增 `virtual_delivery_info`，结算与订单相关结构补充 `shipping_amount`，并新增 `GET /api/v1/merchants`、`GET /api/v1/merchants/{merchant}`
 - `2026-04-30` 已重新抓取 Swagger，并补入 `POST /api/v1/orders/{order}/refund-request`；当前登录用户可对自己的已支付且未退款订单提交退单申请，订单结构也新增 `latest_refund_request`
@@ -201,5 +202,5 @@
 可在项目根目录执行：
 
 ```bash
-curl --max-time 20 -L https://api.qzxys.com/docs?api-docs.json -o docs/api/openapi.json
+curl --max-time 20 -L https://dev.qzxys.com/docs?api-docs.json -o docs/api/openapi.json
 ```

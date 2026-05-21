@@ -1,7 +1,7 @@
 # API 接口明细索引
 
 来源：[`openapi.json`](/root/shop/docs/api/openapi.json)  
-抓取时间：`2026-05-15`
+抓取时间：`2026-05-21`
 
 说明：
 

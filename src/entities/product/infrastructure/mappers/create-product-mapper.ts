@@ -9,14 +9,18 @@ export interface ProductSummaryFieldMap<TSource> {
   category: FieldResolver<TSource, string>
   categoryId: FieldResolver<TSource, string>
   coverImageUrl?: FieldResolver<TSource, string | null>
+  hasDirectRechargeSku?: FieldResolver<TSource, boolean>
   id: FieldResolver<TSource, string>
   inventory: FieldResolver<TSource, number>
   monthlySales: FieldResolver<TSource, number>
   name: FieldResolver<TSource, string>
   price: FieldResolver<TSource, number>
+  productType?: FieldResolver<TSource, string | null>
   subtitle?: FieldResolver<TSource, string | null>
   summary: FieldResolver<TSource, string>
   tags: FieldResolver<TSource, string[]>
+  virtualAccountDescription?: FieldResolver<TSource, string | null>
+  virtualAccountLabel?: FieldResolver<TSource, string | null>
 }
 
 export interface ProductDetailFieldMap<TSource> extends ProductSummaryFieldMap<TSource> {
@@ -54,14 +58,22 @@ export function createProductSummaryMapper<TSource>(fieldMap: ProductSummaryFiel
     category: resolveField(source, fieldMap.category),
     categoryId: resolveField(source, fieldMap.categoryId),
     coverImageUrl: fieldMap.coverImageUrl ? resolveField(source, fieldMap.coverImageUrl) : null,
+    hasDirectRechargeSku: fieldMap.hasDirectRechargeSku ? resolveField(source, fieldMap.hasDirectRechargeSku) : false,
     id: resolveField(source, fieldMap.id),
     inventory: resolveField(source, fieldMap.inventory),
     monthlySales: resolveField(source, fieldMap.monthlySales),
     name: resolveField(source, fieldMap.name),
     price: resolveField(source, fieldMap.price),
+    productType: fieldMap.productType ? resolveField(source, fieldMap.productType) : null,
     subtitle: fieldMap.subtitle ? resolveField(source, fieldMap.subtitle) : null,
     summary: resolveField(source, fieldMap.summary),
     tags: cloneTextList(resolveField(source, fieldMap.tags)),
+    virtualAccountDescription: fieldMap.virtualAccountDescription
+      ? resolveField(source, fieldMap.virtualAccountDescription)
+      : null,
+    virtualAccountLabel: fieldMap.virtualAccountLabel
+      ? resolveField(source, fieldMap.virtualAccountLabel)
+      : null,
   })
 }
 

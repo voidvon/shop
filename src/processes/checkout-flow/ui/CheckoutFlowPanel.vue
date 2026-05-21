@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
 import { useBackendRuntime } from '@/app/providers/backend'
@@ -49,6 +49,13 @@ const shippingAmountText = computed(() => formatShippingAmount(preview.value?.sh
 const subtotalAmountText = computed(() => formatAmount(preview.value?.subtotalAmount ?? 0))
 const discountAmountText = computed(() => formatAmount(preview.value?.discountAmount ?? 0))
 const merchantTitle = computed(() => preview.value?.source === 'cart' ? '购物车商品' : '立即购买商品')
+const isAddressRequired = computed(() => {
+  if (previewLines.value.length === 0) {
+    return true
+  }
+
+  return previewLines.value.some((line) => line.productType !== 'virtual')
+})
 const hasInsufficientBalance = computed(() => previewBalanceGroups.value.some((group) => group.payableAmount > resolveGroupPlannedDeductionAmount(group)))
 const insufficientMerchantNames = computed(() => {
   const merchantNames = new Set(
@@ -117,23 +124,31 @@ const selectedAddressQueryId = computed(() =>
     : '',
 )
 const addressTitle = computed(() =>
-  selectedAddress.value
-    ? `${selectedAddress.value.recipientName} ${selectedAddress.value.recipientMobile}`
-    : preview.value
-      ? '请选择收货地址'
-    : '请先生成结算预览',
+  !isAddressRequired.value
+    ? '该订单无需收货地址'
+    : selectedAddress.value
+      ? `${selectedAddress.value.recipientName} ${selectedAddress.value.recipientMobile}`
+      : preview.value
+        ? '请选择收货地址'
+        : '请先生成结算预览'
 )
 const addressDetail = computed(() =>
-  selectedAddress.value
-    ? [selectedAddress.value.province, selectedAddress.value.city, selectedAddress.value.county, selectedAddress.value.addressDetail]
-      .filter(Boolean)
-      .join(' ')
-    : preview.value
-      ? '请先选择收货地址，再提交订单。'
-    : '当前页面需要先加载结算预览后再展示订单信息。',
+  !isAddressRequired.value
+    ? '直充/虚拟商品将按填写的充值账号直接发放。'
+    : selectedAddress.value
+      ? [selectedAddress.value.province, selectedAddress.value.city, selectedAddress.value.county, selectedAddress.value.addressDetail]
+        .filter(Boolean)
+        .join(' ')
+      : preview.value
+        ? '请先选择收货地址，再提交订单。'
+        : '当前页面需要先加载结算预览后再展示订单信息。'
 )
 
 function openAddressSelector() {
+  if (!isAddressRequired.value) {
+    return
+  }
+
   void router.push({
     name: 'member-addresses',
     query: {
@@ -308,6 +323,18 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
   return `${merchantNames.join('、')}可用余额不足`
 }
 
+function shouldKeepCheckoutDraftOnRouteLeave(nextRouteName: string | symbol | null | undefined) {
+  return nextRouteName === 'member-addresses' || nextRouteName === 'checkout-coupons'
+}
+
+onBeforeRouteLeave((to) => {
+  if (shouldKeepCheckoutDraftOnRouteLeave(to.name)) {
+    return
+  }
+
+  void checkoutStore.discardInstantCheckoutDraft(true)
+})
+
 </script>
 
 <template>
@@ -325,7 +352,7 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 
         <template v-else-if="preview">
           <van-cell-group class="checkout-cell-group address-card">
-            <van-cell is-link center class="address-cell" @click="openAddressSelector">
+            <van-cell :is-link="isAddressRequired" center class="address-cell" @click="openAddressSelector">
               <template #icon>
                 <van-icon name="location-o" size="18" class="address-icon" />
               </template>
@@ -369,6 +396,16 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
               :quantity-text="`${line.quantity}件`"
               :to="{ name: 'product-detail', params: { productId: line.productId } }"
             />
+
+            <div
+              v-for="line in previewLines.filter((item) => item.virtualAccountLabel && item.virtualAccountInput)"
+              :key="`virtual-account-${line.lineId ?? line.productId}`"
+              class="merchant-row merchant-row-stack"
+            >
+              <span class="merchant-row-label">{{ line.virtualAccountLabel }}</span>
+              <span class="merchant-row-value merchant-row-value-strong">{{ line.virtualAccountInput }}</span>
+              <span v-if="line.virtualAccountDescription" class="merchant-row-subtext">{{ line.virtualAccountDescription }}</span>
+            </div>
 
             <div class="merchant-row">
               <span class="merchant-row-label">物流配送</span>
@@ -561,6 +598,13 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
   text-align: left;
 }
 
+.merchant-row-stack {
+  display: grid;
+  justify-content: stretch;
+  gap: 4px;
+  padding: 12px 16px;
+}
+
 .merchant-row-main {
   display: inline-flex;
   align-items: center;
@@ -579,6 +623,11 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
   font-weight: 500;
 }
 
+.merchant-row-value-strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
 .merchant-row-value-error {
   color: var(--color-primary-deep);
 }
@@ -586,6 +635,12 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 .merchant-row-arrow {
   color: var(--color-text-faint);
   font-size: 14px;
+}
+
+.merchant-row-subtext {
+  color: var(--color-text-subtle);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .explain-amount {

@@ -6,7 +6,7 @@
 - 当前运行时装配：[`src/app/providers/backend/create-backend-runtime.ts`](/root/shop/src/app/providers/backend/create-backend-runtime.ts)
 - 现有 `backend-a` 适配层与浏览器仓储实现
 
-更新时间：`2026-05-15`
+更新时间：`2026-05-21`
 
 ## 1. 先看结论
 
@@ -138,6 +138,7 @@
 - 下单成功后，订单列表、订单详情和会员中心订单角标都会从真实 `/api/v1/orders` 刷新
 - 当前仍保留部分显式能力裁剪：Swagger 里仍没有订单取消、支付接口，因此 `backend-a` 仍会对这两类动作保留显式提示；确认收货已接入 `POST /api/v1/orders/{order}/receive`，退款申请接口已出现在 Swagger，订单结构也新增 `latest_refund_request`，但当前售后流程仍主要走本地仓储
 - 最新 Swagger 已为订单详情补入 `virtual_delivery_info`，并为结算/订单金额结构补入 `shipping_amount`；当前前端尚未消费这几个新增字段
+- `2026-05-21` 的 dev Swagger 又为 `checkout/preview`、`checkout/submit` 增加了 `virtual_account_inputs`，并在商品/SKU/预结算商品结构补充了虚拟直充账号与第三方商品类型字段；当前前端也还没有消费这批新字段
 
 对应 Swagger：
 

@@ -1,8 +1,9 @@
-import type { CheckoutLine } from '@/entities/order'
+import type { CheckoutLine, CheckoutVirtualAccountInput } from '@/entities/order'
 
 export interface InstantCheckoutDraft {
   lines: CheckoutLine[]
   source: 'instant'
+  virtualAccountInputs?: CheckoutVirtualAccountInput[]
 }
 
 export const simulatedInstantOrderNamespace = 'backend-a-instant'
@@ -32,6 +33,13 @@ export function readInstantCheckoutDraft(): InstantCheckoutDraft | null {
       || parsedValue.source !== 'instant'
       || !Array.isArray(parsedValue.lines)
       || parsedValue.lines.length === 0
+    ) {
+      return null
+    }
+
+    if (
+      parsedValue.virtualAccountInputs
+      && !Array.isArray(parsedValue.virtualAccountInputs)
     ) {
       return null
     }

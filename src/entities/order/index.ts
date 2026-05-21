@@ -14,6 +14,7 @@ export {
   type CheckoutLine,
   type CheckoutPreview,
   type CheckoutPreviewGroup,
+  type CheckoutVirtualAccountInput,
   type CreateCheckoutPreviewCommand,
   type OrderAction,
   type OrderConfirmation,

@@ -119,6 +119,9 @@ export interface ProductSkuOption {
   skuId: string
   specText: string
   stock: number
+  thirdPartyGoodsTypeLabel?: string | null
+  virtualDailyPurchaseLimit?: number | null
+  virtualOrderQuantityLimit?: number | null
 }
 
 export interface ProductStoreScore {

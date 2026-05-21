@@ -4,6 +4,7 @@ import type { MemberAuthSession } from '@/entities/member-auth'
 import type {
   OrderRefundRequestResult,
   CheckoutCouponUsage,
+  CheckoutVirtualAccountInput,
   CheckoutPreview,
   OrderConfirmation,
   OrderRecord,
@@ -116,6 +117,29 @@ function normalizeCouponUsages(couponUsages: CheckoutCouponUsage[] | null | unde
     )
 }
 
+function normalizeVirtualAccountInputs(
+  lineIds: string[],
+  virtualAccountInputs: CheckoutVirtualAccountInput[] | null | undefined,
+) {
+  const allowedLineIds = new Set(lineIds)
+
+  return (virtualAccountInputs ?? [])
+    .map((input) => {
+      const normalizedLineId = input.lineId.trim()
+      const normalizedValue = input.value.trim()
+
+      return {
+        cart_item_id: parseInteger(normalizedLineId),
+        value: normalizedValue,
+      }
+    })
+    .filter((input) =>
+      input.cart_item_id !== null
+      && allowedLineIds.has(String(input.cart_item_id))
+      && input.value.length > 0,
+    )
+}
+
 function mapOrderConfirmation(
   command: Parameters<OrderRepository['submit']>[0],
   orders: BackendAOrderDto[],
@@ -184,26 +208,32 @@ export function createBackendAOrderRepository(
   const httpClient = createBackendAOrderHttpClient(memberAuthSession)
 
   async function requestCheckoutPreview(
+    lineIds: string[],
     addressId?: string | null,
-    cartItemIds?: number[],
     couponUsages?: CheckoutCouponUsage[],
+    virtualAccountInputs?: CheckoutVirtualAccountInput[],
   ) {
     return httpClient.post<BackendACheckoutPreviewDto>('/api/v1/checkout/preview', {
       ...(addressId ? { address_id: normalizeAddressId(addressId) } : {}),
-      ...(cartItemIds && cartItemIds.length > 0 ? { cart_item_ids: cartItemIds } : {}),
+      cart_item_ids: normalizeCartLineIds(lineIds),
       ...(couponUsages && couponUsages.length > 0
         ? { coupon_usages: normalizeCouponUsages(couponUsages) }
+        : {}),
+      ...(virtualAccountInputs && virtualAccountInputs.length > 0
+        ? { virtual_account_inputs: normalizeVirtualAccountInputs(lineIds, virtualAccountInputs) }
         : {}),
     })
   }
 
   return {
     async createPreview(command, couponUsages) {
-      if (command.source !== 'cart') {
-        throw new Error('当前后端仅支持从购物车发起结算')
-      }
-
-      const preview = await requestCheckoutPreview(command.addressId, undefined, couponUsages)
+      const lineIds = command.lines.map((line) => line.lineId ?? '')
+      const preview = await requestCheckoutPreview(
+        lineIds,
+        command.addressId,
+        couponUsages,
+        command.virtualAccountInputs,
+      )
       return mapBackendACheckoutPreviewDto(command, preview)
     },
 
@@ -220,21 +250,18 @@ export function createBackendAOrderRepository(
     },
 
     async submit(command) {
-      if (command.source !== 'cart') {
-        throw new Error('当前后端仅支持从购物车发起下单')
-      }
-
-      if (!command.addressId) {
-        throw new Error('缺少收货地址')
-      }
+      const lineIds = command.lines.map((line) => line.lineId ?? '')
 
       const orders = await httpClient.post<BackendAOrderDto[]>('/api/v1/checkout/submit', {
-        address_id: normalizeAddressId(command.addressId),
-        cart_item_ids: normalizeCartLineIds(command.lines.map((line) => line.lineId ?? '')),
+        ...(command.addressId ? { address_id: normalizeAddressId(command.addressId) } : {}),
+        cart_item_ids: normalizeCartLineIds(lineIds),
         ...(command.couponUsages && command.couponUsages.length > 0
           ? { coupon_usages: normalizeCouponUsages(command.couponUsages) }
           : {}),
         remark: command.remark ?? undefined,
+        ...(command.virtualAccountInputs && command.virtualAccountInputs.length > 0
+          ? { virtual_account_inputs: normalizeVirtualAccountInputs(lineIds, command.virtualAccountInputs) }
+          : {}),
       })
 
       return mapOrderConfirmation(command, orders)

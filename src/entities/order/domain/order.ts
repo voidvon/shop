@@ -6,16 +6,28 @@ export interface CheckoutLine {
   productId: string
   productImageUrl?: string | null
   productName: string
+  productType?: string | null
   quantity: number
   skuId: string | null
   specText: string | null
+  thirdPartyGoodsTypeLabel?: string | null
   unitPrice: number
+  virtualAccountDescription?: string | null
+  virtualAccountInput?: string | null
+  virtualAccountLabel?: string | null
+  virtualOrderQuantityLimit?: number | null
+}
+
+export interface CheckoutVirtualAccountInput {
+  lineId: string
+  value: string
 }
 
 export interface CreateCheckoutPreviewCommand {
   addressId?: string | null
   lines: CheckoutLine[]
   source: 'cart' | 'instant'
+  virtualAccountInputs?: CheckoutVirtualAccountInput[]
 }
 
 export interface CheckoutCouponUsage {
@@ -147,10 +159,16 @@ export function createCheckoutLine(input: Omit<CheckoutLine, 'lineTotal'> & { li
     productId: input.productId,
     productImageUrl: input.productImageUrl ?? null,
     productName: input.productName,
+    productType: input.productType ?? null,
     quantity,
     skuId: input.skuId ?? null,
     specText: input.specText ?? null,
+    thirdPartyGoodsTypeLabel: input.thirdPartyGoodsTypeLabel ?? null,
     unitPrice: input.unitPrice,
+    virtualAccountDescription: input.virtualAccountDescription ?? null,
+    virtualAccountInput: input.virtualAccountInput ?? null,
+    virtualAccountLabel: input.virtualAccountLabel ?? null,
+    virtualOrderQuantityLimit: input.virtualOrderQuantityLimit ?? null,
   }
 }
 

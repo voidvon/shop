@@ -1155,6 +1155,13 @@
                                         "example": 12,
                                         "nullable": true
                                     },
+                                    "virtual_account_inputs": {
+                                        "description": "每个商品的虚拟直充账号。每个对象用 cart_item_id 定位购物车项。",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/CheckoutVirtualAccountInput"
+                                        }
+                                    },
                                     "coupon_usages": {
                                         "description": "按订单组使用的优惠券；如果没有可用优惠券，可直接不传",
                                         "type": "array",
@@ -1171,6 +1178,16 @@
                                     102
                                 ],
                                 "address_id": 12,
+                                "virtual_account_inputs": [
+                                    {
+                                        "cart_item_id": 101,
+                                        "value": "13800000001"
+                                    },
+                                    {
+                                        "cart_item_id": 102,
+                                        "value": "13800000002"
+                                    }
+                                ],
                                 "coupon_usages": []
                             }
                         }
@@ -1271,6 +1288,13 @@
                                     "submit_no": {
                                         "description": "客户端提交幂等号，不传则后端自动生成",
                                         "type": "string"
+                                    },
+                                    "virtual_account_inputs": {
+                                        "description": "每个商品的虚拟直充账号。每个对象用 cart_item_id 定位购物车项。",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/CheckoutVirtualAccountInput"
+                                        }
                                     },
                                     "coupon_usages": {
                                         "description": "按订单组使用的优惠券",
@@ -3538,6 +3562,37 @@
                         "type": "integer",
                         "example": 999
                     },
+                    "virtual_valid_until": {
+                        "description": "虚拟商品有效期至，过期不可下单",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-06-01T23:59:59+08:00",
+                        "nullable": true
+                    },
+                    "virtual_order_quantity_limit": {
+                        "description": "虚拟商品每次下单数量上限，默认1",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "virtual_daily_purchase_limit": {
+                        "description": "虚拟商品按用户统计的当日购买次数上限，空表示不限",
+                        "type": "integer",
+                        "example": 3,
+                        "nullable": true
+                    },
+                    "third_party_goods_type": {
+                        "description": "第三方商品类型：1直充 2卡密 3话费；非第三方发货SKU返回null",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "third_party_goods_type_label": {
+                        "description": "第三方商品类型中文名称；非第三方发货SKU返回null",
+                        "type": "string",
+                        "example": "直充",
+                        "nullable": true
+                    },
                     "image": {
                         "description": "SKU图片",
                         "type": "string",
@@ -3588,6 +3643,18 @@
                         "description": "商品副标题",
                         "type": "string",
                         "example": "韩国野生海参，纯手工泡发，0添加",
+                        "nullable": true
+                    },
+                    "virtual_account_label": {
+                        "description": "虚拟商品账号名称；普通商品返回null",
+                        "type": "string",
+                        "example": "手机号",
+                        "nullable": true
+                    },
+                    "virtual_account_description": {
+                        "description": "虚拟商品账号填写说明；普通商品返回null",
+                        "type": "string",
+                        "example": "请填写需要充值的手机号码",
                         "nullable": true
                     },
                     "main_images": {
@@ -3832,6 +3899,25 @@
                 },
                 "type": "object"
             },
+            "CheckoutVirtualAccountInput": {
+                "required": [
+                    "cart_item_id",
+                    "value"
+                ],
+                "properties": {
+                    "cart_item_id": {
+                        "description": "购物车项ID，用于匹配该商品的直充账号",
+                        "type": "integer",
+                        "example": 101
+                    },
+                    "value": {
+                        "description": "直充账号信息，最长255个字符",
+                        "type": "string",
+                        "example": "13800000000"
+                    }
+                },
+                "type": "object"
+            },
             "CheckoutCouponUsage": {
                 "properties": {
                     "merchant_id": {
@@ -3878,6 +3964,24 @@
                         "description": "SKU名称",
                         "type": "string",
                         "example": "默认规格"
+                    },
+                    "virtual_account_label": {
+                        "description": "虚拟商品账号名称；普通商品返回null",
+                        "type": "string",
+                        "example": "手机号",
+                        "nullable": true
+                    },
+                    "virtual_account_description": {
+                        "description": "虚拟商品账号填写说明；普通商品返回null",
+                        "type": "string",
+                        "example": "请填写需要充值的手机号码",
+                        "nullable": true
+                    },
+                    "virtual_account_input": {
+                        "description": "本次预结算传入并匹配到该商品的直充账号；未传则返回null",
+                        "type": "string",
+                        "example": "13800000000",
+                        "nullable": true
                     },
                     "price": {
                         "description": "单价",

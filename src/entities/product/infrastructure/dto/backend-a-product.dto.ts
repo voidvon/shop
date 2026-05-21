@@ -29,6 +29,12 @@ export interface BackendAProductSkuDto {
   specs: Record<string, unknown> | null
   status: number
   stock: number
+  third_party_goods_type?: number | null
+  third_party_goods_type_label?: string | null
+  virtual_daily_purchase_limit?: number | null
+  virtual_delivery_mode?: string | null
+  virtual_order_quantity_limit?: number | null
+  virtual_valid_until?: string | null
 }
 
 export interface BackendAProductSummaryDto {
@@ -42,12 +48,15 @@ export interface BackendAProductSummaryDto {
   merchant?: BackendAMerchantSimpleDto
   merchant_id: number
   product_category_id: number
+  product_type?: string | null
   sales_count: number
   skus: BackendAProductSkuDto[]
   sort: number
   status: number
   subtitle: string | null
   title: string
+  virtual_account_description?: string | null
+  virtual_account_label?: string | null
 }
 
 export interface BackendAProductDetailDto extends BackendAProductSummaryDto {}

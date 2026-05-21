@@ -5,12 +5,17 @@ import { showFailToast, showSuccessToast } from 'vant'
 
 import { useCartStore } from '@/features/add-to-cart'
 import { MemberFavoriteButton } from '@/features/toggle-member-favorite'
+import { isDirectRechargeSku } from '@/entities/product'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import { sanitizeRichTextHtml } from '@/shared/lib/safe-rich-text'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import TopBarMoreMenuButton from '@/shared/ui/TopBarMoreMenuButton.vue'
-import { clearInstantCheckoutDraft } from '@/processes/checkout-flow/model/instant-checkout-draft'
+import {
+  clearInstantCheckoutDraft,
+  writeInstantCheckoutDraft,
+} from '@/processes/checkout-flow/model/instant-checkout-draft'
+import { useCheckoutFlowStore } from '@/processes/checkout-flow/model/useCheckoutFlowStore'
 
 import { useProductDetailPageModel } from '../model/useProductDetailPageModel'
 
@@ -20,6 +25,7 @@ const props = defineProps<{
 
 const router = useRouter()
 const cartStore = useCartStore()
+const checkoutFlowStore = useCheckoutFlowStore()
 const isCartEnabled = useModuleAvailability('cart')
 const isCheckoutEnabled = useModuleAvailability('checkout')
 const isReviewEnabled = useModuleAvailability('review')
@@ -46,6 +52,7 @@ const goodsSectionRef = ref<HTMLElement | null>(null)
 const detailSectionRef = ref<HTMLElement | null>(null)
 const selectedSkuId = ref<string | null>(null)
 const purchaseQuantity = ref(1)
+const virtualAccountValue = ref('')
 
 const reviewFilters = [
   { key: 'all', label: '全部评价' },
@@ -68,6 +75,7 @@ watch(
   (value) => {
     selectedSkuId.value = value?.selectedSkuId ?? value?.defaultSkuId ?? value?.skuList[0]?.skuId ?? null
     purchaseQuantity.value = Math.max(value?.quantity ?? 1, 1)
+    virtualAccountValue.value = ''
   },
   { immediate: true },
 )
@@ -104,9 +112,34 @@ const selectedText = computed(() => currentSku.value?.specText ?? '默认')
 const popupStockText = computed(() => `库存：${currentSku.value?.stock ?? product.value?.inventory ?? 0}件`)
 const currentUnitPrice = computed(() => currentSku.value?.price ?? product.value?.price ?? 0)
 const currentStock = computed(() => currentSku.value?.stock ?? product.value?.inventory ?? 0)
+const currentSkuRequiresVirtualAccount = computed(() =>
+  Boolean(product.value?.virtualAccountLabel) && isDirectRechargeSku(currentSku.value ?? {}),
+)
+const currentSkuVirtualAccountLabel = computed(() => product.value?.virtualAccountLabel?.trim() || '账号')
+const currentSkuVirtualAccountDescription = computed(() =>
+  product.value?.virtualAccountDescription?.trim()
+  || `请填写需要充值的${currentSkuVirtualAccountLabel.value}`,
+)
+const currentSkuPurchaseLimit = computed(() => {
+  const rawLimit = currentSku.value?.virtualOrderQuantityLimit ?? null
+  return rawLimit && rawLimit > 0 ? rawLimit : null
+})
+const currentMaxPurchaseQuantity = computed(() => {
+  const limit = currentSkuPurchaseLimit.value
+
+  if (limit === null) {
+    return currentStock.value
+  }
+
+  return currentStock.value > 0 ? Math.min(currentStock.value, limit) : limit
+})
+const quantityLimitText = computed(() =>
+  currentSkuPurchaseLimit.value ? `当前规格单次最多购买 ${currentSkuPurchaseLimit.value} 件` : '',
+)
 const currentCartLineId = computed(() => currentSku.value?.skuId ?? product.value?.id ?? '')
 const isCartPending = computed(() => (currentCartLineId.value ? cartStore.isLinePending(currentCartLineId.value) : false))
 const isCurrentSelectionSoldOut = computed(() => currentStock.value <= 0)
+const isCurrentSkuCartDisabled = computed(() => currentSkuRequiresVirtualAccount.value)
 const currentSkuImageUrl = computed(() =>
   resolveProductImage(currentSku.value?.imageUrl ?? product.value?.gallery[0] ?? product.value?.coverImageUrl),
 )
@@ -140,6 +173,21 @@ const galleryItems = computed(() =>
     })),
 )
 const detailDescriptionHtml = computed(() => sanitizeRichTextHtml(product.value?.detailDescription))
+
+watch(
+  currentMaxPurchaseQuantity,
+  (maxQuantity) => {
+    if (maxQuantity > 0 && purchaseQuantity.value > maxQuantity) {
+      purchaseQuantity.value = maxQuantity
+      return
+    }
+
+    if (purchaseQuantity.value < 1) {
+      purchaseQuantity.value = 1
+    }
+  },
+  { immediate: true },
+)
 
 function resolveProductImage(imageUrl: string | null | undefined) {
   if (!imageUrl) {
@@ -223,6 +271,11 @@ function closeReviewDrawer() {
 }
 
 function openSpecPopup(source: 'buy' | 'cart' | 'spec') {
+  if (source === 'cart' && currentSkuRequiresVirtualAccount.value) {
+    showFailToast('直充商品仅支持立即购买')
+    return
+  }
+
   specPopupSource.value = source
   specPopupVisible.value = true
 }
@@ -241,7 +294,7 @@ function selectSku(skuId: string) {
 
 function changePurchaseQuantity(delta: number) {
   const nextValue = purchaseQuantity.value + delta
-  const maxQuantity = currentStock.value
+  const maxQuantity = currentMaxPurchaseQuantity.value
 
   if (nextValue < 1) {
     return
@@ -253,6 +306,74 @@ function changePurchaseQuantity(delta: number) {
   }
 
   purchaseQuantity.value = nextValue
+}
+
+async function ensureCartSnapshotLoaded() {
+  if (cartStore.hasLoaded) {
+    return
+  }
+
+  await cartStore.loadSnapshot()
+}
+
+function getNormalizedVirtualAccountValue() {
+  const normalizedValue = virtualAccountValue.value.trim()
+
+  if (!currentSkuRequiresVirtualAccount.value) {
+    return null
+  }
+
+  if (!normalizedValue) {
+    throw new Error(`请先填写${currentSkuVirtualAccountLabel.value}`)
+  }
+
+  if (normalizedValue.length > 255) {
+    throw new Error(`${currentSkuVirtualAccountLabel.value}不能超过 255 个字符`)
+  }
+
+  return normalizedValue
+}
+
+async function prepareInstantCheckoutLine() {
+  const currentProduct = product.value
+  const skuId = currentSku.value?.skuId ?? null
+
+  if (!currentProduct) {
+    throw new Error('商品信息加载中...')
+  }
+
+  await ensureCartSnapshotLoaded()
+
+  const existingLine = cartStore.lines.find((line) =>
+    line.productId === currentProduct.id
+    && line.skuId === skuId,
+  )
+
+  if (existingLine) {
+    if (existingLine.quantity !== purchaseQuantity.value) {
+      await cartStore.setProductQuantity(existingLine.lineId, purchaseQuantity.value)
+    }
+
+    return cartStore.lines.find((line) => line.lineId === existingLine.lineId) ?? existingLine
+  }
+
+  const snapshot = await cartStore.addProduct(currentProduct, {
+    quantity: purchaseQuantity.value,
+    skuId,
+    specText: currentSku.value?.specText ?? null,
+    unitPrice: currentUnitPrice.value,
+  })
+
+  const targetLine = snapshot.lines.find((line) =>
+    line.productId === currentProduct.id
+    && line.skuId === skuId,
+  ) ?? snapshot.lines.find((line) => line.productId === currentProduct.id)
+
+  if (!targetLine) {
+    throw new Error('未找到可结算的商品')
+  }
+
+  return targetLine
 }
 
 async function submitSpecAction(action: 'buy' | 'cart') {
@@ -272,6 +393,11 @@ async function submitSpecAction(action: 'buy' | 'cart') {
     return
   }
 
+  if (action === 'cart' && currentSkuRequiresVirtualAccount.value) {
+    showFailToast('直充商品仅支持立即购买')
+    return
+  }
+
   pendingSpecAction.value = action
 
   try {
@@ -281,25 +407,39 @@ async function submitSpecAction(action: 'buy' | 'cart') {
         return
       }
 
-      clearInstantCheckoutDraft()
-
-      const snapshot = await cartStore.addProduct(currentProduct, {
-        quantity: purchaseQuantity.value,
-        skuId: currentSku.value?.skuId ?? null,
-        specText: currentSku.value?.specText ?? null,
-        unitPrice: currentUnitPrice.value,
-      })
-
-      const targetLine = snapshot.lines.find((line) =>
-        line.productId === currentProduct.id
-        && line.skuId === (currentSku.value?.skuId ?? null),
-      ) ?? snapshot.lines.find((line) => line.productId === currentProduct.id)
-
-      if (!targetLine) {
-        throw new Error('未找到可结算的商品')
-      }
+      const normalizedVirtualAccountValue = getNormalizedVirtualAccountValue()
+      await checkoutFlowStore.discardInstantCheckoutDraft(true)
+      const targetLine = await prepareInstantCheckoutLine()
 
       await cartStore.selectOnlyLine(targetLine.lineId)
+
+      if (currentSkuRequiresVirtualAccount.value && normalizedVirtualAccountValue) {
+        writeInstantCheckoutDraft({
+          lines: [{
+            lineId: targetLine.lineId,
+            lineTotal: currentUnitPrice.value * purchaseQuantity.value,
+            productId: currentProduct.id,
+            productImageUrl: currentSkuImageUrl.value,
+            productName: currentProduct.name,
+            productType: currentProduct.productType ?? null,
+            quantity: purchaseQuantity.value,
+            skuId: currentSku.value?.skuId ?? null,
+            specText: currentSku.value?.specText ?? null,
+            thirdPartyGoodsTypeLabel: currentSku.value?.thirdPartyGoodsTypeLabel ?? null,
+            unitPrice: currentUnitPrice.value,
+            virtualAccountDescription: currentProduct.virtualAccountDescription ?? null,
+            virtualAccountInput: normalizedVirtualAccountValue,
+            virtualAccountLabel: currentProduct.virtualAccountLabel ?? null,
+            virtualOrderQuantityLimit: currentSku.value?.virtualOrderQuantityLimit ?? null,
+          }],
+          source: 'instant',
+          virtualAccountInputs: [{
+            lineId: targetLine.lineId,
+            value: normalizedVirtualAccountValue,
+          }],
+        })
+      }
+
       closeSpecPopup()
       await router.push({ name: 'checkout' })
       return
@@ -322,10 +462,16 @@ async function submitSpecAction(action: 'buy' | 'cart') {
       closeSpecPopup()
       return
     }
-  } catch {
-    showFailToast(action === 'buy'
-      ? (cartStore.errorMessage ?? '立即购买跳转结算失败')
-      : (cartStore.errorMessage ?? '加入购物车失败'))
+  } catch (error) {
+    showFailToast(
+      error instanceof Error
+        ? error.message
+        : (
+            action === 'buy'
+              ? (cartStore.errorMessage ?? '立即购买跳转结算失败')
+              : (cartStore.errorMessage ?? '加入购物车失败')
+          ),
+    )
   } finally {
     pendingSpecAction.value = null
   }
@@ -619,10 +765,10 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
         <button
           class="action-button action-button-primary"
           type="button"
-          :disabled="!isCartEnabled"
+          :disabled="!isCartEnabled || isCurrentSkuCartDisabled"
           @click="openSpecPopup('cart')"
         >
-          加入购物车
+          {{ isCurrentSkuCartDisabled ? '仅支持立即购买' : '加入购物车' }}
         </button>
       </footer>
 
@@ -751,6 +897,24 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
               </div>
             </div>
 
+            <p v-if="quantityLimitText" class="spec-limit-tip">
+              {{ quantityLimitText }}
+            </p>
+
+            <section v-if="currentSkuRequiresVirtualAccount" class="spec-section spec-section-account">
+              <span class="spec-section-label">填写{{ currentSkuVirtualAccountLabel }}</span>
+              <p class="spec-account-description">{{ currentSkuVirtualAccountDescription }}</p>
+              <van-field
+                v-model="virtualAccountValue"
+                class="spec-account-field"
+                :label="currentSkuVirtualAccountLabel"
+                maxlength="255"
+                :placeholder="`请输入${currentSkuVirtualAccountLabel}`"
+                :disabled="isSpecActionPending"
+                clearable
+              />
+            </section>
+
             <p v-if="isSpecActionPending" class="spec-pending-tip">
               <van-loading size="14" />
               <span>{{ pendingSpecAction === 'buy' ? '正在准备结算，请稍候...' : '正在加入购物车，请稍候...' }}</span>
@@ -781,10 +945,10 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
               class="action-button action-button-primary"
               type="button"
               :class="{ 'action-button-pending': pendingSpecAction === 'cart' }"
-              :disabled="!isCartEnabled || isCartPending || isCurrentSelectionSoldOut || isSpecActionPending"
+              :disabled="!isCartEnabled || isCartPending || isCurrentSelectionSoldOut || isSpecActionPending || isCurrentSkuCartDisabled"
               @click="submitSpecAction('cart')"
             >
-              {{ addToCartButtonText }}
+              {{ isCurrentSkuCartDisabled ? '仅支持立即购买' : addToCartButtonText }}
             </button>
           </footer>
         </div>
@@ -1651,6 +1815,31 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   text-align: center;
   font-size: 18px;
   font-weight: 600;
+}
+
+.spec-limit-tip {
+  margin: -6px 0 0;
+  color: var(--color-text-subtle);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.spec-section-account {
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--color-surface-soft);
+}
+
+.spec-account-description {
+  margin: 0;
+  color: var(--color-text-subtle);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.spec-account-field {
+  padding: 0;
+  background: transparent;
 }
 
 .spec-action-bar {

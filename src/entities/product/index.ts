@@ -1,8 +1,11 @@
 export { getFeaturedProductSummaries } from './application/get-featured-products'
 export { getProductDetail } from './application/get-product-detail'
 export {
+  isDirectRechargeProduct,
+  isDirectRechargeSku,
   isHighDemandProduct,
   isProductAvailable,
+  isVirtualProduct,
   type ProductAttribute,
   type ProductDetail,
   type ProductSummary,

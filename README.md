@@ -77,7 +77,7 @@ VITE_BACKEND_TARGET=backend-a npm run dev
 
 ```sh
 VITE_BACKEND_TARGET=backend-a \
-VITE_BACKEND_A_BASE_URL=https://api.qzxys.com \
+VITE_BACKEND_A_BASE_URL=https://dev.qzxys.com \
 npm run dev
 ```
 
@@ -85,7 +85,7 @@ npm run dev
 
 ```sh
 VITE_BACKEND_TARGET=backend-a \
-VITE_BACKEND_A_BASE_URL=https://api.qzxys.com \
+VITE_BACKEND_A_BASE_URL=https://dev.qzxys.com \
 VITE_BACKEND_A_WECHAT_OAUTH_URL="https://your-wechat-oauth-entry" \
 npm run dev
 ```
@@ -94,7 +94,7 @@ npm run dev
 
 ```sh
 VITE_BACKEND_TARGET=backend-a \
-VITE_BACKEND_A_BASE_URL=https://api.qzxys.com \
+VITE_BACKEND_A_BASE_URL=https://dev.qzxys.com \
 VITE_BACKEND_A_ENABLE_INVOICE=true \
 npm run dev
 ```
@@ -103,7 +103,7 @@ npm run dev
 
 ```sh
 VITE_BACKEND_TARGET=backend-a \
-VITE_BACKEND_A_BASE_URL=https://api.qzxys.com \
+VITE_BACKEND_A_BASE_URL=https://dev.qzxys.com \
 VITE_BACKEND_A_WECHAT_OAUTH_URL="https://your-wechat-oauth-entry" \
 npm run dev
 ```
@@ -112,7 +112,7 @@ npm run dev
 
 ```sh
 VITE_BACKEND_TARGET=backend-a \
-VITE_BACKEND_A_BASE_URL=https://api.qzxys.com \
+VITE_BACKEND_A_BASE_URL=https://dev.qzxys.com \
 VITE_DEV_MEMBER_ACCESS_TOKEN="your-access-token" \
 npm run dev
 ```

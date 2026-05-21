@@ -115,6 +115,9 @@ export interface BackendACheckoutPreviewItemDto {
   product_title: string
   quantity: number
   sku_name: string
+  virtual_account_description?: string | null
+  virtual_account_input?: string | null
+  virtual_account_label?: string | null
 }
 
 export interface BackendACheckoutBalanceDeductionDto {

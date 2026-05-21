@@ -707,6 +707,9 @@ export function mapBackendAProductDetailPageData(
     skuId: String(sku.id),
     specText: sku.name?.trim() || '默认规格',
     stock: sku.stock,
+    thirdPartyGoodsTypeLabel: sku.third_party_goods_type_label ?? null,
+    virtualDailyPurchaseLimit: sku.virtual_daily_purchase_limit ?? null,
+    virtualOrderQuantityLimit: sku.virtual_order_quantity_limit ?? null,
   }))
   const defaultSkuId = skuList[0]?.skuId ?? null
 

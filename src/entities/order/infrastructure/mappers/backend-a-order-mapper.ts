@@ -11,6 +11,7 @@ import type {
   BackendACheckoutBalanceDeductionDto,
   BackendACheckoutPreviewDto,
   BackendACheckoutPreviewGroupDto,
+  BackendACheckoutPreviewItemDto,
   BackendAOrderDto,
 } from '../dto/backend-a-order.dto'
 import { resolveBackendAMediaUrl } from '@/shared/api/backend-a/backend-a-config'
@@ -161,6 +162,29 @@ function mapCheckoutCouponUsages(groups: CheckoutPreviewGroup[]): CheckoutCoupon
     }))
 }
 
+function mapCheckoutPreviewLine(
+  dto: BackendACheckoutPreviewItemDto,
+  commandLine: CreateCheckoutPreviewCommand['lines'][number] | undefined,
+) {
+  return createCheckoutLine({
+    lineId: String(dto.cart_item_id),
+    lineTotal: parseAmount(dto.line_total),
+    productId: String(dto.product_id),
+    productImageUrl: commandLine?.productImageUrl ?? null,
+    productName: dto.product_title,
+    productType: commandLine?.productType ?? null,
+    quantity: dto.quantity,
+    skuId: String(dto.product_sku_id),
+    specText: dto.sku_name?.trim() || commandLine?.specText || null,
+    thirdPartyGoodsTypeLabel: commandLine?.thirdPartyGoodsTypeLabel ?? null,
+    unitPrice: parseAmount(dto.price),
+    virtualAccountDescription: dto.virtual_account_description ?? commandLine?.virtualAccountDescription ?? null,
+    virtualAccountInput: dto.virtual_account_input ?? commandLine?.virtualAccountInput ?? null,
+    virtualAccountLabel: dto.virtual_account_label ?? commandLine?.virtualAccountLabel ?? null,
+    virtualOrderQuantityLimit: commandLine?.virtualOrderQuantityLimit ?? null,
+  })
+}
+
 export function mapBackendAOrderDto(dto: BackendAOrderDto): OrderRecord {
   const status = resolveOrderStatus(dto)
   const rawStatusText = normalizeStatusText(dto.status_text)
@@ -206,15 +230,23 @@ export function mapBackendACheckoutPreviewDto(
   dto: BackendACheckoutPreviewDto,
 ) {
   const groups = dto.groups.map(mapCheckoutPreviewGroup)
+  const commandLineMap = new Map(
+    command.lines
+      .filter((line): line is typeof line & { lineId: string } => Boolean(line.lineId))
+      .map((line) => [line.lineId, line]),
+  )
   const subtotalAmount = parseAmount(dto.total_amount)
   const payableAmount = parseAmount(dto.payable_amount)
   const discountAmount = Math.max(subtotalAmount - payableAmount, 0)
+  const lines = dto.groups
+    .flatMap((group) => group.items)
+    .map((item) => mapCheckoutPreviewLine(item, commandLineMap.get(String(item.cart_item_id))))
 
   return {
     couponUsages: mapCheckoutCouponUsages(groups),
     discountAmount,
     groups,
-    lines: command.lines.map((line) => createCheckoutLine(line)),
+    lines: lines.length > 0 ? lines : command.lines.map((line) => createCheckoutLine(line)),
     payableAmount,
     shippingAmount: parseAmount(dto.shipping_amount),
     source: command.source,

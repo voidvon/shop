@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
+import { useCartStore } from '@/features/add-to-cart'
 import { useMemberAuthSession } from '@/entities/member-auth'
 import {
   useMemberAddressStore,
@@ -10,8 +11,6 @@ import { useTradeStore } from '@/processes/trade'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import type { BalanceAccountInfo } from '@/shared/types/modules'
 import {
-  createBrowserOrderRepository,
-  createCheckoutPreview,
   type CheckoutCouponUsage,
   type CheckoutPreviewGroup,
   type CheckoutPreview,
@@ -24,22 +23,16 @@ import {
 import {
   clearInstantCheckoutDraft,
   readInstantCheckoutDraft,
-  simulatedInstantOrderNamespace,
 } from './instant-checkout-draft'
 
 export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
+  const cartStore = useCartStore()
   const checkoutFlowPort = useCheckoutFlowPort()
   const memberAddressStore = useMemberAddressStore()
   const memberAssetsService = useMemberAssetsService()
   const memberAuthSession = useMemberAuthSession()
   const tradeStore = useTradeStore()
   const isCheckoutEnabled = useModuleAvailability('checkout')
-  const simulatedInstantOrderRepository = createBrowserOrderRepository({
-    defaultStoreName: '立即购买',
-    getScopeKey: () => memberAuthSession.getSnapshot().authResult?.userInfo.userId ?? 'guest',
-    getSeedRecords: () => [],
-    namespace: simulatedInstantOrderNamespace,
-  })
 
   const confirmation = ref<OrderConfirmation | null>(null)
   const errorMessage = ref<string | null>(null)
@@ -114,6 +107,45 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     return (targetPreview?.groups ?? []).filter((group) => group.payableAmount > resolveGroupPlannedDeductionAmount(group))
   }
 
+  function requiresShippingAddress(targetPreview: CheckoutPreview | null, instantCheckoutDraft?: ReturnType<typeof readInstantCheckoutDraft>) {
+    const draftLines = instantCheckoutDraft?.lines ?? []
+    const previewLines = targetPreview?.lines ?? []
+    const lines = previewLines.length > 0 ? previewLines : draftLines
+
+    if (lines.length === 0) {
+      return true
+    }
+
+    return lines.some((line) => line.productType !== 'virtual')
+  }
+
+  async function discardInstantCheckoutDraft(removeCartLines = true) {
+    const instantCheckoutDraft = readInstantCheckoutDraft()
+
+    if (instantCheckoutDraft && removeCartLines) {
+      const lineIds = instantCheckoutDraft.lines
+        .map((line) => line.lineId)
+        .filter((lineId): lineId is string => Boolean(lineId))
+
+      for (const lineId of lineIds) {
+        try {
+          await cartStore.removeProduct(lineId)
+        } catch {
+          // Best-effort cleanup for abandoned instant checkout lines.
+        }
+      }
+    }
+
+    clearInstantCheckoutDraft()
+
+    if (preview.value?.source === 'instant') {
+      preview.value = null
+      selectedCouponUsages.value = []
+      confirmation.value = null
+      submissionMessage.value = null
+    }
+  }
+
   async function loadPreview(options?: {
     couponUsages?: CheckoutCouponUsage[]
     preferredAddressId?: string | null
@@ -136,15 +168,22 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
         preferredAddressId: options?.preferredAddressId ?? undefined,
       })
 
-      if (instantCheckoutDraft) {
-        preview.value = createCheckoutPreview(instantCheckoutDraft)
-        selectedCouponUsages.value = []
-      } else {
-        preview.value = await checkoutFlowPort.getPreview({
-          addressId: nextSelectedAddress?.id ?? null,
-          couponUsages: nextCouponUsages,
-        })
-        selectedCouponUsages.value = preview.value.couponUsages
+      preview.value = await checkoutFlowPort.getPreview({
+        addressId: nextSelectedAddress?.id ?? null,
+        couponUsages: nextCouponUsages,
+        lineIds: instantCheckoutDraft?.lines
+          .map((line) => line.lineId)
+          .filter((lineId): lineId is string => Boolean(lineId)),
+        source: instantCheckoutDraft?.source,
+        virtualAccountInputs: instantCheckoutDraft?.virtualAccountInputs ?? [],
+      })
+      selectedCouponUsages.value = preview.value.couponUsages
+
+      if (instantCheckoutDraft?.source === 'instant') {
+        preview.value = {
+          ...preview.value,
+          source: 'instant',
+        }
       }
 
       syncBalanceSnapshot(await getMemberAssetsSnapshot(memberAssetsService))
@@ -187,7 +226,10 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
 
     await syncSelectedAddress()
 
-    if (!selectedAddress.value) {
+    const instantCheckoutDraft = readInstantCheckoutDraft()
+    const shouldRequireAddress = requiresShippingAddress(preview.value, instantCheckoutDraft)
+
+    if (shouldRequireAddress && !selectedAddress.value) {
       errorMessage.value = '请先选择收货地址'
       throw new Error('请先选择收货地址')
     }
@@ -196,7 +238,6 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
     errorMessage.value = null
 
     try {
-      const instantCheckoutDraft = readInstantCheckoutDraft()
       const insufficientGroups = findInsufficientBalanceGroups(preview.value)
 
       if (insufficientGroups.length > 0) {
@@ -207,19 +248,18 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
       }
 
       const result = instantCheckoutDraft
-        ? {
-            confirmation: await simulatedInstantOrderRepository.submit({
-              ...instantCheckoutDraft,
-              addressId: selectedAddress.value.id,
-              remark: remark?.trim() ? remark.trim() : null,
-            }),
-            preview: createCheckoutPreview({
-              lines: [],
-              source: 'instant',
-            }),
-          }
+        ? await checkoutFlowPort.submit({
+            addressId: selectedAddress.value?.id ?? null,
+            couponUsages: preview.value?.couponUsages ?? [],
+            lineIds: instantCheckoutDraft.lines
+              .map((line) => line.lineId)
+              .filter((lineId): lineId is string => Boolean(lineId)),
+            remark: remark?.trim() ? remark.trim() : null,
+            source: instantCheckoutDraft.source,
+            virtualAccountInputs: instantCheckoutDraft.virtualAccountInputs ?? [],
+          })
         : await checkoutFlowPort.submit({
-            addressId: selectedAddress.value.id,
+            addressId: selectedAddress.value?.id ?? null,
             couponUsages: preview.value?.couponUsages ?? [],
             remark: remark?.trim() ? remark.trim() : null,
           })
@@ -231,7 +271,7 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
       await tradeStore.recordSubmittedOrder(result.confirmation, result.preview)
 
       if (instantCheckoutDraft) {
-        clearInstantCheckoutDraft()
+        await discardInstantCheckoutDraft(false)
       }
 
       return result.confirmation
@@ -246,13 +286,14 @@ export const useCheckoutFlowStore = defineStore('checkout-flow', () => {
   memberAuthSession.subscribe(() => {
     selectedCouponUsages.value = []
     selectedAddressId.value = null
-    clearInstantCheckoutDraft()
+    void discardInstantCheckoutDraft(true)
   })
 
   return {
     balanceAccounts,
     availableBalance,
     confirmation,
+    discardInstantCheckoutDraft,
     errorMessage,
     findCouponGroup,
     hasLoaded,

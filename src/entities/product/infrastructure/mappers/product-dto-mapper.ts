@@ -39,6 +39,10 @@ function mapProductTags(dto: BackendAProductSummaryDto) {
   ].filter((value): value is string => Boolean(value))
 }
 
+function hasDirectRechargeSku(dto: BackendAProductSummaryDto) {
+  return resolveActiveSkus(dto).some((sku) => sku.third_party_goods_type_label?.trim() === '直充')
+}
+
 function mapProductAttributes(dto: BackendAProductDetailDto) {
   const firstSku = resolveActiveSkus(dto)[0]
   const specs = firstSku?.specs ?? {}
@@ -95,14 +99,18 @@ const backendAProductSummaryFieldMap = {
   categoryId: (dto: BackendAProductSummaryDto) => String(dto.category?.id ?? dto.product_category_id),
   coverImageUrl: (dto: BackendAProductSummaryDto) =>
     resolveBackendAMediaUrl(dto.main_images[0] ?? resolveActiveSkus(dto)[0]?.image ?? null),
+  hasDirectRechargeSku,
   id: (dto: BackendAProductSummaryDto) => String(dto.id),
   inventory: resolveTotalSkuStock,
   monthlySales: 'sales_count',
   name: 'title',
   price: resolveLowestSkuPrice,
+  productType: (dto: BackendAProductSummaryDto) => dto.product_type ?? null,
   subtitle: (dto: BackendAProductSummaryDto) => dto.subtitle ?? null,
   summary: (dto: BackendAProductSummaryDto) => dto.subtitle ?? dto.detail ?? '',
   tags: mapProductTags,
+  virtualAccountDescription: (dto: BackendAProductSummaryDto) => dto.virtual_account_description ?? null,
+  virtualAccountLabel: (dto: BackendAProductSummaryDto) => dto.virtual_account_label ?? null,
 } satisfies ProductSummaryFieldMap<BackendAProductSummaryDto>
 
 const backendAProductDetailFieldMap = {

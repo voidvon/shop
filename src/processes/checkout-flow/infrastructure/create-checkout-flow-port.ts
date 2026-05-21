@@ -11,6 +11,7 @@ import {
   submitOrder,
   type CheckoutLine,
   type CreateCheckoutPreviewCommand,
+  type CheckoutVirtualAccountInput,
   type OrderRepository,
   type SubmitOrderCommand,
 } from '@/entities/order'
@@ -40,7 +41,7 @@ async function clearSubmittedCartLines(
   repository: CartRepository,
   command: CreateCheckoutPreviewCommand,
 ) {
-  if (command.source !== 'cart') {
+  if (command.source !== 'cart' && command.source !== 'instant') {
     return
   }
 
@@ -53,6 +54,13 @@ async function rebuildPostSubmitPreview(
   options: CreateCheckoutFlowPortOptions,
   command: CreateCheckoutPreviewCommand,
 ) {
+  if (command.source === 'instant') {
+    return createCheckoutPreview({
+      lines: [],
+      source: 'instant',
+    })
+  }
+
   if (options.clearCartAfterSubmit === false) {
     const selectedLines = (await getCartSnapshot(options.cartRepository)).lines.filter((line) => line.selected)
 
@@ -77,19 +85,20 @@ async function mapCartToCheckoutLines(
   productRepository: ProductRepository,
 ): Promise<CheckoutLine[]> {
   return Promise.all(snapshot.lines.map(async (line) => {
-    const productDetail = line.productImageUrl
-      ? null
-      : await getProductDetail(productRepository, line.productId)
+    const productDetail = await getProductDetail(productRepository, line.productId)
 
     return createCheckoutLine({
       lineId: line.lineId,
       productId: line.productId,
       productImageUrl: line.productImageUrl ?? productDetail?.coverImageUrl ?? null,
       productName: line.productName,
+      productType: productDetail?.productType ?? null,
       quantity: line.quantity,
       skuId: line.skuId,
       specText: line.specText,
       unitPrice: line.unitPrice,
+      virtualAccountDescription: productDetail?.virtualAccountDescription ?? null,
+      virtualAccountLabel: productDetail?.virtualAccountLabel ?? null,
     })
   }))
 }
@@ -109,12 +118,20 @@ function mapProductToInstantLine(product: ProductSummary): CheckoutLine {
 
 async function resolveCheckoutCommand(
   options: CreateCheckoutFlowPortOptions,
+  commandOptions?: {
+    lineIds?: string[]
+    source?: 'cart' | 'instant'
+    virtualAccountInputs?: CheckoutVirtualAccountInput[]
+  },
 ): Promise<CreateCheckoutPreviewCommand> {
   if (options.isCartEnabled) {
     const cartSnapshot = await getCartSnapshot(options.cartRepository)
 
     if (cartSnapshot.itemCount > 0) {
-      const selectedLines = cartSnapshot.lines.filter((line) => line.selected)
+      const targetLineIds = new Set(commandOptions?.lineIds ?? [])
+      const selectedLines = cartSnapshot.lines.filter((line) =>
+        line.selected && (targetLineIds.size === 0 || targetLineIds.has(line.lineId)),
+      )
 
       if (selectedLines.length === 0) {
         throw new Error('请先选择要结算的商品')
@@ -122,7 +139,8 @@ async function resolveCheckoutCommand(
 
       return {
         lines: await mapCartToCheckoutLines(createCartSnapshot(selectedLines), options.productRepository),
-        source: 'cart',
+        source: commandOptions?.source ?? 'cart',
+        virtualAccountInputs: commandOptions?.virtualAccountInputs ?? [],
       }
     }
   }
@@ -141,13 +159,18 @@ async function resolveCheckoutCommand(
   return {
     lines: [mapProductToInstantLine(instantProduct)],
     source: 'instant',
+    virtualAccountInputs: commandOptions?.virtualAccountInputs ?? [],
   }
 }
 
 export function createCheckoutFlowPort(options: CreateCheckoutFlowPortOptions): CheckoutFlowPort {
   return {
     async getPreview(previewOptions) {
-      const command = await resolveCheckoutCommand(options)
+      const command = await resolveCheckoutCommand(options, {
+        lineIds: previewOptions?.lineIds,
+        source: previewOptions?.source,
+        virtualAccountInputs: previewOptions?.virtualAccountInputs,
+      })
       return createCheckoutPreviewUseCase(options.orderRepository, {
         ...command,
         addressId: previewOptions?.addressId ?? null,
@@ -155,7 +178,11 @@ export function createCheckoutFlowPort(options: CreateCheckoutFlowPortOptions): 
     },
 
     async submit(submitCommand?: SubmitCheckoutOrderCommand): Promise<SubmitCheckoutOrderResult> {
-      const command = await resolveCheckoutCommand(options)
+      const command = await resolveCheckoutCommand(options, {
+        lineIds: submitCommand?.lineIds,
+        source: submitCommand?.source,
+        virtualAccountInputs: submitCommand?.virtualAccountInputs,
+      })
       const orderCommand: SubmitOrderCommand = {
         ...command,
         addressId: submitCommand?.addressId ?? null,
@@ -164,7 +191,7 @@ export function createCheckoutFlowPort(options: CreateCheckoutFlowPortOptions): 
       }
       const confirmation = await submitOrder(options.orderRepository, orderCommand)
 
-      if (options.clearCartAfterSubmit !== false) {
+      if (command.source === 'instant' || options.clearCartAfterSubmit !== false) {
         await clearSubmittedCartLines(options.cartRepository, command)
       }
 
