@@ -97,7 +97,7 @@ function normalizeHttpErrorMessage(status: number, fallbackMessage: string) {
   }
 
   if (status === 404) {
-    return '请求的后端接口不存在'
+    return '请求的资源不存在'
   }
 
   if (status >= 500) {

@@ -1,4 +1,5 @@
 import { createBackendAHttpClient } from '@/shared/api/backend-a/backend-a-http-client'
+import { BackendAHttpError } from '@/shared/api/backend-a/backend-a-http-client'
 import type { MemberAuthSession } from '@/entities/member-auth'
 
 import type { CartRepository } from '../../../domain/cart-repository'
@@ -108,7 +109,14 @@ export function createBackendACartRepository(
     },
 
     async removeItem(lineId) {
-      await httpClient.delete<null>(`/api/v1/cart-items/${encodeURIComponent(lineId)}`)
+      try {
+        await httpClient.delete<null>(`/api/v1/cart-items/${encodeURIComponent(lineId)}`)
+      } catch (error) {
+        if (!(error instanceof BackendAHttpError) || error.status !== 404) {
+          throw error
+        }
+      }
+
       return mapBackendACartSnapshotDto(await getSnapshotItems())
     },
 

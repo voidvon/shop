@@ -118,6 +118,7 @@ const paymentMethodLabel = computed(() =>
   paymentOptions.value.length > 1 ? '' : (paymentOptions.value[0]?.balanceTypeName ?? '余额账户支付'),
 )
 const buyerMessage = ref('')
+const skipInstantDraftCleanupOnLeave = ref(false)
 const selectedAddressQueryId = computed(() =>
   typeof route.query.selectedAddressId === 'string'
     ? route.query.selectedAddressId
@@ -134,7 +135,7 @@ const addressTitle = computed(() =>
 )
 const addressDetail = computed(() =>
   !isAddressRequired.value
-    ? '直充/虚拟商品将按填写的充值账号直接发放。'
+    ? resolveVirtualDeliveryDetail(previewLines.value)
     : selectedAddress.value
       ? [selectedAddress.value.province, selectedAddress.value.city, selectedAddress.value.county, selectedAddress.value.addressDetail]
         .filter(Boolean)
@@ -202,10 +203,12 @@ async function handleSubmit() {
     const result = await checkoutStore.submitCurrentOrder(buyerMessage.value)
 
     if (result) {
+      skipInstantDraftCleanupOnLeave.value = true
       await navigateAfterSubmit(submitSource, submitProductId)
       showSuccessToast('支付成功')
     }
   } catch {
+    skipInstantDraftCleanupOnLeave.value = false
     showFailToast(errorMessage.value ?? '提交订单失败')
   }
 }
@@ -256,6 +259,21 @@ function formatAmount(value: number) {
 
 function formatShippingAmount(value: number) {
   return value > 0 ? `运费¥${formatAmount(value)}` : '包邮'
+}
+
+function resolveVirtualDeliveryDetail(lines: typeof previewLines.value) {
+  const labelSet = new Set(
+    lines
+      .map((line) => line.virtualAccountLabel?.trim())
+      .filter((label): label is string => Boolean(label)),
+  )
+
+  if (labelSet.size === 1) {
+    const [label] = [...labelSet]
+    return `该商品将按填写的${label}直接发放。`
+  }
+
+  return '该订单将按填写的信息直接发放。'
 }
 
 function resolveGroupPlannedDeductionAmount(group: (typeof previewBalanceGroups.value)[number]) {
@@ -328,6 +346,10 @@ function shouldKeepCheckoutDraftOnRouteLeave(nextRouteName: string | symbol | nu
 }
 
 onBeforeRouteLeave((to) => {
+  if (skipInstantDraftCleanupOnLeave.value) {
+    return
+  }
+
   if (shouldKeepCheckoutDraftOnRouteLeave(to.name)) {
     return
   }

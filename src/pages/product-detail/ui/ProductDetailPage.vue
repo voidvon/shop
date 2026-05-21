@@ -116,10 +116,6 @@ const currentSkuRequiresVirtualAccount = computed(() =>
   Boolean(product.value?.virtualAccountLabel) && isDirectRechargeSku(currentSku.value ?? {}),
 )
 const currentSkuVirtualAccountLabel = computed(() => product.value?.virtualAccountLabel?.trim() || '账号')
-const currentSkuVirtualAccountDescription = computed(() =>
-  product.value?.virtualAccountDescription?.trim()
-  || `请填写需要充值的${currentSkuVirtualAccountLabel.value}`,
-)
 const currentSkuPurchaseLimit = computed(() => {
   const rawLimit = currentSku.value?.virtualOrderQuantityLimit ?? null
   return rawLimit && rawLimit > 0 ? rawLimit : null
@@ -763,12 +759,13 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
         <button class="action-button action-button-light" type="button" @click="openSpecPopup('buy')">立即购买</button>
         <button
+          v-if="!isCurrentSkuCartDisabled"
           class="action-button action-button-primary"
           type="button"
-          :disabled="!isCartEnabled || isCurrentSkuCartDisabled"
+          :disabled="!isCartEnabled"
           @click="openSpecPopup('cart')"
         >
-          {{ isCurrentSkuCartDisabled ? '仅支持立即购买' : '加入购物车' }}
+          加入购物车
         </button>
       </footer>
 
@@ -903,7 +900,6 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
             <section v-if="currentSkuRequiresVirtualAccount" class="spec-section spec-section-account">
               <span class="spec-section-label">填写{{ currentSkuVirtualAccountLabel }}</span>
-              <p class="spec-account-description">{{ currentSkuVirtualAccountDescription }}</p>
               <van-field
                 v-model="virtualAccountValue"
                 class="spec-account-field"
@@ -942,13 +938,14 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
               {{ buyNowButtonText }}
             </button>
             <button
+              v-if="!isCurrentSkuCartDisabled"
               class="action-button action-button-primary"
               type="button"
               :class="{ 'action-button-pending': pendingSpecAction === 'cart' }"
-              :disabled="!isCartEnabled || isCartPending || isCurrentSelectionSoldOut || isSpecActionPending || isCurrentSkuCartDisabled"
+              :disabled="!isCartEnabled || isCartPending || isCurrentSelectionSoldOut || isSpecActionPending"
               @click="submitSpecAction('cart')"
             >
-              {{ isCurrentSkuCartDisabled ? '仅支持立即购买' : addToCartButtonText }}
+              {{ addToCartButtonText }}
             </button>
           </footer>
         </div>
@@ -1828,13 +1825,6 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   padding: 14px;
   border-radius: 14px;
   background: var(--color-surface-soft);
-}
-
-.spec-account-description {
-  margin: 0;
-  color: var(--color-text-subtle);
-  font-size: 12px;
-  line-height: 1.5;
 }
 
 .spec-account-field {
