@@ -757,16 +757,18 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
           <span>购物车</span>
         </RouterLink>
 
-        <button class="action-button action-button-light" type="button" @click="openSpecPopup('buy')">立即购买</button>
-        <button
-          v-if="!isCurrentSkuCartDisabled"
-          class="action-button action-button-primary"
-          type="button"
-          :disabled="!isCartEnabled"
-          @click="openSpecPopup('cart')"
-        >
-          加入购物车
-        </button>
+        <div class="action-button-group">
+          <button class="action-button action-button-light" type="button" @click="openSpecPopup('buy')">立即购买</button>
+          <button
+            v-if="!isCurrentSkuCartDisabled"
+            class="action-button action-button-primary"
+            type="button"
+            :disabled="!isCartEnabled"
+            @click="openSpecPopup('cart')"
+          >
+            加入购物车
+          </button>
+        </div>
       </footer>
 
       <van-popup
@@ -928,25 +930,27 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
               <span>购物车</span>
             </RouterLink>
 
-            <button
-              class="action-button action-button-light"
-              :class="{ 'action-button-pending': pendingSpecAction === 'buy' }"
-              type="button"
-              :disabled="isSpecActionPending"
-              @click="submitSpecAction('buy')"
-            >
-              {{ buyNowButtonText }}
-            </button>
-            <button
-              v-if="!isCurrentSkuCartDisabled"
-              class="action-button action-button-primary"
-              type="button"
-              :class="{ 'action-button-pending': pendingSpecAction === 'cart' }"
-              :disabled="!isCartEnabled || isCartPending || isCurrentSelectionSoldOut || isSpecActionPending"
-              @click="submitSpecAction('cart')"
-            >
-              {{ addToCartButtonText }}
-            </button>
+            <div class="action-button-group">
+              <button
+                class="action-button action-button-light"
+                :class="{ 'action-button-pending': pendingSpecAction === 'buy' }"
+                type="button"
+                :disabled="isSpecActionPending"
+                @click="submitSpecAction('buy')"
+              >
+                {{ buyNowButtonText }}
+              </button>
+              <button
+                v-if="!isCurrentSkuCartDisabled"
+                class="action-button action-button-primary"
+                type="button"
+                :class="{ 'action-button-pending': pendingSpecAction === 'cart' }"
+                :disabled="!isCartEnabled || isCartPending || isCurrentSelectionSoldOut || isSpecActionPending"
+                @click="submitSpecAction('cart')"
+              >
+                {{ addToCartButtonText }}
+              </button>
+            </div>
           </footer>
         </div>
       </van-popup>
@@ -1362,8 +1366,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 }
 
 .action-bar {
-  display: grid;
-  grid-template-columns: 40px 40px minmax(0, 1fr) minmax(0, 1fr);
+  display: flex;
   gap: 12px;
   align-items: center;
   min-height: 82px;
@@ -1888,12 +1891,23 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   display: grid;
   gap: 4px;
   justify-items: center;
+  flex: 0 0 40px;
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--color-text-soft);
   font-size: 11px;
   font-weight: 500;
+}
+
+.action-button-group {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(108px, 132px);
+  gap: 12px;
+  justify-content: end;
+  flex: 1;
+  min-width: 0;
 }
 
 .action-button {
