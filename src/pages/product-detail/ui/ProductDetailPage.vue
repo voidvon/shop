@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, toRef, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { showFailToast, showSuccessToast } from 'vant'
+import { showFailToast, showSuccessToast, showToast } from 'vant'
 
 import { useCartStore } from '@/features/add-to-cart'
 import { MemberFavoriteButton } from '@/features/toggle-member-favorite'
@@ -459,15 +459,20 @@ async function submitSpecAction(action: 'buy' | 'cart') {
       return
     }
   } catch (error) {
-    showFailToast(
-      error instanceof Error
-        ? error.message
-        : (
-            action === 'buy'
-              ? (cartStore.errorMessage ?? '立即购买跳转结算失败')
-              : (cartStore.errorMessage ?? '加入购物车失败')
-          ),
-    )
+    const message = error instanceof Error
+      ? error.message
+      : (
+          action === 'buy'
+            ? (cartStore.errorMessage ?? '立即购买跳转结算失败')
+            : (cartStore.errorMessage ?? '加入购物车失败')
+        )
+
+    if (message.startsWith('请先填写')) {
+      showToast(message)
+      return
+    }
+
+    showFailToast(message)
   } finally {
     pendingSpecAction.value = null
   }
