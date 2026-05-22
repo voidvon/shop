@@ -218,7 +218,7 @@ function showOrderSubmitErrorToast(message: string) {
     showToast({
       message,
       className: 'compact-text-toast',
-      duration: 2200,
+      duration: 5000,
       forbidClick: true,
     })
     return
