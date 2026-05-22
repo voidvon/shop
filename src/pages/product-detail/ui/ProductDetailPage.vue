@@ -6,6 +6,10 @@ import { showFailToast, showSuccessToast, showToast } from 'vant'
 import { useCartStore } from '@/features/add-to-cart'
 import { MemberFavoriteButton } from '@/features/toggle-member-favorite'
 import { isDirectRechargeSku } from '@/entities/product'
+import {
+  normalizeMemberCardBindMobile,
+  validateMemberCardBindMobile,
+} from '@/processes/member-center/domain/member-card-bind-rules'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import { sanitizeRichTextHtml } from '@/shared/lib/safe-rich-text'
 import EmptyState from '@/shared/ui/EmptyState.vue'
@@ -116,6 +120,9 @@ const currentSkuRequiresVirtualAccount = computed(() =>
   Boolean(product.value?.virtualAccountLabel) && isDirectRechargeSku(currentSku.value ?? {}),
 )
 const currentSkuVirtualAccountLabel = computed(() => product.value?.virtualAccountLabel?.trim() || '账号')
+const isCurrentDirectRechargeMobileProduct = computed(() =>
+  currentSkuRequiresVirtualAccount.value && product.value?.name.includes('手机') === true,
+)
 const currentSkuPurchaseLimit = computed(() => {
   const rawLimit = currentSku.value?.virtualOrderQuantityLimit ?? null
   return rawLimit && rawLimit > 0 ? rawLimit : null
@@ -335,6 +342,17 @@ function getNormalizedVirtualAccountValue() {
 
   if (normalizedValue.length > 255) {
     throw new Error(`${currentSkuVirtualAccountLabel.value}不能超过 255 个字符`)
+  }
+
+  if (isCurrentDirectRechargeMobileProduct.value) {
+    const normalizedMobile = normalizeMemberCardBindMobile(normalizedValue)
+    const mobileError = validateMemberCardBindMobile(normalizedMobile)
+
+    if (mobileError) {
+      throw new Error(mobileError)
+    }
+
+    return normalizedMobile
   }
 
   return normalizedValue

@@ -66,7 +66,7 @@ export function validateMemberCardBindMobile(value: string) {
     return '请输入手机号'
   }
 
-  if (!/^1\d{10}$/.test(normalized)) {
+  if (!/^1[3-9]\d{9}$/.test(normalized)) {
     return '请输入正确手机号'
   }
 
