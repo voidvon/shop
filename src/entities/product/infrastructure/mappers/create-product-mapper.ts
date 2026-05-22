@@ -15,6 +15,7 @@ export interface ProductSummaryFieldMap<TSource> {
   monthlySales: FieldResolver<TSource, number>
   name: FieldResolver<TSource, string>
   price: FieldResolver<TSource, number>
+  priceText?: FieldResolver<TSource, string | null>
   productType?: FieldResolver<TSource, string | null>
   subtitle?: FieldResolver<TSource, string | null>
   summary: FieldResolver<TSource, string>
@@ -64,6 +65,7 @@ export function createProductSummaryMapper<TSource>(fieldMap: ProductSummaryFiel
     monthlySales: resolveField(source, fieldMap.monthlySales),
     name: resolveField(source, fieldMap.name),
     price: resolveField(source, fieldMap.price),
+    priceText: fieldMap.priceText ? resolveField(source, fieldMap.priceText) : null,
     productType: fieldMap.productType ? resolveField(source, fieldMap.productType) : null,
     subtitle: fieldMap.subtitle ? resolveField(source, fieldMap.subtitle) : null,
     summary: resolveField(source, fieldMap.summary),

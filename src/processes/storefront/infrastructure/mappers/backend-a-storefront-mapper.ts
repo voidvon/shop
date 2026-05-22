@@ -312,12 +312,32 @@ function resolveActiveSkus(product: Pick<BackendAProductDetailDto, 'skus'>) {
 }
 
 function resolveProductPrice(product: BackendAStorefrontProductDto) {
-  const activeSkus = product.skus.filter((sku) => sku.status === 1)
-  const prices = (activeSkus.length > 0 ? activeSkus : product.skus)
-    .map((sku) => Number.parseFloat(sku.price))
-    .filter((price) => Number.isFinite(price))
+  return resolveProductPriceEntry(product).price
+}
 
-  return prices.length > 0 ? Math.min(...prices) : 0
+function resolveProductPriceEntry(product: BackendAStorefrontProductDto) {
+  const activeSkus = product.skus.filter((sku) => sku.status === 1)
+  const skus = activeSkus.length > 0 ? activeSkus : product.skus
+
+  return skus.reduce<{ price: number, priceText: string | null } | null>((lowestEntry, sku) => {
+    const normalizedPrice = Number.parseFloat(sku.price)
+
+    if (!Number.isFinite(normalizedPrice)) {
+      return lowestEntry
+    }
+
+    if (!lowestEntry || normalizedPrice < lowestEntry.price) {
+      return {
+        price: normalizedPrice,
+        priceText: sku.price?.trim() || String(normalizedPrice),
+      }
+    }
+
+    return lowestEntry
+  }, null) ?? {
+    price: 0,
+    priceText: null,
+  }
 }
 
 function resolveProductImage(product: BackendAStorefrontProductDto) {
@@ -332,13 +352,17 @@ function resolveProductImage(product: BackendAStorefrontProductDto) {
 }
 
 function mapBackendAStorefrontProductCard(product: BackendAStorefrontProductDto): PageProductCard {
+  const priceEntry = resolveProductPriceEntry(product)
+
   return {
     id: String(product.id),
     imageUrl: resolveProductImage(product),
     marketPrice: null,
+    marketPriceText: null,
     monthlySales: product.sales_count,
     name: product.title,
-    price: resolveProductPrice(product),
+    price: priceEntry.price,
+    priceText: priceEntry.priceText,
   }
 }
 
@@ -356,9 +380,11 @@ export function mapBackendAProductCard(product: ProductSummary): PageProductCard
     id: product.id,
     imageUrl: product.coverImageUrl,
     marketPrice: null,
+    marketPriceText: null,
     monthlySales: product.monthlySales,
     name: product.name,
     price: product.price,
+    priceText: product.priceText ?? null,
   }
 }
 
@@ -371,16 +397,22 @@ export function mapBackendACategoryTree(
 export function mapBackendACategoryProducts(
   products: BackendAStorefrontProductDto[],
 ): CategoryPageProductCard[] {
-  return products.map((product) => ({
-    categoryId: String(product.category?.id ?? ''),
-    categoryName: product.category?.name ?? '未分类',
-    id: String(product.id),
-    imageUrl: resolveProductImage(product),
-    marketPrice: null,
-    monthlySales: product.sales_count,
-    name: product.title,
-    price: resolveProductPrice(product),
-  }))
+  return products.map((product) => {
+    const priceEntry = resolveProductPriceEntry(product)
+
+    return {
+      categoryId: String(product.category?.id ?? ''),
+      categoryName: product.category?.name ?? '未分类',
+      id: String(product.id),
+      imageUrl: resolveProductImage(product),
+      marketPrice: null,
+      marketPriceText: null,
+      monthlySales: product.sales_count,
+      name: product.title,
+      price: priceEntry.price,
+      priceText: priceEntry.priceText,
+    }
+  })
 }
 
 export function mapBackendAHomeBanners(data: BackendAStorefrontHomeDto): HomePageData['banners'] {
@@ -703,7 +735,9 @@ export function mapBackendAProductDetailPageData(
     available: sku.stock > 0,
     imageUrl: resolveBackendAMediaUrl(sku.image),
     marketPrice: null,
+    marketPriceText: null,
     price: Number.parseFloat(sku.price) || 0,
+    priceText: sku.price?.trim() || null,
     skuId: String(sku.id),
     specText: sku.name?.trim() || '默认规格',
     stock: sku.stock,

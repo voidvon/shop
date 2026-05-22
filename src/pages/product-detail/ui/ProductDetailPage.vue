@@ -197,6 +197,16 @@ function formatAmount(value: number) {
   return value.toFixed(2)
 }
 
+function formatProductPrice(rawPrice: string | null | undefined, fallbackPrice: number) {
+  const normalizedPrice = rawPrice?.trim()
+
+  if (normalizedPrice) {
+    return normalizedPrice
+  }
+
+  return formatAmount(fallbackPrice)
+}
+
 function openStorePage() {
   if (!storeInfo.value?.storeId) {
     showFailToast('当前商家信息暂不可用')
@@ -663,7 +673,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
               <span class="balance-badge">适用{{ product.balanceTypeName }}</span>
             </div>
             <div class="price-row">
-              <span class="price-value">¥{{ formatAmount(product.price) }}</span>
+              <span class="price-value">¥{{ formatProductPrice(product.priceText, product.price) }}</span>
             </div>
           </section>
 
@@ -729,7 +739,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
               >
                 <img :src="resolveProductImage(item.imageUrl)" :alt="item.name">
                 <strong>{{ item.name }}</strong>
-                <span>¥{{ formatAmount(item.price) }}</span>
+                <span>¥{{ formatProductPrice(item.priceText, item.price) }}</span>
               </RouterLink>
             </div>
           </section>
@@ -858,7 +868,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 
               <div class="spec-meta">
                 <strong>{{ product.name }}</strong>
-                <span class="spec-price">¥{{ formatAmount(currentSku?.price ?? product.price) }}</span>
+                <span class="spec-price">¥{{ formatProductPrice(currentSku?.priceText, currentSku?.price ?? product.price) }}</span>
                 <span class="spec-stock">{{ popupStockText }}</span>
               </div>
             </div>

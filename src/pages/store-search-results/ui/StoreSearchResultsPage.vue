@@ -101,9 +101,11 @@ onActivated(() => {
             :image-url="product.imageUrl"
             :is-favorited="isProductFavorited(product.id)"
             :market-price="product.marketPrice"
+            :market-price-text="product.marketPriceText"
             :monthly-sales="product.monthlySales"
             :name="product.name"
             :price="product.price"
+            :price-text="product.priceText"
             :to="{ name: 'product-detail', params: { productId: product.id } }"
           />
         </div>

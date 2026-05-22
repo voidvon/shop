@@ -22,9 +22,27 @@ function parsePrice(price: string) {
   return Number.isFinite(parsedValue) ? parsedValue : 0
 }
 
+function resolveLowestSkuPriceEntry(dto: BackendAProductSummaryDto) {
+  return resolveActiveSkus(dto).reduce<{ price: number, priceText: string | null } | null>((lowestEntry, sku) => {
+    const normalizedPrice = parsePrice(sku.price)
+
+    if (!lowestEntry || normalizedPrice < lowestEntry.price) {
+      return {
+        price: normalizedPrice,
+        priceText: sku.price?.trim() || String(normalizedPrice),
+      }
+    }
+
+    return lowestEntry
+  }, null)
+}
+
 function resolveLowestSkuPrice(dto: BackendAProductSummaryDto) {
-  const prices = resolveActiveSkus(dto).map((sku) => parsePrice(sku.price))
-  return prices.length > 0 ? Math.min(...prices) : 0
+  return resolveLowestSkuPriceEntry(dto)?.price ?? 0
+}
+
+function resolveLowestSkuPriceText(dto: BackendAProductSummaryDto) {
+  return resolveLowestSkuPriceEntry(dto)?.priceText ?? null
 }
 
 function resolveTotalSkuStock(dto: BackendAProductSummaryDto) {
@@ -105,6 +123,7 @@ const backendAProductSummaryFieldMap = {
   monthlySales: 'sales_count',
   name: 'title',
   price: resolveLowestSkuPrice,
+  priceText: resolveLowestSkuPriceText,
   productType: (dto: BackendAProductSummaryDto) => dto.product_type ?? null,
   subtitle: (dto: BackendAProductSummaryDto) => dto.subtitle ?? null,
   summary: (dto: BackendAProductSummaryDto) => dto.subtitle ?? dto.detail ?? '',

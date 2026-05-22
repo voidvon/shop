@@ -588,6 +588,7 @@ watch(
               :monthly-sales="product.monthlySales"
               :name="product.name"
               :price="product.price"
+              :price-text="product.priceText"
               :to="{ name: 'product-detail', params: { productId: product.id } }"
             />
           </div>

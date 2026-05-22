@@ -76,8 +76,8 @@ function handleSubmit() {
               <strong>{{ product.name }}</strong>
               <span>{{ product.categoryName }}</span>
               <div class="price-row">
-                <em>{{ formatCurrency(product.price) }}</em>
-                <small v-if="product.marketPrice">{{ formatCurrency(product.marketPrice) }}</small>
+                <em>{{ formatCurrency(product.priceText ?? product.price) }}</em>
+                <small v-if="product.marketPrice">{{ formatCurrency(product.marketPriceText ?? product.marketPrice) }}</small>
                 <span class="sales-inline">销量 {{ product.monthlySales }}</span>
               </div>
             </div>

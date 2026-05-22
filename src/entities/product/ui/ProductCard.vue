@@ -35,7 +35,7 @@ const demandLabel = computed(() => (isHighDemandProduct(props.product) ? '高需
       </div>
       <div>
         <span>单价</span>
-        <strong>{{ formatCurrency(product.price) }}</strong>
+        <strong>{{ formatCurrency(product.priceText ?? product.price) }}</strong>
       </div>
     </div>
 

@@ -29,9 +29,11 @@ export function mapMockProductCard(input: MockProductFeedItem | MockRecommendati
     id: input.productId,
     imageUrl: input.productImageUrl ?? null,
     marketPrice,
+    marketPriceText: marketPrice === null ? null : String(marketPrice),
     monthlySales,
     name: input.productName,
     price: input.price,
+    priceText: String(input.price),
   }
 }
 
@@ -101,9 +103,11 @@ export function mapMockCategoryProducts(query: CategoryProductsQuery = {}): Cate
       id: product.productId,
       imageUrl: product.imageUrl,
       marketPrice: product.marketPrice,
+      marketPriceText: product.marketPrice === null ? null : String(product.marketPrice),
       monthlySales: product.monthlySales,
       name: product.productName,
       price: product.price,
+      priceText: String(product.price),
     }))
 }
 

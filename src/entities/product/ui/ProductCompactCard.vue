@@ -8,15 +8,19 @@ const props = withDefaults(defineProps<{
   imageUrl?: string | null
   isFavorited?: boolean
   marketPrice?: number | null
+  marketPriceText?: string | null
   monthlySales?: number
   name: string
   price: number
+  priceText?: string | null
   to: RouteLocationRaw
 }>(), {
   imageUrl: null,
   isFavorited: false,
   marketPrice: null,
+  marketPriceText: null,
   monthlySales: 0,
+  priceText: null,
 })
 
 const resolvedImageUrl = computed(() => props.imageUrl || '/images/image-placeholder.svg')
@@ -36,8 +40,8 @@ const resolvedImageUrl = computed(() => props.imageUrl || '/images/image-placeho
     </div>
 
     <div class="price-row">
-      <span>{{ formatCurrency(price) }}</span>
-      <small v-if="marketPrice">{{ formatCurrency(marketPrice) }}</small>
+      <span>{{ formatCurrency(priceText ?? price) }}</span>
+      <small v-if="marketPrice">{{ formatCurrency(marketPriceText ?? marketPrice) }}</small>
       <b class="sales-inline">销量 {{ monthlySales }}</b>
     </div>
   </RouterLink>

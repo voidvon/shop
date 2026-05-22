@@ -24,7 +24,7 @@ const demandLabel = computed(() => (isHighDemandProduct(props.product) ? '高需
           <van-tag round type="primary">{{ demandLabel }}</van-tag>
           <span>月销 {{ product.monthlySales }}</span>
           <span>库存 {{ product.inventory }}</span>
-          <strong>{{ formatCurrency(product.price) }}</strong>
+          <strong>{{ formatCurrency(product.priceText ?? product.price) }}</strong>
         </div>
       </div>
 

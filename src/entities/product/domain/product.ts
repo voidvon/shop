@@ -13,6 +13,7 @@ export interface ProductSummary {
   inventory: number
   monthlySales: number
   productType?: string | null
+  priceText?: string | null
   tags: string[]
   coverImageUrl: string | null
   virtualAccountDescription?: string | null

@@ -4,9 +4,11 @@ export interface PageProductCard {
   id: string
   imageUrl: string | null
   marketPrice: number | null
+  marketPriceText?: string | null
   monthlySales: number
   name: string
   price: number
+  priceText?: string | null
 }
 
 export interface CategoryPageCategory {
@@ -115,7 +117,9 @@ export interface ProductSkuOption {
   available: boolean
   imageUrl: string | null
   marketPrice: number | null
+  marketPriceText?: string | null
   price: number
+  priceText?: string | null
   skuId: string
   specText: string
   stock: number
