@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
-import { showFailToast, showSuccessToast } from 'vant'
+import { showFailToast, showSuccessToast, showToast } from 'vant'
 
 import { useBackendRuntime } from '@/app/providers/backend'
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
@@ -209,8 +209,22 @@ async function handleSubmit() {
     }
   } catch {
     skipInstantDraftCleanupOnLeave.value = false
-    showFailToast(errorMessage.value ?? '提交订单失败')
+    showOrderSubmitErrorToast(errorMessage.value ?? '提交订单失败')
   }
+}
+
+function showOrderSubmitErrorToast(message: string) {
+  if (message.includes('今日购买次数已达上限')) {
+    showToast({
+      message,
+      className: 'compact-text-toast',
+      duration: 2200,
+      forbidClick: true,
+    })
+    return
+  }
+
+  showFailToast(message)
 }
 
 async function navigateAfterSubmit(
