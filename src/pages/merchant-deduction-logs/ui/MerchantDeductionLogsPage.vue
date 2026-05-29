@@ -426,11 +426,6 @@ onMounted(() => {
       >
         <div class="content-scroll">
           <section class="summary-section">
-            <div class="summary-head">
-              <strong>流水统计</strong>
-              <span v-if="activeFilterCount > 0">{{ activeFilterCount }} 个筛选条件</span>
-            </div>
-
             <van-grid
               class="statistics-grid"
               :class="{ 'statistics-grid-empty': !hasStatistics }"
@@ -439,15 +434,15 @@ onMounted(() => {
               gutter="6"
             >
               <van-grid-item class="statistics-card statistics-card-income">
-                <span>正常订单</span>
+                <span>收款笔数</span>
                 <strong>{{ statistics.normalOrderCount }}</strong>
               </van-grid-item>
               <van-grid-item class="statistics-card statistics-card-income">
-                <span>正常收款</span>
+                <span>收款金额</span>
                 <strong>¥{{ formatAmount(statistics.normalPaymentAmount) }}</strong>
               </van-grid-item>
               <van-grid-item class="statistics-card statistics-card-refund">
-                <span>退款订单</span>
+                <span>退款笔数</span>
                 <strong>{{ statistics.refundOrderCount }}</strong>
               </van-grid-item>
               <van-grid-item class="statistics-card statistics-card-refund">
@@ -737,7 +732,6 @@ onMounted(() => {
   gap: 12px;
 }
 
-.summary-section,
 .filter-section {
   gap: 12px;
   margin-bottom: 12px;
@@ -747,7 +741,10 @@ onMounted(() => {
   box-shadow: 0 12px 28px rgba(var(--shadow-rgb), 0.06);
 }
 
-.summary-head,
+.summary-section {
+  margin-bottom: 12px;
+}
+
 .filter-section-head {
   display: flex;
   justify-content: space-between;
@@ -755,15 +752,9 @@ onMounted(() => {
   align-items: center;
 }
 
-.summary-head strong,
 .filter-section-head strong {
   color: var(--color-text-heading);
   font-size: 15px;
-}
-
-.summary-head span {
-  color: var(--color-text-subtle);
-  font-size: 12px;
 }
 
 .statistics-grid {
