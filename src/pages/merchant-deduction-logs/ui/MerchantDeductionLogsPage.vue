@@ -435,8 +435,8 @@ onMounted(() => {
               class="statistics-grid"
               :class="{ 'statistics-grid-empty': !hasStatistics }"
               :border="false"
-              :column-num="2"
-              gutter="8"
+              :column-num="4"
+              gutter="6"
             >
               <van-grid-item class="statistics-card statistics-card-income">
                 <span>正常订单</span>
@@ -518,7 +518,7 @@ onMounted(() => {
               <van-field
                 v-model="startTimeInput"
                 class="filter-field filter-field-date filter-field-wide"
-                input-align="left"
+                input-align="right"
                 label="开始时间"
                 placeholder="请选择"
                 readonly
@@ -527,7 +527,7 @@ onMounted(() => {
               <van-field
                 v-model="endTimeInput"
                 class="filter-field filter-field-date filter-field-wide"
-                input-align="left"
+                input-align="right"
                 label="结束时间"
                 placeholder="请选择"
                 readonly
@@ -776,24 +776,28 @@ onMounted(() => {
 
 .statistics-card :deep(.van-grid-item__content) {
   display: grid;
-  justify-items: start;
-  gap: 6px;
+  justify-items: center;
+  gap: 5px;
   min-width: 0;
-  min-height: 72px;
-  padding: 10px;
-  border-radius: 14px;
+  min-height: 64px;
+  padding: 8px 4px;
+  border-radius: 12px;
   background: var(--color-surface-soft);
+  text-align: center;
 }
 
 .statistics-card span {
   color: var(--color-text-subtle);
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.2;
 }
 
 .statistics-card strong {
+  max-width: 100%;
   color: var(--color-text-heading);
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.2;
+  text-align: center;
   word-break: break-all;
 }
 
@@ -884,12 +888,12 @@ onMounted(() => {
 }
 
 .filter-field-date :deep(.van-field__body) {
-  flex: none;
-  min-width: 58px;
+  flex: 1;
+  min-width: 72px;
 }
 
 .filter-field-date :deep(.van-field__control) {
-  min-width: 58px;
+  min-width: 72px;
 }
 
 .filter-field-wide {
