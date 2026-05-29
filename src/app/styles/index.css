@@ -247,17 +247,17 @@ input {
     0 0 5px rgba(var(--color-accent-rgb), 0.3);
 }
 
-.van-toast.compact-text-toast {
+.van-toast.app-text-toast {
   width: fit-content;
   max-width: calc(100vw - 32px);
   min-width: 0;
   min-height: 0;
   padding: 10px 14px;
-  white-space: nowrap;
+  white-space: normal;
 }
 
-.van-toast.compact-text-toast .van-toast__text {
+.van-toast.app-text-toast .van-toast__text {
   margin-top: 0;
-  white-space: nowrap;
+  white-space: normal;
   line-height: 1.4;
 }

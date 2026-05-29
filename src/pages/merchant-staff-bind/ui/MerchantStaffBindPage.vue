@@ -12,6 +12,7 @@ import {
   useMerchantStaffInviteService,
 } from '@/processes/merchant-staff-invite'
 import { startWechatOauthLogin } from '@/shared/lib/wechat-browser'
+import { showAppErrorToast } from '@/shared/ui/toast'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
@@ -212,11 +213,20 @@ async function performBind() {
   }
 
   isBinding.value = true
+  let loadingToastClosed = false
   const loadingToast = showLoadingToast({
     duration: 0,
     forbidClick: true,
     message: '绑定中...',
   })
+  const closeLoadingToast = () => {
+    if (loadingToastClosed) {
+      return
+    }
+
+    loadingToast.close()
+    loadingToastClosed = true
+  }
 
   try {
     const result = await merchantStaffInviteService.bindInviteByToken(inviteInfo.value.token)
@@ -227,9 +237,10 @@ async function performBind() {
     showSuccessToast(result.successMessage)
   } catch (error) {
     const message = error instanceof Error ? error.message : '员工绑定失败'
-    showFailToast(message)
+    closeLoadingToast()
+    showAppErrorToast(message)
   } finally {
-    loadingToast.close()
+    closeLoadingToast()
     isBinding.value = false
   }
 }
@@ -525,4 +536,5 @@ watch(
   width: 100%;
   margin-top: 12px;
 }
+
 </style>

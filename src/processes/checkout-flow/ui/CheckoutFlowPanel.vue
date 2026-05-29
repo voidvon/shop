@@ -2,10 +2,11 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
-import { showFailToast, showSuccessToast, showToast } from 'vant'
+import { showFailToast, showSuccessToast } from 'vant'
 
 import { useBackendRuntime } from '@/app/providers/backend'
 import { OrderProductRow, OrderStoreHeader } from '@/entities/order'
+import { showAppTextToast } from '@/shared/ui/toast'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 
 import { useCheckoutFlowStore } from '../model/useCheckoutFlowStore'
@@ -215,9 +216,7 @@ async function handleSubmit() {
 
 function showOrderSubmitErrorToast(message: string) {
   if (message.includes('今日购买次数已达上限')) {
-    showToast({
-      message,
-      className: 'compact-text-toast',
+    showAppTextToast(message, {
       duration: 5000,
       forbidClick: true,
     })
