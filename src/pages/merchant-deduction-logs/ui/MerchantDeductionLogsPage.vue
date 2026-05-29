@@ -181,29 +181,15 @@ function formatDateTime(value: string | null) {
   }).format(parsedValue)
 }
 
-function formatMobile(value: string | null) {
-  if (!value) {
-    return '未返回'
-  }
-
-  const normalizedValue = value.replace(/\s+/g, '')
-
-  if (/^\d{11}$/.test(normalizedValue)) {
-    return `${normalizedValue.slice(0, 3)}****${normalizedValue.slice(-4)}`
-  }
-
-  return value
-}
-
 function getUserSummary(log: MerchantDeductionLogItem) {
-  const parts = [log.userName, log.userMobile ? formatMobile(log.userMobile) : null].filter(Boolean)
+  const parts = [log.userName, log.userMobile].filter(Boolean)
   return parts.length > 0 ? parts.join(' · ') : '未返回用户信息'
 }
 
 function getStaffSummary(log: MerchantDeductionLogItem) {
   const parts = [
     log.staffName,
-    log.staffMobile ? formatMobile(log.staffMobile) : null,
+    log.staffMobile,
     log.staffUserId ? `ID ${log.staffUserId}` : null,
   ].filter(Boolean)
 

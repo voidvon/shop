@@ -544,7 +544,7 @@ function mapStaffOption(source: unknown): MerchantDeductionStaffOption | null {
   return {
     id: normalizeString(source.id) ?? verifierUserId,
     mobile: pickString([source, userRecord].filter(isRecord), ['mobile', 'phone']),
-    name: pickString([source, userRecord].filter(isRecord), ['name', 'nickname', 'user_name']),
+    name: pickString([source, userRecord].filter(isRecord), ['nickname']),
     role: normalizeString(source.role),
     status: normalizeInteger(source.status),
     verifierUserId,
@@ -596,7 +596,7 @@ function mapDeductionLogItem(source: unknown, index: number): MerchantDeductionL
     refundNo,
     refundedAt,
     staffMobile: pickString([staffRecord, verifierUserRecord].filter(isRecord), ['mobile', 'phone']),
-    staffName: pickString([staffRecord, verifierUserRecord].filter(isRecord), ['name', 'nickname', 'user_name']),
+    staffName: pickString([staffRecord, verifierUserRecord].filter(isRecord), ['nickname']),
     staffUserId: normalizeString(staffRecord?.verifier_user_id)
       ?? normalizeString(staffRecord?.user_id)
       ?? normalizeString(verifierUserRecord?.id),
