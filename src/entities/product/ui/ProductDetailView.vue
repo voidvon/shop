@@ -7,6 +7,7 @@ import { isHighDemandProduct, type ProductDetail } from '../domain/product'
 
 const props = defineProps<{
   product: ProductDetail
+  showSalesCount?: boolean
 }>()
 
 const demandLabel = computed(() => (isHighDemandProduct(props.product) ? '高需求' : '稳定供应'))
@@ -22,7 +23,7 @@ const demandLabel = computed(() => (isHighDemandProduct(props.product) ? '高需
 
         <div class="hero-meta">
           <van-tag round type="primary">{{ demandLabel }}</van-tag>
-          <span>月销 {{ product.monthlySales }}</span>
+          <span v-if="showSalesCount !== false">月销 {{ product.monthlySales }}</span>
           <span>库存 {{ product.inventory }}</span>
           <strong>{{ formatCurrency(product.priceText ?? product.price) }}</strong>
         </div>

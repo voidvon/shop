@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 
+import { usePlatformSettingsStore } from '@/processes/storefront'
 import { formatCurrency } from '@/shared/lib/currency'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
@@ -9,6 +10,7 @@ import SearchField from '@/shared/ui/SearchField.vue'
 import { useSearchResultsPageModel } from '../model/useSearchResultsPageModel'
 
 const router = useRouter()
+const platformSettingsStore = usePlatformSettingsStore()
 const {
   errorMessage,
   isLoading,
@@ -78,7 +80,7 @@ function handleSubmit() {
               <div class="price-row">
                 <em>{{ formatCurrency(product.priceText ?? product.price) }}</em>
                 <small v-if="product.marketPrice">{{ formatCurrency(product.marketPriceText ?? product.marketPrice) }}</small>
-                <span class="sales-inline">销量 {{ product.monthlySales }}</span>
+                <span v-if="platformSettingsStore.showSalesCount" class="sales-inline">销量 {{ product.monthlySales }}</span>
               </div>
             </div>
           </RouterLink>

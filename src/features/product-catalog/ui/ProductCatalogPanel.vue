@@ -5,6 +5,7 @@ import { RouterLink } from 'vue-router'
 
 import { ProductCard } from '@/entities/product'
 import { AddToCartButton } from '@/features/add-to-cart'
+import { usePlatformSettingsStore } from '@/processes/storefront'
 import { currentBackendLabel } from '@/shared/config/backend'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import SectionCard from '@/shared/ui/SectionCard.vue'
@@ -12,6 +13,7 @@ import SectionCard from '@/shared/ui/SectionCard.vue'
 import { useProductCatalogStore } from '../model/useProductCatalogStore'
 
 const catalogStore = useProductCatalogStore()
+const platformSettingsStore = usePlatformSettingsStore()
 const { availableCount, errorMessage, isLoading, keyword, totalInventory, visibleProducts } =
   storeToRefs(catalogStore)
 
@@ -61,7 +63,12 @@ onMounted(() => {
     <p v-else-if="errorMessage" class="state error">{{ errorMessage }}</p>
 
     <div v-else class="catalog-grid">
-      <ProductCard v-for="product in visibleProducts" :key="product.id" :product="product">
+      <ProductCard
+        v-for="product in visibleProducts"
+        :key="product.id"
+        :product="product"
+        :show-sales-count="platformSettingsStore.showSalesCount"
+      >
         <template #action>
           <div class="card-actions">
             <RouterLink

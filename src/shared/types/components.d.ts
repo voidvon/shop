@@ -25,6 +25,8 @@ declare module 'vue' {
     VanDropdownMenu: typeof import('vant/es')['DropdownMenu']
     VanField: typeof import('vant/es')['Field']
     VanForm: typeof import('vant/es')['Form']
+    VanGrid: typeof import('vant/es')['Grid']
+    VanGridItem: typeof import('vant/es')['GridItem']
     VanIcon: typeof import('vant/es')['Icon']
     VanLoading: typeof import('vant/es')['Loading']
     VanPopover: typeof import('vant/es')['Popover']

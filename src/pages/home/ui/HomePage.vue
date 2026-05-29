@@ -5,6 +5,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import { useMemberFavoriteStore } from '@/entities/member-favorite'
 import { ProductCompactCard } from '@/entities/product'
 import { useCustomerServiceUnreadStore } from '@/processes/customer-service'
+import { usePlatformSettingsStore } from '@/processes/storefront'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
@@ -25,6 +26,7 @@ const {
 const router = useRouter()
 const memberFavoriteStore = useMemberFavoriteStore()
 const customerServiceUnreadStore = useCustomerServiceUnreadStore()
+const platformSettingsStore = usePlatformSettingsStore()
 const carouselItems = computed(() =>
   homePageData.value.banners.map((banner) => ({
     imageUrl: banner.imageUrl || '/images/image-placeholder.svg',
@@ -226,6 +228,7 @@ watch(
                 :name="product.name"
                 :price="product.price"
                 :price-text="product.priceText"
+                :show-sales-count="platformSettingsStore.showSalesCount"
                 :to="{ name: 'product-detail', params: { productId: product.id } }"
               />
             </div>

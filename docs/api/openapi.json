@@ -2753,6 +2753,15 @@
                         }
                     },
                     {
+                        "name": "verifier_user_id",
+                        "in": "query",
+                        "description": "核销员工用户ID，取自 staff_list[].verifier_user_id",
+                        "schema": {
+                            "type": "integer",
+                            "example": 2
+                        }
+                    },
+                    {
                         "name": "per_page",
                         "in": "query",
                         "description": "分页大小",
@@ -3352,6 +3361,11 @@
                         "type": "string",
                         "example": "mall_kefu_01",
                         "nullable": true
+                    },
+                    "show_sales_count": {
+                        "description": "是否显示销量",
+                        "type": "boolean",
+                        "example": true
                     }
                 },
                 "type": "object"
@@ -4433,9 +4447,9 @@
                         "nullable": true
                     },
                     "virtual_delivery_info": {
-                        "description": "虚拟商品发货信息文本；订单详情接口返回。固定内容直接返回配置内容，卡券池直接返回已分配卡券内容，多条内容用换行分隔；无虚拟商品时为空字符串",
+                        "description": "虚拟商品发货信息 HTML；订单详情接口返回。固定内容返回配置内容，卡券池返回已分配卡券内容，内容中的 http/https 链接会转换为可点击 a 标签，换行转换为 br；无虚拟商品时为空字符串",
                         "type": "string",
-                        "example": "CARD-A\\nhttps://pan.example.com/s/course 提取码 8888"
+                        "example": "CARD-A<br>https://pan.example.com/s/course 提取码 8888"
                     },
                     "shipping_address": {
                         "$ref": "#/components/schemas/OrderShippingAddressPayload"
@@ -4950,6 +4964,78 @@
                 "type": "object",
                 "nullable": true
             },
+            "OfflinePaymentStaffSimple": {
+                "properties": {
+                    "id": {
+                        "description": "商户员工关系ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "verifier_user_id": {
+                        "description": "核销员工用户ID，可用于 verifier_user_id 筛选",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "user_id": {
+                        "description": "核销员工用户ID",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "name": {
+                        "description": "员工姓名",
+                        "type": "string",
+                        "example": "张三",
+                        "nullable": true
+                    },
+                    "mobile": {
+                        "description": "员工手机号",
+                        "type": "string",
+                        "example": "13800138000",
+                        "nullable": true
+                    },
+                    "role": {
+                        "description": "员工角色",
+                        "type": "string",
+                        "example": "checker",
+                        "nullable": true
+                    },
+                    "status": {
+                        "description": "员工状态",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/OfflinePaymentUserSimple"
+                    }
+                },
+                "type": "object",
+                "nullable": true
+            },
+            "MerchantOfflinePaymentStatistics": {
+                "properties": {
+                    "normal_order_count": {
+                        "description": "当前筛选条件下正常订单数，status=1",
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "normal_payment_amount": {
+                        "description": "当前筛选条件下正常收款金额，status=1",
+                        "type": "string",
+                        "example": "1200.00"
+                    },
+                    "refund_order_count": {
+                        "description": "当前筛选条件下退款订单数，status=3",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "refund_amount": {
+                        "description": "当前筛选条件下退款金额，status=3",
+                        "type": "string",
+                        "example": "100.00"
+                    }
+                },
+                "type": "object"
+            },
             "OfflinePaymentStoredValueCardSimple": {
                 "properties": {
                     "id": {
@@ -5035,6 +5121,12 @@
                     "balance_type": {
                         "$ref": "#/components/schemas/BalanceTypeSimple"
                     },
+                    "staff": {
+                        "$ref": "#/components/schemas/OfflinePaymentStaffSimple"
+                    },
+                    "verifier_user": {
+                        "$ref": "#/components/schemas/OfflinePaymentUserSimple"
+                    },
                     "stored_value_card": {
                         "$ref": "#/components/schemas/OfflinePaymentStoredValueCardSimple"
                     },
@@ -5102,6 +5194,16 @@
                     "total": {
                         "type": "integer",
                         "example": 45
+                    },
+                    "staff_list": {
+                        "description": "当前门店员工列表，前端可使用 verifier_user_id 筛选",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OfflinePaymentStaffSimple"
+                        }
+                    },
+                    "statistics": {
+                        "$ref": "#/components/schemas/MerchantOfflinePaymentStatistics"
                     }
                 },
                 "type": "object"

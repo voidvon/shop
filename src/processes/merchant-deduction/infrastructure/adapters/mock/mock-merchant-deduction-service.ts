@@ -1,10 +1,30 @@
 import type {
   MerchantDeductionLogItem,
+  MerchantDeductionStaffOption,
   MerchantDeductionScanResult,
   MerchantDeductionService,
   MerchantDeductionSubmitCommand,
   MerchantDeductionSummaryRow,
 } from '../../../domain/merchant-deduction-service'
+
+const mockStaffList: MerchantDeductionStaffOption[] = [
+  {
+    id: '1',
+    mobile: '13800138001',
+    name: '张店长',
+    role: 'checker',
+    status: 1,
+    verifierUserId: '101',
+  },
+  {
+    id: '2',
+    mobile: '13800138002',
+    name: '李核销',
+    role: 'checker',
+    status: 1,
+    verifierUserId: '102',
+  },
+]
 
 function normalizeMockRawCode(rawCode: string) {
   const normalizedRawCode = rawCode.trim()
@@ -67,6 +87,7 @@ let mockDeductionLogs: MerchantDeductionLogItem[] = Array.from({ length: 36 }, (
       ? 'processing'
       : 'success'
   const paySource = sequence % 3 === 0 ? 'stored-value-card' : 'user-balance'
+  const staff = mockStaffList[index % mockStaffList.length] ?? mockStaffList[0]!
 
   return {
     amount: 28 + sequence * 3.6,
@@ -86,6 +107,9 @@ let mockDeductionLogs: MerchantDeductionLogItem[] = Array.from({ length: 36 }, (
     remark: sequence % 5 === 0 ? '门店消费扣款' : null,
     refundNo: null,
     refundedAt: null,
+    staffMobile: staff.mobile,
+    staffName: staff.name,
+    staffUserId: staff.verifierUserId,
     status,
     statusLabel: status === 'failed' ? '支付失败' : status === 'processing' ? '处理中' : '支付成功',
     userMobile: '138****0000',
@@ -97,15 +121,27 @@ export const mockMerchantDeductionService: MerchantDeductionService = {
   async getDeductionLogs(query) {
     const page = Number.isFinite(query.page) && query.page > 0 ? Math.trunc(query.page) : 1
     const pageSize = Number.isFinite(query.pageSize) && query.pageSize > 0 ? Math.trunc(query.pageSize) : 20
+    const filteredLogs = query.verifierUserId
+      ? mockDeductionLogs.filter((item) => item.staffUserId === query.verifierUserId)
+      : mockDeductionLogs
     const start = (page - 1) * pageSize
-    const list = mockDeductionLogs.slice(start, start + pageSize)
+    const list = filteredLogs.slice(start, start + pageSize)
+    const normalLogs = filteredLogs.filter((item) => item.status === 'success')
+    const refundLogs = filteredLogs.filter((item) => item.status === 'refunded')
 
     return Promise.resolve({
-      hasMore: start + pageSize < mockDeductionLogs.length,
+      hasMore: start + pageSize < filteredLogs.length,
       list,
       page,
       pageSize,
-      total: mockDeductionLogs.length,
+      staffList: mockStaffList,
+      statistics: {
+        normalOrderCount: normalLogs.length,
+        normalPaymentAmount: normalLogs.reduce((sum, item) => sum + item.amount, 0),
+        refundAmount: refundLogs.reduce((sum, item) => sum + item.amount, 0),
+        refundOrderCount: refundLogs.length,
+      },
+      total: filteredLogs.length,
     })
   },
 

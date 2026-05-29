@@ -6,7 +6,7 @@
 - 当前运行时装配：[`src/app/providers/backend/create-backend-runtime.ts`](/root/shop/src/app/providers/backend/create-backend-runtime.ts)
 - 现有 `backend-a` 适配层与浏览器仓储实现
 
-更新时间：`2026-05-21`
+更新时间：`2026-05-29`
 
 ## 1. 先看结论
 
@@ -103,10 +103,10 @@
 | 合作商家 | 是 | 否 | 未接入 | 当前没有对应页面或 query |
 | 线上商户 | 是 | 是 | 未接入 | Swagger 新增 `/api/v1/merchants` 与 `/api/v1/merchants/{merchant}`；当前店铺页仍主要通过 `/api/v1/partner-merchants/{partnerMerchant}` 与 `/api/v1/products?merchant_id=` 组装 |
 | 客服 | 是 | 否 | 未接入 | 当前没有客服会话页面和消息数据层 |
-| 线下付款 | 是 | 是 | 已直连 | 用户付款码页已接 `/api/v1/offline-payments/payment-code`；商户扣款页已接 `/api/v1/merchant/offline-payments/scan`、`/api/v1/merchant/offline-payments/pay`、`/api/v1/merchant/offline-payments/{offlinePayment}/refund`，并依赖 `/api/v1/auth/profile` 返回 `merchant.supported_balance_types` |
+| 线下付款 | 是 | 是 | 已直连 | 用户付款码页已接 `/api/v1/offline-payments/payment-code`；商户扣款页已接 `/api/v1/merchant/offline-payments/scan`、`/api/v1/merchant/offline-payments/pay`、`/api/v1/merchant/offline-payments/{offlinePayment}/refund`，并依赖 `/api/v1/auth/profile` 返回 `merchant.supported_balance_types`；店铺流水页已接 `verifier_user_id` 筛选、`staff_list` 核销人员列表与 `statistics` 统计数据 |
 | 上传 | 是 | 间接可能需要 | 未接入 | 当前没有统一上传 gateway |
 | 员工邀请 | 是 | 否 | 未接入 | 当前没有邀请查看/绑定页面流程 |
-| 平台配置 | 是 | 弱依赖 | 部分直连 | 会员中心客服热线与关于我们文案已接 `/api/v1/platform/settings` |
+| 平台配置 | 是 | 弱依赖 | 已直连 | 会员中心客服热线、关于我们文案与全站销量展示开关已接 `/api/v1/platform/settings`；`show_sales_count=false` 时前端会隐藏销量文案与店铺页销量排序入口 |
 
 ## 4. 关键代码落点
 
@@ -137,7 +137,7 @@
 - checkout 预结算现在也会随当前选中地址传 `address_id`，用于在切换收货地址后实时重算省内/省外运费
 - 下单成功后，订单列表、订单详情和会员中心订单角标都会从真实 `/api/v1/orders` 刷新
 - 当前仍保留部分显式能力裁剪：Swagger 里仍没有订单取消、支付接口，因此 `backend-a` 仍会对这两类动作保留显式提示；确认收货已接入 `POST /api/v1/orders/{order}/receive`，退款申请接口已出现在 Swagger，订单结构也新增 `latest_refund_request`，但当前售后流程仍主要走本地仓储
-- 最新 Swagger 已为订单详情补入 `virtual_delivery_info`，并为结算/订单金额结构补入 `shipping_amount`；当前前端尚未消费这几个新增字段
+- 最新 Swagger 已将订单详情 `virtual_delivery_info` 明确为 HTML 内容，并为结算/订单金额结构补入 `shipping_amount`；当前前端已读取虚拟发货字段，展示时需继续通过安全富文本处理
 - `2026-05-21` 的 dev Swagger 又为 `checkout/preview`、`checkout/submit` 增加了 `virtual_account_inputs`，并在商品/SKU/预结算商品结构补充了虚拟直充账号与第三方商品类型字段；当前前端也还没有消费这批新字段
 
 对应 Swagger：

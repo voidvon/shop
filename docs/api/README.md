@@ -4,7 +4,7 @@
 
 - Swagger 页面：`https://dev.qzxys.com/api/documentation`
 - OpenAPI JSON：`https://dev.qzxys.com/docs?api-docs.json`
-- 最近一次抓取时间：`2026-05-21`
+- 最近一次抓取时间：`2026-05-29`
 - 原始文件：[`openapi.json`](/root/shop/docs/api/openapi.json)
 
 说明：
@@ -67,7 +67,7 @@
 
 ### 平台
 
-- `GET /api/v1/platform/settings` 获取平台基础信息
+- `GET /api/v1/platform/settings` 获取平台基础信息；响应新增 `show_sales_count`，用于控制前端是否展示销量
 
 ### 首页
 
@@ -109,7 +109,7 @@
 ### 订单
 
 - `GET /api/v1/orders` 订单列表
-- `GET /api/v1/orders/{order}` 订单详情
+- `GET /api/v1/orders/{order}` 订单详情；`virtual_delivery_info` 现在按 HTML 内容返回，前端展示时需使用安全富文本处理
 - `POST /api/v1/orders/{order}/receive` 确认收货
 - `POST /api/v1/orders/{order}/refund-request` 申请退单；请求体必填 `reason`，提交后进入待审核
 
@@ -144,7 +144,7 @@
 ### 线下付款
 
 - `GET /api/v1/offline-payments/payment-code` 获取用户付款码
-- `GET /api/v1/merchant/offline-payments` 合作商家员工查看当前所属商家的线下支付流水，支持 `min_amount / max_amount / start_time / end_time / per_page`
+- `GET /api/v1/merchant/offline-payments` 合作商家员工查看当前所属商家的线下支付流水，支持 `min_amount / max_amount / start_time / end_time / verifier_user_id / per_page`；响应分页对象新增 `staff_list` 与 `statistics`
 - `POST /api/v1/merchant/offline-payments/scan` 合作商家核销员扫码识别用户付款码或储值卡二维码
 - `POST /api/v1/merchant/offline-payments/pay` 合作商家核销员提交线下支付；前端需附带 `balance_type_id`，其来源为 `GET /api/v1/auth/profile -> data.merchant.supported_balance_types`
 - `POST /api/v1/merchant/offline-payments/{offlinePayment}/refund` 合作商家核销员发起线下付款退款
@@ -160,6 +160,7 @@
 - 以 [`endpoints.md`](/root/shop/docs/api/endpoints.md) 作为方法、路径、鉴权、参数、请求体和响应模型的速查表
 - 以 [`frontend-integration-status.md`](/root/shop/docs/api/frontend-integration-status.md) 作为“当前代码已经接了什么、哪些还没接、哪些与 Swagger 不一致”的对照清单
 - 后续如果后端 Swagger 变更，优先重新抓取 `openapi.json`，再同步更新本文件中的统计与分组
+- `2026-05-29` 已重新抓取 Swagger；接口总数未变，新增 `OfflinePaymentStaffSimple` 与 `MerchantOfflinePaymentStatistics` schema，`GET /api/v1/merchant/offline-payments` 新增 `verifier_user_id` 筛选并在响应分页对象中返回 `staff_list / statistics`；`GET /api/v1/platform/settings` 新增 `show_sales_count`；订单 `virtual_delivery_info` 说明改为 HTML 内容
 - `2026-05-21` 已切换为抓取 `dev.qzxys.com` 的 Swagger；接口总数未变，但新增 `CheckoutVirtualAccountInput` schema，并为结算入参、预结算结果和商品/SKU 结构补入虚拟商品直充账号相关字段
 - `2026-05-15` 已重新抓取 Swagger；`POST /api/v1/checkout/preview` 请求体新增可选 `address_id`，用于根据当前收货地址实时重算省内/省外运费；结算页切换地址后前端应重新调用预结算接口
 - `2026-05-03` 已重新抓取 Swagger；订单详情结构新增 `virtual_delivery_info`，结算与订单相关结构补充 `shipping_amount`，并新增 `GET /api/v1/merchants`、`GET /api/v1/merchants/{merchant}`

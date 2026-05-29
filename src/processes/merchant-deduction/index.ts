@@ -1,9 +1,12 @@
 export type {
   MerchantDeductionLogItem,
+  MerchantDeductionLogPage,
   MerchantDeductionLogQuery,
   MerchantDeductionRefundResult,
   MerchantDeductionScanResult,
   MerchantDeductionService,
+  MerchantDeductionStaffOption,
+  MerchantDeductionStatistics,
   MerchantDeductionSubmitCommand,
   MerchantDeductionSubmitResult,
   MerchantDeductionSummaryRow,

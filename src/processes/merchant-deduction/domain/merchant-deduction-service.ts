@@ -47,8 +47,34 @@ export interface MerchantDeductionRefundResult {
 }
 
 export interface MerchantDeductionLogQuery {
+  endTime?: string | null
+  maxAmount?: number | null
+  minAmount?: number | null
   page: number
   pageSize: number
+  startTime?: string | null
+  verifierUserId?: string | null
+}
+
+export interface MerchantDeductionStaffOption {
+  id: string
+  mobile: string | null
+  name: string | null
+  role: string | null
+  status: number | null
+  verifierUserId: string
+}
+
+export interface MerchantDeductionStatistics {
+  normalOrderCount: number
+  normalPaymentAmount: number
+  refundAmount: number
+  refundOrderCount: number
+}
+
+export interface MerchantDeductionLogPage extends PageResult<MerchantDeductionLogItem> {
+  staffList: MerchantDeductionStaffOption[]
+  statistics: MerchantDeductionStatistics
 }
 
 export interface MerchantDeductionLogItem {
@@ -67,6 +93,9 @@ export interface MerchantDeductionLogItem {
   remark: string | null
   refundNo: string | null
   refundedAt: string | null
+  staffMobile: string | null
+  staffName: string | null
+  staffUserId: string | null
   status: 'failed' | 'processing' | 'refunded' | 'success' | 'unknown'
   statusLabel: string
   userMobile: string | null
@@ -74,7 +103,7 @@ export interface MerchantDeductionLogItem {
 }
 
 export interface MerchantDeductionService {
-  getDeductionLogs(query: MerchantDeductionLogQuery): Promise<PageResult<MerchantDeductionLogItem>>
+  getDeductionLogs(query: MerchantDeductionLogQuery): Promise<MerchantDeductionLogPage>
   refundDeduction(logId: string): Promise<MerchantDeductionRefundResult>
   scanCode(rawCode: string): Promise<MerchantDeductionScanResult>
   submitDeduction(command: MerchantDeductionSubmitCommand): Promise<MerchantDeductionSubmitResult>

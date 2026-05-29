@@ -27,3 +27,4 @@ export {
   provideStorefrontQuery,
   useStorefrontQuery,
 } from './infrastructure/storefront-query-provider'
+export { usePlatformSettingsStore } from './model/usePlatformSettingsStore'

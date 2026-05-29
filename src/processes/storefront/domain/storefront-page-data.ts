@@ -93,6 +93,7 @@ export interface PlatformSettingsData {
   domain: string | null
   icpNumber: string | null
   logoUrl: string | null
+  showSalesCount: boolean
 }
 
 export type StoreHomeTabKey = 'home' | 'all-products' | 'new-products' | 'promotions'

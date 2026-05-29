@@ -3,11 +3,13 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useStoreProfile } from '@/features/store-profile'
+import { usePlatformSettingsStore } from '@/processes/storefront'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 const route = useRoute()
 const router = useRouter()
+const platformSettingsStore = usePlatformSettingsStore()
 
 const storeId = computed(() => String(route.params.storeId ?? ''))
 const preferredStoreName = computed(() =>
@@ -67,7 +69,7 @@ const storeStatus = computed(() => {
     return storeSummary.value.trim()
   }
 
-  if (storeStats.value.monthlySales > 0) {
+  if (platformSettingsStore.showSalesCount && storeStats.value.monthlySales > 0) {
     return `累计月销 ${storeStats.value.monthlySales}`
   }
 

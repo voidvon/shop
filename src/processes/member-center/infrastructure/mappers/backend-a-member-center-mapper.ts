@@ -31,6 +31,7 @@ export interface BackendAPlatformSettingsDto {
   id: number
   logo: string | null
   promo_video: string | null
+  show_sales_count?: boolean | null
 }
 
 function mapBackendAMemberProductListItem(product: ProductSummary): MemberProductListItem {

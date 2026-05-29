@@ -3,11 +3,12 @@ import {
   createBackendAHttpClient,
 } from '@/shared/api/backend-a/backend-a-http-client'
 import { resolveBackendAMediaUrl } from '@/shared/api/backend-a/backend-a-config'
-import type { PageResult } from '@/shared/types/modules'
-
 import type {
   MerchantDeductionLogItem,
+  MerchantDeductionLogPage,
   MerchantDeductionLogQuery,
+  MerchantDeductionStaffOption,
+  MerchantDeductionStatistics,
   MerchantDeductionRefundResult,
   MerchantDeductionScanResult,
   MerchantDeductionService,
@@ -63,6 +64,19 @@ function normalizeInteger(value: unknown) {
   }
 
   return Math.trunc(normalizedValue)
+}
+
+function normalizeBackendDateTime(value: string | null | undefined) {
+  const normalizedValue = normalizeString(value)
+
+  if (!normalizedValue) {
+    return null
+  }
+
+  const spacedValue = normalizedValue.replace('T', ' ')
+  return /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(spacedValue)
+    ? `${spacedValue}:00`
+    : spacedValue
 }
 
 function findNestedStringByPredicate(
@@ -165,9 +179,11 @@ function collectKnownRecords(source: JsonRecord) {
     'merchant',
     'payer',
     'payment',
+    'staff',
     'storedValueCard',
     'stored_value_card',
     'user',
+    'verifier_user',
   ]) {
     const record = source[key]
 
@@ -511,12 +527,51 @@ function getDeductionStatusLabel(status: MerchantDeductionLogItem['status']) {
   }
 }
 
+function mapStaffOption(source: unknown): MerchantDeductionStaffOption | null {
+  if (!isRecord(source)) {
+    return null
+  }
+
+  const userRecord = isRecord(source.user) ? source.user : null
+  const verifierUserId = normalizeString(source.verifier_user_id)
+    ?? normalizeString(source.user_id)
+    ?? normalizeString(userRecord?.id)
+
+  if (!verifierUserId) {
+    return null
+  }
+
+  return {
+    id: normalizeString(source.id) ?? verifierUserId,
+    mobile: pickString([source, userRecord].filter(isRecord), ['mobile', 'phone']),
+    name: pickString([source, userRecord].filter(isRecord), ['name', 'nickname', 'user_name']),
+    role: normalizeString(source.role),
+    status: normalizeInteger(source.status),
+    verifierUserId,
+  }
+}
+
+function mapStatistics(source: unknown): MerchantDeductionStatistics {
+  const rawPayload = isRecord(source) ? source : {}
+
+  return {
+    normalOrderCount: normalizePaginationNumber(rawPayload.normal_order_count, 0, { allowZero: true }),
+    normalPaymentAmount: normalizeNumber(rawPayload.normal_payment_amount) ?? 0,
+    refundAmount: normalizeNumber(rawPayload.refund_amount) ?? 0,
+    refundOrderCount: normalizePaginationNumber(rawPayload.refund_order_count, 0, { allowZero: true }),
+  }
+}
+
 function mapDeductionLogItem(source: unknown, index: number): MerchantDeductionLogItem {
   const rawPayload = isRecord(source) ? source : {}
   const balanceTypeRecord = isRecord(rawPayload.balance_type) ? rawPayload.balance_type : null
   const merchantRecord = isRecord(rawPayload.merchant) ? rawPayload.merchant : null
+  const staffRecord = isRecord(rawPayload.staff) ? rawPayload.staff : null
   const storedValueCardRecord = isRecord(rawPayload.stored_value_card) ? rawPayload.stored_value_card : null
   const userRecord = isRecord(rawPayload.user) ? rawPayload.user : null
+  const verifierUserRecord = isRecord(rawPayload.verifier_user)
+    ? rawPayload.verifier_user
+    : (isRecord(staffRecord?.user) ? staffRecord.user : null)
   const paySource = mapDeductionPaySource(rawPayload.pay_source)
   const status = mapDeductionStatus(rawPayload.status)
   const id = normalizeString(rawPayload.id) ?? String(index + 1)
@@ -540,6 +595,11 @@ function mapDeductionLogItem(source: unknown, index: number): MerchantDeductionL
     remark: normalizeString(rawPayload.remark),
     refundNo,
     refundedAt,
+    staffMobile: pickString([staffRecord, verifierUserRecord].filter(isRecord), ['mobile', 'phone']),
+    staffName: pickString([staffRecord, verifierUserRecord].filter(isRecord), ['name', 'nickname', 'user_name']),
+    staffUserId: normalizeString(staffRecord?.verifier_user_id)
+      ?? normalizeString(staffRecord?.user_id)
+      ?? normalizeString(verifierUserRecord?.id),
     status,
     statusLabel: getDeductionStatusLabel(status),
     userMobile: userRecord ? pickString([userRecord], ['mobile', 'phone']) : null,
@@ -550,7 +610,7 @@ function mapDeductionLogItem(source: unknown, index: number): MerchantDeductionL
 function mapDeductionLogsPage(
   response: unknown,
   query: MerchantDeductionLogQuery,
-): PageResult<MerchantDeductionLogItem> {
+): MerchantDeductionLogPage {
   const rawPayload = isRecord(response) ? response : {}
   const currentPage = normalizePaginationNumber(rawPayload.current_page, query.page)
   const pageSize = normalizePaginationNumber(rawPayload.per_page, query.pageSize)
@@ -560,12 +620,17 @@ function mapDeductionLogsPage(
   const lastPage = normalizePaginationNumber(rawPayload.last_page, currentPage)
   const hasMore = Boolean(normalizeString(rawPayload.next_page_url))
     || (lastPage > currentPage && list.length > 0)
+  const staffList = Array.isArray(rawPayload.staff_list)
+    ? rawPayload.staff_list.map(mapStaffOption).filter((item): item is MerchantDeductionStaffOption => item !== null)
+    : []
 
   return {
     hasMore,
     list,
     page: currentPage,
     pageSize,
+    staffList,
+    statistics: mapStatistics(rawPayload.statistics),
     total,
   }
 }
@@ -687,13 +752,23 @@ export function createBackendAMerchantDeductionService(
       const normalizedPage = normalizePaginationNumber(query.page, 1)
       const normalizedPageSize = normalizePaginationNumber(query.pageSize, 20)
       const response = await httpClient.get<unknown>('/api/v1/merchant/offline-payments', {
+        ...(normalizeNumber(query.maxAmount) !== null ? { max_amount: normalizeNumber(query.maxAmount) } : {}),
+        ...(normalizeNumber(query.minAmount) !== null ? { min_amount: normalizeNumber(query.minAmount) } : {}),
         page: normalizedPage,
         per_page: normalizedPageSize,
+        ...(normalizeBackendDateTime(query.endTime) ? { end_time: normalizeBackendDateTime(query.endTime) } : {}),
+        ...(normalizeBackendDateTime(query.startTime) ? { start_time: normalizeBackendDateTime(query.startTime) } : {}),
+        ...(normalizeString(query.verifierUserId) ? { verifier_user_id: normalizeString(query.verifierUserId) } : {}),
       })
 
       return mapDeductionLogsPage(response, {
+        endTime: query.endTime,
+        maxAmount: query.maxAmount,
+        minAmount: query.minAmount,
         page: normalizedPage,
         pageSize: normalizedPageSize,
+        startTime: query.startTime,
+        verifierUserId: query.verifierUserId,
       })
     },
 

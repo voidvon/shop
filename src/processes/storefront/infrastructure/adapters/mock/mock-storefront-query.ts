@@ -55,6 +55,7 @@ export const mockStorefrontQuery: StorefrontQuery = {
       domain: 'https://mall.example.com',
       icpNumber: '鄂ICP备2026000123号',
       logoUrl: null,
+      showSalesCount: true,
     })
   },
 

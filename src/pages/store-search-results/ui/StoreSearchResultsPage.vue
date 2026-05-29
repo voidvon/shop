@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 
 import { useMemberFavoriteStore } from '@/entities/member-favorite'
 import { ProductCompactCard } from '@/entities/product'
+import { usePlatformSettingsStore } from '@/processes/storefront'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
@@ -12,6 +13,7 @@ import { useStoreSearchResultsPageModel } from '../model/useStoreSearchResultsPa
 
 const router = useRouter()
 const memberFavoriteStore = useMemberFavoriteStore()
+const platformSettingsStore = usePlatformSettingsStore()
 const {
   errorMessage,
   isLoading,
@@ -106,6 +108,7 @@ onActivated(() => {
             :name="product.name"
             :price="product.price"
             :price-text="product.priceText"
+            :show-sales-count="platformSettingsStore.showSalesCount"
             :to="{ name: 'product-detail', params: { productId: product.id } }"
           />
         </div>

@@ -13,7 +13,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useBackendRuntime } from '@/app/providers/backend'
 import { useMemberAuthSession } from '@/entities/member-auth'
 import { ProductCompactCard } from '@/entities/product'
-import type { MerchantCoupon } from '@/processes/storefront'
+import { usePlatformSettingsStore, type MerchantCoupon } from '@/processes/storefront'
 import { normalizeSearchKeyword } from '@/shared/lib/search-history'
 import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
 import CouponCard from '@/shared/ui/CouponCard.vue'
@@ -26,6 +26,7 @@ const route = useRoute()
 const router = useRouter()
 const runtime = useBackendRuntime()
 const memberAuthSession = useMemberAuthSession()
+const platformSettingsStore = usePlatformSettingsStore()
 const topActions: PopoverAction[] = [
   { text: '刷新店铺', value: 'refresh' },
   { text: '返回首页', value: 'home' },
@@ -135,6 +136,10 @@ const priceSortValue = computed({
 const storeSummary = computed(() => {
   if (storeStats.value.productCount === 0) {
     return '店铺正在整理上新中'
+  }
+
+  if (!platformSettingsStore.showSalesCount) {
+    return `${storeStats.value.productCount} 款商品`
   }
 
   return `${storeStats.value.productCount} 款商品 · 月销 ${storeStats.value.monthlySales}`
@@ -455,6 +460,16 @@ watch(
     tryLoadMoreOnScroll()
   },
 )
+
+watch(
+  () => platformSettingsStore.showSalesCount,
+  (showSalesCount) => {
+    if (!showSalesCount && sortField.value === 'sales') {
+      resetSortOption()
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -533,7 +548,12 @@ watch(
             <div class="sort-dropdown-shell">
               <van-dropdown-menu active-color="var(--color-primary-deep)" class="sort-dropdown">
                 <van-dropdown-item v-model="comprehensiveSortValue" title="综合" :options="comprehensiveSortOptions" />
-                <van-dropdown-item v-model="salesSortValue" title="销量" :options="salesSortOptions" />
+                <van-dropdown-item
+                  v-if="platformSettingsStore.showSalesCount"
+                  v-model="salesSortValue"
+                  title="销量"
+                  :options="salesSortOptions"
+                />
                 <van-dropdown-item v-model="priceSortValue" title="价格" :options="priceSortOptions" />
               </van-dropdown-menu>
             </div>
@@ -589,6 +609,7 @@ watch(
               :name="product.name"
               :price="product.price"
               :price-text="product.priceText"
+              :show-sales-count="platformSettingsStore.showSalesCount"
               :to="{ name: 'product-detail', params: { productId: product.id } }"
             />
           </div>

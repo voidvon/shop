@@ -16,6 +16,8 @@ import {
 } from '@/entities/member-auth'
 import {
   type MerchantDeductionLogItem,
+  type MerchantDeductionStaffOption,
+  type MerchantDeductionStatistics,
   useMerchantDeductionService,
 } from '@/processes/merchant-deduction'
 import EmptyState from '@/shared/ui/EmptyState.vue'
@@ -23,6 +25,12 @@ import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
 
 const PAGE_SIZE = 20
+const emptyStatistics: MerchantDeductionStatistics = {
+  normalOrderCount: 0,
+  normalPaymentAmount: 0,
+  refundAmount: 0,
+  refundOrderCount: 0,
+}
 
 const router = useRouter()
 const memberAuthSession = useMemberAuthSession()
@@ -30,6 +38,8 @@ const merchantDeductionService = useMerchantDeductionService()
 const authSnapshot = ref(memberAuthSession.getSnapshot())
 const scrollContainer = useTemplateRef<HTMLDivElement>('scrollContainer')
 const logs = ref<MerchantDeductionLogItem[]>([])
+const staffList = ref<MerchantDeductionStaffOption[]>([])
+const statistics = ref<MerchantDeductionStatistics>({ ...emptyStatistics })
 const currentPage = ref(1)
 const isPageInitializing = ref(true)
 const isRefreshing = ref(false)
@@ -39,6 +49,11 @@ const hasMore = ref(false)
 const hasLoadedOnce = ref(false)
 const errorMessage = ref('')
 const refundingLogId = ref<string | null>(null)
+const selectedVerifierUserId = ref('')
+const minAmountInput = ref('')
+const maxAmountInput = ref('')
+const startTimeInput = ref('')
+const endTimeInput = ref('')
 
 const stopAuthSubscription = memberAuthSession.subscribe((snapshot) => {
   authSnapshot.value = snapshot
@@ -51,6 +66,19 @@ onUnmounted(() => {
 const normalizedMerchantId = computed(() => authSnapshot.value.authResult?.userInfo.merchantId?.trim() ?? '')
 const isMerchantStaff = computed(() => Boolean(normalizedMerchantId.value))
 const hasLogs = computed(() => logs.value.length > 0)
+const activeFilterCount = computed(() => [
+  selectedVerifierUserId.value,
+  minAmountInput.value,
+  maxAmountInput.value,
+  startTimeInput.value,
+  endTimeInput.value,
+].filter((value) => value.trim()).length)
+const hasStatistics = computed(() =>
+  statistics.value.normalOrderCount > 0
+  || statistics.value.normalPaymentAmount > 0
+  || statistics.value.refundOrderCount > 0
+  || statistics.value.refundAmount > 0,
+)
 
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
@@ -63,6 +91,17 @@ function goBack() {
 
 function formatAmount(value: number) {
   return Number.isFinite(value) ? value.toFixed(2) : '0.00'
+}
+
+function normalizeAmountInput(value: string) {
+  const normalizedValue = value.trim()
+
+  if (!normalizedValue) {
+    return null
+  }
+
+  const parsedValue = Number.parseFloat(normalizedValue)
+  return Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : null
 }
 
 function formatDateTime(value: string | null) {
@@ -101,6 +140,16 @@ function formatMobile(value: string | null) {
 function getUserSummary(log: MerchantDeductionLogItem) {
   const parts = [log.userName, log.userMobile ? formatMobile(log.userMobile) : null].filter(Boolean)
   return parts.length > 0 ? parts.join(' · ') : '未返回用户信息'
+}
+
+function getStaffSummary(log: MerchantDeductionLogItem) {
+  const parts = [
+    log.staffName,
+    log.staffMobile ? formatMobile(log.staffMobile) : null,
+    log.staffUserId ? `ID ${log.staffUserId}` : null,
+  ].filter(Boolean)
+
+  return parts.length > 0 ? parts.join(' · ') : '未返回核销人员'
 }
 
 function resolveStatusType(status: MerchantDeductionLogItem['status']) {
@@ -176,16 +225,35 @@ async function loadLogs(mode: 'append' | 'initial' | 'refresh') {
   }
 
   const nextPage = mode === 'append' ? currentPage.value + 1 : 1
+  const minAmount = normalizeAmountInput(minAmountInput.value)
+  const maxAmount = normalizeAmountInput(maxAmountInput.value)
+
+  if (minAmount !== null && maxAmount !== null && minAmount > maxAmount) {
+    const message = '最低金额不能大于最高金额'
+    errorMessage.value = logs.value.length === 0 ? message : ''
+    showFailToast(message)
+    isInitialLoading.value = false
+    isRefreshing.value = false
+    isLoadingMore.value = false
+    return
+  }
 
   try {
     const pageData = await merchantDeductionService.getDeductionLogs({
+      endTime: endTimeInput.value,
+      maxAmount,
+      minAmount,
       page: nextPage,
       pageSize: PAGE_SIZE,
+      startTime: startTimeInput.value,
+      verifierUserId: selectedVerifierUserId.value,
     })
 
     logs.value = mode === 'append'
       ? [...logs.value, ...pageData.list]
       : pageData.list
+    staffList.value = pageData.staffList
+    statistics.value = pageData.statistics
     currentPage.value = pageData.page
     hasMore.value = pageData.hasMore
     errorMessage.value = ''
@@ -211,6 +279,24 @@ async function loadLogs(mode: 'append' | 'initial' | 'refresh') {
       isRefreshing.value = false
     }
   }
+}
+
+function selectStaffFilter(staff: MerchantDeductionStaffOption | null) {
+  selectedVerifierUserId.value = staff?.verifierUserId ?? ''
+  void loadLogs('initial')
+}
+
+function applyFilters() {
+  void loadLogs('initial')
+}
+
+function resetFilters() {
+  selectedVerifierUserId.value = ''
+  minAmountInput.value = ''
+  maxAmountInput.value = ''
+  startTimeInput.value = ''
+  endTimeInput.value = ''
+  void loadLogs('initial')
 }
 
 async function initializePage() {
@@ -281,6 +367,119 @@ onMounted(() => {
         @refresh="handleRefresh"
       >
         <div class="content-scroll">
+          <section class="summary-section">
+            <div class="summary-head">
+              <strong>流水统计</strong>
+              <span v-if="activeFilterCount > 0">{{ activeFilterCount }} 个筛选条件</span>
+            </div>
+
+            <van-grid
+              class="statistics-grid"
+              :class="{ 'statistics-grid-empty': !hasStatistics }"
+              :border="false"
+              :column-num="2"
+              gutter="8"
+            >
+              <van-grid-item class="statistics-card statistics-card-income">
+                <span>正常订单</span>
+                <strong>{{ statistics.normalOrderCount }}</strong>
+              </van-grid-item>
+              <van-grid-item class="statistics-card statistics-card-income">
+                <span>正常收款</span>
+                <strong>¥{{ formatAmount(statistics.normalPaymentAmount) }}</strong>
+              </van-grid-item>
+              <van-grid-item class="statistics-card statistics-card-refund">
+                <span>退款订单</span>
+                <strong>{{ statistics.refundOrderCount }}</strong>
+              </van-grid-item>
+              <van-grid-item class="statistics-card statistics-card-refund">
+                <span>退款金额</span>
+                <strong>¥{{ formatAmount(statistics.refundAmount) }}</strong>
+              </van-grid-item>
+            </van-grid>
+          </section>
+
+          <section class="filter-section" aria-label="流水筛选">
+            <div class="filter-section-head">
+              <strong>筛选</strong>
+              <van-button
+                v-if="activeFilterCount > 0"
+                class="filter-reset-link"
+                plain
+                size="small"
+                native-type="button"
+                type="primary"
+                @click="resetFilters"
+              >
+                重置
+              </van-button>
+            </div>
+
+            <div v-if="staffList.length > 0" class="staff-filter-row" aria-label="核销人员筛选">
+              <van-button
+                class="staff-filter-chip"
+                :class="{ 'staff-filter-chip-active': selectedVerifierUserId === '' }"
+                round
+                size="small"
+                native-type="button"
+                :type="selectedVerifierUserId === '' ? 'primary' : 'default'"
+                @click="selectStaffFilter(null)"
+              >
+                全部人员
+              </van-button>
+              <van-button
+                v-for="staff in staffList"
+                :key="staff.id"
+                class="staff-filter-chip"
+                :class="{ 'staff-filter-chip-active': selectedVerifierUserId === staff.verifierUserId }"
+                round
+                size="small"
+                native-type="button"
+                :type="selectedVerifierUserId === staff.verifierUserId ? 'primary' : 'default'"
+                @click="selectStaffFilter(staff)"
+              >
+                {{ staff.name || `员工 ${staff.verifierUserId}` }}
+              </van-button>
+            </div>
+
+            <div class="filter-grid">
+              <van-field
+                v-model="minAmountInput"
+                class="filter-field"
+                input-align="right"
+                label="最低金额"
+                placeholder="0.00"
+                type="number"
+              />
+              <van-field
+                v-model="maxAmountInput"
+                class="filter-field"
+                input-align="right"
+                label="最高金额"
+                placeholder="不限"
+                type="number"
+              />
+              <van-field
+                v-model="startTimeInput"
+                class="filter-field filter-field-wide"
+                input-align="right"
+                label="开始时间"
+                type="datetime-local"
+              />
+              <van-field
+                v-model="endTimeInput"
+                class="filter-field filter-field-wide"
+                input-align="right"
+                label="结束时间"
+                type="datetime-local"
+              />
+            </div>
+
+            <van-button block class="filter-submit-button" round type="primary" @click="applyFilters">
+              查询流水
+            </van-button>
+          </section>
+
           <section class="list-section">
             <LoadingState v-if="isInitialLoading && !hasLogs" class="list-state" fill text="正在加载店铺流水..." />
 
@@ -293,9 +492,9 @@ onMounted(() => {
                 title="流水加载失败"
               />
               <p class="error-message">{{ errorMessage }}</p>
-              <button class="retry-button" type="button" @click="loadLogs('initial')">
+              <van-button class="retry-button" round type="primary" @click="loadLogs('initial')">
                 重新加载
-              </button>
+              </van-button>
             </section>
 
             <EmptyState
@@ -339,6 +538,11 @@ onMounted(() => {
                     <div class="log-detail-row">
                       <dt>支付用户</dt>
                       <dd>{{ getUserSummary(log) }}</dd>
+                    </div>
+
+                    <div class="log-detail-row">
+                      <dt>核销人员</dt>
+                      <dd>{{ getStaffSummary(log) }}</dd>
                     </div>
 
                     <div class="log-detail-row">
@@ -440,6 +644,8 @@ onMounted(() => {
   padding: 12px 16px 24px;
 }
 
+.summary-section,
+.filter-section,
 .list-section,
 .list-state,
 .log-list,
@@ -462,6 +668,143 @@ onMounted(() => {
   gap: 12px;
 }
 
+.summary-section,
+.filter-section {
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--color-surface-elevated);
+  box-shadow: 0 12px 28px rgba(var(--shadow-rgb), 0.06);
+}
+
+.summary-head,
+.filter-section-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.summary-head strong,
+.filter-section-head strong {
+  color: var(--color-text-heading);
+  font-size: 15px;
+}
+
+.summary-head span {
+  color: var(--color-text-subtle);
+  font-size: 12px;
+}
+
+.statistics-grid {
+  --van-grid-item-content-padding: 0;
+}
+
+.statistics-card {
+  min-width: 0;
+}
+
+.statistics-card :deep(.van-grid-item__content) {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  min-width: 0;
+  min-height: 72px;
+  padding: 10px;
+  border-radius: 14px;
+  background: var(--color-surface-soft);
+}
+
+.statistics-card span {
+  color: var(--color-text-subtle);
+  font-size: 12px;
+}
+
+.statistics-card strong {
+  color: var(--color-text-heading);
+  font-size: 16px;
+  line-height: 1.2;
+  word-break: break-all;
+}
+
+.statistics-card-income strong {
+  color: var(--color-primary-deep);
+}
+
+.statistics-card-refund strong {
+  color: var(--color-warning);
+}
+
+.statistics-grid-empty .statistics-card strong {
+  color: var(--color-text-muted);
+}
+
+.filter-reset-link {
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.staff-filter-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.staff-filter-row::-webkit-scrollbar {
+  display: none;
+}
+
+.staff-filter-chip {
+  flex: none;
+  max-width: 128px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.staff-filter-chip :deep(.van-button__text) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.filter-field {
+  min-width: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-surface-soft);
+}
+
+.filter-field :deep(.van-field__label) {
+  color: var(--color-text-subtle);
+  font-size: 12px;
+}
+
+.filter-field :deep(.van-field__control) {
+  color: var(--color-text-heading);
+  font-size: 13px;
+}
+
+.filter-field-wide {
+  grid-column: span 1;
+}
+
+.filter-submit-button {
+  min-height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .list-state {
   justify-items: center;
   gap: 12px;
@@ -478,11 +821,6 @@ onMounted(() => {
 
 .retry-button {
   min-width: 128px;
-  padding: 10px 18px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
   font-size: 14px;
   font-weight: 600;
 }
@@ -601,6 +939,10 @@ onMounted(() => {
 }
 
 @media (max-width: 420px) {
+  .statistics-grid {
+    --van-grid-item-content-padding: 0;
+  }
+
   .log-detail-grid {
     grid-template-columns: minmax(0, 1fr);
   }

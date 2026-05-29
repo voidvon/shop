@@ -7,6 +7,7 @@ import { isHighDemandProduct, type ProductSummary } from '../domain/product'
 
 const props = defineProps<{
   product: ProductSummary
+  showSalesCount?: boolean
 }>()
 
 const demandLabel = computed(() => (isHighDemandProduct(props.product) ? '高需求' : '稳定供应'))
@@ -24,8 +25,8 @@ const demandLabel = computed(() => (isHighDemandProduct(props.product) ? '高需
 
     <p class="description">{{ product.summary }}</p>
 
-    <div class="meta">
-      <div>
+    <div class="meta" :class="{ 'meta-compact': showSalesCount === false }">
+      <div v-if="showSalesCount !== false">
         <span>月销</span>
         <strong>{{ product.monthlySales }}</strong>
       </div>
@@ -93,6 +94,10 @@ h3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+}
+
+.meta-compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .meta div {

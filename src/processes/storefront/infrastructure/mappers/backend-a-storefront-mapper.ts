@@ -67,6 +67,7 @@ export interface BackendAPlatformSettingsDto {
   domain: string | null
   icp_number: string | null
   logo: string | null
+  show_sales_count?: boolean | null
 }
 
 export interface BackendAPartnerMerchantDto {
@@ -665,6 +666,7 @@ export function mapBackendAPlatformSettingsData(
     domain: data.domain?.trim() || null,
     icpNumber: data.icp_number?.trim() || null,
     logoUrl: resolveBackendAMediaUrl(data.logo),
+    showSalesCount: data.show_sales_count !== false,
   }
 }
 
