@@ -54,6 +54,9 @@ const minAmountInput = ref('')
 const maxAmountInput = ref('')
 const startTimeInput = ref('')
 const endTimeInput = ref('')
+const datePickerVisible = ref(false)
+const activeDateField = ref<'end' | 'start'>('start')
+const datePickerValue = ref<string[]>(createDatePickerValue())
 
 const stopAuthSubscription = memberAuthSession.subscribe((snapshot) => {
   authSnapshot.value = snapshot
@@ -102,6 +105,61 @@ function normalizeAmountInput(value: string) {
 
   const parsedValue = Number.parseFloat(normalizedValue)
   return Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : null
+}
+
+function createDatePickerValue(value?: string | null) {
+  const normalizedValue = value?.trim()
+
+  if (normalizedValue && /^\d{4}-\d{2}-\d{2}$/.test(normalizedValue)) {
+    return normalizedValue.split('-')
+  }
+
+  const now = new Date()
+  return [
+    String(now.getFullYear()),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ]
+}
+
+function formatDatePickerValue(values: string[]) {
+  const [year, month, day] = values
+
+  if (!year || !month || !day) {
+    return ''
+  }
+
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+}
+
+function openDatePicker(field: 'end' | 'start') {
+  activeDateField.value = field
+  datePickerValue.value = createDatePickerValue(field === 'start' ? startTimeInput.value : endTimeInput.value)
+  datePickerVisible.value = true
+}
+
+function handleDatePickerConfirm(payload?: { selectedValues?: string[] }) {
+  const selectedDate = formatDatePickerValue(payload?.selectedValues ?? datePickerValue.value)
+
+  if (activeDateField.value === 'start') {
+    startTimeInput.value = selectedDate
+  } else {
+    endTimeInput.value = selectedDate
+  }
+
+  datePickerVisible.value = false
+}
+
+function createDateRangeBoundary(value: string, boundary: 'end' | 'start') {
+  const normalizedValue = value.trim()
+
+  if (!normalizedValue) {
+    return null
+  }
+
+  return boundary === 'start'
+    ? `${normalizedValue} 00:00:00`
+    : `${normalizedValue} 23:59:59`
 }
 
 function formatDateTime(value: string | null) {
@@ -240,12 +298,12 @@ async function loadLogs(mode: 'append' | 'initial' | 'refresh') {
 
   try {
     const pageData = await merchantDeductionService.getDeductionLogs({
-      endTime: endTimeInput.value,
+      endTime: createDateRangeBoundary(endTimeInput.value, 'end'),
       maxAmount,
       minAmount,
       page: nextPage,
       pageSize: PAGE_SIZE,
-      startTime: startTimeInput.value,
+      startTime: createDateRangeBoundary(startTimeInput.value, 'start'),
       verifierUserId: selectedVerifierUserId.value,
     })
 
@@ -464,14 +522,20 @@ onMounted(() => {
                 class="filter-field filter-field-wide"
                 input-align="right"
                 label="开始时间"
-                type="datetime-local"
+                placeholder="请选择"
+                readonly
+                right-icon="calendar-o"
+                @click="openDatePicker('start')"
               />
               <van-field
                 v-model="endTimeInput"
                 class="filter-field filter-field-wide"
                 input-align="right"
                 label="结束时间"
-                type="datetime-local"
+                placeholder="请选择"
+                readonly
+                right-icon="calendar-o"
+                @click="openDatePicker('end')"
               />
             </div>
 
@@ -590,6 +654,15 @@ onMounted(() => {
         </div>
       </VanPullRefresh>
     </div>
+
+    <van-popup v-model:show="datePickerVisible" position="bottom" round teleport="body">
+      <van-date-picker
+        v-model="datePickerValue"
+        :title="activeDateField === 'start' ? '选择开始日期' : '选择结束日期'"
+        @cancel="datePickerVisible = false"
+        @confirm="handleDatePickerConfirm"
+      />
+    </van-popup>
   </section>
 </template>
 
