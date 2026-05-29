@@ -463,10 +463,8 @@ onMounted(() => {
               <van-button
                 v-if="activeFilterCount > 0"
                 class="filter-reset-link"
-                plain
-                size="small"
+                size="mini"
                 native-type="button"
-                type="primary"
                 @click="resetFilters"
               >
                 重置
@@ -519,22 +517,20 @@ onMounted(() => {
               />
               <van-field
                 v-model="startTimeInput"
-                class="filter-field filter-field-wide"
-                input-align="right"
+                class="filter-field filter-field-date filter-field-wide"
+                input-align="left"
                 label="开始时间"
                 placeholder="请选择"
                 readonly
-                right-icon="calendar-o"
                 @click="openDatePicker('start')"
               />
               <van-field
                 v-model="endTimeInput"
-                class="filter-field filter-field-wide"
-                input-align="right"
+                class="filter-field filter-field-date filter-field-wide"
+                input-align="left"
                 label="结束时间"
                 placeholder="请选择"
                 readonly
-                right-icon="calendar-o"
                 @click="openDatePicker('end')"
               />
             </div>
@@ -814,9 +810,22 @@ onMounted(() => {
 }
 
 .filter-reset-link {
-  padding: 0;
+  height: 28px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
   font-size: 13px;
   font-weight: 600;
+  line-height: 1;
+}
+
+.filter-reset-link::before {
+  display: none;
+}
+
+.filter-reset-link :deep(.van-button__content) {
+  height: auto;
 }
 
 .staff-filter-row {
@@ -866,6 +875,21 @@ onMounted(() => {
 .filter-field :deep(.van-field__control) {
   color: var(--color-text-heading);
   font-size: 13px;
+}
+
+.filter-field-date {
+  --van-field-label-width: auto;
+  --van-field-label-margin-right: 8px;
+  cursor: pointer;
+}
+
+.filter-field-date :deep(.van-field__body) {
+  flex: none;
+  min-width: 58px;
+}
+
+.filter-field-date :deep(.van-field__control) {
+  min-width: 58px;
 }
 
 .filter-field-wide {
