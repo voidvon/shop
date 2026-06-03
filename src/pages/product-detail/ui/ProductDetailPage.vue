@@ -1428,7 +1428,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 }
 
 .hero-image-box-skeleton {
-  background: var(--color-surface-soft);
+  background: var(--color-skeleton);
 }
 
 .summary-title-skeleton :deep(.van-skeleton__title) {
@@ -1442,7 +1442,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   height: 14px;
   margin: 0;
   border-radius: 8px;
-  background: var(--color-surface-muted);
+  background: var(--color-skeleton);
 }
 
 .summary-subtitle-skeleton-first :deep(.van-skeleton__title) {
@@ -1458,7 +1458,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
   height: 30px;
   margin: 0;
   border-radius: 10px;
-  background: var(--color-surface-muted);
+  background: var(--color-skeleton);
 }
 
 .info-row-skeleton-wrap {
@@ -1487,7 +1487,7 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 .tool-button-skeleton :deep(.van-skeleton__title),
 .action-button-skeleton :deep(.van-skeleton__title) {
   margin: 0;
-  background: var(--color-surface-muted);
+  background: var(--color-skeleton);
 }
 
 .info-value-skeleton-group {
@@ -1618,28 +1618,28 @@ function scrollToTab(tabKey: (typeof tabs)[number]['key']) {
 .detail-copy-skeleton {
   padding: 16px;
   border-radius: 16px;
-  background: var(--color-surface-accent-strong);
+  background: var(--color-skeleton);
 }
 
 .detail-copy-body-skeleton :deep(.van-skeleton__title) {
   width: 68%;
   height: 14px;
   border-radius: 8px;
-  background: var(--color-surface-muted);
+  background: var(--color-skeleton);
 }
 
 .detail-copy-body-skeleton :deep(.van-skeleton__row:first-of-type) {
   width: 100%;
-  background: var(--color-surface-muted);
+  background: var(--color-skeleton);
 }
 
 .detail-copy-body-skeleton :deep(.van-skeleton__row:last-of-type) {
   width: 74%;
-  background: var(--color-surface-muted);
+  background: var(--color-skeleton);
 }
 
 .action-bar-skeleton {
-  border-top-color: var(--color-surface-muted);
+  border-top-color: var(--color-skeleton);
 }
 
 .tool-button-skeleton :deep(.van-skeleton__title) {

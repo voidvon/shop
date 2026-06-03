@@ -1258,13 +1258,13 @@ watch(
   width: 100%;
   height: 140px;
   border-radius: 8px;
-  background: linear-gradient(90deg, var(--color-surface-muted) 25%, var(--color-surface-strong) 37%, var(--color-surface-muted) 63%);
+  background: var(--color-skeleton);
 }
 
 .product-skeleton-line {
   height: 14px;
   border-radius: 999px;
-  background: var(--color-surface-muted);
+  background: var(--color-skeleton);
 }
 
 .product-skeleton-line-name {
@@ -1407,7 +1407,7 @@ watch(
 .coupon-skeleton-line,
 .coupon-skeleton-button {
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--color-surface-muted), var(--color-surface-strong));
+  background: var(--color-skeleton);
 }
 
 .coupon-skeleton-line {

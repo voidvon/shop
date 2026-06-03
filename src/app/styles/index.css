@@ -19,6 +19,7 @@
   --color-surface-accent-positive: #c8f0d8;
   --color-surface-danger: #fff3f1;
   --color-surface-dark: #1f2937;
+  --color-skeleton: #f7f5f2;
   --color-brand-store-logo: #d93a2f;
   --color-line: rgba(60, 59, 57, 0.12);
   --color-line-strong: rgba(60, 59, 57, 0.2);
@@ -102,6 +103,7 @@
   --van-popup-background: var(--color-surface-elevated);
   --van-search-content-background: var(--color-surface-elevated);
   --van-field-placeholder-text-color: var(--color-text-muted);
+  --van-skeleton-paragraph-background: var(--color-skeleton);
   --van-radius-lg: var(--radius-lg);
   --van-radius-md: var(--radius-md);
   --van-radius-sm: var(--radius-sm);
@@ -126,6 +128,7 @@
   --color-surface-accent-positive: #d9f3ea;
   --color-surface-danger: #fff0f0;
   --color-surface-dark: #16262d;
+  --color-skeleton: #f3f7f8;
   --color-brand-store-logo: #d93a2f;
   --color-line: rgba(37, 74, 92, 0.12);
   --color-line-strong: rgba(37, 74, 92, 0.2);
