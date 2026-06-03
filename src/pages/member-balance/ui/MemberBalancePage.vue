@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { showFailToast, showSuccessToast } from 'vant'
+import { showFailToast, showSuccessToast, showToast } from 'vant'
 
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
@@ -103,6 +103,14 @@ function validateRechargeAmount(amount: number) {
   return null
 }
 
+function showAmountRangeToast(message: string) {
+  showToast({
+    className: 'member-balance-auto-width-toast',
+    message,
+    type: 'text',
+  })
+}
+
 async function openRechargePopup() {
   rechargePopupVisible.value = true
 
@@ -124,7 +132,12 @@ async function submitRecharge() {
   const validationMessage = validateRechargeAmount(amount)
 
   if (validationMessage) {
-    showFailToast(validationMessage)
+    if (validationMessage.startsWith('自定义金额不能')) {
+      showAmountRangeToast(validationMessage)
+    } else {
+      showFailToast(validationMessage)
+    }
+
     return
   }
 
@@ -604,5 +617,14 @@ watch(customAmount, (value) => {
 
 .submit-recharge-button:disabled {
   opacity: 0.56;
+}
+
+:global(.member-balance-auto-width-toast) {
+  width: auto;
+  min-width: 0;
+  max-width: calc(100vw - 48px);
+  padding-right: 14px;
+  padding-left: 14px;
+  white-space: nowrap;
 }
 </style>
