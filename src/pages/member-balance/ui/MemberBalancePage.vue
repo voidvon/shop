@@ -256,18 +256,7 @@ watch(customAmount, (value) => {
 
         <div class="recharge-sheet-body">
           <p v-if="rechargeErrorMessage" class="recharge-error">{{ rechargeErrorMessage }}</p>
-          <div v-if="isRechargeOptionsLoading" class="recharge-options-skeleton">
-            <div class="amount-grid">
-              <div v-for="index in 4" :key="index" class="amount-option-skeleton" />
-            </div>
-
-            <div class="custom-amount-skeleton">
-              <div class="custom-amount-label-skeleton" />
-              <div class="custom-amount-input-skeleton" />
-            </div>
-
-            <div class="custom-amount-tip-skeleton" />
-          </div>
+          <van-skeleton v-if="isRechargeOptionsLoading" :animate="false" :row="5" title />
 
           <template v-else>
             <div v-if="rechargeAmounts.length > 0" class="amount-grid">
@@ -565,30 +554,6 @@ watch(customAmount, (value) => {
   color: var(--color-text-strong);
 }
 
-.recharge-options-skeleton {
-  display: grid;
-}
-
-.amount-option-skeleton,
-.custom-amount-label-skeleton,
-.custom-amount-input-skeleton,
-.custom-amount-tip-skeleton {
-  border-radius: 10px;
-  background:
-    linear-gradient(
-      90deg,
-      var(--color-surface-soft) 0%,
-      var(--color-surface-glass-solid) 48%,
-      var(--color-surface-soft) 100%
-    );
-  background-size: 220% 100%;
-  animation: amount-skeleton-loading 1.2s ease-in-out infinite;
-}
-
-.amount-option-skeleton {
-  min-height: 58px;
-}
-
 .amount-option strong {
   font-size: 20px;
   line-height: 1;
@@ -605,23 +570,7 @@ watch(customAmount, (value) => {
   color: var(--color-primary);
 }
 
-@keyframes amount-skeleton-loading {
-  0% {
-    background-position: 100% 0;
-  }
-
-  100% {
-    background-position: -100% 0;
-  }
-}
-
 .custom-amount-field {
-  display: grid;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.custom-amount-skeleton {
   display: grid;
   gap: 8px;
   margin-top: 16px;
@@ -631,11 +580,6 @@ watch(customAmount, (value) => {
   color: var(--color-text-heading);
   font-size: 14px;
   font-weight: 700;
-}
-
-.custom-amount-label-skeleton {
-  width: 70px;
-  height: 20px;
 }
 
 .custom-amount-field input {
@@ -649,21 +593,10 @@ watch(customAmount, (value) => {
   font-size: 16px;
 }
 
-.custom-amount-input-skeleton {
-  width: 100%;
-  min-height: 44px;
-}
-
 .custom-amount-tip {
   margin: 8px 0 0;
   color: var(--color-text-subtle);
   font-size: 12px;
-}
-
-.custom-amount-tip-skeleton {
-  width: 138px;
-  height: 17px;
-  margin-top: 8px;
 }
 
 .recharge-sheet-footer {
