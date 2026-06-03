@@ -130,7 +130,7 @@ async function submitRecharge() {
 
   try {
     await createWechatRecharge(amount)
-    showSuccessToast('微信支付返回成功，等待入账')
+    showSuccessToast('充值成功')
     rechargePopupVisible.value = false
     selectedAmount.value = null
     customAmount.value = ''

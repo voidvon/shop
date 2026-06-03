@@ -65,7 +65,7 @@ export async function invokeWechatJsapiPayment(payment: WechatJsapiPaymentPayloa
       }
 
       if (result.err_msg === 'get_brand_wcpay_request:cancel') {
-        reject(new Error('微信支付已取消'))
+        reject(new Error('支付已取消'))
         return
       }
 
