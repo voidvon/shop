@@ -256,7 +256,29 @@ watch(customAmount, (value) => {
 
         <div class="recharge-sheet-body">
           <p v-if="rechargeErrorMessage" class="recharge-error">{{ rechargeErrorMessage }}</p>
-          <van-skeleton v-if="isRechargeOptionsLoading" :animate="false" :row="5" title />
+          <van-skeleton
+            v-if="isRechargeOptionsLoading"
+            :animate="false"
+            class="recharge-options-skeleton"
+          >
+            <template #template>
+              <div class="amount-grid">
+                <van-skeleton-title
+                  v-for="index in 6"
+                  :key="index"
+                  class="amount-option-skeleton"
+                  title-width="100%"
+                />
+              </div>
+
+              <div class="custom-amount-skeleton">
+                <van-skeleton-title class="custom-amount-label-skeleton" title-width="70px" />
+                <van-skeleton-title class="custom-amount-input-skeleton" title-width="100%" />
+              </div>
+
+              <van-skeleton-title class="custom-amount-tip-skeleton" title-width="138px" />
+            </template>
+          </van-skeleton>
 
           <template v-else>
             <div v-if="rechargeAmounts.length > 0" class="amount-grid">
@@ -554,6 +576,16 @@ watch(customAmount, (value) => {
   color: var(--color-text-strong);
 }
 
+.recharge-options-skeleton {
+  display: block;
+  padding: 0;
+}
+
+.amount-option-skeleton {
+  height: 58px;
+  border-radius: 10px;
+}
+
 .amount-option strong {
   font-size: 20px;
   line-height: 1;
@@ -576,10 +608,21 @@ watch(customAmount, (value) => {
   margin-top: 16px;
 }
 
+.custom-amount-skeleton {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
 .custom-amount-field span {
   color: var(--color-text-heading);
   font-size: 14px;
   font-weight: 700;
+}
+
+.custom-amount-label-skeleton {
+  height: 20px;
+  border-radius: 10px;
 }
 
 .custom-amount-field input {
@@ -593,10 +636,21 @@ watch(customAmount, (value) => {
   font-size: 16px;
 }
 
+.custom-amount-input-skeleton {
+  height: 44px;
+  border-radius: 10px;
+}
+
 .custom-amount-tip {
   margin: 8px 0 0;
   color: var(--color-text-subtle);
   font-size: 12px;
+}
+
+.custom-amount-tip-skeleton {
+  height: 17px;
+  margin-top: 8px;
+  border-radius: 10px;
 }
 
 .recharge-sheet-footer {
