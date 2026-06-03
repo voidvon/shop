@@ -621,7 +621,7 @@ watch(customAmount, (value) => {
 }
 
 .custom-amount-label-skeleton {
-  height: 20px;
+  height: 17px;
   border-radius: 10px;
 }
 
@@ -648,7 +648,7 @@ watch(customAmount, (value) => {
 }
 
 .custom-amount-tip-skeleton {
-  height: 17px;
+  height: 15px;
   margin-top: 8px;
   border-radius: 10px;
 }
