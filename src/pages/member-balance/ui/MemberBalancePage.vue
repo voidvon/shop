@@ -24,7 +24,7 @@ const {
 } = useMemberBalancePageModel()
 const rechargePopupVisible = ref(false)
 const selectedAmount = ref<number | null>(null)
-const customAmount = ref('')
+const customAmount = ref<string | number>('')
 
 const rechargeAmounts = computed(() => rechargeOptions.value?.amounts ?? [])
 const customAmountRule = computed(() => rechargeOptions.value?.customAmount ?? {
@@ -64,14 +64,20 @@ function selectRechargeAmount(amount: number) {
   customAmount.value = ''
 }
 
-function normalizeInputAmount(value: string) {
-  const parsedValue = Number.parseFloat(value)
+function normalizeCustomAmountText(value = customAmount.value) {
+  return String(value ?? '').trim()
+}
+
+function normalizeInputAmount(value: string | number) {
+  const parsedValue = Number.parseFloat(String(value))
   return Number.isFinite(parsedValue) ? parsedValue : 0
 }
 
 function resolveRechargeAmount() {
-  if (customAmount.value.trim()) {
-    return normalizeInputAmount(customAmount.value)
+  const customAmountText = normalizeCustomAmountText()
+
+  if (customAmountText) {
+    return normalizeInputAmount(customAmountText)
   }
 
   return selectedAmount.value ?? 0
@@ -82,7 +88,7 @@ function validateRechargeAmount(amount: number) {
     return '请选择或输入充值金额'
   }
 
-  if (customAmount.value.trim() && canUseCustomAmount.value) {
+  if (normalizeCustomAmountText() && canUseCustomAmount.value) {
     const { max, min } = customAmountRule.value
 
     if (amount < min) {
@@ -142,7 +148,7 @@ onActivated(() => {
 })
 
 watch(customAmount, (value) => {
-  if (value.trim()) {
+  if (normalizeCustomAmountText(value)) {
     selectedAmount.value = null
   }
 })
@@ -526,7 +532,7 @@ watch(customAmount, (value) => {
 .amount-option {
   display: flex;
   min-height: 58px;
-  align-items: baseline;
+  align-items: center;
   justify-content: center;
   gap: 3px;
   border: 1px solid var(--color-line-soft);
@@ -537,10 +543,12 @@ watch(customAmount, (value) => {
 
 .amount-option strong {
   font-size: 20px;
+  line-height: 1;
 }
 
 .amount-option span {
   font-size: 12px;
+  line-height: 1;
 }
 
 .amount-option-active {
