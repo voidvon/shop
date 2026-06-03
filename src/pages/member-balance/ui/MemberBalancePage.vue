@@ -256,7 +256,9 @@ watch(customAmount, (value) => {
 
         <div class="recharge-sheet-body">
           <p v-if="rechargeErrorMessage" class="recharge-error">{{ rechargeErrorMessage }}</p>
-          <LoadingState v-if="isRechargeOptionsLoading" />
+          <div v-if="isRechargeOptionsLoading" class="amount-grid amount-grid-skeleton">
+            <div v-for="index in 6" :key="index" class="amount-option-skeleton" />
+          </div>
 
           <template v-else>
             <div v-if="rechargeAmounts.length > 0" class="amount-grid">
@@ -542,6 +544,10 @@ watch(customAmount, (value) => {
   gap: 10px;
 }
 
+.amount-grid-skeleton {
+  min-height: 126px;
+}
+
 .amount-option {
   display: flex;
   min-height: 58px;
@@ -552,6 +558,20 @@ watch(customAmount, (value) => {
   border-radius: 10px;
   background: var(--color-surface-elevated);
   color: var(--color-text-strong);
+}
+
+.amount-option-skeleton {
+  min-height: 58px;
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      90deg,
+      var(--color-surface-soft) 0%,
+      var(--color-surface-glass-solid) 48%,
+      var(--color-surface-soft) 100%
+    );
+  background-size: 220% 100%;
+  animation: amount-skeleton-loading 1.2s ease-in-out infinite;
 }
 
 .amount-option strong {
@@ -568,6 +588,16 @@ watch(customAmount, (value) => {
   border-color: var(--color-primary);
   background: rgba(var(--color-primary-rgb), 0.08);
   color: var(--color-primary);
+}
+
+@keyframes amount-skeleton-loading {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -100% 0;
+  }
 }
 
 .custom-amount-field {
