@@ -256,8 +256,17 @@ watch(customAmount, (value) => {
 
         <div class="recharge-sheet-body">
           <p v-if="rechargeErrorMessage" class="recharge-error">{{ rechargeErrorMessage }}</p>
-          <div v-if="isRechargeOptionsLoading" class="amount-grid amount-grid-skeleton">
-            <div v-for="index in 6" :key="index" class="amount-option-skeleton" />
+          <div v-if="isRechargeOptionsLoading" class="recharge-options-skeleton">
+            <div class="amount-grid">
+              <div v-for="index in 4" :key="index" class="amount-option-skeleton" />
+            </div>
+
+            <div class="custom-amount-skeleton">
+              <div class="custom-amount-label-skeleton" />
+              <div class="custom-amount-input-skeleton" />
+            </div>
+
+            <div class="custom-amount-tip-skeleton" />
           </div>
 
           <template v-else>
@@ -544,10 +553,6 @@ watch(customAmount, (value) => {
   gap: 10px;
 }
 
-.amount-grid-skeleton {
-  min-height: 126px;
-}
-
 .amount-option {
   display: flex;
   min-height: 58px;
@@ -560,8 +565,14 @@ watch(customAmount, (value) => {
   color: var(--color-text-strong);
 }
 
-.amount-option-skeleton {
-  min-height: 58px;
+.recharge-options-skeleton {
+  display: grid;
+}
+
+.amount-option-skeleton,
+.custom-amount-label-skeleton,
+.custom-amount-input-skeleton,
+.custom-amount-tip-skeleton {
   border-radius: 10px;
   background:
     linear-gradient(
@@ -572,6 +583,10 @@ watch(customAmount, (value) => {
     );
   background-size: 220% 100%;
   animation: amount-skeleton-loading 1.2s ease-in-out infinite;
+}
+
+.amount-option-skeleton {
+  min-height: 58px;
 }
 
 .amount-option strong {
@@ -606,10 +621,21 @@ watch(customAmount, (value) => {
   margin-top: 16px;
 }
 
+.custom-amount-skeleton {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
 .custom-amount-field span {
   color: var(--color-text-heading);
   font-size: 14px;
   font-weight: 700;
+}
+
+.custom-amount-label-skeleton {
+  width: 70px;
+  height: 20px;
 }
 
 .custom-amount-field input {
@@ -623,10 +649,21 @@ watch(customAmount, (value) => {
   font-size: 16px;
 }
 
+.custom-amount-input-skeleton {
+  width: 100%;
+  min-height: 44px;
+}
+
 .custom-amount-tip {
   margin: 8px 0 0;
   color: var(--color-text-subtle);
   font-size: 12px;
+}
+
+.custom-amount-tip-skeleton {
+  width: 138px;
+  height: 17px;
+  margin-top: 8px;
 }
 
 .recharge-sheet-footer {
