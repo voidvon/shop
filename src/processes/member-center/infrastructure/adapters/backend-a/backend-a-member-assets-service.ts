@@ -1,6 +1,10 @@
 import type { MemberAuthSession } from '@/entities/member-auth'
 import { createBackendAHttpClient } from '@/shared/api/backend-a/backend-a-http-client'
 import { sortBalanceAccountsForDisplay } from '@/shared/lib/balance-accounts'
+import {
+  invokeWechatJsapiPayment,
+  type WechatJsapiPaymentPayload,
+} from '@/shared/lib/wechat-pay'
 import type { AccountBalanceLog, BalanceAccountInfo } from '@/shared/types/modules'
 
 import type {
@@ -78,6 +82,29 @@ interface BackendAStoredValueCardLookupDto {
   face_value?: number | string | null
   status?: number | null
   status_text?: string | null
+}
+
+interface BackendARechargeOptionsDto {
+  amounts?: Array<number | string> | null
+  balance_type_id?: number | null
+  custom_amount?: {
+    enabled?: boolean | null
+    max?: number | string | null
+    min?: number | string | null
+  } | null
+}
+
+interface BackendAWechatJsapiPaymentDto {
+  appId?: string | null
+  nonceStr?: string | null
+  package?: string | null
+  paySign?: string | null
+  signType?: string | null
+  timeStamp?: string | null
+}
+
+interface BackendAUserRechargeCreatePayloadDto {
+  payment?: BackendAWechatJsapiPaymentDto | null
 }
 
 function parseAmount(value: number | string | null | undefined) {
@@ -238,6 +265,48 @@ function normalizeLookupResult(record: BackendAStoredValueCardLookupDto): Lookup
   }
 }
 
+function normalizeRechargeOptions(options: BackendARechargeOptionsDto) {
+  const customAmount = options.custom_amount ?? null
+  const min = Math.max(parseAmount(customAmount?.min), 0.01)
+  const max = Math.max(parseAmount(customAmount?.max), min)
+
+  return {
+    amounts: (options.amounts ?? [])
+      .map((amount) => parseAmount(amount))
+      .filter((amount) => amount > 0),
+    balanceTypeId: options.balance_type_id ?? null,
+    customAmount: {
+      enabled: customAmount?.enabled === true,
+      max,
+      min,
+    },
+  }
+}
+
+function normalizeWechatPaymentPayload(payment: BackendAWechatJsapiPaymentDto | null | undefined): WechatJsapiPaymentPayload {
+  const normalizedPayment = {
+    appId: payment?.appId?.trim() ?? '',
+    nonceStr: payment?.nonceStr?.trim() ?? '',
+    package: payment?.package?.trim() ?? '',
+    paySign: payment?.paySign?.trim() ?? '',
+    signType: payment?.signType?.trim() ?? '',
+    timeStamp: payment?.timeStamp?.trim() ?? '',
+  }
+
+  if (
+    !normalizedPayment.appId
+    || !normalizedPayment.nonceStr
+    || !normalizedPayment.package
+    || !normalizedPayment.paySign
+    || !normalizedPayment.signType
+    || !normalizedPayment.timeStamp
+  ) {
+    throw new Error('微信支付参数不完整')
+  }
+
+  return normalizedPayment
+}
+
 function mapRemoteSnapshotToMemberAssetsSnapshot(input: {
   accounts: BackendABalanceAccountDto[]
   logs: AccountBalanceLog[]
@@ -285,6 +354,11 @@ export function createBackendAMemberAssetsService(memberAuthSession: MemberAuthS
       card_no: cardNumber,
       card_secret: cardSecret,
     })
+  }
+
+  async function fetchWechatRechargeOptions() {
+    const response = await httpClient.get<BackendARechargeOptionsDto>('/api/v1/recharges/options')
+    return normalizeRechargeOptions(response)
   }
 
   async function readSwaggerSnapshot() {
@@ -379,6 +453,28 @@ export function createBackendAMemberAssetsService(memberAuthSession: MemberAuthS
       }
 
       return readSwaggerSnapshot()
+    },
+
+    async getWechatRechargeOptions() {
+      return fetchWechatRechargeOptions()
+    },
+
+    async createWechatRecharge(command) {
+      const amount = Number(command.amount)
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error('请输入有效充值金额')
+      }
+
+      const response = await httpClient.post<BackendAUserRechargeCreatePayloadDto>('/api/v1/recharges', {
+        amount,
+      })
+
+      await invokeWechatJsapiPayment(normalizeWechatPaymentPayload(response.payment))
+
+      return {
+        balanceAmount: await readCurrentBalanceAmount(),
+      }
     },
 
     async spendBalance(_command: SpendMemberBalanceCommand) {

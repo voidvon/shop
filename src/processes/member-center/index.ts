@@ -1,8 +1,12 @@
 export type {
   BindMemberCardCommand,
   BindMemberCardResult,
+  CreateMemberRechargeCommand,
+  CreateMemberRechargeResult,
   LookupMemberCardResult,
   MemberAssetsService,
+  MemberRechargeCustomAmountRule,
+  MemberRechargeOptions,
   MemberAssetsSnapshot,
   SpendMemberBalanceCommand,
 } from './domain/member-assets-service'

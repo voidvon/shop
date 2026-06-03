@@ -1706,6 +1706,127 @@
                 ]
             }
         },
+        "/api/v1/recharges/options": {
+            "get": {
+                "tags": [
+                    "充值"
+                ],
+                "summary": "获取微信充值金额配置",
+                "description": "用户进入充值页后先调用本接口，后端从 .env 读取固定充值金额、自定义金额规则和本次入账余额类型。需要先通过微信登录拿到 Sanctum Token。",
+                "operationId": "8bb454ddfbd0cc844cb3f01927233436",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserRechargeOptionsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "微信充值余额类型未配置、未启用或金额配置异常",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/recharges": {
+            "get": {
+                "tags": [
+                    "充值"
+                ],
+                "summary": "微信充值记录列表",
+                "description": "返回当前登录用户的微信充值记录，按创建时间倒序分页。",
+                "operationId": "48aae7644d68549376c583061b9fc391",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "分页大小，默认20",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserRechargeListResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "充值"
+                ],
+                "summary": "创建微信 JSAPI 充值单",
+                "description": "仅支持微信内公众号/H5 页面调用。前端必须先登录并携带 Sanctum Token，后端使用当前用户 openid 创建微信支付 JSAPI 预支付单。成功后把 data.payment 原样传给 WeixinJSBridge.invoke('getBrandWCPayRequest', payment)。用户支付成功后，微信异步回调 /pay/notify，后端确认成功后把金额入账到配置的通用余额类型。",
+                "operationId": "91e8ef2c575635926e5e2234b7594539",
+                "requestBody": {
+                    "description": "充值金额，单位元。可传 options 接口返回的固定金额，也可在允许自定义金额时传自定义金额。",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRechargeCreateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "充值单创建成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserRechargeCreateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "参数错误、余额类型未配置、微信支付配置异常或微信预支付失败",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/v1/stored-value-cards/recharge": {
             "post": {
                 "tags": [
@@ -4557,6 +4678,12 @@
                         "example": 1,
                         "nullable": true
                     },
+                    "user_recharge_id": {
+                        "description": "关联微信充值记录ID",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
                     "operator_staff_id": {
                         "description": "操作员工ID",
                         "type": "integer",
@@ -4711,6 +4838,286 @@
                     },
                     "data": {
                         "$ref": "#/components/schemas/BalanceAccountLogPage"
+                    }
+                },
+                "type": "object"
+            },
+            "UserRechargeOptionsPayload": {
+                "properties": {
+                    "amounts": {
+                        "description": "后端从 WECHAT_RECHARGE_AMOUNTS 读取的固定充值金额列表，单位元，字符串格式",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "100.00"
+                        }
+                    },
+                    "custom_amount": {
+                        "description": "自定义充值金额规则",
+                        "properties": {
+                            "enabled": {
+                                "description": "是否允许自定义金额",
+                                "type": "boolean",
+                                "example": true
+                            },
+                            "min": {
+                                "description": "最小自定义金额，单位元",
+                                "type": "string",
+                                "example": "0.01"
+                            },
+                            "max": {
+                                "description": "最大自定义金额，单位元",
+                                "type": "string",
+                                "example": "999999.99"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "balance_type_id": {
+                        "description": "本次微信充值入账的余额类型ID，默认通用余额ID=3，可通过 WECHAT_RECHARGE_BALANCE_TYPE_ID 配置",
+                        "type": "integer",
+                        "example": 3
+                    }
+                },
+                "type": "object"
+            },
+            "UserRechargeOptionsResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/UserRechargeOptionsPayload"
+                    }
+                },
+                "type": "object"
+            },
+            "UserRechargePayload": {
+                "properties": {
+                    "id": {
+                        "description": "充值记录ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "recharge_no": {
+                        "description": "充值单号，也是微信支付 out_trade_no",
+                        "type": "string",
+                        "example": "RCG20260529120000ABCDEFGH"
+                    },
+                    "amount": {
+                        "description": "充值金额，单位元",
+                        "type": "string",
+                        "example": "100.00"
+                    },
+                    "status": {
+                        "description": "状态：0待支付，1已支付，2已关闭，3已退款",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "status_text": {
+                        "description": "状态文案",
+                        "type": "string",
+                        "example": "待支付"
+                    },
+                    "balance_type_id": {
+                        "description": "入账余额类型ID",
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "balance_type": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BalanceTypeSimple"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "入账余额类型"
+                    },
+                    "transaction_id": {
+                        "description": "微信支付交易号，支付成功后返回",
+                        "type": "string",
+                        "example": "4200000000202605291234567890",
+                        "nullable": true
+                    },
+                    "paid_at": {
+                        "description": "支付成功时间",
+                        "type": "string",
+                        "example": "2026-05-29 12:00:00",
+                        "nullable": true
+                    },
+                    "refunded_at": {
+                        "description": "退款时间，未退款时为 null",
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "创建时间",
+                        "type": "string",
+                        "example": "2026-05-29 11:59:50",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "WechatJsapiPaymentPayload": {
+                "description": "前端直接传给 WeixinJSBridge.invoke('getBrandWCPayRequest', payment) 的支付参数",
+                "properties": {
+                    "appId": {
+                        "description": "公众号 AppID",
+                        "type": "string",
+                        "example": "wx057d684ef1e02d1c"
+                    },
+                    "timeStamp": {
+                        "description": "时间戳，字符串格式",
+                        "type": "string",
+                        "example": "1716964800"
+                    },
+                    "nonceStr": {
+                        "description": "随机串",
+                        "type": "string",
+                        "example": "xYz1234567890abcdef"
+                    },
+                    "package": {
+                        "description": "prepay_id 参数",
+                        "type": "string",
+                        "example": "prepay_id=wx291200001234567890abcdef"
+                    },
+                    "signType": {
+                        "description": "签名类型，固定 RSA",
+                        "type": "string",
+                        "example": "RSA"
+                    },
+                    "paySign": {
+                        "description": "支付签名",
+                        "type": "string",
+                        "example": "MEUCIQDx..."
+                    }
+                },
+                "type": "object"
+            },
+            "UserRechargeCreateRequest": {
+                "required": [
+                    "amount"
+                ],
+                "properties": {
+                    "amount": {
+                        "description": "充值金额，单位元。可以使用配置金额，也可以传自定义金额",
+                        "type": "number",
+                        "format": "float",
+                        "maximum": 999999.99,
+                        "minimum": 0.01,
+                        "example": 100
+                    }
+                },
+                "type": "object"
+            },
+            "UserRechargeCreatePayload": {
+                "properties": {
+                    "recharge": {
+                        "$ref": "#/components/schemas/UserRechargePayload"
+                    },
+                    "payment": {
+                        "$ref": "#/components/schemas/WechatJsapiPaymentPayload"
+                    }
+                },
+                "type": "object"
+            },
+            "UserRechargeCreateResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "充值单创建成功"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/UserRechargeCreatePayload"
+                    }
+                },
+                "type": "object"
+            },
+            "UserRechargePage": {
+                "properties": {
+                    "current_page": {
+                        "description": "当前页",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/UserRechargePayload"
+                        }
+                    },
+                    "first_page_url": {
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/recharges?page=1",
+                        "nullable": true
+                    },
+                    "from": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "last_page": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "last_page_url": {
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/recharges?page=3",
+                        "nullable": true
+                    },
+                    "next_page_url": {
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/recharges?page=2",
+                        "nullable": true
+                    },
+                    "path": {
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/recharges"
+                    },
+                    "per_page": {
+                        "type": "integer",
+                        "example": 20
+                    },
+                    "prev_page_url": {
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "to": {
+                        "type": "integer",
+                        "example": 20,
+                        "nullable": true
+                    },
+                    "total": {
+                        "type": "integer",
+                        "example": 45
+                    }
+                },
+                "type": "object"
+            },
+            "UserRechargeListResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/UserRechargePage"
                     }
                 },
                 "type": "object"
@@ -5327,6 +5734,10 @@
         {
             "name": "余额",
             "description": "余额账户与流水"
+        },
+        {
+            "name": "充值",
+            "description": "微信 JSAPI 充值到通用余额"
         },
         {
             "name": "储值卡",

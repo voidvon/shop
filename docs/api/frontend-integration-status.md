@@ -6,7 +6,7 @@
 - 当前运行时装配：[`src/app/providers/backend/create-backend-runtime.ts`](/root/shop/src/app/providers/backend/create-backend-runtime.ts)
 - 现有 `backend-a` 适配层与浏览器仓储实现
 
-更新时间：`2026-05-29`
+更新时间：`2026-06-03`
 
 ## 1. 先看结论
 
@@ -18,7 +18,7 @@
 - 首页、分类、商品列表、商品详情已经改为真实 HTTP 读取
 - 会员登录、资料刷新、昵称更新、地址 CRUD 已改为真实 HTTP
 - 购物车、预结算、提交订单、订单列表、订单详情已改为真实 HTTP
-- 会员中心已接平台配置、余额、余额流水、储值卡充值与付款码查询
+- 会员中心已接平台配置、余额、余额流水、储值卡充值与付款码查询；最新 Swagger 已新增微信 JSAPI 充值接口，但前端尚未接入
 - 售后目前仍主要落在浏览器本地仓储，虽然后端 Swagger 已新增会员端退单申请接口
 
 ## 2. 当前真实 HTTP 接入点
@@ -84,6 +84,14 @@
 - `POST /api/v1/stored-value-cards/recharge`
 - `GET /api/v1/offline-payments/payment-code`
 
+最新 Swagger 额外新增了微信 JSAPI 充值路径：
+
+- `GET /api/v1/recharges/options`
+- `GET /api/v1/recharges`
+- `POST /api/v1/recharges`
+
+这 3 个接口目前尚未在前端页面和 `backend-a` 适配层中落位。
+
 这说明当前仓库里的会员中心主入口与商家页优惠券都已经改为直接消费 Swagger，剩余未接的主要是储值卡二维码和商户端线下核销链路。
 
 ## 3. Swagger 能力 vs 当前前端现状
@@ -98,7 +106,7 @@
 | 订单 | 是 | 是 | 已直连 | 订单列表、详情与提交结果均改为真实 HTTP |
 | 用户资料 | 是 | 是 | 部分直连 | 微信登录、资料刷新、昵称更新已直连，密码/手机号绑定仍未接 Swagger |
 | 地址管理 | 是 | 是 | 已直连 | runtime 已装配真实 `backend-a` 地址仓储 |
-| 余额/储值卡 | 是 | 是 | 部分直连 | 已接 `/api/v1/balance-accounts`、`/api/v1/balance-accounts/logs`、`/api/v1/stored-value-cards/recharge`、`/api/v1/stored-value-cards/recharge-logs`、`/api/v1/stored-value-cards/lookup`；二维码仍未接 |
+| 余额/充值/储值卡 | 是 | 是 | 部分直连 | 已接 `/api/v1/balance-accounts`、`/api/v1/balance-accounts/logs`、`/api/v1/stored-value-cards/recharge`、`/api/v1/stored-value-cards/recharge-logs`、`/api/v1/stored-value-cards/lookup`；新增微信 JSAPI 充值 `/api/v1/recharges/options`、`GET/POST /api/v1/recharges` 与储值卡二维码仍未接 |
 | 优惠券 | 是 | 页面能力弱 | 部分直连 | 商家页已接 `/api/v1/merchant-coupons` 与 `/api/v1/coupons/{couponTemplate}/claim`；“我的优惠券”仍未直连 |
 | 合作商家 | 是 | 否 | 未接入 | 当前没有对应页面或 query |
 | 线上商户 | 是 | 是 | 未接入 | Swagger 新增 `/api/v1/merchants` 与 `/api/v1/merchants/{merchant}`；当前店铺页仍主要通过 `/api/v1/partner-merchants/{partnerMerchant}` 与 `/api/v1/products?merchant_id=` 组装 |
@@ -185,6 +193,8 @@
 现状：
 
 - 余额、余额流水与储值卡充值已经切到 Swagger 真实接口
+- 最新 Swagger 新增微信 JSAPI 充值接口：进入充值页先调用 `GET /api/v1/recharges/options` 获取固定金额、自定义金额规则和入账余额类型；创建充值单调用 `POST /api/v1/recharges`，响应中的 `data.payment` 需要原样传给 `WeixinJSBridge.invoke('getBrandWCPayRequest', payment)`；充值记录读取 `GET /api/v1/recharges`
+- 当前前端尚未实现微信充值页和对应 `backend-a` 适配层
 - Swagger 文档中的 `POST /api/v1/stored-value-cards/recharge` 请求体现包含 `card_no + card_secret + mobile`，`request_no` 仍为可选幂等号
 - 当前前端绑卡提交流程已经透传 `card_no + card_secret + mobile`，并继续支持可选 `request_no`
 - 余额页读取 `GET /api/v1/balance-accounts` 与 `GET /api/v1/balance-accounts/logs`
@@ -207,6 +217,9 @@
   - `POST /api/v1/merchant/offline-payments/{offlinePayment}/refund`
   - `GET /api/v1/platform/settings`
 - 仍未落位的 Swagger 资产相关路径：
+  - `GET /api/v1/recharges/options`
+  - `GET /api/v1/recharges`
+  - `POST /api/v1/recharges`
   - `GET /api/v1/stored-value-cards/{storedValueCard}/qr`
   - 优惠券相关接口
 
@@ -239,6 +252,7 @@
 以下能力在 Swagger 中存在，但当前仓库里没有清晰的页面或数据接入层：
 
 - 会员端订单退单申请 `POST /api/v1/orders/{order}/refund-request`
+- 微信充值金额配置、创建充值单与充值记录 `GET /api/v1/recharges/options`、`GET/POST /api/v1/recharges`
 - 线上商户列表 / 详情 `GET /api/v1/merchants`、`GET /api/v1/merchants/{merchant}`
 - 合作商家列表 / 详情 / 地区 / 门店类型
 - 客服会话、消息、增量拉取
@@ -260,8 +274,8 @@
 3. 购物车与结算：接 `cart-items`、`checkout/preview`、`checkout/submit`  
    原因：这是交易主链路，能够打通下单闭环。
 
-4. 订单与余额：`orders`、`balance-accounts`、`stored-value-cards` 主链已接；下一步补 `coupons` 与储值卡二维码  
-   原因：订单、余额、充值和付款码已经打通，剩下是资产细分能力补全。
+4. 订单与余额：`orders`、`balance-accounts`、`stored-value-cards` 主链已接；下一步补微信充值、`coupons` 与储值卡二维码  
+   原因：订单、余额、储值卡充值和付款码已经打通，微信 JSAPI 充值是最新 Swagger 新增的资产能力。
 
 5. 新能力域：合作商家、客服、线下付款、员工邀请、上传  
    原因：这些在当前代码中基本没有成熟落位，需要新建模块而不是替换旧实现。

@@ -163,6 +163,7 @@ npm run dev
 
 当前 Swagger 里仍未接完、或前端还没有完整页面承接的能力：
 
+- 微信充值 `GET /api/v1/recharges/options` / `GET/POST /api/v1/recharges`
 - 储值卡查询 `POST /api/v1/stored-value-cards/lookup`
 - 储值卡充值历史 `GET /api/v1/stored-value-cards/recharge-logs`
 - 储值卡二维码 `GET /api/v1/stored-value-cards/{storedValueCard}/qr`

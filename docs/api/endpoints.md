@@ -1,7 +1,7 @@
 # API 接口明细索引
 
 来源：[`openapi.json`](/root/shop/docs/api/openapi.json)  
-抓取时间：`2026-05-29`
+抓取时间：`2026-06-03`
 
 说明：
 
@@ -145,6 +145,14 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | GET | /api/v1/balance-accounts | Bearer | - | - | object | 余额账户列表 |
 | GET | /api/v1/balance-accounts/logs | Bearer | query:per_page | - | BalanceAccountLogResponse | 余额流水 |
+
+## 充值
+
+| 方法 | 路径 | 鉴权 | 参数 | 请求体 | 成功响应 | 说明 |
+| --- | --- | --- | --- | --- | --- | --- |
+| GET | /api/v1/recharges/options | Bearer | - | - | UserRechargeOptionsResponse | 获取微信充值金额配置 |
+| GET | /api/v1/recharges | Bearer | query:per_page | - | UserRechargeListResponse | 微信充值记录列表 |
+| POST | /api/v1/recharges | Bearer | - | UserRechargeCreateRequest | UserRechargeCreateResponse | 创建微信 JSAPI 充值单 |
 
 ## 员工邀请
 

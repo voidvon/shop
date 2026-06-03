@@ -114,6 +114,35 @@ export function createBrowserMemberAssetsService(
       }
     },
 
+    async getWechatRechargeOptions() {
+      return {
+        amounts: [50, 100, 200, 500],
+        balanceTypeId: 1,
+        customAmount: {
+          enabled: true,
+          max: 999999.99,
+          min: 0.01,
+        },
+      }
+    },
+
+    async createWechatRecharge(command) {
+      const amount = Number(command.amount)
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error('请输入有效充值金额')
+      }
+
+      const balanceAmount = await repository.creditBalance({
+        amount,
+        description: '微信充值到账',
+      })
+
+      return {
+        balanceAmount,
+      }
+    },
+
     async getSnapshot() {
       const [balanceRecord, bindPage, redemptionRecords] = await Promise.all([
         repository.readBalance(),

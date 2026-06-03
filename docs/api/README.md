@@ -4,7 +4,7 @@
 
 - Swagger 页面：`https://dev.qzxys.com/api/documentation`
 - OpenAPI JSON：`https://dev.qzxys.com/docs?api-docs.json`
-- 最近一次抓取时间：`2026-05-29`
+- 最近一次抓取时间：`2026-06-03`
 - 原始文件：[`openapi.json`](/root/shop/docs/api/openapi.json)
 
 说明：
@@ -24,11 +24,11 @@
 
 | 项 | 数量 |
 | --- | ---: |
-| Path 数 | 45 |
-| Operation 数 | 52 |
-| Tag 数 | 18 |
+| Path 数 | 47 |
+| Operation 数 | 55 |
+| Tag 数 | 19 |
 | 公开接口 | 15 |
-| 需鉴权接口 | 37 |
+| 需鉴权接口 | 40 |
 
 后端文档信息：
 
@@ -118,6 +118,12 @@
 - `GET /api/v1/balance-accounts` 余额账户列表
 - `GET /api/v1/balance-accounts/logs` 余额流水
 
+### 充值
+
+- `GET /api/v1/recharges/options` 获取微信充值金额配置；返回固定金额、自定义金额规则与入账余额类型
+- `GET /api/v1/recharges` 微信充值记录列表
+- `POST /api/v1/recharges` 创建微信 JSAPI 充值单；前端将响应 `data.payment` 原样传给 `WeixinJSBridge.invoke('getBrandWCPayRequest', payment)`
+
 ### 储值卡
 
 - `POST /api/v1/stored-value-cards/recharge` 绑定储值卡并转入线上余额
@@ -160,6 +166,7 @@
 - 以 [`endpoints.md`](/root/shop/docs/api/endpoints.md) 作为方法、路径、鉴权、参数、请求体和响应模型的速查表
 - 以 [`frontend-integration-status.md`](/root/shop/docs/api/frontend-integration-status.md) 作为“当前代码已经接了什么、哪些还没接、哪些与 Swagger 不一致”的对照清单
 - 后续如果后端 Swagger 变更，优先重新抓取 `openapi.json`，再同步更新本文件中的统计与分组
+- `2026-06-03` 已重新抓取 Swagger；新增微信充值接口组：`GET /api/v1/recharges/options`、`GET /api/v1/recharges`、`POST /api/v1/recharges`，并新增 `UserRecharge*` 与 `WechatJsapiPaymentPayload` 相关 schema；线下支付流水结构新增 `user_recharge_id`
 - `2026-05-29` 已重新抓取 Swagger；接口总数未变，新增 `OfflinePaymentStaffSimple` 与 `MerchantOfflinePaymentStatistics` schema，`GET /api/v1/merchant/offline-payments` 新增 `verifier_user_id` 筛选并在响应分页对象中返回 `staff_list / statistics`；`GET /api/v1/platform/settings` 新增 `show_sales_count`；订单 `virtual_delivery_info` 说明改为 HTML 内容
 - `2026-05-21` 已切换为抓取 `dev.qzxys.com` 的 Swagger；接口总数未变，但新增 `CheckoutVirtualAccountInput` schema，并为结算入参、预结算结果和商品/SKU 结构补入虚拟商品直充账号相关字段
 - `2026-05-15` 已重新抓取 Swagger；`POST /api/v1/checkout/preview` 请求体新增可选 `address_id`，用于根据当前收货地址实时重算省内/省外运费；结算页切换地址后前端应重新调用预结算接口

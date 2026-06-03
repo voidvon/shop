@@ -31,6 +31,26 @@ export interface BindMemberCardResult {
   balanceAmount: number
 }
 
+export interface MemberRechargeCustomAmountRule {
+  enabled: boolean
+  max: number
+  min: number
+}
+
+export interface MemberRechargeOptions {
+  amounts: number[]
+  balanceTypeId: number | null
+  customAmount: MemberRechargeCustomAmountRule
+}
+
+export interface CreateMemberRechargeCommand {
+  amount: number
+}
+
+export interface CreateMemberRechargeResult {
+  balanceAmount: number
+}
+
 export interface SpendMemberBalanceCommand {
   amount: number
   description?: string
@@ -38,7 +58,9 @@ export interface SpendMemberBalanceCommand {
 
 export interface MemberAssetsService {
   bindMemberCard(command: BindMemberCardCommand): Promise<BindMemberCardResult>
+  createWechatRecharge(command: CreateMemberRechargeCommand): Promise<CreateMemberRechargeResult>
   getSnapshot(): Promise<MemberAssetsSnapshot>
+  getWechatRechargeOptions(): Promise<MemberRechargeOptions>
   lookupMemberCard(command: BindMemberCardCommand): Promise<LookupMemberCardResult>
   spendBalance(command: SpendMemberBalanceCommand): Promise<number>
 }

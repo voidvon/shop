@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onActivated, onMounted } from 'vue'
+import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { showFailToast, showSuccessToast } from 'vant'
 
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
@@ -9,7 +10,37 @@ import PageTopBar from '@/shared/ui/PageTopBar.vue'
 import { useMemberBalancePageModel } from '../model/useMemberBalancePageModel'
 
 const router = useRouter()
-const { errorMessage, isLoading, loadMemberBalancePage, memberBalancePageData } = useMemberBalancePageModel()
+const {
+  createWechatRecharge,
+  errorMessage,
+  isLoading,
+  isRechargeOptionsLoading,
+  isRechargeSubmitting,
+  loadMemberBalancePage,
+  loadRechargeOptions,
+  memberBalancePageData,
+  rechargeErrorMessage,
+  rechargeOptions,
+} = useMemberBalancePageModel()
+const rechargePopupVisible = ref(false)
+const selectedAmount = ref<number | null>(null)
+const customAmount = ref('')
+
+const rechargeAmounts = computed(() => rechargeOptions.value?.amounts ?? [])
+const customAmountRule = computed(() => rechargeOptions.value?.customAmount ?? {
+  enabled: false,
+  max: 0,
+  min: 0,
+})
+const canUseCustomAmount = computed(() => customAmountRule.value.enabled)
+const rechargeButtonDisabled = computed(() => isRechargeOptionsLoading.value || isRechargeSubmitting.value)
+const submitButtonText = computed(() => {
+  if (isRechargeSubmitting.value) {
+    return '支付中...'
+  }
+
+  return '立即充值'
+})
 
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
@@ -24,12 +55,96 @@ function formatAmount(value: number) {
   return value.toFixed(2)
 }
 
+function formatRechargeAmount(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2)
+}
+
+function selectRechargeAmount(amount: number) {
+  selectedAmount.value = amount
+  customAmount.value = ''
+}
+
+function normalizeInputAmount(value: string) {
+  const parsedValue = Number.parseFloat(value)
+  return Number.isFinite(parsedValue) ? parsedValue : 0
+}
+
+function resolveRechargeAmount() {
+  if (customAmount.value.trim()) {
+    return normalizeInputAmount(customAmount.value)
+  }
+
+  return selectedAmount.value ?? 0
+}
+
+function validateRechargeAmount(amount: number) {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return '请选择或输入充值金额'
+  }
+
+  if (customAmount.value.trim() && canUseCustomAmount.value) {
+    const { max, min } = customAmountRule.value
+
+    if (amount < min) {
+      return `自定义金额不能低于 ${formatRechargeAmount(min)} 元`
+    }
+
+    if (amount > max) {
+      return `自定义金额不能高于 ${formatRechargeAmount(max)} 元`
+    }
+  }
+
+  return null
+}
+
+async function openRechargePopup() {
+  rechargePopupVisible.value = true
+
+  if (!rechargeOptions.value) {
+    await loadRechargeOptions()
+  }
+}
+
+function closeRechargePopup() {
+  if (isRechargeSubmitting.value) {
+    return
+  }
+
+  rechargePopupVisible.value = false
+}
+
+async function submitRecharge() {
+  const amount = resolveRechargeAmount()
+  const validationMessage = validateRechargeAmount(amount)
+
+  if (validationMessage) {
+    showFailToast(validationMessage)
+    return
+  }
+
+  try {
+    await createWechatRecharge(amount)
+    showSuccessToast('微信支付返回成功，等待入账')
+    rechargePopupVisible.value = false
+    selectedAmount.value = null
+    customAmount.value = ''
+  } catch (error) {
+    showFailToast(error instanceof Error ? error.message : '充值失败')
+  }
+}
+
 onMounted(() => {
   void loadMemberBalancePage()
 })
 
 onActivated(() => {
   void loadMemberBalancePage()
+})
+
+watch(customAmount, (value) => {
+  if (value.trim()) {
+    selectedAmount.value = null
+  }
 })
 </script>
 
@@ -39,8 +154,14 @@ onActivated(() => {
 
     <div class="content-scroll">
       <section class="hero-card">
-        <span class="hero-label">总可用余额</span>
-        <strong>¥ {{ formatAmount(memberBalancePageData.balanceAmount) }}</strong>
+        <div class="hero-main">
+          <span class="hero-label">总可用余额</span>
+          <strong>¥ {{ formatAmount(memberBalancePageData.balanceAmount) }}</strong>
+        </div>
+
+        <button class="recharge-button" type="button" @click="openRechargePopup">
+          充值
+        </button>
       </section>
 
       <p v-if="errorMessage" class="status-text">{{ errorMessage }}</p>
@@ -94,6 +215,74 @@ onActivated(() => {
         title="暂无余额明细"
       />
     </div>
+
+    <van-popup
+      v-model:show="rechargePopupVisible"
+      class="recharge-popup"
+      position="bottom"
+      round
+      teleport="body"
+    >
+      <section class="recharge-sheet">
+        <header class="recharge-sheet-head">
+          <div>
+            <strong>余额充值</strong>
+            <p>充值金额将通过微信支付入账到账户余额。</p>
+          </div>
+
+          <button class="sheet-close-button" type="button" aria-label="关闭充值面板" @click="closeRechargePopup">
+            <van-icon name="cross" size="18" />
+          </button>
+        </header>
+
+        <div class="recharge-sheet-body">
+          <p v-if="rechargeErrorMessage" class="recharge-error">{{ rechargeErrorMessage }}</p>
+          <LoadingState v-if="isRechargeOptionsLoading" />
+
+          <template v-else>
+            <div v-if="rechargeAmounts.length > 0" class="amount-grid">
+              <button
+                v-for="amount in rechargeAmounts"
+                :key="amount"
+                :class="['amount-option', { 'amount-option-active': selectedAmount === amount }]"
+                type="button"
+                @click="selectRechargeAmount(amount)"
+              >
+                <strong>{{ formatRechargeAmount(amount) }}</strong>
+                <span>元</span>
+              </button>
+            </div>
+
+            <label v-if="canUseCustomAmount" class="custom-amount-field">
+              <span>自定义金额</span>
+              <input
+                v-model="customAmount"
+                :max="customAmountRule.max"
+                :min="customAmountRule.min"
+                inputmode="decimal"
+                placeholder="请输入充值金额"
+                type="number"
+              >
+            </label>
+
+            <p v-if="canUseCustomAmount" class="custom-amount-tip">
+              支持 {{ formatRechargeAmount(customAmountRule.min) }}-{{ formatRechargeAmount(customAmountRule.max) }} 元
+            </p>
+          </template>
+        </div>
+
+        <footer class="recharge-sheet-footer">
+          <button
+            class="submit-recharge-button"
+            :disabled="rechargeButtonDisabled"
+            type="button"
+            @click="submitRecharge"
+          >
+            {{ submitButtonText }}
+          </button>
+        </footer>
+      </section>
+    </van-popup>
   </section>
 </template>
 
@@ -127,11 +316,19 @@ onActivated(() => {
 }
 
 .hero-card {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
   margin-bottom: 12px;
   padding: 20px 18px;
   background: linear-gradient(135deg, var(--color-primary-alt) 0%, var(--color-primary) 100%);
+}
+
+.hero-main {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
 }
 
 .hero-label {
@@ -143,6 +340,18 @@ onActivated(() => {
   color: var(--color-text-inverse);
   font-size: 32px;
   line-height: 1;
+}
+
+.recharge-button {
+  flex: 0 0 auto;
+  min-width: 70px;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.56);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--color-text-inverse);
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .status-text {
@@ -248,5 +457,144 @@ onActivated(() => {
 
 .empty-state {
   margin-top: 12px;
+}
+
+.recharge-popup {
+  background: var(--color-surface-elevated);
+}
+
+.recharge-sheet {
+  display: grid;
+  max-height: min(76vh, 620px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.recharge-sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 18px 10px;
+}
+
+.recharge-sheet-head strong {
+  color: var(--color-text-heading);
+  font-size: 18px;
+}
+
+.recharge-sheet-head p {
+  margin: 6px 0 0;
+  color: var(--color-text-subtle);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.sheet-close-button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-surface-soft);
+  color: var(--color-text-subtle);
+}
+
+.recharge-sheet-body {
+  min-height: 0;
+  padding: 8px 18px 14px;
+  overflow-y: auto;
+}
+
+.recharge-error {
+  margin: 0 0 12px;
+  border: 1px solid rgba(220, 38, 38, 0.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-danger);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.amount-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.amount-option {
+  display: flex;
+  min-height: 58px;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  border: 1px solid var(--color-line-soft);
+  border-radius: 10px;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-strong);
+}
+
+.amount-option strong {
+  font-size: 20px;
+}
+
+.amount-option span {
+  font-size: 12px;
+}
+
+.amount-option-active {
+  border-color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb), 0.08);
+  color: var(--color-primary);
+}
+
+.custom-amount-field {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.custom-amount-field span {
+  color: var(--color-text-heading);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.custom-amount-field input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--color-line-soft);
+  border-radius: 10px;
+  padding: 0 12px;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-strong);
+  font-size: 16px;
+}
+
+.custom-amount-tip {
+  margin: 8px 0 0;
+  color: var(--color-text-subtle);
+  font-size: 12px;
+}
+
+.recharge-sheet-footer {
+  padding: 12px 18px max(18px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.submit-recharge-button {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.submit-recharge-button:disabled {
+  opacity: 0.56;
 }
 </style>
