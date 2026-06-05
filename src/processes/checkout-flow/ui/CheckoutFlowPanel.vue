@@ -175,9 +175,9 @@ function openCouponSelector(merchantId: number, balanceTypeId: number) {
   })
 }
 
-function openCustomerService() {
+function openMemberBalance() {
   void router.push({
-    name: 'member-customer-service',
+    name: 'member-balance',
   })
 }
 
@@ -355,7 +355,9 @@ function formatInsufficientBalanceMessage(merchantNames: string[]) {
 }
 
 function shouldKeepCheckoutDraftOnRouteLeave(nextRouteName: string | symbol | null | undefined) {
-  return nextRouteName === 'member-addresses' || nextRouteName === 'checkout-coupons'
+  return nextRouteName === 'member-addresses'
+    || nextRouteName === 'checkout-coupons'
+    || nextRouteName === 'member-balance'
 }
 
 onBeforeRouteLeave((to) => {
@@ -413,8 +415,8 @@ onBeforeRouteLeave((to) => {
 
           <p v-if="hasInsufficientBalance" class="state-card state-card-error state-card-inline-action">
             <span>余额不足：{{ formatInsufficientBalanceMessage(insufficientMerchantNames) }}</span>
-            <button class="state-card-action" type="button" @click="openCustomerService">
-              联系客服
+            <button class="state-card-action" type="button" @click="openMemberBalance">
+              充值
             </button>
           </p>
 
