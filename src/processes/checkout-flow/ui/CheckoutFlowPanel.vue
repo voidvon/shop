@@ -416,7 +416,7 @@ onBeforeRouteLeave((to) => {
           <p v-if="hasInsufficientBalance" class="state-card state-card-error state-card-inline-action">
             <span>余额不足：{{ formatInsufficientBalanceMessage(insufficientMerchantNames) }}</span>
             <button class="state-card-action" type="button" @click="openMemberBalance">
-              充值
+              去充值
             </button>
           </p>
 
