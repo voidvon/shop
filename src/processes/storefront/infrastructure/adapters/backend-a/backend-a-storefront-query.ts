@@ -28,6 +28,7 @@ import {
   mapBackendAProductDetailPageData,
   mapBackendAStoreHomePageData,
 } from '../../mappers/backend-a-storefront-mapper'
+import type { PartnerStoreMerchantDirectoryData } from '../../../domain/storefront-page-data'
 
 interface BackendAProductCategoriesResponseDto {
   list: BackendAStorefrontCategoryDto[]
@@ -42,7 +43,8 @@ interface BackendAStorefrontProductsResponseDto {
   total: number
 }
 
-interface BackendAPartnerMerchantsResponseDto {
+interface BackendAPartnerMerchantsPageDto {
+  brands?: string[]
   data: BackendAPartnerMerchantSummaryDto[]
 }
 
@@ -99,12 +101,15 @@ export function createBackendAStorefrontQuery(memberAuthSession: MemberAuthSessi
     regionId?: string
     storeTypeId?: string
   } = {}) {
-    return publicHttpClient.get<BackendAPartnerMerchantsResponseDto>('/api/v1/partner-merchants', {
-      ...(query.keyword ? { keyword: query.keyword } : {}),
-      ...(query.regionId ? { region_id: query.regionId } : {}),
-      ...(query.storeTypeId ? { store_type_id: query.storeTypeId } : {}),
-      per_page: query.perPage ?? 100,
-    })
+    return publicHttpClient.get<BackendAPartnerMerchantsPageDto | BackendAPartnerMerchantSummaryDto[]>(
+      '/api/v1/partner-merchants',
+      {
+        ...(query.keyword ? { keyword: query.keyword } : {}),
+        ...(query.regionId ? { region_id: query.regionId } : {}),
+        ...(query.storeTypeId ? { store_type_id: query.storeTypeId } : {}),
+        per_page: query.perPage ?? 100,
+      },
+    )
   }
 
   async function fetchBackendAMerchantCouponsDto(merchantId: string, useAuth: boolean) {
@@ -113,7 +118,7 @@ export function createBackendAStorefrontQuery(memberAuthSession: MemberAuthSessi
     return httpClient.get<BackendAMerchantCouponsResponseDto | BackendAMerchantCouponDto[]>(
       '/api/v1/merchant-coupons',
       {
-      merchant_id: merchantId,
+        merchant_id: merchantId,
       },
     )
   }
@@ -127,6 +132,36 @@ export function createBackendAStorefrontQuery(memberAuthSession: MemberAuthSessi
 
     if (Array.isArray(response.data)) {
       return response.data
+    }
+
+    return []
+  }
+
+  function normalizePartnerMerchantItems(
+    response: BackendAPartnerMerchantsPageDto | BackendAPartnerMerchantSummaryDto[],
+  ) {
+    if (Array.isArray(response)) {
+      return response
+    }
+
+    if (Array.isArray(response.data)) {
+      return response.data
+    }
+
+    return []
+  }
+
+  function normalizePartnerMerchantBrands(
+    response: BackendAPartnerMerchantsPageDto | BackendAPartnerMerchantSummaryDto[],
+  ) {
+    if (Array.isArray(response)) {
+      return []
+    }
+
+    if (Array.isArray(response.brands)) {
+      return response.brands
+        .map((brand) => (typeof brand === 'string' ? brand.trim() : ''))
+        .filter(Boolean)
     }
 
     return []
@@ -215,7 +250,12 @@ export function createBackendAStorefrontQuery(memberAuthSession: MemberAuthSessi
         storeTypeId: query?.storeTypeId,
       })
 
-      return mapBackendAPartnerMerchants(response.data)
+      const result: PartnerStoreMerchantDirectoryData = {
+        brands: normalizePartnerMerchantBrands(response),
+        merchants: mapBackendAPartnerMerchants(normalizePartnerMerchantItems(response)),
+      }
+
+      return result
     },
 
     async getPartnerRegions() {

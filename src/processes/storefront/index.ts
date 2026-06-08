@@ -5,6 +5,7 @@ export type {
   HomePartnerStoreType,
   HomeQuickCategory,
   MerchantCoupon,
+  PartnerStoreMerchantDirectoryData,
   PartnerStoreMerchant,
   PartnerStoreRegion,
   PageProductCard,

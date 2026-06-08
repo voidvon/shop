@@ -452,7 +452,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/PartnerRegionListResponse"
                                 }
                             }
                         }
@@ -473,7 +473,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/PartnerStoreTypeListResponse"
                                 }
                             }
                         }
@@ -487,11 +487,13 @@
                     "合作商家"
                 ],
                 "summary": "合作商家列表",
+                "description": "返回启用状态的合作商家分页列表。data.data 是当前页门店列表；data.brands 是当前 store_type_id 下所有启用门店 short_name 去重后的品牌数组，用于前端品牌筛选；只有 store_type_id 配在 .env 的 PARTNER_MERCHANT_BRAND_STORE_TYPE_IDS 中时才返回品牌，否则为空数组。",
                 "operationId": "c4967cd2cf7d19b88b231e90aba67c39",
                 "parameters": [
                     {
                         "name": "region_id",
                         "in": "query",
+                        "description": "按合作地区ID筛选",
                         "schema": {
                             "type": "integer"
                         }
@@ -499,6 +501,7 @@
                     {
                         "name": "store_type_id",
                         "in": "query",
+                        "description": "按门店类型ID筛选；只有该ID存在于 PARTNER_MERCHANT_BRAND_STORE_TYPE_IDS 时，data.brands 才返回该类型下的品牌数组",
                         "schema": {
                             "type": "integer"
                         }
@@ -506,6 +509,7 @@
                     {
                         "name": "keyword",
                         "in": "query",
+                        "description": "按商家名称、简称或联系电话模糊搜索",
                         "schema": {
                             "type": "string"
                         }
@@ -513,6 +517,7 @@
                     {
                         "name": "per_page",
                         "in": "query",
+                        "description": "每页数量，默认10",
                         "schema": {
                             "type": "integer",
                             "default": 10
@@ -525,7 +530,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/PartnerMerchantListResponse"
                                 }
                             }
                         }
@@ -544,6 +549,7 @@
                     {
                         "name": "partnerMerchant",
                         "in": "path",
+                        "description": "合作商家ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -556,7 +562,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/PartnerMerchantDetailResponse"
                                 }
                             }
                         }
@@ -3653,6 +3659,352 @@
                         "description": "余额类型编码",
                         "type": "string",
                         "example": "general"
+                    }
+                },
+                "type": "object"
+            },
+            "PartnerRegionPayload": {
+                "properties": {
+                    "id": {
+                        "description": "地区ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "地区名称",
+                        "type": "string",
+                        "example": "晋江"
+                    },
+                    "sort": {
+                        "description": "排序值，越小越靠前",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "status": {
+                        "description": "状态：1启用 0禁用",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "PartnerStoreTypePayload": {
+                "properties": {
+                    "id": {
+                        "description": "门店类型ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "门店类型名称",
+                        "type": "string",
+                        "example": "蛋糕"
+                    },
+                    "sort": {
+                        "description": "排序值，越小越靠前",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "status": {
+                        "description": "状态：1启用 0禁用",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "PartnerMerchantPayload": {
+                "properties": {
+                    "id": {
+                        "description": "合作商家ID",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "partner_region_id": {
+                        "description": "所属合作地区ID",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "balance_type_id": {
+                        "description": "默认余额类型ID；旧字段，实际可优先读取 supported_balance_types",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "name": {
+                        "description": "合作商家完整名称",
+                        "type": "string",
+                        "example": "合作蛋糕店"
+                    },
+                    "short_name": {
+                        "description": "店铺简称；列表响应 data.brands 使用该字段去重生成",
+                        "type": "string",
+                        "example": "蛋糕店",
+                        "nullable": true
+                    },
+                    "logo": {
+                        "description": "商家Logo路径或URL",
+                        "type": "string",
+                        "example": "uploads/partner-merchants/logo.jpg",
+                        "nullable": true
+                    },
+                    "contact_name": {
+                        "description": "联系人",
+                        "type": "string",
+                        "example": "李四",
+                        "nullable": true
+                    },
+                    "contact_phone": {
+                        "description": "联系电话",
+                        "type": "string",
+                        "example": "0595-12345678",
+                        "nullable": true
+                    },
+                    "business_hours": {
+                        "description": "营业时间",
+                        "type": "string",
+                        "example": "08:00-22:00",
+                        "nullable": true
+                    },
+                    "address": {
+                        "description": "地址摘要",
+                        "type": "string",
+                        "example": "晋江",
+                        "nullable": true
+                    },
+                    "detailed_address": {
+                        "description": "详细地址",
+                        "type": "string",
+                        "example": "晋江市测试路 88 号",
+                        "nullable": true
+                    },
+                    "description": {
+                        "description": "商家简介",
+                        "type": "string",
+                        "example": "支持线下储值卡付款",
+                        "nullable": true
+                    },
+                    "sort": {
+                        "description": "排序值，越小越靠前",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "status": {
+                        "description": "状态：1启用 0禁用；接口只返回启用门店",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "supported_balance_types": {
+                        "description": "该合作商家支持的余额类型",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BalanceTypeSimple"
+                        }
+                    },
+                    "balance_type": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BalanceTypeSimple"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "默认余额类型对象；兼容旧字段"
+                    },
+                    "region": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/PartnerRegionPayload"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "所属合作地区"
+                    },
+                    "store_types": {
+                        "description": "商家绑定的门店类型列表",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PartnerStoreTypePayload"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PaginationLink": {
+                "properties": {
+                    "url": {
+                        "description": "分页链接；不可跳转时为 null",
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/partner-merchants?page=1",
+                        "nullable": true
+                    },
+                    "label": {
+                        "description": "分页标签",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "active": {
+                        "description": "是否当前页",
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "PartnerMerchantListData": {
+                "properties": {
+                    "current_page": {
+                        "description": "当前页码",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "data": {
+                        "description": "当前页合作商家列表",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PartnerMerchantPayload"
+                        }
+                    },
+                    "first_page_url": {
+                        "description": "第一页URL",
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/partner-merchants?page=1",
+                        "nullable": true
+                    },
+                    "from": {
+                        "description": "当前页第一条数据序号；无数据时为 null",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "last_page": {
+                        "description": "最后一页页码",
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "last_page_url": {
+                        "description": "最后一页URL",
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/partner-merchants?page=3",
+                        "nullable": true
+                    },
+                    "links": {
+                        "description": "Laravel 分页链接",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PaginationLink"
+                        }
+                    },
+                    "next_page_url": {
+                        "description": "下一页URL；没有下一页时为 null",
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/partner-merchants?page=2",
+                        "nullable": true
+                    },
+                    "path": {
+                        "description": "当前分页路径",
+                        "type": "string",
+                        "example": "https://mall.example.com/api/v1/partner-merchants"
+                    },
+                    "per_page": {
+                        "description": "每页数量",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "prev_page_url": {
+                        "description": "上一页URL；没有上一页时为 null",
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "to": {
+                        "description": "当前页最后一条数据序号；无数据时为 null",
+                        "type": "integer",
+                        "example": 10,
+                        "nullable": true
+                    },
+                    "total": {
+                        "description": "总数据量",
+                        "type": "integer",
+                        "example": 25
+                    },
+                    "brands": {
+                        "description": "当前 query.store_type_id 同时存在于 .env 的 PARTNER_MERCHANT_BRAND_STORE_TYPE_IDS 配置中时，返回该类型下所有启用合作商家的非空 short_name 去重数组；未传 store_type_id 或不在配置中时返回空数组",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "蛋糕店"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PartnerMerchantListResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/PartnerMerchantListData"
+                    }
+                },
+                "type": "object"
+            },
+            "PartnerMerchantDetailResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/PartnerMerchantPayload"
+                    }
+                },
+                "type": "object"
+            },
+            "PartnerRegionListResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PartnerRegionPayload"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PartnerStoreTypeListResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "ok"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PartnerStoreTypePayload"
+                        }
                     }
                 },
                 "type": "object"

@@ -8,13 +8,13 @@
 - 当前店铺页模型：[`src/pages/store/model/useStorePageModel.ts`](/root/shop/src/pages/store/model/useStorePageModel.ts)
 - 当前店铺 query：[`src/processes/storefront/infrastructure/adapters/backend-a/backend-a-storefront-query.ts`](/root/shop/src/processes/storefront/infrastructure/adapters/backend-a/backend-a-storefront-query.ts)
 
-更新时间：`2026-03-24`
+更新时间：`2026-06-08`
 
 ## 1. 当前已接入内容
 
 当前商家首页已经接了两类数据：
 
-- 商家详情：`GET /api/v1/partner-merchants/{partnerMerchant}`
+- 商家详情：`GET /api/v1/merchants/{merchant}`
 - 商家商品：`GET /api/v1/products?merchant_id=...`
 
 当前页面已展示：
@@ -199,7 +199,7 @@
 
 注意：
 
-- 当前文档中“合作商家”域整体还没有前端页面落位
+- 当前仓库已经有合作门店目录页 `/partner-store-types/:storeTypeId`，并调用 `partner-regions / partner-store-types / partner-merchants`
 - 适合单独建列表页，不建议直接塞进现有店铺页模型
 
 ## 4. 当前不建议直接做重的部分

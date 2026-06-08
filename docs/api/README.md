@@ -4,7 +4,7 @@
 
 - Swagger 页面：`https://dev.qzxys.com/api/documentation`
 - OpenAPI JSON：`https://dev.qzxys.com/docs?api-docs.json`
-- 最近一次抓取时间：`2026-06-03`
+- 最近一次抓取时间：`2026-06-08`
 - 原始文件：[`openapi.json`](/root/shop/docs/api/openapi.json)
 
 说明：
@@ -166,6 +166,7 @@
 - 以 [`endpoints.md`](/root/shop/docs/api/endpoints.md) 作为方法、路径、鉴权、参数、请求体和响应模型的速查表
 - 以 [`frontend-integration-status.md`](/root/shop/docs/api/frontend-integration-status.md) 作为“当前代码已经接了什么、哪些还没接、哪些与 Swagger 不一致”的对照清单
 - 后续如果后端 Swagger 变更，优先重新抓取 `openapi.json`，再同步更新本文件中的统计与分组
+- `2026-06-08` 已重新抓取 dev Swagger；Path 数与 Operation 数保持 `47 / 55` 不变，合作商家 4 个接口从通用 `ApiResponse` 收紧为显式 schema：`PartnerRegionListResponse`、`PartnerStoreTypeListResponse`、`PartnerMerchantListResponse`、`PartnerMerchantDetailResponse`；其中合作商家列表的 `data` 现明确为分页对象，新增 `data.brands`
 - `2026-06-03` 已重新抓取 Swagger；新增微信充值接口组：`GET /api/v1/recharges/options`、`GET /api/v1/recharges`、`POST /api/v1/recharges`，并新增 `UserRecharge*` 与 `WechatJsapiPaymentPayload` 相关 schema；线下支付流水结构新增 `user_recharge_id`
 - `2026-05-29` 已重新抓取 Swagger；接口总数未变，新增 `OfflinePaymentStaffSimple` 与 `MerchantOfflinePaymentStatistics` schema，`GET /api/v1/merchant/offline-payments` 新增 `verifier_user_id` 筛选并在响应分页对象中返回 `staff_list / statistics`；`GET /api/v1/platform/settings` 新增 `show_sales_count`；订单 `virtual_delivery_info` 说明改为 HTML 内容
 - `2026-05-21` 已切换为抓取 `dev.qzxys.com` 的 Swagger；接口总数未变，但新增 `CheckoutVirtualAccountInput` schema，并为结算入参、预结算结果和商品/SKU 结构补入虚拟商品直充账号相关字段
@@ -187,12 +188,8 @@
 
 ## 5.1 当前项目范围内不接入的接口
 
-以下接口虽然存在于后端 OpenAPI 中，但属于后台/商户侧能力，不在当前会员端 H5 项目范围内：
+以下接口虽然存在于后端 OpenAPI 中，但属于后台/商户侧能力，或当前会员端 H5 尚未实现：
 
-- 合作商家列表相关
-  - `GET /api/v1/partner-regions`
-  - `GET /api/v1/partner-store-types`
-  - `GET /api/v1/partner-merchants`
 - 商户员工邀请相关
   - `GET /api/v1/merchant-staff-invites/{token}`
   - `POST /api/v1/merchant-staff-invites/{token}/bind`
@@ -201,7 +198,8 @@
 
 说明：
 
-- 当前项目仍会使用 `GET /api/v1/partner-merchants/{partnerMerchant}` 作为店铺详情来源
+- 当前项目已使用 `GET /api/v1/partner-regions`、`GET /api/v1/partner-store-types`、`GET /api/v1/partner-merchants` 支撑合作门店目录页 `/partner-store-types/:storeTypeId`
+- 当前项目使用 `GET /api/v1/merchants/{merchant}` 作为店铺详情主来源，`GET /api/v1/partner-merchants/{partnerMerchant}` 暂未在现有店铺首页中消费
 - 当前项目仍会使用 `POST /api/v1/stored-value-cards/recharge` 处理储值卡绑定充值
 - 以上“不接入”仅表示当前前台会员端不实现，不代表后端接口无效
 

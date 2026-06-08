@@ -6,15 +6,15 @@
 - 当前运行时装配：[`src/app/providers/backend/create-backend-runtime.ts`](/root/shop/src/app/providers/backend/create-backend-runtime.ts)
 - 现有 `backend-a` 适配层与浏览器仓储实现
 
-更新时间：`2026-06-03`
+更新时间：`2026-06-08`
 
 ## 1. 先看结论
 
-当前项目虽然已经有 `backend-a` 模式，但绝大多数业务还没有真正接到 Swagger 这套后端上。
+当前项目虽然已经有 `backend-a` 模式，但绝大多数业务还没有真正接到 dev Swagger 这套后端上。
 
 现状更准确地说是：
 
-- `backend-a` 已经开始接入真实 Swagger，目前已打通“公开商品域 + 登录资料地址域 + 交易主链路 + 会员资产主入口 + 商家页优惠券”
+- `backend-a` 已经开始接入真实 dev Swagger，目前已打通“公开商品域 + 登录资料地址域 + 交易主链路 + 会员资产主入口 + 合作门店目录 + 商家页优惠券”
 - 首页、分类、商品列表、商品详情已经改为真实 HTTP 读取
 - 会员登录、资料刷新、昵称更新、地址 CRUD 已改为真实 HTTP
 - 购物车、预结算、提交订单、订单列表、订单详情已改为真实 HTTP
@@ -54,6 +54,10 @@
 - `GET /api/v1/product-categories`
 - `GET /api/v1/products`
 - `GET /api/v1/products/{product}`
+- `GET /api/v1/partner-regions`
+- `GET /api/v1/partner-store-types`
+- `GET /api/v1/partner-merchants`
+- `GET /api/v1/merchants/{merchant}`
 
 会员登录 / 资料 / 地址当前调用的 Swagger 路径：
 
@@ -92,7 +96,7 @@
 
 这 3 个接口目前尚未在前端页面和 `backend-a` 适配层中落位。
 
-这说明当前仓库里的会员中心主入口与商家页优惠券都已经改为直接消费 Swagger，剩余未接的主要是储值卡二维码和商户端线下核销链路。
+这说明当前仓库里的会员中心主入口、合作门店目录与商家页优惠券都已经改为直接消费 Swagger，剩余未接的主要是微信充值、储值卡二维码、线上商户列表、客服与上传链路。
 
 ## 3. Swagger 能力 vs 当前前端现状
 
@@ -108,8 +112,8 @@
 | 地址管理 | 是 | 是 | 已直连 | runtime 已装配真实 `backend-a` 地址仓储 |
 | 余额/充值/储值卡 | 是 | 是 | 部分直连 | 已接 `/api/v1/balance-accounts`、`/api/v1/balance-accounts/logs`、`/api/v1/stored-value-cards/recharge`、`/api/v1/stored-value-cards/recharge-logs`、`/api/v1/stored-value-cards/lookup`；新增微信 JSAPI 充值 `/api/v1/recharges/options`、`GET/POST /api/v1/recharges` 与储值卡二维码仍未接 |
 | 优惠券 | 是 | 页面能力弱 | 部分直连 | 商家页已接 `/api/v1/merchant-coupons` 与 `/api/v1/coupons/{couponTemplate}/claim`；“我的优惠券”仍未直连 |
-| 合作商家 | 是 | 否 | 未接入 | 当前没有对应页面或 query |
-| 线上商户 | 是 | 是 | 未接入 | Swagger 新增 `/api/v1/merchants` 与 `/api/v1/merchants/{merchant}`；当前店铺页仍主要通过 `/api/v1/partner-merchants/{partnerMerchant}` 与 `/api/v1/products?merchant_id=` 组装 |
+| 合作商家 | 是 | 是 | 已直连（目录页） | 已有 `/partner-store-types/:storeTypeId` 页面，并调用 `/api/v1/partner-regions`、`/api/v1/partner-store-types`、`/api/v1/partner-merchants`；当前已在“按地区查看合作商家”下方展示 `data.brands` 返回的合作品牌名称 |
+| 线上商户 | 是 | 是 | 部分直连 | 当前店铺首页已调用 `/api/v1/merchants/{merchant}` 获取商户详情，并通过 `/api/v1/products?merchant_id=` 组装商品列表；`GET /api/v1/merchants` 列表页仍未落位 |
 | 客服 | 是 | 否 | 未接入 | 当前没有客服会话页面和消息数据层 |
 | 线下付款 | 是 | 是 | 已直连 | 用户付款码页已接 `/api/v1/offline-payments/payment-code`；商户扣款页已接 `/api/v1/merchant/offline-payments/scan`、`/api/v1/merchant/offline-payments/pay`、`/api/v1/merchant/offline-payments/{offlinePayment}/refund`，并依赖 `/api/v1/auth/profile` 返回 `merchant.supported_balance_types`；店铺流水页已接 `verifier_user_id` 筛选、`staff_list` 核销人员列表与 `statistics` 统计数据 |
 | 上传 | 是 | 间接可能需要 | 未接入 | 当前没有统一上传 gateway |
@@ -253,8 +257,8 @@
 
 - 会员端订单退单申请 `POST /api/v1/orders/{order}/refund-request`
 - 微信充值金额配置、创建充值单与充值记录 `GET /api/v1/recharges/options`、`GET/POST /api/v1/recharges`
-- 线上商户列表 / 详情 `GET /api/v1/merchants`、`GET /api/v1/merchants/{merchant}`
-- 合作商家列表 / 详情 / 地区 / 门店类型
+- 线上商户列表 `GET /api/v1/merchants`
+- 合作商家详情 `GET /api/v1/partner-merchants/{partnerMerchant}`
 - 客服会话、消息、增量拉取
 - 商户员工邀请查看与绑定
 - 图片上传

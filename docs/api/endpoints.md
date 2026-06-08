@@ -1,7 +1,7 @@
 # API 接口明细索引
 
 来源：[`openapi.json`](/root/shop/docs/api/openapi.json)  
-抓取时间：`2026-06-03`
+抓取时间：`2026-06-08`
 
 说明：
 
@@ -47,10 +47,10 @@
 
 | 方法 | 路径 | 鉴权 | 参数 | 请求体 | 成功响应 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| GET | /api/v1/partner-regions | 公开 | - | - | ApiResponse | 合作地区列表 |
-| GET | /api/v1/partner-store-types | 公开 | - | - | ApiResponse | 合作门店类型列表 |
-| GET | /api/v1/partner-merchants | 公开 | query:region_id, query:store_type_id, query:keyword, query:per_page | - | ApiResponse | 合作商家列表 |
-| GET | /api/v1/partner-merchants/{partnerMerchant} | 公开 | path:partnerMerchant | - | ApiResponse | 合作商家详情 |
+| GET | /api/v1/partner-regions | 公开 | - | - | PartnerRegionListResponse | 合作地区列表 |
+| GET | /api/v1/partner-store-types | 公开 | - | - | PartnerStoreTypeListResponse | 合作门店类型列表 |
+| GET | /api/v1/partner-merchants | 公开 | query:region_id, query:store_type_id, query:keyword, query:per_page | - | PartnerMerchantListResponse | 合作商家分页列表；`data.data` 为当前页门店，`data.brands` 为可选品牌数组 |
+| GET | /api/v1/partner-merchants/{partnerMerchant} | 公开 | path:partnerMerchant | - | PartnerMerchantDetailResponse | 合作商家详情 |
 
 ## 商户
 

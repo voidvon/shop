@@ -18,7 +18,9 @@ const preferredTitle = computed(() => (
 ))
 
 const {
+  brands,
   errorMessage,
+  hasBrands,
   hasRegions,
   isLoading,
   isLoadingMerchants,
@@ -87,6 +89,9 @@ watch(storeTypeId, () => {
         <div class="merchant-panel-intro">
           <strong>{{ pageTitle }}</strong>
           <span>按地区查看合作商家</span>
+          <p v-if="hasBrands" class="brand-summary">
+            合作品牌：{{ brands.join(' / ') }}
+          </p>
         </div>
 
         <div class="merchant-panel-head">
@@ -257,6 +262,13 @@ watch(storeTypeId, () => {
 .merchant-panel-intro span {
   color: var(--color-text-subtle);
   font-size: 12px;
+}
+
+.brand-summary {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .merchant-panel-head {

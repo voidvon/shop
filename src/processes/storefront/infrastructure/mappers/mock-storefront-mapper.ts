@@ -6,6 +6,7 @@ import type {
   CategoryPageCategory,
   CategoryPageProductCard,
   HomePageData,
+  PartnerStoreMerchantDirectoryData,
   PartnerStoreMerchant,
   PartnerStoreRegion,
   PageProductCard,
@@ -138,11 +139,13 @@ export function mapMockPartnerRegions(): PartnerStoreRegion[] {
   }))
 }
 
-export function mapMockPartnerMerchants(query: PartnerStoreMerchantsQuery = {}): PartnerStoreMerchant[] {
+export function mapMockPartnerMerchants(
+  query: PartnerStoreMerchantsQuery = {},
+): PartnerStoreMerchantDirectoryData {
   const normalizedRegionId = query.regionId?.trim() ?? ''
   const normalizedKeyword = query.keyword?.trim().toLowerCase() ?? ''
 
-  return mockStores
+  const merchants = mockStores
     .filter((store) => {
       if (normalizedRegionId && store.areaId !== normalizedRegionId) {
         return false
@@ -166,6 +169,17 @@ export function mapMockPartnerMerchants(query: PartnerStoreMerchantsQuery = {}):
       shortName: store.storeName,
       storeTypeLabels: ['合作门店'],
     }))
+
+  return {
+    brands: Array.from(
+      new Set(
+        merchants
+          .map((merchant) => merchant.shortName?.trim() ?? '')
+          .filter(Boolean),
+      ),
+    ),
+    merchants,
+  }
 }
 
 export function mapMockStoreHomePageData(

@@ -11,12 +11,14 @@ export function usePartnerStoreDirectoryPageModel(
   const errorMessage = ref<string | null>(null)
   const isLoading = ref(false)
   const isLoadingMerchants = ref(false)
-  const merchants = ref<Awaited<ReturnType<typeof storefrontQuery.getPartnerMerchants>>>([])
+  const brands = ref<string[]>([])
+  const merchants = ref<Awaited<ReturnType<typeof storefrontQuery.getPartnerMerchants>>['merchants']>([])
   const partnerStoreTypes = ref<Awaited<ReturnType<typeof storefrontQuery.getPartnerStoreTypes>>>([])
   const regions = ref<Awaited<ReturnType<typeof storefrontQuery.getPartnerRegions>>>([])
   const resolvedStoreTypeId = ref('')
   const selectedRegionId = ref('')
 
+  const hasBrands = computed(() => brands.value.length > 0)
   const hasRegions = computed(() => regions.value.length > 0)
   const resolvedStoreTypeLabel = computed(
     () => partnerStoreTypes.value.find((item) => item.id === resolvedStoreTypeId.value)?.label
@@ -67,6 +69,7 @@ export function usePartnerStoreDirectoryPageModel(
     const normalizedStoreTypeId = resolvedStoreTypeId.value.trim()
 
     if (!normalizedStoreTypeId) {
+      brands.value = []
       merchants.value = []
       return
     }
@@ -74,12 +77,15 @@ export function usePartnerStoreDirectoryPageModel(
     isLoadingMerchants.value = true
 
     try {
-      merchants.value = await storefrontQuery.getPartnerMerchants({
+      const directoryData = await storefrontQuery.getPartnerMerchants({
         regionId: regionId || undefined,
         storeTypeId: normalizedStoreTypeId,
       })
+      brands.value = directoryData.brands
+      merchants.value = directoryData.merchants
       errorMessage.value = null
     } catch (error) {
+      brands.value = []
       merchants.value = []
       errorMessage.value = error instanceof Error ? error.message : '合作商家加载失败'
     } finally {
@@ -91,6 +97,7 @@ export function usePartnerStoreDirectoryPageModel(
     const normalizedStoreTypeId = toValue(storeTypeId).trim()
 
     if (!normalizedStoreTypeId) {
+      brands.value = []
       partnerStoreTypes.value = []
       regions.value = []
       merchants.value = []
@@ -121,6 +128,7 @@ export function usePartnerStoreDirectoryPageModel(
       selectedRegionId.value = nextSelectedRegionId
       await loadMerchants(nextSelectedRegionId)
     } catch (error) {
+      brands.value = []
       partnerStoreTypes.value = []
       regions.value = []
       merchants.value = []
@@ -142,7 +150,9 @@ export function usePartnerStoreDirectoryPageModel(
   }
 
   return {
+    brands,
     errorMessage,
+    hasBrands,
     hasRegions,
     isLoading,
     isLoadingMerchants,

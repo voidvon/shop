@@ -6,6 +6,7 @@ import type {
   HomePageData,
   HomePartnerStoreType,
   MerchantCoupon,
+  PartnerStoreMerchantDirectoryData,
   PartnerStoreMerchant,
   PartnerStoreRegion,
   PlatformSettingsData,
@@ -41,7 +42,7 @@ export interface StorefrontQuery {
   getCategoryTree(): Promise<CategoryPageCategory[]>
   getHomePageData(): Promise<HomePageData>
   getMerchantCoupons(merchantId: string): Promise<MerchantCoupon[]>
-  getPartnerMerchants(query?: PartnerStoreMerchantsQuery): Promise<PartnerStoreMerchant[]>
+  getPartnerMerchants(query?: PartnerStoreMerchantsQuery): Promise<PartnerStoreMerchantDirectoryData>
   getPartnerRegions(): Promise<PartnerStoreRegion[]>
   getPartnerStoreTypes(): Promise<HomePartnerStoreType[]>
   getPlatformSettingsData(): Promise<PlatformSettingsData>

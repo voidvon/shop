@@ -52,6 +52,11 @@ export interface PartnerStoreMerchant {
   storeTypeLabels: string[]
 }
 
+export interface PartnerStoreMerchantDirectoryData {
+  brands: string[]
+  merchants: PartnerStoreMerchant[]
+}
+
 export interface MerchantCoupon {
   discountAmount: number | null
   discountRate: number | null
