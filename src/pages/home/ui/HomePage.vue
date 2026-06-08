@@ -6,6 +6,7 @@ import { useMemberFavoriteStore } from '@/entities/member-favorite'
 import { ProductCompactCard } from '@/entities/product'
 import { useCustomerServiceUnreadStore } from '@/processes/customer-service'
 import { usePlatformSettingsStore } from '@/processes/storefront'
+import { customerContactEntryRoute } from '@/shared/config/contact-entry'
 import ImageCarousel from '@/shared/ui/ImageCarousel.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import SearchField from '@/shared/ui/SearchField.vue'
@@ -50,7 +51,7 @@ function goToSearchPage() {
 }
 
 function goToCustomerServicePage() {
-  void router.push({ name: 'member-customer-service' })
+  void router.push(customerContactEntryRoute)
 }
 
 async function handleRefresh() {

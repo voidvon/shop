@@ -10,6 +10,7 @@ import {
   normalizeMemberCardBindMobile,
   validateMemberCardBindMobile,
 } from '@/processes/member-center/domain/member-card-bind-rules'
+import { customerContactEntryRoute } from '@/shared/config/contact-entry'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import { sanitizeRichTextHtml } from '@/shared/lib/safe-rich-text'
 import EmptyState from '@/shared/ui/EmptyState.vue'
@@ -232,25 +233,7 @@ function openStorePage() {
 }
 
 function openCustomerService() {
-  if (!product.value) {
-    showFailToast('商品信息加载中...')
-    return
-  }
-
-  const normalizedProductName = product.value.name.trim()
-  const normalizedStoreId = storeInfo.value?.storeId?.trim() ?? ''
-  const normalizedStoreName = storeInfo.value?.storeName?.trim() ?? ''
-
-  void router.push({
-    name: 'member-customer-service',
-    query: {
-      composer: 'create',
-      content: normalizedProductName ? `您好，我想咨询商品“${normalizedProductName}”相关问题。` : '您好，我想咨询商品相关问题。',
-      ...(normalizedStoreId ? { storeId: normalizedStoreId } : {}),
-      ...(normalizedStoreName ? { storeName: normalizedStoreName } : {}),
-      subject: normalizedProductName ? `商品咨询 · ${normalizedProductName}` : '商品咨询',
-    },
-  })
+  void router.push(customerContactEntryRoute)
 }
 
 function goBack() {

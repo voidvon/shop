@@ -7,6 +7,7 @@ import { showLoadingToast, showToast, type ToastWrapperInstance } from 'vant'
 import { MemberLogoutButton } from '@/features/member-logout'
 import { useBackendRuntime } from '@/app/providers/backend'
 import { backendTarget } from '@/shared/config/backend'
+import { customerContactEntryRoute } from '@/shared/config/contact-entry'
 import { readAppVersion } from '@/shared/lib/app-version'
 import { useModuleAvailability } from '@/shared/lib/modules'
 import { isWechatBrowser, startWechatOauthLogin } from '@/shared/lib/wechat-browser'
@@ -187,7 +188,7 @@ function retryLoadMemberCenterPage() {
 }
 
 function openCustomerService() {
-  void router.push({ name: 'member-customer-service' })
+  void router.push(customerContactEntryRoute)
 }
 
 function closeLoadingToast() {
