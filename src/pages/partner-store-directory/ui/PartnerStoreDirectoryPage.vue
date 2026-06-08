@@ -89,9 +89,17 @@ watch(storeTypeId, () => {
         <div class="merchant-panel-intro">
           <strong>{{ pageTitle }}</strong>
           <span>按地区查看合作商家</span>
-          <p v-if="hasBrands" class="brand-summary">
-            合作品牌：{{ brands.join(' / ') }}
-          </p>
+          <div v-if="hasBrands" class="brand-summary" aria-label="合作品牌">
+            <van-tag
+              v-for="brand in brands"
+              :key="brand"
+              class="brand-tag"
+              plain
+              round
+            >
+              {{ brand }}
+            </van-tag>
+          </div>
         </div>
 
         <div class="merchant-panel-head">
@@ -265,10 +273,24 @@ watch(storeTypeId, () => {
 }
 
 .brand-summary {
-  margin: 0;
-  color: var(--color-text);
-  font-size: 13px;
-  line-height: 1.5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.brand-tag {
+  max-width: 100%;
+  padding: 0 6px;
+  border-color: rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text-soft);
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .merchant-panel-head {
