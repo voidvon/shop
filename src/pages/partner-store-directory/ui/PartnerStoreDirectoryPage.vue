@@ -90,6 +90,7 @@ watch(storeTypeId, () => {
           <strong>{{ pageTitle }}</strong>
           <span>按地区查看合作商家</span>
           <div v-if="hasBrands" class="brand-summary" aria-label="合作品牌">
+            <span class="brand-summary-title">合作品牌</span>
             <van-tag
               v-for="brand in brands"
               :key="brand"
@@ -277,6 +278,13 @@ watch(storeTypeId, () => {
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
+}
+
+.brand-summary-title {
+  width: 100%;
+  color: var(--color-text-subtle);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .brand-tag {
