@@ -88,7 +88,6 @@ watch(storeTypeId, () => {
       <main class="merchant-panel">
         <div class="merchant-panel-intro">
           <strong>{{ pageTitle }}</strong>
-          <span>按地区查看合作商家</span>
           <div v-if="hasBrands" class="brand-summary" aria-label="合作品牌">
             <span class="brand-summary-title">合作品牌</span>
             <van-tag
