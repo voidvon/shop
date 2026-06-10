@@ -9,8 +9,8 @@ export function useOrderListPageModel() {
   const errorMessage = computed(() => tradeStore.errorMessage)
   const isLoading = computed(() => tradeStore.isLoadingOrderList)
 
-  async function loadOrderListPage() {
-    await tradeStore.loadOrderList()
+  async function loadOrderListPage(options?: { force?: boolean }) {
+    await tradeStore.loadOrderList(options)
   }
 
   async function cancelOrder(orderId: string) {

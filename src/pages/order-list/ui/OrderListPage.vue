@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onActivated, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast } from 'vant'
 
@@ -290,12 +290,8 @@ watch(
   { immediate: true },
 )
 
-onMounted(() => {
-  void loadOrderListPage()
-})
-
 onActivated(() => {
-  void loadOrderListPage()
+  void loadOrderListPage({ force: true })
 })
 
 onBeforeUnmount(() => {
