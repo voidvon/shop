@@ -71,6 +71,11 @@ async function handleSubmitted() {
 }
 
 async function triggerWechatOauthIfNeeded() {
+  if (memberAuthSession.getSnapshot().authResult) {
+    await router.replace(redirectPath.value)
+    return
+  }
+
   if (!isWechatBrowser() || wechatCode.value) {
     return
   }

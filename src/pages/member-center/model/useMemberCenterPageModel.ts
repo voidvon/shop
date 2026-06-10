@@ -28,6 +28,7 @@ const emptyMemberCenterPageData: MemberCenterPageData = {
     favoritesCount: 0,
   },
   orderSummary: {
+    completedCount: 0,
     pendingPaymentCount: 0,
     pendingReceiptCount: 0,
     pendingReviewCount: 0,

@@ -24,6 +24,7 @@ type OrderListFilterStatus =
   | 'pending-payment'
   | 'pending-shipment'
   | 'pending-receipt'
+  | 'completed'
   | 'pending-review'
   | 'after-sale'
 
@@ -55,6 +56,7 @@ watch(
       { key: 'pending-payment', label: '待付款' },
       { key: 'pending-shipment', label: '待发货' },
       { key: 'pending-receipt', label: '待收货' },
+      { key: 'completed', label: '已完成' },
       ...(enabled ? [{ key: 'pending-review' as const, label: '待评价' }] : []),
       { key: 'after-sale', label: '退款/退货' },
     ]

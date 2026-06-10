@@ -243,6 +243,7 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         name: 'member-login',
         component: MemberLoginPage,
         meta: {
+          skipWechatAutoLogin: true,
           title: '会员登录',
         },
       }),
@@ -251,6 +252,7 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         name: 'member-register',
         component: MemberRegisterPage,
         meta: {
+          skipWechatAutoLogin: true,
           title: '会员注册',
         },
       }),
@@ -562,6 +564,7 @@ const moduleCompositionRegistry: ModuleCompositionDefinition[] = [
         name: 'member-register-mobile',
         component: MemberRegisterMobilePage,
         meta: {
+          skipWechatAutoLogin: true,
           title: '手机注册',
         },
       }),

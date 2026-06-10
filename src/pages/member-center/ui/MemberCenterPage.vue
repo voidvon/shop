@@ -39,9 +39,9 @@ let loadingToast: ToastWrapperInstance | null = null
 
 type OrderListFilterStatus =
   | 'all'
-  | 'pending-payment'
   | 'pending-shipment'
   | 'pending-receipt'
+  | 'completed'
   | 'pending-review'
   | 'after-sale'
 
@@ -57,6 +57,7 @@ interface OrderEntry {
   key: string
   label: string
   route: RouteLocationRaw
+  showBadge?: boolean
 }
 
 const countCards = computed<CountCard[]>(() => {
@@ -88,13 +89,6 @@ const countCards = computed<CountCard[]>(() => {
 
 const orderEntries = computed<OrderEntry[]>(() => [
   {
-    count: memberCenterPageData.value.orderSummary.pendingPaymentCount,
-    key: 'pendingPaymentCount',
-    label: '待付款',
-    icon: 'balance-o',
-    route: buildOrderRoute('pending-payment'),
-  },
-  {
     count: memberCenterPageData.value.orderSummary.pendingShipmentCount,
     key: 'pendingShipmentCount',
     label: '待发货',
@@ -123,6 +117,14 @@ const orderEntries = computed<OrderEntry[]>(() => [
     label: '退款/退货',
     icon: 'replay',
     route: buildOrderRoute('after-sale'),
+  },
+  {
+    count: memberCenterPageData.value.orderSummary.completedCount,
+    key: 'completedCount',
+    label: '已完成',
+    icon: 'passed',
+    route: buildOrderRoute('completed'),
+    showBadge: false,
   },
 ] as const)
 
@@ -309,7 +311,7 @@ onUnmounted(() => {
               :to="entry.route"
             >
               <van-badge
-                :content="entry.count > 0 ? entry.count : undefined"
+                :content="entry.showBadge === false || entry.count <= 0 ? undefined : entry.count"
                 :max="99"
                 class="order-entry-badge"
               >

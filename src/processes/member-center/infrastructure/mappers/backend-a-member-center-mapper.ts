@@ -144,6 +144,7 @@ export function mapBackendAMemberCenterPageData(
     orderSummary: orderSummary
       ? { ...orderSummary }
       : {
+          completedCount: 0,
           pendingPaymentCount: 1,
           pendingReceiptCount: 0,
           pendingReviewCount: 1,

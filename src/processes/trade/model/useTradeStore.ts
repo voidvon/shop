@@ -16,6 +16,7 @@ import { useTradeQuery } from '../infrastructure/trade-query-provider'
 import type { OrderListPageData } from '../domain/trade-page-data'
 
 type OrderSummary = {
+  completedCount: number
   pendingPaymentCount: number
   pendingReceiptCount: number
   pendingReviewCount: number
@@ -29,6 +30,7 @@ const emptyOrderListPageData: OrderListPageData = {
 }
 
 const emptyOrderSummary: OrderSummary = {
+  completedCount: 0,
   pendingPaymentCount: 0,
   pendingReceiptCount: 0,
   pendingReviewCount: 0,
@@ -63,6 +65,9 @@ function createOrderSummary(orders: OrderListPageData['orders']): OrderSummary {
         break
       case 'pending-review':
         summary.pendingReviewCount += 1
+        break
+      case 'completed':
+        summary.completedCount += 1
         break
       case 'refunding':
       case 'returning':

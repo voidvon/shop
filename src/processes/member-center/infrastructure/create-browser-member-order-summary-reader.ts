@@ -7,6 +7,7 @@ interface CreateBrowserMemberOrderSummaryReaderOptions {
 }
 
 const emptyMemberOrderSummary: MemberOrderSummary = {
+  completedCount: 0,
   pendingPaymentCount: 0,
   pendingReceiptCount: 0,
   pendingReviewCount: 0,
@@ -44,6 +45,9 @@ export function createBrowserMemberOrderSummaryReader(
           break
         case 'pending-review':
           summary.pendingReviewCount += 1
+          break
+        case 'completed':
+          summary.completedCount += 1
           break
         case 'refunding':
         case 'returning':

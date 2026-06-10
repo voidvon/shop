@@ -85,6 +85,7 @@ export const mockMemberCenterPageData: MemberCenterPageData = {
     favoritesCount: 8,
   },
   orderSummary: {
+    completedCount: 1,
     pendingPaymentCount: 1,
     pendingReceiptCount: 1,
     pendingReviewCount: 2,

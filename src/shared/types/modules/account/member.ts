@@ -11,6 +11,7 @@ export interface MemberCountSummary {
 }
 
 export interface MemberOrderSummary {
+  completedCount: number
   pendingPaymentCount: number
   pendingShipmentCount: number
   pendingReceiptCount: number
