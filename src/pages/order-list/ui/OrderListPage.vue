@@ -21,7 +21,6 @@ import { useOrderListPageModel } from '../model/useOrderListPageModel'
 
 type OrderListFilterStatus =
   | 'all'
-  | 'pending-payment'
   | 'pending-shipment'
   | 'pending-receipt'
   | 'completed'
@@ -53,12 +52,11 @@ watch(
   (enabled) => {
     tabs.value = [
       { key: 'all', label: '全部' },
-      { key: 'pending-payment', label: '待付款' },
       { key: 'pending-shipment', label: '待发货' },
       { key: 'pending-receipt', label: '待收货' },
-      { key: 'completed', label: '已完成' },
       ...(enabled ? [{ key: 'pending-review' as const, label: '待评价' }] : []),
       { key: 'after-sale', label: '退款/退货' },
+      { key: 'completed', label: '已完成' },
     ]
   },
   { immediate: true },
