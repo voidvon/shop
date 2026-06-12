@@ -249,8 +249,7 @@ onActivated(() => {
   border-top: 1px solid rgba(var(--shadow-rgb), 0.08);
 }
 
-.detail-row,
-.balance-item {
+.detail-row {
   display: flex;
   gap: 12px;
   align-items: center;
@@ -274,7 +273,11 @@ onActivated(() => {
 }
 
 .balance-item {
-  padding: 10px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: center;
+  padding: 12px 0;
 }
 
 .balance-item + .balance-item {
@@ -282,21 +285,31 @@ onActivated(() => {
 }
 
 .balance-item-label {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
   color: var(--color-text-strong);
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1;
 }
 
 .balance-item-value {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
   color: var(--color-primary);
   font-size: 16px;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: 1;
+  text-align: right;
 }
 
 .balances-block,
 .balances-list {
   display: grid;
+}
+
+.balances-block {
   gap: 10px;
 }
 
