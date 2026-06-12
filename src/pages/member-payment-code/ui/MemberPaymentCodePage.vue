@@ -3,7 +3,6 @@ import QRCode from 'qrcode'
 import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { formatCurrency } from '@/shared/lib/currency'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
@@ -26,14 +25,8 @@ let generateCodeTaskId = 0
 
 const displayCodeUrl = computed(() => paymentCode.value?.codeUrl || generatedCodeUrl.value)
 
-function formatBalanceParts(amount: number) {
-  const formattedAmount = formatCurrency(amount)
-  const [majorPart, minorPart] = formattedAmount.split('.')
-
-  return {
-    majorPart,
-    minorPart: minorPart ? `.${minorPart}` : '',
-  }
+function formatAmount(value: number) {
+  return value.toFixed(2)
 }
 
 function goBack() {
@@ -123,15 +116,13 @@ onActivated(() => {
               <div
                 v-for="account in paymentCodeBalanceAccounts"
                 :key="account.accountId"
-                class="balance-row"
+                class="account-row"
               >
-                <span>{{ account.balanceTypeName }}</span>
-                <strong class="balance-amount">
-                  <span class="balance-amount-major">{{ formatBalanceParts(account.availableAmount).majorPart }}</span>
-                  <span v-if="formatBalanceParts(account.availableAmount).minorPart" class="balance-amount-minor">
-                    {{ formatBalanceParts(account.availableAmount).minorPart }}
-                  </span>
-                </strong>
+                <div class="account-copy">
+                  <strong>{{ account.balanceTypeName }}</strong>
+                  <span>可用于线下付款</span>
+                </div>
+                <strong class="account-amount">¥{{ formatAmount(account.availableAmount) }}</strong>
               </div>
             </div>
 
@@ -262,7 +253,7 @@ onActivated(() => {
 }
 
 .detail-row,
-.balance-row {
+.account-row {
   display: flex;
   gap: 12px;
   align-items: center;
@@ -271,7 +262,6 @@ onActivated(() => {
 
 .detail-row span,
 .balances-title,
-.balance-row span,
 .balances-empty {
   color: var(--color-text-subtle);
   font-size: 13px;
@@ -279,37 +269,39 @@ onActivated(() => {
 }
 
 .detail-row strong,
-.balance-row strong {
+.account-row strong {
   color: var(--color-text-heading);
   font-size: 14px;
   line-height: 1.5;
   text-align: right;
 }
 
-.balance-row {
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, rgba(var(--color-primary-rgb), 0.12), rgba(var(--color-primary-rgb), 0.03));
+.account-row {
+  padding: 14px 0;
 }
 
-.balance-amount {
-  display: inline-flex;
-  align-items: flex-start;
-  color: var(--color-primary-deep);
+.account-row + .account-row {
+  border-top: 1px solid var(--color-line-soft);
 }
 
-.balance-amount-major {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1;
+.account-copy {
+  display: grid;
+  gap: 4px;
 }
 
-.balance-amount-minor {
-  padding-top: 2px;
+.account-copy strong {
+  color: var(--color-text-strong);
+  font-size: 14px;
+}
+
+.account-copy span {
+  color: var(--color-text-subtle);
   font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
+}
+
+.account-amount {
+  color: var(--color-primary);
+  font-size: 16px;
 }
 
 .balances-block,
