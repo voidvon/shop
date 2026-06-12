@@ -26,6 +26,16 @@ let generateCodeTaskId = 0
 
 const displayCodeUrl = computed(() => paymentCode.value?.codeUrl || generatedCodeUrl.value)
 
+function formatBalanceParts(amount: number) {
+  const formattedAmount = formatCurrency(amount)
+  const [majorPart, minorPart] = formattedAmount.split('.')
+
+  return {
+    majorPart,
+    minorPart: minorPart ? `.${minorPart}` : '',
+  }
+}
+
 function goBack() {
   if (globalThis.window?.history.length && globalThis.window.history.length > 1) {
     router.back()
@@ -116,7 +126,12 @@ onActivated(() => {
                 class="balance-row"
               >
                 <span>{{ account.balanceTypeName }}</span>
-                <strong>{{ formatCurrency(account.availableAmount) }}</strong>
+                <strong class="balance-amount">
+                  <span class="balance-amount-major">{{ formatBalanceParts(account.availableAmount).majorPart }}</span>
+                  <span v-if="formatBalanceParts(account.availableAmount).minorPart" class="balance-amount-minor">
+                    {{ formatBalanceParts(account.availableAmount).minorPart }}
+                  </span>
+                </strong>
               </div>
             </div>
 
@@ -269,6 +284,32 @@ onActivated(() => {
   font-size: 14px;
   line-height: 1.5;
   text-align: right;
+}
+
+.balance-row {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(var(--color-primary-rgb), 0.12), rgba(var(--color-primary-rgb), 0.03));
+}
+
+.balance-amount {
+  display: inline-flex;
+  align-items: flex-start;
+  color: var(--color-primary-deep);
+}
+
+.balance-amount-major {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.balance-amount-minor {
+  padding-top: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .balances-block,
