@@ -26,8 +26,10 @@ export interface AccountBalanceLog {
 }
 
 export interface PaymentCodeInfo {
+  balanceAccounts?: BalanceAccountInfo[]
   codeUrl: string
   codeValue: string
+  expiresAt?: string | null
 }
 
 export interface MemberAssetsPageData {

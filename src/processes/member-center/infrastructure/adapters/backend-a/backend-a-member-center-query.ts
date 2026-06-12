@@ -5,6 +5,8 @@ import {
   backendAHttpClient,
   createBackendAHttpClient,
 } from '@/shared/api/backend-a/backend-a-http-client'
+import { sortBalanceAccountsForDisplay } from '@/shared/lib/balance-accounts'
+import type { BalanceAccountInfo } from '@/shared/types/modules'
 import { createBackendAOrderListPageDataReader } from '@/processes/trade/infrastructure/adapters/backend-a/backend-a-trade-readers'
 
 import type { MemberAssetsService } from '../../../domain/member-assets-service'
@@ -110,6 +112,8 @@ function findNestedString(
 }
 
 function normalizeBackendAPaymentCode(input: unknown) {
+  const balanceAccounts = normalizeBackendAPaymentCodeBalanceAccounts(input)
+  const expiresAt = findNestedString(input, (key) => key.includes('expires'))
   const codeUrl = findNestedString(input, (key, value) => {
     if (!looksLikePaymentCodeUrl(value)) {
       return false
@@ -139,9 +143,99 @@ function normalizeBackendAPaymentCode(input: unknown) {
   }
 
   return {
+    balanceAccounts,
     codeUrl: codeUrl ? resolveBackendAMediaUrl(codeUrl) ?? codeUrl : null,
     codeValue,
+    expiresAt,
   }
+}
+
+function parseBackendAAmount(value: unknown) {
+  const parsedValue = typeof value === 'number' ? value : Number.parseFloat(normalizeCandidateString(value) ?? '')
+  return Number.isFinite(parsedValue) ? parsedValue : 0
+}
+
+function normalizeBackendABalanceAccountsFromList(list: unknown[]): BalanceAccountInfo[] {
+  return sortBalanceAccountsForDisplay(
+    list
+      .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object')
+      .map((item, index) => {
+        const rawType = item.balance_type
+        const balanceType = rawType && typeof rawType === 'object'
+          ? rawType as Record<string, unknown>
+          : null
+        const accountId = normalizeCandidateString(item.accountId)
+          ?? normalizeCandidateString(item.account_id)
+          ?? normalizeCandidateString(item.id)
+          ?? `payment-code-balance-${index + 1}`
+        const balanceTypeId = Number(
+          item.balanceTypeId
+          ?? item.balance_type_id
+          ?? balanceType?.id
+          ?? 0,
+        )
+        const balanceTypeName = normalizeCandidateString(item.balanceTypeName)
+          ?? normalizeCandidateString(item.balance_type_name)
+          ?? normalizeCandidateString(balanceType?.name)
+          ?? `余额类型#${balanceTypeId || index + 1}`
+
+        return {
+          accountId,
+          availableAmount: Math.max(parseBackendAAmount(
+            item.availableAmount
+            ?? item.available_amount
+            ?? item.amount
+            ?? item.balance
+            ?? item.remaining_amount,
+          ), 0),
+          balanceTypeCode: normalizeCandidateString(item.balanceTypeCode)
+            ?? normalizeCandidateString(item.balance_type_code)
+            ?? normalizeCandidateString(balanceType?.code),
+          balanceTypeId: Number.isFinite(balanceTypeId) ? balanceTypeId : 0,
+          balanceTypeName,
+          frozenAmount: Math.max(parseBackendAAmount(item.frozenAmount ?? item.frozen_amount), 0),
+        }
+      }),
+  )
+}
+
+function normalizeBackendAPaymentCodeBalanceAccounts(input: unknown): BalanceAccountInfo[] {
+  if (!input || typeof input !== 'object') {
+    return []
+  }
+
+  const queue: unknown[] = [input]
+  let depth = 0
+
+  while (queue.length && depth <= 4) {
+    const levelSize = queue.length
+
+    for (let index = 0; index < levelSize; index += 1) {
+      const current = queue.shift()
+
+      if (!current || typeof current !== 'object') {
+        continue
+      }
+
+      const objectValue = current as Record<string, unknown>
+
+      for (const [rawKey, rawValue] of Object.entries(objectValue)) {
+        if (rawKey.toLowerCase().includes('balance_accounts') && Array.isArray(rawValue)) {
+          return normalizeBackendABalanceAccountsFromList(rawValue)
+        }
+      }
+
+      for (const rawValue of Object.values(objectValue)) {
+        if (rawValue && typeof rawValue === 'object') {
+          queue.push(rawValue)
+        }
+      }
+    }
+
+    depth += 1
+  }
+
+  return []
 }
 
 export function createBackendAMemberCenterQuery(

@@ -6,7 +6,7 @@
 - 当前运行时装配：[`src/app/providers/backend/create-backend-runtime.ts`](/root/shop/src/app/providers/backend/create-backend-runtime.ts)
 - 现有 `backend-a` 适配层与浏览器仓储实现
 
-更新时间：`2026-06-08`
+更新时间：`2026-06-12`
 
 ## 1. 先看结论
 
@@ -115,7 +115,7 @@
 | 合作商家 | 是 | 是 | 已直连（目录页） | 已有 `/partner-store-types/:storeTypeId` 页面，并调用 `/api/v1/partner-regions`、`/api/v1/partner-store-types`、`/api/v1/partner-merchants`；当前已在“按地区查看合作商家”下方展示 `data.brands` 返回的合作品牌名称 |
 | 线上商户 | 是 | 是 | 部分直连 | 当前店铺首页已调用 `/api/v1/merchants/{merchant}` 获取商户详情，并通过 `/api/v1/products?merchant_id=` 组装商品列表；`GET /api/v1/merchants` 列表页仍未落位 |
 | 客服 | 是 | 否 | 未接入 | 当前没有客服会话页面和消息数据层 |
-| 线下付款 | 是 | 是 | 已直连 | 用户付款码页已接 `/api/v1/offline-payments/payment-code`；商户扣款页已接 `/api/v1/merchant/offline-payments/scan`、`/api/v1/merchant/offline-payments/pay`、`/api/v1/merchant/offline-payments/{offlinePayment}/refund`，并依赖 `/api/v1/auth/profile` 返回 `merchant.supported_balance_types`；店铺流水页已接 `verifier_user_id` 筛选、`staff_list` 核销人员列表与 `statistics` 统计数据 |
+| 线下付款 | 是 | 是 | 已直连 | 用户付款码页已接 `/api/v1/offline-payments/payment-code`；最新 Swagger 已将其成功响应收紧为 `OfflinePaymentCodeResponse`，明确返回 `payment_token`、过期时间、一次性标记与 `balance_accounts`；商户扣款页已接 `/api/v1/merchant/offline-payments/scan`、`/api/v1/merchant/offline-payments/pay`、`/api/v1/merchant/offline-payments/{offlinePayment}/refund`，并依赖 `/api/v1/auth/profile` 返回 `merchant.supported_balance_types`；店铺流水页已接 `verifier_user_id` 筛选、`staff_list` 核销人员列表与 `statistics` 统计数据 |
 | 上传 | 是 | 间接可能需要 | 未接入 | 当前没有统一上传 gateway |
 | 员工邀请 | 是 | 否 | 未接入 | 当前没有邀请查看/绑定页面流程 |
 | 平台配置 | 是 | 弱依赖 | 已直连 | 会员中心客服热线、关于我们文案与全站销量展示开关已接 `/api/v1/platform/settings`；`show_sales_count=false` 时前端会隐藏销量文案与店铺页销量排序入口 |
@@ -205,6 +205,7 @@
 - “我的卡券”页已接 `GET /api/v1/stored-value-cards/recharge-logs`
 - 绑卡提交流程会先调用 `POST /api/v1/stored-value-cards/lookup` 做真实校验，再调用充值接口
 - 付款码页面已落地到 `/member/assets/payment-code`，读取 `GET /api/v1/offline-payments/payment-code`
+- `2026-06-12` 的 dev Swagger 已将该接口成功响应收紧为 `OfflinePaymentCodeResponse`，`data` 现明确包含 `payment_token`、`expires_at`、`token_required`、`one_time` 与 `balance_accounts`
 - 充值记录现在直接展示后端返回的真实历史，不再使用前端本地生成记录
 - 真实订单扣减余额后，页面刷新会再次读取远端余额，不再伪造本地扣款
 - 店铺流水页已接 `POST /api/v1/merchant/offline-payments/{offlinePayment}/refund`，支持对成功流水发起退款

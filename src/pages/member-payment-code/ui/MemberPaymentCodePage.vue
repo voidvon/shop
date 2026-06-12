@@ -3,6 +3,7 @@ import QRCode from 'qrcode'
 import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
+import { formatCurrency } from '@/shared/lib/currency'
 import EmptyState from '@/shared/ui/EmptyState.vue'
 import LoadingState from '@/shared/ui/LoadingState.vue'
 import PageTopBar from '@/shared/ui/PageTopBar.vue'
@@ -19,6 +20,7 @@ const {
 } = useMemberPaymentCodePageModel()
 const isAuthRecovering = useBackendAAuthRecoveryState()
 const paymentCode = computed(() => memberPaymentCodePageData.value.paymentCode)
+const paymentCodeBalanceAccounts = computed(() => paymentCode.value?.balanceAccounts ?? [])
 const generatedCodeUrl = ref<string | null>(null)
 let generateCodeTaskId = 0
 
@@ -96,6 +98,30 @@ onActivated(() => {
         <div class="code-copy">
           <span>付款码编号</span>
           <strong>{{ paymentCode.codeValue || '后端未返回可展示编号' }}</strong>
+        </div>
+
+        <div class="detail-list">
+          <div class="detail-row">
+            <span>过期时间</span>
+            <strong>{{ paymentCode.expiresAt || '以后端实际失效时间为准' }}</strong>
+          </div>
+
+          <div class="balances-block">
+            <span class="balances-title">余额列表</span>
+
+            <div v-if="paymentCodeBalanceAccounts.length" class="balances-list">
+              <div
+                v-for="account in paymentCodeBalanceAccounts"
+                :key="account.accountId"
+                class="balance-row"
+              >
+                <span>{{ account.balanceTypeName }}</span>
+                <strong>{{ formatCurrency(account.availableAmount) }}</strong>
+              </div>
+            </div>
+
+            <p v-else class="balances-empty">当前没有可用余额账户</p>
+          </div>
         </div>
       </section>
 
@@ -211,6 +237,48 @@ onActivated(() => {
   color: var(--color-text-heading);
   font-size: 18px;
   line-height: 1.5;
+}
+
+.detail-list {
+  display: grid;
+  gap: 14px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(var(--shadow-rgb), 0.08);
+}
+
+.detail-row,
+.balance-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.detail-row span,
+.balances-title,
+.balance-row span,
+.balances-empty {
+  color: var(--color-text-subtle);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.detail-row strong,
+.balance-row strong {
+  color: var(--color-text-heading);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.balances-block,
+.balances-list {
+  display: grid;
+  gap: 10px;
+}
+
+.balances-empty {
+  margin: 0;
 }
 
 .empty-state {

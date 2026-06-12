@@ -98,8 +98,10 @@ export function mapMockMemberPaymentCodePageData(): MemberPaymentCodePageData {
   return {
     paymentCode: paymentCode
       ? {
+          balanceAccounts: paymentCode.balanceAccounts?.map((account) => ({ ...account })) ?? [],
           codeUrl: paymentCode.codeUrl,
           codeValue: paymentCode.codeValue,
+          expiresAt: paymentCode.expiresAt ?? null,
         }
       : null,
   }

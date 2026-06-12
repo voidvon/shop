@@ -2764,7 +2764,7 @@
                 "tags": [
                     "线下付款"
                 ],
-                "summary": "获取用户付款码,生成payment_token,前端通过这个payment_token生成二维码供商户核销员扫码识别；",
+                "summary": "获取用户付款码，返回 payment_token 及当前用户余额账户信息；前端通过 payment_token 生成二维码供商户核销员扫码识别",
                 "operationId": "2561689048384acb424312b6e895eb59",
                 "responses": {
                     "200": {
@@ -2772,7 +2772,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/OfflinePaymentCodeResponse"
                                 }
                             }
                         }
@@ -5684,6 +5684,59 @@
                     },
                     "balance_type": {
                         "$ref": "#/components/schemas/BalanceTypeSimple"
+                    }
+                },
+                "type": "object"
+            },
+            "OfflinePaymentCodeData": {
+                "properties": {
+                    "user_id": {
+                        "description": "当前登录用户ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "token_required": {
+                        "description": "商户扫码支付时必须提交 payment_token",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "one_time": {
+                        "description": "付款码是否一次性使用；true 表示支付成功或消费中后不可重复使用",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "payment_token": {
+                        "description": "付款码令牌，前端用此值生成二维码供商户核销员扫码",
+                        "type": "string",
+                        "example": "PAY202606120001"
+                    },
+                    "expires_at": {
+                        "description": "付款码过期时间",
+                        "type": "string",
+                        "example": "2026-06-12 10:30:00"
+                    },
+                    "balance_accounts": {
+                        "description": "当前用户已有的线上余额账户列表；每项包含当前余额类型和剩余可用余额。没有余额账户时返回空数组",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BalanceAccountPayload"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "OfflinePaymentCodeResponse": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "付款码生成成功"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/OfflinePaymentCodeData"
                     }
                 },
                 "type": "object"

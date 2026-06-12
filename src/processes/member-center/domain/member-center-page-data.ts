@@ -54,8 +54,10 @@ export interface MemberCardsPageData {
 }
 
 export interface MemberPaymentCodeData {
+  balanceAccounts: BalanceAccountInfo[]
   codeUrl: string | null
   codeValue: string | null
+  expiresAt: string | null
 }
 
 export interface MemberPaymentCodePageData {

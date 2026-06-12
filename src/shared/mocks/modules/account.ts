@@ -190,8 +190,27 @@ export const mockMemberAssetsPageData: MemberAssetsPageData = {
     },
   ],
   paymentCode: {
+    balanceAccounts: [
+      {
+        accountId: 'payment-code-balance-1',
+        availableAmount: 200,
+        balanceTypeCode: 'culture',
+        balanceTypeId: 1,
+        balanceTypeName: '文惠余额',
+        frozenAmount: 0,
+      },
+      {
+        accountId: 'payment-code-balance-2',
+        availableAmount: 168.5,
+        balanceTypeCode: 'general',
+        balanceTypeId: 2,
+        balanceTypeName: '通用余额',
+        frozenAmount: 0,
+      },
+    ],
     codeUrl: mockImageUrl,
     codeValue: 'PAY-CODE-20260319',
+    expiresAt: '2026-03-19 18:30:00',
   },
 }
 

@@ -4,7 +4,7 @@
 
 - Swagger 页面：`https://dev.qzxys.com/api/documentation`
 - OpenAPI JSON：`https://dev.qzxys.com/docs?api-docs.json`
-- 最近一次抓取时间：`2026-06-08`
+- 最近一次抓取时间：`2026-06-12`
 - 原始文件：[`openapi.json`](/root/shop/docs/api/openapi.json)
 
 说明：
@@ -149,7 +149,7 @@
 
 ### 线下付款
 
-- `GET /api/v1/offline-payments/payment-code` 获取用户付款码
+- `GET /api/v1/offline-payments/payment-code` 获取用户付款码；响应现明确返回 `payment_token`、过期时间、一次性标记与当前用户余额账户列表
 - `GET /api/v1/merchant/offline-payments` 合作商家员工查看当前所属商家的线下支付流水，支持 `min_amount / max_amount / start_time / end_time / verifier_user_id / per_page`；响应分页对象新增 `staff_list` 与 `statistics`
 - `POST /api/v1/merchant/offline-payments/scan` 合作商家核销员扫码识别用户付款码或储值卡二维码
 - `POST /api/v1/merchant/offline-payments/pay` 合作商家核销员提交线下支付；前端需附带 `balance_type_id`，其来源为 `GET /api/v1/auth/profile -> data.merchant.supported_balance_types`
@@ -166,6 +166,7 @@
 - 以 [`endpoints.md`](/root/shop/docs/api/endpoints.md) 作为方法、路径、鉴权、参数、请求体和响应模型的速查表
 - 以 [`frontend-integration-status.md`](/root/shop/docs/api/frontend-integration-status.md) 作为“当前代码已经接了什么、哪些还没接、哪些与 Swagger 不一致”的对照清单
 - 后续如果后端 Swagger 变更，优先重新抓取 `openapi.json`，再同步更新本文件中的统计与分组
+- `2026-06-12` 已重新抓取 dev Swagger；Path 数与 Operation 数保持 `47 / 55` 不变，`GET /api/v1/offline-payments/payment-code` 成功响应从通用 `ApiResponse` 收紧为显式 `OfflinePaymentCodeResponse`，新增 `OfflinePaymentCodeData` schema，明确返回 `payment_token`、`expires_at`、`token_required`、`one_time` 以及 `balance_accounts`
 - `2026-06-08` 已重新抓取 dev Swagger；Path 数与 Operation 数保持 `47 / 55` 不变，合作商家 4 个接口从通用 `ApiResponse` 收紧为显式 schema：`PartnerRegionListResponse`、`PartnerStoreTypeListResponse`、`PartnerMerchantListResponse`、`PartnerMerchantDetailResponse`；其中合作商家列表的 `data` 现明确为分页对象，新增 `data.brands`
 - `2026-06-03` 已重新抓取 Swagger；新增微信充值接口组：`GET /api/v1/recharges/options`、`GET /api/v1/recharges`、`POST /api/v1/recharges`，并新增 `UserRecharge*` 与 `WechatJsapiPaymentPayload` 相关 schema；线下支付流水结构新增 `user_recharge_id`
 - `2026-05-29` 已重新抓取 Swagger；接口总数未变，新增 `OfflinePaymentStaffSimple` 与 `MerchantOfflinePaymentStatistics` schema，`GET /api/v1/merchant/offline-payments` 新增 `verifier_user_id` 筛选并在响应分页对象中返回 `staff_list / statistics`；`GET /api/v1/platform/settings` 新增 `show_sales_count`；订单 `virtual_delivery_info` 说明改为 HTML 内容
