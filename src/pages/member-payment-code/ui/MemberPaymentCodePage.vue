@@ -116,12 +116,10 @@ onActivated(() => {
               <div
                 v-for="account in paymentCodeBalanceAccounts"
                 :key="account.accountId"
-                class="account-row"
+                class="balance-item"
               >
-                <div class="account-copy">
-                  <strong>{{ account.balanceTypeName }}</strong>
-                </div>
-                <strong class="account-amount">¥{{ formatAmount(account.availableAmount) }}</strong>
+                <span class="balance-item-label">{{ account.balanceTypeName }}</span>
+                <span class="balance-item-value">¥{{ formatAmount(account.availableAmount) }}</span>
               </div>
             </div>
 
@@ -252,7 +250,7 @@ onActivated(() => {
 }
 
 .detail-row,
-.account-row {
+.balance-item {
   display: flex;
   gap: 12px;
   align-items: center;
@@ -268,42 +266,32 @@ onActivated(() => {
 }
 
 .detail-row strong,
-.account-row strong {
+.balance-item-value {
   color: var(--color-text-heading);
   font-size: 14px;
   line-height: 1.5;
   text-align: right;
 }
 
-.account-row {
-  padding: 12px 0;
-  min-height: 24px;
+.balance-item {
+  padding: 10px 0;
 }
 
-.account-row + .account-row {
+.balance-item + .balance-item {
   border-top: 1px solid var(--color-line-soft);
 }
 
-.account-copy {
-  display: flex;
-  align-items: center;
-  min-height: 24px;
-}
-
-.account-copy strong {
-  display: inline-flex;
-  align-items: center;
+.balance-item-label {
   color: var(--color-text-strong);
   font-size: 14px;
-  line-height: 24px;
+  line-height: 1.4;
 }
 
-.account-row .account-amount {
-  display: inline-flex;
-  align-items: center;
+.balance-item-value {
   color: var(--color-primary);
   font-size: 16px;
-  line-height: 24px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .balances-block,
