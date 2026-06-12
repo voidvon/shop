@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import QRCode from 'qrcode'
-import { computed, onActivated, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import EmptyState from '@/shared/ui/EmptyState.vue'
@@ -72,10 +72,6 @@ watch(
 )
 
 onMounted(() => {
-  void loadMemberPaymentCodePage()
-})
-
-onActivated(() => {
   void loadMemberPaymentCodePage()
 })
 </script>
