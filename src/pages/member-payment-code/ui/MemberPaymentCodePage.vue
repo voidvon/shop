@@ -120,7 +120,6 @@ onActivated(() => {
               >
                 <div class="account-copy">
                   <strong>{{ account.balanceTypeName }}</strong>
-                  <span>可用于线下付款</span>
                 </div>
                 <strong class="account-amount">¥{{ formatAmount(account.availableAmount) }}</strong>
               </div>
@@ -277,7 +276,7 @@ onActivated(() => {
 }
 
 .account-row {
-  padding: 14px 0;
+  padding: 14px 18px;
 }
 
 .account-row + .account-row {
@@ -286,7 +285,6 @@ onActivated(() => {
 
 .account-copy {
   display: grid;
-  gap: 4px;
 }
 
 .account-copy strong {
@@ -294,12 +292,7 @@ onActivated(() => {
   font-size: 14px;
 }
 
-.account-copy span {
-  color: var(--color-text-subtle);
-  font-size: 12px;
-}
-
-.account-amount {
+.account-row .account-amount {
   color: var(--color-primary);
   font-size: 16px;
 }
