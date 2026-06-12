@@ -276,7 +276,7 @@ onActivated(() => {
 }
 
 .account-row {
-  padding: 14px 18px;
+  padding: 12px 0;
 }
 
 .account-row + .account-row {
@@ -284,17 +284,23 @@ onActivated(() => {
 }
 
 .account-copy {
-  display: grid;
+  display: flex;
+  align-items: center;
+  min-height: 24px;
 }
 
 .account-copy strong {
   color: var(--color-text-strong);
   font-size: 14px;
+  line-height: 1.4;
 }
 
 .account-row .account-amount {
+  display: inline-flex;
+  align-items: center;
   color: var(--color-primary);
   font-size: 16px;
+  line-height: 1;
 }
 
 .balances-block,
