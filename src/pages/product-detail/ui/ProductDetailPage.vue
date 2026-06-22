@@ -138,7 +138,9 @@ const currentMaxPurchaseQuantity = computed(() => {
   return currentStock.value > 0 ? Math.min(currentStock.value, limit) : limit
 })
 const quantityLimitText = computed(() =>
-  currentSkuPurchaseLimit.value ? `当前规格单次最多购买 ${currentSkuPurchaseLimit.value} 件` : '',
+  currentSkuPurchaseLimit.value
+    ? `当前规格每单只能购买${currentSkuPurchaseLimit.value}张，可多次重复下单。`
+    : '',
 )
 const currentCartLineId = computed(() => currentSku.value?.skuId ?? product.value?.id ?? '')
 const isCartPending = computed(() => (currentCartLineId.value ? cartStore.isLinePending(currentCartLineId.value) : false))
